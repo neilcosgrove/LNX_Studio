@@ -1,0 +1,54 @@
+SC Sample Bank Doc v1.0
+Snares
+10
+sounds/Roland/505/505 snare.aif
+sounds/Roland/606/606 snare.aif
+sounds/Roland/707/707 snare.aif
+sounds/Roland/808/808 snare 1.aif
+sounds/Roland/808/808 snare 2.aif
+sounds/Roland/808/808 snare 3.aif
+sounds/Roland/909/909 snare 1.aif
+sounds/Roland/909/909 snare 2.aif
+sounds/Roland/909/909 snare 3.aif
+sounds/Roland/909/909 snare 4.aif
+505 snare
+60
+1
+0
+606 snare
+60
+1
+0
+707 snare
+60
+1
+0
+808 snare 1
+60
+1
+0
+808 snare 2
+60
+1
+0
+808 snare 3
+60
+1
+0
+909 snare 1
+60
+0.72
+0
+909 snare 2
+60
+0.77
+0
+909 snare 3
+60
+1
+0
+909 snare 4
+60
+1
+0
+*** END ***

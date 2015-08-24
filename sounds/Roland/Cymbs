@@ -1,0 +1,39 @@
+SC Sample Bank Doc v1.0
+Cymbs
+7
+sounds/Roland/505/505 crash.aif
+sounds/Roland/505/505 ride.aif
+sounds/Roland/606/606 cymbol.aif
+sounds/Roland/707/707 crash.aif
+sounds/Roland/707/707 ride.aif
+sounds/Roland/808/808 cymb 1.aif
+sounds/Roland/808/808 cymb 2.aif
+505 crash
+60
+0.71
+0
+505 ride
+60
+1
+0
+606 cymbol
+60
+1
+0
+707 crash
+60
+0.58
+0
+707 ride
+60
+1
+0
+808 cymb 1
+60
+1
+0
+808 cymb 2
+60
+1
+0
+*** END ***

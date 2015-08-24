@@ -1,0 +1,84 @@
+SC Sample Bank Doc v1.0
+505 Kit
+16
+sounds/Roland/505/505 kick.aif
+sounds/Roland/505/505 snare.aif
+sounds/Roland/505/505 clap.aif
+sounds/Roland/505/505 rim.aif
+sounds/Roland/505/505 low cow.aif
+sounds/Roland/505/505 high cow.aif
+sounds/Roland/505/505 low tom.aif
+sounds/Roland/505/505 mid tom.aif
+sounds/Roland/505/505 high tom.aif
+sounds/Roland/505/505 low conga.aif
+sounds/Roland/505/505 high conga.aif
+sounds/Roland/505/505 timb.aif
+sounds/Roland/505/505 closed.aif
+sounds/Roland/505/505 open.aif
+sounds/Roland/505/505 ride.aif
+sounds/Roland/505/505 crash.aif
+505 kick
+60
+1
+0
+505 snare
+60
+1
+0
+505 clap
+60
+0.59
+0
+505 rim
+60
+0.84
+0
+505 low cow
+60
+1
+0
+505 high cow
+60
+1
+0
+505 low tom
+60
+0.68
+0
+505 mid tom
+60
+0.68
+0
+505 high tom
+60
+0.81
+0
+505 low conga
+60
+1
+0
+505 high conga
+60
+0.77
+0
+505 timb
+60
+0.7
+0
+505 closed
+60
+1
+0
+505 open
+60
+1
+0
+505 ride
+60
+1
+0
+505 crash
+60
+0.95
+0
+*** END ***

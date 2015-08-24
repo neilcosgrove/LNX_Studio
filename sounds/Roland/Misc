@@ -1,0 +1,74 @@
+SC Sample Bank Doc v1.0
+Misc
+14
+sounds/Roland/505/505 high conga.aif
+sounds/Roland/505/505 high cow.aif
+sounds/Roland/505/505 high tom.aif
+sounds/Roland/505/505 low conga.aif
+sounds/Roland/505/505 low cow.aif
+sounds/Roland/505/505 timb.aif
+sounds/Roland/707/707 cow.aif
+sounds/Roland/707/707 tamb.aif
+sounds/Roland/808/808 clave.aif
+sounds/Roland/808/808 cow.aif
+sounds/Roland/808/808 high conga.aif
+sounds/Roland/808/808 low conga.aif
+sounds/Roland/808/808 maraca.aif
+sounds/Roland/808/808 mid conga.aif
+505 high conga
+60
+0.59
+0
+505 high cow
+60
+1
+0
+505 high tom
+60
+1
+0
+505 low conga
+60
+1
+0
+505 low cow
+60
+1
+0
+505 timb
+60
+0.64
+0
+707 cow
+60
+0.68
+0
+707 tamb
+60
+1
+0
+808 clave
+60
+1
+0
+808 cow
+60
+1
+0
+808 high conga
+60
+1
+0
+808 low conga
+60
+1
+0
+808 maraca
+60
+1
+0
+808 mid conga
+60
+1
+0
+*** END ***

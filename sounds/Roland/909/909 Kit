@@ -1,0 +1,54 @@
+SC Sample Bank Doc v1.0
+909 Kit
+10
+sounds/Roland/909/909 kick 1.aif
+sounds/Roland/909/909 kick 2.aif
+sounds/Roland/909/909 snare 1.aif
+sounds/Roland/909/909 snare 2.aif
+sounds/Roland/909/909 snare 3.aif
+sounds/Roland/909/909 snare 4.aif
+sounds/Roland/909/909 clap.aif
+sounds/Roland/909/909 rim.aif
+sounds/Roland/909/909 closed.aif
+sounds/Roland/909/909 open.aif
+909 kick 1
+60
+1
+0
+909 kick 2
+60
+1
+0
+909 snare 1
+60
+0.92
+0
+909 snare 2
+60
+0.91
+0
+909 snare 3
+60
+0.96
+0
+909 snare 4
+60
+0.93
+0
+909 clap
+60
+0.86
+0
+909 rim
+60
+0.83
+0
+909 closed
+60
+1
+0
+909 open
+60
+1
+0
+*** END ***

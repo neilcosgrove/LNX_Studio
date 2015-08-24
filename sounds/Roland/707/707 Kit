@@ -1,0 +1,69 @@
+SC Sample Bank Doc v1.0
+707 Kit
+13
+sounds/Roland/707/707 kick.aif
+sounds/Roland/707/707 snare.aif
+sounds/Roland/707/707 clap.aif
+sounds/Roland/707/707 cow.aif
+sounds/Roland/707/707 rim.aif
+sounds/Roland/707/707 low tom.aif
+sounds/Roland/707/707 mid tom.aif
+sounds/Roland/707/707 high tom.aif
+sounds/Roland/707/707 closed.aif
+sounds/Roland/707/707 open.aif
+sounds/Roland/707/707 tamb.aif
+sounds/Roland/707/707 ride.aif
+sounds/Roland/707/707 crash.aif
+707 kick
+60
+1
+0
+707 snare
+60
+1
+0
+707 clap
+60
+0.75
+0
+707 cow
+60
+0.92
+0
+707 rim
+60
+1
+0
+707 low tom
+60
+0.85
+0
+707 mid tom
+60
+1
+0
+707 high tom
+60
+1
+0
+707 closed
+60
+1.18
+0
+707 open
+60
+1.18
+0
+707 tamb
+60
+1.11
+0
+707 ride
+60
+1
+0
+707 crash
+60
+0.67
+0
+*** END ***
