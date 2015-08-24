@@ -6,13 +6,9 @@ LNX_File{
 	classvar <prefDir;
 
 	*initClass {
-		if (LNX_Studio.isStandalone) {
-			// get from studio
-			prefDir=("~/Library/Preferences/LNX_Studio_"++
-				(LNX_Studio.versionMajor)++"."++(LNX_Studio.versionMinor)++"/").absolutePath;
-		}{
-			prefDir=String.scDir++"/preferences/".absolutePath;
-		};
+		// get from studio
+		prefDir=("~/Library/Preferences/LNX_Studio_"++
+			(LNX_Studio.versionMajor)++"."++(LNX_Studio.versionMinor)++"/").absolutePath;
 		
 		if (prefDir.pathExists(false).not) { prefDir.makeDir };
 	}

@@ -286,7 +286,7 @@ LNX_Room{
 	// send a message
 	
 	roomMessage{|msg|
-		network.socket.sendBundle(0,['netRoomMessage',Êmsg]);
+		network.socket.sendBundle(0,['netRoomMessage', msg]);
 		this.addText(msg);
 	}
 	
@@ -294,7 +294,7 @@ LNX_Room{
 	
 	talk{|msg|
 		msg=network.thisUser.shortName+":"+msg;
-		network.socket.sendBundle(0,['netTalk',Êname, msg]);
+		network.socket.sendBundle(0,['netTalk', name, msg]);
 		this.addTextViaRoom(msg,false,true);
 	}
 	
@@ -548,7 +548,7 @@ LNX_Room{
 			.action_{|me|};	
 
 		// profile view
-		gui[\profileView] = SCTextView(gui[\tabView].views[0],Rect(4,4,381,128))
+		gui[\profileView] = TextView(gui[\tabView].views[0],Rect(4,4,381,128))
 			.editable_(false)
 			.background_(Color(0.267,0.282,0.267))
 			.stringColor_(Color.white)
@@ -563,7 +563,7 @@ LNX_Room{
 		};
 		
 		// my profile view
-		gui[\myProfileView] = SCTextView(gui[\tabView].views[1],Rect(4,4,101,128))
+		gui[\myProfileView] = TextView(gui[\tabView].views[1],Rect(4,4,101,128))
 			.editable_(true)
 			.canFocus_(false)
 			.background_(Color(0.267,0.282,0.267))
@@ -723,7 +723,7 @@ LNX_Room{
 									"who wants to make some music?", "acid anyone?",
 									"techno techno", "bored now...", "lets DANCE", ""
 								].choose);
-								network.socket.sendBundle(0,['netTalk',Êmsg]);
+								network.socket.sendBundle(0,['netTalk', msg]);
 								gui[\dialogOut].addText(msg);
 								gui[\dialogOutList]=gui[\dialogOut].dialog;
 							}.defer;

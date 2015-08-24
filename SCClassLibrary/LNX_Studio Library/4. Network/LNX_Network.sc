@@ -216,7 +216,7 @@ LNX_Network {
 	initPingResponders{
 		socket.addResp('ping', {|time, resp, msg|
 			msg.postln;
-			socket.sendBundle(0,['returnPing',Ê"You pinged"+thisUser.name]);
+			socket.sendBundle(0,['returnPing', "You pinged"+thisUser.name]);
 		});
 		socket.addResp('returnPing', {|time, resp, msg|
 			(msg.asString+"in"+((SystemClock.now-pingTime).asString)).postln;

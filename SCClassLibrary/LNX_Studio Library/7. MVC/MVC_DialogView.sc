@@ -1,5 +1,5 @@
 
-// multi-lined dialog view. Created because SCTextView cannot scroll
+// multi-lined dialog view. Created because TextView cannot scroll
 // to the bottom of the text and hence is useless for dialog purposes.
 // use .addText("Another line")
 
@@ -22,7 +22,7 @@ MVC_DialogView : MVC_View {
 	
 	// make the view
 	createView{
-		view=SCTextView.new(window,rect)
+		view=TextView.new(window,rect)
 			.string_(string)
 			.editable_(false)
 			.font_ (font)

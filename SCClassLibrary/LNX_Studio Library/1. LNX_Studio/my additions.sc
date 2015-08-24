@@ -77,9 +77,9 @@ Colour : Color {}
 
 // covert from top left co-ords to bottom left co-ords
 + Rect {	
-	convert{ ^Rect(left, SCWindow.screenBounds.bounds.height-top-height-44, width, height) }
+	convert{ ^Rect(left, Window.screenBounds.bounds.height-top-height-44, width, height) }
 }
-+ Point { convert{ ^Point(x, SCWindow.screenBounds.bounds.height-y-44) } }
++ Point { convert{ ^Point(x, Window.screenBounds.bounds.height-y-44) } }
 
 + Dictionary {
 	ordered { arg func;
@@ -1077,17 +1077,17 @@ gives min, max, averages and total
 	
 }
 
-+ SCTextField {
+// + TextField {
 
-	background_{|c|
-		if (Main.versionAtMost(3,2)) {
-			this.setProperty(\boxColor,c) 
-		}{
-			super.background_(c);
-		}
-	} // backwards compatability to v3.2
+// 	background_{|c|
+// 		if (Main.versionAtMost(3,2)) {
+// 			this.setProperty(\boxColor,c) 
+// 		}{
+// 			super.background_(c);
+// 		}
+// 	} // backwards compatability to v3.2
 
-}
+// }
 
 
 ////////////////////////////////////////////////

@@ -271,11 +271,11 @@
 			signal = Mix.new(LFPulse.ar(freqs * 4.09));
 			signal = (BinaryOpUGen('==', signal, 6.0) * 0.6) + (BinaryOpUGen('==', signal, 2.0)
 						* 0.2) + (BinaryOpUGen('==', signal, 1.0) * 0.9); // XOR
-		   	signal = (signal * pulseEnv) + (Mix.new(LFPulse.ar(freqs, width:0.55)) * 0.9);
-		 	signal = RLPF.ar(signal, 7000*lp, 1-q);
-		  	signal = RHPF.ar(signal, 6800*hp, 1.5);
-		 	signal = RHPF.ar(signal, 6800*hp, 1.5);
-		 	signal = RHPF.ar(signal, 1200*hp, 1.5);
+		   	signal = (signal * pulseEnv) + (Mix.new(LFPulse.ar(freqs, width:0.55)) * 0.9);
+		 	signal = RLPF.ar(signal, 7000*lp, 1-q);
+		  	signal = RHPF.ar(signal, 6800*hp, 1.5);
+		 	signal = RHPF.ar(signal, 6800*hp, 1.5);
+		 	signal = RHPF.ar(signal, 1200*hp, 1.5);
 			signal = signal + FreeVerb.ar(signal);
 			signal = signal * EnvGen.ar(Env.new([0, 1, 0.4, 0, 0], [2, time, 50, 500],
 							[0, -0.5, 0, -50]),gate, timeScale:(1/1000*dur), doneAction:2);

@@ -314,19 +314,19 @@ MVC_TextView : MVC_View {
 	
 }
 
-//// adapted SCTextView for use in MVC_TextView (not for direct use)
+//// adapted TextView for use in MVC_TextView (not for direct use)
 
-MVC_SCTextView : SCTextView {
+MVC_SCTextView : TextView {
 
 	var <>enterAction;
 
-	*viewClass { ^SCTextView } // this ensures that SCUserView's primitive is called
+	*viewClass { ^TextView } // this ensures that SCUserView's primitive is called
 
 	init { arg argParent, argBounds;
-		parent = argParent.asView; // actual view
-		background = Color.clear;
+		this.setParent(argParent.asView); // actual view
+		this.background = Color.clear;
 			// call asView again because parent by this point might be a FlowView
-		this.prInit(parent.asView, argBounds.asRect,this.class.viewClass);
+		this.prInit(this.parent.asView, argBounds.asRect,this.class.viewClass);
 		argParent.add(this);//maybe window or viewadapter
 		this.enterInterpretsSelection_(false)
 			.font_(Font("Helvetica",12));

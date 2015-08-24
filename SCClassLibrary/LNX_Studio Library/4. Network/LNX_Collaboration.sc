@@ -835,7 +835,7 @@ LNX_Collaboration{
 			.color_(\off,Color.white*0.6);
 		
 		// invite list
-		gui[\wishList] = SCTextView(window,Rect(136+x,368+y+40,379,59))
+		gui[\wishList] = TextView(window,Rect(136+x,368+y+40,379,59))
 			.editable_(false)
 			.background_(Color(0,0,0))
 			.stringColor_(Color.white)

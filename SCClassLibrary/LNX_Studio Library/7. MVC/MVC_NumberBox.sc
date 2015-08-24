@@ -302,11 +302,11 @@ MVC_NumberBox : MVC_View {
 
 // adjust so control just goes to action for MVC_View
 
-AdjustedSCNumberBox : SCNumberBoxOld {
+AdjustedSCNumberBox : NumberBox {
 	
 	var <>showBorder = true;
 
-	*viewClass { ^SCNumberBoxOld }
+	*viewClass { ^NumberBox }
 
 	mouseDown{arg x, y, modifiers, buttonNumber, clickCount;
 		mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);

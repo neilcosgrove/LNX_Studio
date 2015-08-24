@@ -6,8 +6,8 @@ LNX_MouseXY{
 	classvar <pos, dependants, server;
 	
 	*initClass{
-		var sbW = SCWindow.screenBounds.width;
-		var sbH = SCWindow.screenBounds.height;
+		var sbW = Window.screenBounds.width;
+		var sbH = Window.screenBounds.height;
 		pos = ((0.5*sbW)@(0.5*sbH));
 		dependants=IdentitySet[];
 		

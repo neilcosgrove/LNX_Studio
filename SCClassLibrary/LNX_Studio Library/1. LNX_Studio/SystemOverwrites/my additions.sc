@@ -34,7 +34,7 @@
 		var url, newPath, oldPath;
 
 		if (urlString.endsWith("/Demo%20Song.html")) {
-			studio.loadDemoSong
+			LNX_StartUp.studio.loadDemoSong
 		}{
 		
 			window.front;
@@ -70,50 +70,51 @@
 }
 
 // stop server windows from been made
-+ OSXPlatform {	
-	startup {
-		if(Platform.ideName == "scapp"){
-			Document.implementationClass.startup;
-			// make server window
-			//Server.internal.makeWindow;
-			//Server.local.makeWindow;
-		};
-		this.loadStartupFiles;
-		if(Platform.ideName == "scapp"){
-			//if (LNX_Studio.isStandalone.not) {
-				Help.addToMenu;
-			//};
-		};	
-	}
-}
+// + OSXPlatform {	
+// 	startup {
+// 		if(Platform.ideName == "scapp"){
+// 			Document.implementationClass.startup;
+// 			// make server window
+// 			//Server.internal.makeWindow;
+// 			//Server.local.makeWindow;
+// 		};
+// 		this.loadStartupFiles;
+// 		if(Platform.ideName == "scapp"){
+// 			//if (LNX_Studio.isStandalone.not) {
+// 				Help.addToMenu;
+// 			//};
+// 		};	
+// 	}
+// }
 
 // just add UGens to help
 
 + Help {
 	*addToMenu {
-		var ugens, menu;
-		var addSubMenu = { |parent, dict, name, index=8|
-			var menu = SCMenuGroup.new(parent, name, index);
-			var keys = dict.keys.asArray;
-			keys.sort {|a,b| a.asString <= b.asString };
-			keys.do{ |key, subindex|
-				if(dict[key].class == Dictionary) {
-					// Add submenu
-					addSubMenu.value(menu, dict[key], key[2..key.size-3], subindex)
-				}{
-					// Add selectable menu item
-					SCMenuItem.new(menu, key.asString, subindex).action_(
-						{ key.asString.openHelpFile }
-					)
-				}
-			};
-			menu
-		};
-		if (LNX_Studio.isStandalone) {
-			addSubMenu.value('Help', Help.tree["[[UGens]]"], "UGens");
-		}{
-			addSubMenu.value('Help', Help.tree, "Help Tree");
-		};
+		// @TODO: uncomment
+		// var ugens, menu;
+		// var addSubMenu = { |parent, dict, name, index=8|
+		// 	var menu = SCMenuGroup.new(parent, name, index);
+		// 	var keys = dict.keys.asArray;
+		// 	keys.sort {|a,b| a.asString <= b.asString };
+		// 	keys.do{ |key, subindex|
+		// 		if(dict[key].class == Dictionary) {
+		// 			// Add submenu
+		// 			addSubMenu.value(menu, dict[key], key[2..key.size-3], subindex)
+		// 		}{
+		// 			// Add selectable menu item
+		// 			SCMenuItem.new(menu, key.asString, subindex).action_(
+		// 				{ key.asString.openHelpFile }
+		// 			)
+		// 		}
+		// 	};
+		// 	menu
+		// };
+		// if (LNX_Studio.isStandalone) {
+		// 	addSubMenu.value('Help', Help.tree["[[UGens]]"], "UGens");
+		// }{
+		// 	addSubMenu.value('Help', Help.tree, "Help Tree");
+		// };
 	}
 }
 
@@ -168,7 +169,7 @@
 }
 
 // fix for ascii 13
- 
+// @TODO: maybe a problem for xplatform?
 + UnixFILE {
 	getLine { arg maxSize=1024;
 		var string,line;
@@ -198,29 +199,29 @@
 	
 	// for security
 	
-	*default_ { |server|
-		default = server; // sync with s?
-		if (LNX_Studio.isStandalone.not) {
-			if (sync_s, { thisProcess.interpreter.s = server });
-		};
-		this.all.do(_.changed(\default));
-	}
+	// *default_ { |server|
+	// 	default = server; // sync with s?
+	// 	if (LNX_Studio.isStandalone.not) {
+	// 		if (sync_s, { thisProcess.interpreter.s = server });
+	// 	};
+	// 	this.all.do(_.changed(\default));
+	// }
 
 	// to use LNX_Audio
 
-	*initClass {
-		Class.initClassTree(ServerOptions);
-		Class.initClassTree(NotificationCenter);
-		named = IdentityDictionary.new;
-		set = Set.new;
-		default = local = Server.new(\localhost, NetAddr("127.0.0.1", 57110));
-		Platform.switch(\windows, {
-			program = "LNX_Audio.exe";
-		}, {
-			internal = Server.new(\internal, NetAddr.new);
-			program = "cd % && exec ./LNX_Audio".format(String.scDir.quote);
-		});
-	}
+	// *initClass {
+	// 	Class.initClassTree(ServerOptions);
+	// 	Class.initClassTree(NotificationCenter);
+	// 	named = IdentityDictionary.new;
+	// 	set = Set.new;
+	// 	default = local = Server.new(\localhost, NetAddr("127.0.0.1", 57110));
+	// 	Platform.switch(\windows, {
+	// 		program = "LNX_Audio.exe";
+	// 	}, {
+	// 		internal = Server.new(\internal, NetAddr.new);
+	// 		program = "cd % && exec ./LNX_Audio".format(String.scDir.quote);
+	// 	});
+	// }
 
 	prepareForRecord { arg path;
 		if (path.isNil) {

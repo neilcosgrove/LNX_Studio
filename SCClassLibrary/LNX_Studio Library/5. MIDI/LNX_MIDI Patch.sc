@@ -767,7 +767,7 @@ LNX_MIDIPatch {
 				++"The following MIDI Device(s) have been removed from the system.")
 			.stringColor_(Color.white);
 				
-			SCTextView.new(win,Rect(50, 60, 350, 87))
+			TextView.new(win,Rect(50, 60, 350, 87))
 			.hasVerticalScroller_(true)
 			.editable_(false)
 			.string_(text);

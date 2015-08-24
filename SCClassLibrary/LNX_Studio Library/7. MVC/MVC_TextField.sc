@@ -128,25 +128,25 @@ w.close;
 w.open;
 */
 
-// adapted SCTextView for use in MVC_TextView (not for direct use)
+// adapted TextView for use in MVC_TextView (not for direct use)
 // action < all typing
 // enterAction < only after enter
 // upAction & downAction < up and down arrow keys
 
-MVC_SCTextField : SCTextView {
+MVC_SCTextField : TextView {
 
 	var <>enterAction;
 	var <>upAction, <>downAction, <>normalColor;
 	var <>editColor, <>isEditing=false;
 	var <>clearOnEnter=true,	<>clearOnEnterAction;
 
-	*viewClass { ^SCTextView } // this ensures that SCUserView's primitive is called
+	*viewClass { ^TextView } // this ensures that SCUserView's primitive is called
 
 	init { arg argParent, argBounds;
-		parent = argParent.asView; // actual view
-		background = Color.clear;
+		this.setParent(argParent.asView); // actual view
+		this.background = Color.clear;
 			// call asView again because parent by this point might be a FlowView
-		this.prInit(parent.asView, argBounds.asRect,this.class.viewClass);
+		this.prInit(this.parent.asView, argBounds.asRect,this.class.viewClass);
 		argParent.add(this);//maybe window or viewadapter
 		this.enterInterpretsSelection_(false)
 			.font_(Font("Helvetica",12));
@@ -212,7 +212,7 @@ MVC_SCTextField : SCTextView {
 
 }
 
-MVC_SCTextField2 : SCTextField {
+MVC_SCTextField2 : TextField {
 
 	var <>enterAction;
 	var <>upAction, <>downAction, <>normalColor;
@@ -222,11 +222,11 @@ MVC_SCTextField2 : SCTextField {
 
 	var <>storedString="";
 
-	*viewClass { ^SCTextField } // this ensures that SCUserView's primitive is called
+	*viewClass { ^TextField } // this ensures that SCUserView's primitive is called
 
 	// fixes cmd-w bug
 	getProperty { arg key, value;
-		if (dataptr.notNil) {^this.getPropertyPrivate(key, value)} {^nil} 
+		^this.getPropertyPrivate(key, value)
 	}
 
 	// fixes cmd-w bug
@@ -236,10 +236,10 @@ MVC_SCTextField2 : SCTextField {
 	}
 
 	init { arg argParent, argBounds;
-		parent = argParent.asView; // actual view
-		background = Color.clear;
+		this.setParent(argParent.asView); // actual view
+		this.background = Color.clear;
 		// call asView again because parent by this point might be a FlowView
-		this.prInit(parent.asView, argBounds.asRect,this.class.viewClass);
+		this.prInit(this.parent.asView, argBounds.asRect,this.class.viewClass);
 		argParent.add(this);//maybe window or viewadapter
 		//this.enterInterpretsSelection_(false)
 		this.font_(Font("Helvetica",12));
@@ -248,8 +248,8 @@ MVC_SCTextField2 : SCTextField {
 	}
 	
 	string_ { arg argString;
-		string = argString.asString;
-		this.setProperty(\string, string);
+		this.string = argString.asString;
+		this.setProperty(\string, this.string);
 		storedString=argString;
 	}
 	

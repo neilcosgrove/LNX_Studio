@@ -1,3 +1,5 @@
+/*
+Old class - not used
 LNX_EnvelopeEdit : SCEnvelopeEdit {
 
 	classvar <>clipboard;
@@ -306,4 +308,4 @@ LNX_EnvelopeEdit : SCEnvelopeEdit {
 
 
 }
-
+*/

@@ -202,10 +202,10 @@ MVC_View {
 			value.asFloat;
 		};
 		// what can i recieve
-		view.canReceiveDragHandler_{ SCView.currentDrag.isNumber };
+		view.canReceiveDragHandler_{ View.currentDrag.isNumber };
 		// what i get passed
 		view.receiveDragHandler_{
-			this.valueAction_(SCView.currentDrag, send:true);
+			this.valueAction_(View.currentDrag, send:true);
 			this.refreshValue;	
 		};
 		// just add begin to number box
@@ -619,7 +619,7 @@ MVC_View {
 }
 
 
-+ SCView {
++ View {
 
 	free{
 		if (this.notClosed) { this.remove };

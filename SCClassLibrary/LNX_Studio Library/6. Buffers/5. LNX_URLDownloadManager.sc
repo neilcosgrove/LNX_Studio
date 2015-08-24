@@ -30,7 +30,7 @@ LNX_URLDownloadManager {
 		CmdPeriod.add(this);
 		// a single task for the manager to update all downloads & their models
 		task=Task({
-		Ê Ê inf.do{
+			inf.do{
 				(0.25/6).wait;
 				if (downloads.isEmpty) {
 					this.stopChecking
@@ -46,7 +46,7 @@ LNX_URLDownloadManager {
 						};
 					};
 				};
-		Ê Ê };
+			 };
 		},AppClock); // a text feedback task
 	}
 	

@@ -57,6 +57,7 @@ LNX_ControlMap {
 		this.env(control).postcs
 	}
 	
+	/*
 	*edit{|control|
 		var window,env;
 		window=SCWindow.new("Edit control:"+(control.asString)).front;
@@ -67,6 +68,7 @@ LNX_ControlMap {
 			.resize_(5)
 			.updateFunc_{|e| env=e };
 	}
+	*/
 	
 }
 

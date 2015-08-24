@@ -19,7 +19,7 @@ LNX_StartUp {
 
 		StartUp.add {
 			
-			SCDoc.indexAllDocuments;
+			// SCDoc.indexAllDocuments;
 						
 			studio = LNX_Studio(Server.local); 	// start the studio
 			
@@ -39,94 +39,94 @@ LNX_StartUp {
 			
 			
 			// add appropriate menus
-			if (studio.isStandalone) {
-				LNX_AppMenus.addDeveloperMenus(studio); // to remove for release
-				LNX_AppMenus.addReleaseMenus(studio);
+// 			if (studio.isStandalone) {
+// 				LNX_AppMenus.addDeveloperMenus(studio); // to remove for release
+// 				LNX_AppMenus.addReleaseMenus(studio);
 				
-				//Document.listener.close;
+// 				//Document.listener.close;
 				
-				Document.listener.bounds=Rect(LNX_Studio.osx,32,535,175);
-			}{	
-				LNX_AppMenus.addDeveloperMenus(studio);
-				QuarkSVNRepository.svnpath= "/opt/subversion/bin/svn"; // svn for supercollider
-			};
+// 				Document.listener.bounds=Rect(LNX_Studio.osx,32,535,175);
+// 			}{	
+// 				LNX_AppMenus.addDeveloperMenus(studio);
+// 				QuarkSVNRepository.svnpath= "/opt/subversion/bin/svn"; // svn for supercollider
+// 			};
 							
-			// resize help documents to readable sizes
-	 		Document.initAction=Document.initAction.addFunc{|doc|
-				var b;
-				{
-					if ((doc.name=="LNX_BumNote")
-						||(doc.name=="LNX_DrumSynth")
-						||(doc.name=="LNX_Code")
-						||(doc.name=="LNX_GSRhythm")
-					) {
-						b=doc.bounds;
-						doc.bounds_(Rect(b.left,b.top,760,b.height+230));
-					};
-					if (doc.name=="Quick Start Guide") {
-						b=doc.bounds;
-						doc.bounds_(Rect( 
-							SCWindow.screenBounds.width/2-(498/2),
-							SCWindow.screenBounds.height-635-40,
-							497,635));
-						doc.alwaysOnTop_(true);
-					};
-				}.defer(0.1);
-			};
+// 			// resize help documents to readable sizes
+// 	 		Document.initAction=Document.initAction.addFunc{|doc|
+// 				var b;
+// 				{
+// 					if ((doc.name=="LNX_BumNote")
+// 						||(doc.name=="LNX_DrumSynth")
+// 						||(doc.name=="LNX_Code")
+// 						||(doc.name=="LNX_GSRhythm")
+// 					) {
+// 						b=doc.bounds;
+// 						doc.bounds_(Rect(b.left,b.top,760,b.height+230));
+// 					};
+// 					if (doc.name=="Quick Start Guide") {
+// 						b=doc.bounds;
+// 						doc.bounds_(Rect( 
+// 							SCWindow.screenBounds.width/2-(498/2),
+// 							SCWindow.screenBounds.height-635-40,
+// 							497,635));
+// 						doc.alwaysOnTop_(true);
+// 					};
+// 				}.defer(0.1);
+// 			};
 				
-			if (studio.isStandalone) {
+// 			if (studio.isStandalone) {
 				
-				// load songs dropped or opened in SC
-				Document.initAction=Document.initAction.addFunc{|doc|
-					if (doc.string[..14]=="SC Studio Doc v") {
-						{
-							doc.bounds_(Rect(0,0,0,0));
-						}.defer(0.05);
-						{
-							studio.dropLoad(doc);
-						}.defer(0.1);
-						{
-							doc.close
-						}.defer(0.15)
-					};
-				};
+// 				// load songs dropped or opened in SC
+// 				Document.initAction=Document.initAction.addFunc{|doc|
+// 					if (doc.string[..14]=="SC Studio Doc v") {
+// 						{
+// 							doc.bounds_(Rect(0,0,0,0));
+// 						}.defer(0.05);
+// 						{
+// 							studio.dropLoad(doc);
+// 						}.defer(0.1);
+// 						{
+// 							doc.close
+// 						}.defer(0.15)
+// 					};
+// 				};
 				
 		
-				// stop edit of help documents
-//				Document.initAction=Document.initAction.addFunc{|doc|
-//					if	(studio.isStandalone) {
-//						doc.editable_(false)
-//					};
-//				};
+// 				// stop edit of help documents
+// //				Document.initAction=Document.initAction.addFunc{|doc|
+// //					if	(studio.isStandalone) {
+// //						doc.editable_(false)
+// //					};
+// //				};
 				
-				// load songs dropped or opened in SC at start-up
-				Document.allDocuments.do{|doc|
-					if (doc.string[..14]=="SC Studio Doc v") {
-						{
-							doc.bounds_(Rect(0,0,0,0));
-						}.defer(0.05);
-						{
-							studio.dropLoad(doc);
-						}.defer(0.1);
-						{
-							doc.close
-						}.defer(0.15)
-					};
-				};
+// 				// load songs dropped or opened in SC at start-up
+// 				Document.allDocuments.do{|doc|
+// 					if (doc.string[..14]=="SC Studio Doc v") {
+// 						{
+// 							doc.bounds_(Rect(0,0,0,0));
+// 						}.defer(0.05);
+// 						{
+// 							studio.dropLoad(doc);
+// 						}.defer(0.1);
+// 						{
+// 							doc.close
+// 						}.defer(0.15)
+// 					};
+// 				};
 				
-			};
+// 			};
 			
-			// add lnx preferences as the preferences
-			thisProcess.preferencesAction = { studio.preferences };
+// 			// add lnx preferences as the preferences
+// 			thisProcess.preferencesAction = { studio.preferences };
 			
-			if (studio.isStandalone && LNX_Mode.isSafe) {
-				thisProcess.platform.recordingsDir = 
-					"/Users/Shared";
-					//String.scDir.dirname.dirname +/+ "Contents/Safe Mode Recordings";
-			}{
-				// set the recording directory
-				thisProcess.platform.recordingsDir = "~/Desktop".standardizePath;
-			};
+// 			if (studio.isStandalone && LNX_Mode.isSafe) {
+// 				thisProcess.platform.recordingsDir = 
+// 					"/Users/Shared";
+// 					//String.scDir.dirname.dirname +/+ "Contents/Safe Mode Recordings";
+// 			}{
+// 				// set the recording directory
+// 				thisProcess.platform.recordingsDir = "~/Desktop".standardizePath;
+// 			};
 			
 			this.interpreterDebugging;
 		

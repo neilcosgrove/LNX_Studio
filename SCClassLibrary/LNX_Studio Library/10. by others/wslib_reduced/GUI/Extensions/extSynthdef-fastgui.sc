@@ -64,15 +64,15 @@ win.view.decorator = lay = FlowLayout(win.view.bounds, 5@5, 5@5);
 
 SCStaticText(win, 50 @ 15).font_(Font("Helvetica", 9)).string_("Bus").align_(\right); 
 SCNumberBox(win, 30 @ 15).font_(Font("Helvetica", 9)).value_(bus).action_({|val| 
-   	val.value = 0.max(val.value);
+   	val.value = 0.max(val.value);
 	bus = val.value; 
-  	if (fxOn, { synth.set(\outbus,bus) }); 
+  	if (fxOn, { synth.set(\outbus,bus) }); 
 }); 
 SCStaticText(win, 15 @ 15).font_(Font("Helvetica", 9)).string_("Tgt").align_(\right); 
 SCNumberBox(win, 40 @ 15).font_(Font("Helvetica", 9)).value_(tgt).action_({|val| 
 	val.value = 0.max(val.value); 
 	tgt = val.value.asInteger; 
-   	moveSynth.value; 
+		moveSynth.value; 
 }); 
 
 SCPopUpMenu(win, 60@15)
@@ -82,76 +82,76 @@ SCPopUpMenu(win, 60@15)
 	.action_({|val|
 		addAct = val.items.at(val.value).asSymbol;
 		moveSynth.value; 
-   }); 
-    
+	}); 
+	 
 SCButton(win,18@15)
 	.font_(Font("Helvetica", 9))
 	.states_([["#"]])
 	.action_({|val| 
-         synthParams = Array.new; 
-         synthParams = synthParams.add(param[1]); // synth params 
-         synthParams = synthParams.add(param[3]); // argument values 
-         synthParams = ['outbus', bus].add(synthParams.flop).flat.asCompileString; 
-         ("Synth.new(\\" ++ this.name ++ ", " ++ synthParams ++ 
-            ", target: " ++ tgt ++ ", addAction: \\" ++ addAct ++ ")").postln; 
-   }); 
+			synthParams = Array.new; 
+			synthParams = synthParams.add(param[1]); // synth params 
+			synthParams = synthParams.add(param[3]); // argument values 
+			synthParams = ['outbus', bus].add(synthParams.flop).flat.asCompileString; 
+			("Synth.new(\\" ++ this.name ++ ", " ++ synthParams ++ 
+				", target: " ++ tgt ++ ", addAction: \\" ++ addAct ++ ")").postln; 
+	}); 
 
 SCButton(win,40@15)
 	.font_(Font("Helvetica", 9))
 	.states_([["On"],["On", Color.black, Color.red(alpha:0.2)]])
 	.action_({|val| 
-      if ( val.value == 0, { 
-         fxOn = false; 
-         nodeLabel.string = "none"; 
+		if ( val.value == 0, { 
+			fxOn = false; 
+			nodeLabel.string = "none"; 
 		if(this.canReleaseSynth)
 			{synth.release}
-        		{synth.free};
-      },{ 
-         fxOn = true; 
-         synthParams = Array.new; 
-         synthParams = synthParams.add(param[1]); // synth params 
-         synthParams = synthParams.add(param[3]); // argument values 
-         synthParams = ['outbus', bus].add(synthParams.flop).flat; 
-         synth = Synth.new(this.name, synthParams, target: tgt.asTarget, addAction: addAct); 
-         nodeLabel.string = synth.nodeID; 
+		  		{synth.free};
+		},{ 
+			fxOn = true; 
+			synthParams = Array.new; 
+			synthParams = synthParams.add(param[1]); // synth params 
+			synthParams = synthParams.add(param[3]); // argument values 
+			synthParams = ['outbus', bus].add(synthParams.flop).flat; 
+			synth = Synth.new(this.name, synthParams, target: tgt.asTarget, addAction: addAct); 
+			nodeLabel.string = synth.nodeID; 
 		if(this.canFreeSynth && this.hasGateControl.not)
 			{Routine({
 				0.1.wait;
 				val.value = 0; 
 				0.5.wait;
 				fxOn = false; 
-         			nodeLabel.string = "none";
+						nodeLabel.string = "none";
 				}).play(AppClock)  };
-       }) 
-   }); 
+		 }) 
+	}); 
 
 param[0].size.do({|i| 
-   slider[i] = EZSlider(win, 270@15, param[0][i], param[2][i], labelWidth: 50, numberWidth: 40); 
-   slider[i].labelView.font_(Font("Helvetica", 9)); 
-   slider[i].numberView.font_(Font("Helvetica", 9)); 
-   slider[i].sliderView.background_(Gradient(Color.blue(alpha:0.0), 
-      Color.blue(alpha:0.2), \h, 20)); 
-   slider[i].action = {|v| 
-      param[3][i] = v.value; 
-      if (fxOn, { synth.set(param[1][i], v.value) }) 
-    }; 
-   slider[i].value = param[3][i]; 
-   lay.nextLine; 
+	slider[i] = EZSlider(win, 270@15, param[0][i], param[2][i], labelWidth: 50, numberWidth: 40); 
+	slider[i].labelView.font_(Font("Helvetica", 9)); 
+	slider[i].numberView.font_(Font("Helvetica", 9)); 
+	slider[i].sliderView.background_(Gradient(Color.blue(alpha:0.0), 
+		Color.blue(alpha:0.2), \h, 20)); 
+	slider[i].action = {|v| 
+		param[3][i] = v.value; 
+		if (fxOn, { synth.set(param[1][i], v.value) }) 
+	 }; 
+	slider[i].value = param[3][i]; 
+	lay.nextLine; 
 }); 
 SCStaticText(win,50 @ 15).font_(Font("Helvetica", 9)).align_(\right).string_("nodeID"); 
 nodeLabel = SCStaticText(win,50 @ 15).font_(Font("Helvetica", 9)).align_(\left).string_("none"); 
 moveSynth = { 
-   if ( fxOn, { 
-      case 
-         { addAct === \addToHead }  { synth.moveToHead(tgt.asTarget) } 
-         { addAct === \addToTail }  { synth.moveToTail(tgt.asTarget) } 
-         { addAct === \addAfter  }  { synth.moveAfter(tgt.asTarget)  } 
-         { addAct === \addBefore }  { synth.moveBefore(tgt.asTarget) } 
-   }) 
+	if ( fxOn, { 
+		case 
+			{ addAct === \addToHead }  { synth.moveToHead(tgt.asTarget) } 
+			{ addAct === \addToTail }  { synth.moveToTail(tgt.asTarget) } 
+			{ addAct === \addAfter  }  { synth.moveAfter(tgt.asTarget)  } 
+			{ addAct === \addBefore }  { synth.moveBefore(tgt.asTarget) } 
+	}) 
 }; 
 win.view.keyDownAction = { arg ascii, char; 
-   case 
-      {char === $n} { Server.default.queryAllNodes } 
+	case 
+		{char === $n} { Server.default.queryAllNodes } 
 }; 
 win.onClose_({ if (fxOn, { synth.free }) }); 
 win.front;

@@ -60,7 +60,7 @@ BHiCut : BEQSuite {
 		var rqs, selector; 
 		rqs = allRQs.clipAt(order);
 		selector = this.methodSelectorForRate( rate );
-		rqs.do {Ê|rq|Êin = this.filterClass.perform( selector, in, freq, rq ) };
+		rqs.do { |rq| in = this.filterClass.perform( selector, in, freq, rq ) };
 		^in;
 	}
 	
@@ -80,11 +80,11 @@ BHiCut : BEQSuite {
 		^in;	
 	}
 
-	*ar { |in, freq, order=2, maxOrder = 5|Ê
+	*ar { |in, freq, order=2, maxOrder = 5| 
 		^this.new1( 'audio', in, freq, order, maxOrder );
 	}
 	
-	*kr { |in, freq, order=2, maxOrder = 5|Ê
+	*kr { |in, freq, order=2, maxOrder = 5| 
 		^this.new1( 'control', in, freq, order, maxOrder );
 	}
 

@@ -122,7 +122,7 @@
 		var last, res, ci, breakCluster=false;
 		res = this.fill(length, { |i|
 						var vowel = if(breakCluster.not and: {pairProbability.coin}) 
-									{ÊbreakCluster = true; lastWasVowel.not } 
+									{ breakCluster = true; lastWasVowel.not } 
 									{ breakCluster = false; lastWasVowel };
 						if(vowel) {
 							lastWasVowel = false;

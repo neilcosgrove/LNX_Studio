@@ -8,7 +8,8 @@ MVC_ImageView : MVC_View {
 	var <image="LNX.jpg", scimage;
 
 	*initClass{
-		lnx = SCImage.new(String.scDir +/+ "LNX.jpg");
+		// @TODO: xplatform path for this image
+		lnx = Image.new(String.scDir +/+ "LNX.jpg");
 		// gs = SCImage.new(String.scDir +/+ "GS Rhythm.jpg");
 	}
 

@@ -138,32 +138,32 @@ LNX_Studio {
 	
 	init {|server|
 		
-		GUI.cocoa;                   // use the cocoa gui framework
-		this.initInstance;			 // initialise this instance of the studio
-		this.createInstrumentList;   // 
-		this.initLibrary;            // make all the files & folders for the inst library
-		this.initVars;			 // all the main vars are initialised here
-		this.initMIDI;			 // start all midi services
-		this.initNetwork;			 // initialise the network
-		this.startResponders;		 // start responders for SCSynth >> SCLang
+		GUI.qt;                   // use the cocoa gui framework
+		// this.initInstance;			 // initialise this instance of the studio
+		// this.createInstrumentList;   // 
+		// this.initLibrary;            // make all the files & folders for the inst library
+		// this.initVars;			 // all the main vars are initialised here
+		// this.initMIDI;			 // start all midi services
+		// this.initNetwork;			 // initialise the network
+		// this.startResponders;		 // start responders for SCSynth >> SCLang
 
-		this.initServer(server);	 // init the audio server
-		this.initModels;		 	 // make studio models
-		this.initServerPostModels;   // do any server stuff after models have initialised
-		this.bootServer;			 // and now boot it
+		// this.initServer(server);	 // init the audio server
+		// this.initModels;		 	 // make studio models
+		// this.initServerPostModels;   // do any server stuff after models have initialised
+		// this.bootServer;			 // and now boot it
 				
-		this.createMixerWindow;      // the main lnx window
-		this.createMixerWidgets;     // add the mixer widgets
-		this.createLibraryWidgets;   // add the library widgets
-		this.createNetworkWidgets;   // and the network widgets
-		this.autoSizeGUI;			 // autosize to number of users. (to add widgets & remove)
-		mixerWindow.create;          // now make the window
+		// this.createMixerWindow;      // the main lnx window
+		// this.createMixerWidgets;     // add the mixer widgets
+		// this.createLibraryWidgets;   // add the library widgets
+		// this.createNetworkWidgets;   // and the network widgets
+		// this.autoSizeGUI;			 // autosize to number of users. (to add widgets & remove)
+		// mixerWindow.create;          // now make the window
 		
-		this.libraryGUIBugFix;       // a bug fix
-		LNX_SplashScreen.init(this); // start splash screen
-		CmdPeriod.add(this);		 // add this object to CmdPeriod
+		// this.libraryGUIBugFix;       // a bug fix
+		// LNX_SplashScreen.init(this); // start splash screen
+		// CmdPeriod.add(this);		 // add this object to CmdPeriod
 		
-		this.startClockOff;          // and start off_clock for client side lfos
+		// this.startClockOff;          // and start off_clock for client side lfos
 		
 	}
 	
