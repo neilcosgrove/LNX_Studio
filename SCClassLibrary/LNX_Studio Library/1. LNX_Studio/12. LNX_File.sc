@@ -7,8 +7,13 @@ LNX_File{
 
 	*initClass {
 		// get from studio
-		prefDir=("~/Library/Preferences/LNX_Studio_"++
-			(LNX_Studio.versionMajor)++"."++(LNX_Studio.versionMinor)++"/").absolutePath;
+		Platform.case(
+			\osx, { prefDir = Platform.userHomeDir +/+ "Library/Preferences/LNX_Studio_"++
+			(LNX_Studio.versionMajor)++"."++(LNX_Studio.versionMinor)++"/"; },
+			\linux, { prefDir = Platform.userHomeDir +/+ ".config/LNX_Studio"++
+			(LNX_Studio.versionMajor)++"."++(LNX_Studio.versionMinor)++"/"; },
+			\windows, { prefDir = Platform.userHomeDir +/+ "LNX_Studio"++
+			(LNX_Studio.versionMajor)++"."++(LNX_Studio.versionMinor)++"/"; } );
 		
 		if (prefDir.pathExists(false).not) { prefDir.makeDir };
 	}
@@ -123,7 +128,7 @@ LNX_Log{
 	
 	*writeLog{
 		if (on) {
-			log.saveList(String.scDir++"/logs/"++fileName);
+			log.saveList(Platform.lnxResourceDir++"/logs/"++fileName);
 			no=no+1;
 		};
 	}

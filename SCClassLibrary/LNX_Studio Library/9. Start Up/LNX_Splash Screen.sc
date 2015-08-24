@@ -14,14 +14,14 @@ LNX_SplashScreen{
 		{
 			if (("SplashScreen".loadPref.isNil) and: {(window.isNil) or: {window.isClosed}} ) {
 			
-				image=SCImage.new(String.scDir +/+ backgroundPath);
+				image=SCImage.new(Platform.lnxResourceDir +/+ backgroundPath);
 				w=image.width/1.5;
 				h=image.height/1.5;
 			
-				rect=Rect.aboutPoint(SCWindow.screenBounds.center,w/2, h/2)
+				rect=Rect.aboutPoint(Window.screenBounds.center,w/2, h/2)
 					.insetBy(gap.neg,gap.neg);
 			
-				window = SCWindow("LNX_Studio"+(studio.version),rect,false,false)
+				window = Window("LNX_Studio"+(studio.version),rect,false,false)
 					.alwaysOnTop_(true);
 
 				window.view.background_(Color.black);
@@ -31,7 +31,7 @@ LNX_SplashScreen{
 						image.drawInRect(Rect(0,0,w,h),Rect(0,0,w*1.5,h*1.5), 2, 1.0)
 					};
 					
-				image2=SCImage.new(String.scDir +/+ "LNX.jpg");	
+				image2=SCImage.new(Platform.lnxResourceDir +/+ "lnx.jpg");	
 				UserView.new(window,Rect(16-gap2,13-gap2,40+gap2+gap2,60+gap2+gap2))
 					.drawFunc_{|me|
 						Color.black.set;

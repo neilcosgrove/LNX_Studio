@@ -50,9 +50,9 @@ LNX_User {
 		};
 		
 		if (LNX_Mode.isSafe) {
-			profile=(String.scDir++"/PFS").loadList;
+			profile=(Platform.lnxResourceDir++"/PFS").loadList;
 		}{
-			(String.scDir++"/PFS").removeFile(silent:true)
+			(Platform.lnxResourceDir++"/PFS").removeFile(silent:true)
 		};
 		
 		if (profile.isNil) {
@@ -67,6 +67,7 @@ LNX_User {
 		password=String.rand(8,4);
 		ip=Pipe.findValuesForKey("ifconfig", "inet")[1];
 		if (ip.isNil) { ip=NetAddr.localAddr.ip };
+		ip = ip.replace("addr:", "");
 		netAddr=NetAddr.new(ip,NetAddr.localAddr.port);
 		
 		commonTimePings=[];
@@ -127,7 +128,7 @@ LNX_User {
 	}
 	
 	saveProfileForSafeMode{
-		this.getSaveList.saveList(String.scDir++"/PFS")
+		this.getSaveList.saveList(Platform.lnxResourceDir++"/PFS")
 	}
 	
 	// put the load list for the user profile

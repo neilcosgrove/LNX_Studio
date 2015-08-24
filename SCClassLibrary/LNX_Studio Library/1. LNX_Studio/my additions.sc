@@ -1083,7 +1083,7 @@ gives min, max, averages and total
 		^Platform.case(
 			\osx, { Platform.resourceDir },
 			\windows, { Platform.resourceDir },
-			\linux, { Platform.userHomeDir +/+ ".local/share/lnx/" }
+			\linux, { Platform.userHomeDir +/+ ".local/share/LNX_Studio/" }
 		);
 	}
 }

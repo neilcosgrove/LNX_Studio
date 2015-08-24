@@ -399,7 +399,7 @@ LNX_SampleBank{
 		if (paths.size>0) {
 			
 			path = paths[0];			
-			if (fromApp) { path=String.scDir+/+path }; // add the lnx sample directory
+			if (fromApp) { path=Platform.lnxResourceDir+/+path }; // add the lnx sample directory
 			
 			if (path.isSoundFile) {					
 				// in future i might not want 2 do above test (these are local files ie 808 only)

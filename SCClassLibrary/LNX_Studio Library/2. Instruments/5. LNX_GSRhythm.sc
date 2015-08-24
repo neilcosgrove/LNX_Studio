@@ -25,19 +25,19 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	// post studio server init (useful for loading LNX_BufferProxys)
 	*initServer{|server|
 		samples = [
-			String.scDir+/+"sounds/Roland/505/505 Kit",
-			String.scDir+/+"sounds/Roland/606/606 Kit",
-			String.scDir+/+"sounds/Roland/707/707 Kit",
-			String.scDir+/+"sounds/Roland/808/808 Kit",
-			String.scDir+/+"sounds/Roland/909/909 Kit",
-			String.scDir+/+"sounds/Roland/Kicks",
-			String.scDir+/+"sounds/Roland/Snares",
-			String.scDir+/+"sounds/Roland/Rims",
-			String.scDir+/+"sounds/Roland/Claps",
-			String.scDir+/+"sounds/Roland/Toms",
-			String.scDir+/+"sounds/Roland/Misc",
-			String.scDir+/+"sounds/Roland/Hats",
-			String.scDir+/+"sounds/Roland/Cymbs"
+			Platform.lnxResourceDir+/+"sounds/Roland/505/505 Kit",
+			Platform.lnxResourceDir+/+"sounds/Roland/606/606 Kit",
+			Platform.lnxResourceDir+/+"sounds/Roland/707/707 Kit",
+			Platform.lnxResourceDir+/+"sounds/Roland/808/808 Kit",
+			Platform.lnxResourceDir+/+"sounds/Roland/909/909 Kit",
+			Platform.lnxResourceDir+/+"sounds/Roland/Kicks",
+			Platform.lnxResourceDir+/+"sounds/Roland/Snares",
+			Platform.lnxResourceDir+/+"sounds/Roland/Rims",
+			Platform.lnxResourceDir+/+"sounds/Roland/Claps",
+			Platform.lnxResourceDir+/+"sounds/Roland/Toms",
+			Platform.lnxResourceDir+/+"sounds/Roland/Misc",
+			Platform.lnxResourceDir+/+"sounds/Roland/Hats",
+			Platform.lnxResourceDir+/+"sounds/Roland/Cymbs"
 		].collect{|path|
 			LNX_SampleBank(server,path)
 		};

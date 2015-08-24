@@ -8,13 +8,13 @@
 		var internetLibraryIndex;
 		if (LNX_Mode.isSafe.not) {
 			{
-				(String.scDir+/+"internet_library_index").removeFile(false,false,true);
+				(Platform.lnxResourceDir+/+"internet_library_index").removeFile(false,false,true);
 				this.dialog1("Checking...",Color.white);
 				this.dialog2("",Color.white);
 				("curl http://lnxstudio.sourceforge.net/default_library/index > \""++
-					String.scDir+/+"internet_library_index\"").unixCmd;
+					Platform.lnxResourceDir+/+"internet_library_index\"").unixCmd;
 				3.wait;
-				internetLibraryIndex = (String.scDir+/+"internet_library_index").loadList;
+				internetLibraryIndex = (Platform.lnxResourceDir+/+"internet_library_index").loadList;
 				if (internetLibraryIndex[0]=="*** LNX Library Index ***") {
 					this.dialog2("Connected",Color.white);
 					1.wait;
@@ -22,9 +22,9 @@
 				}{
 					this.dialog1("Checking......",Color.white);
 					("curl http://lnxstudio.sourceforge.net/default_library/index > \""++
-						String.scDir+/+"internet_library_index\"").unixCmd;
+						Platform.lnxResourceDir+/+"internet_library_index\"").unixCmd;
 					5.wait;
-					internetLibraryIndex = (String.scDir+/+"internet_library_index").loadList;
+					internetLibraryIndex = (Platform.lnxResourceDir+/+"internet_library_index").loadList;
 					if (internetLibraryIndex[0]=="*** LNX Library Index ***") {
 						this.dialog2("Connected",Color.white);
 						1.wait;
@@ -32,9 +32,9 @@
 					}{
 						this.dialog1("Checking.........",Color.white);
 						("curl http://lnxstudio.sourceforge.net/default_library/index > \""++
-							String.scDir+/+"internet_library_index\"").unixCmd;
+							Platform.lnxResourceDir+/+"internet_library_index\"").unixCmd;
 						7.wait;
-						internetLibraryIndex = (String.scDir+/+
+						internetLibraryIndex = (Platform.lnxResourceDir+/+
 							"internet_library_index").loadList;
 						if (internetLibraryIndex[0]=="*** LNX Library Index ***") {
 							this.dialog2("Connected",Color.white);
@@ -53,7 +53,7 @@
 	
 	// comment this neil!!
 	downLoadUpdates{|internetLibraryIndex|	
-		var folder = String.scDir++"/default library".absolutePath;
+		var folder = Platform.lnxResourceDir++"/default library".absolutePath;
 		internetLibraryIndex.collect{|file|
 			if ((folder+/+file).pathExists(false).not) {
 				this.dialog1("Downloading... ",Color.white);
@@ -76,7 +76,7 @@
 	
 	backupLibrary{
 		// desktop folder
-		var folder = "~/".absolutePath +/+ "Desktop/default_library" + (Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2));
+		var folder = Platform.userHomeDir +/+ "Desktop/default_library" + (Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2));
 		// library paths
 		var paths  = instLibraryFileNames.select{|i| i.size>0 }
 					.collect{|i,k| i.collect{|p| k.asString+/+p}}.asList.flatNoString;
@@ -98,7 +98,7 @@
 	
 	initLibrary{|forceRestore=false|
 		// master
-		var masterDir = String.scDir++"/default library/".absolutePath;
+		var masterDir = Platform.lnxResourceDir++"/default library/".absolutePath;
 		if (masterDir.pathExists(false).not) { masterDir.makeDir };
 		
 		visibleTypes.collect(_.studioName).do{|name|

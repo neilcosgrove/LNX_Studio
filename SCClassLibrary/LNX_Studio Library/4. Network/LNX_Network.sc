@@ -58,8 +58,8 @@ LNX_Network {
 
 		// connect this network to everything
 		[
-			LNX_Room,LNX_Collaboration, LNX_Invite, LNX_MyInvite,
-			LNX_Protocols, LNX_Request, LNX_User,   LNX_SampleBank
+			LNX_Room, LNX_Collaboration, LNX_Invite, LNX_MyInvite,
+			LNX_Protocols, LNX_Request, LNX_User, LNX_SampleBank
 		].do(_.network_(this));
 			
 		api   = LNX_API.newPermanent(this,\network,[\netIsListening]);
@@ -125,7 +125,7 @@ LNX_Network {
 	}
 	
 	resetPreferences{
-		networkOnOpen     = true;
+		networkOnOpen     = false;
 		serverOnOpen      = false;
 		serverCloseOnQuit = false;
 		serverPort        = 22242;

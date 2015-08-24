@@ -175,11 +175,22 @@
 		var string,line;
 		string = String.newClear(maxSize);
 		line = this.prGetLine(string);
-		if ((line.isString) and: {line.last.ascii==13}) {
-			^line.drop(-1)
-		}{
-			^line;
-		};
+
+		^Platform.case(
+			\osx, {
+				if ((line.isString) and: {line.last.ascii==13}) {
+					^line.drop(-1)
+				}{
+					^line;
+				};
+			},
+			\linux, {
+				^line;
+			},
+			\windows, {
+				^line;
+			}
+		);
 	}
 }
 

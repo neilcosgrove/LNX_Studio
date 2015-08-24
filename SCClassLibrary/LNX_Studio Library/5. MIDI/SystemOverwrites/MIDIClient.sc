@@ -1,3 +1,4 @@
+/*
 + MIDIClient {
 	
 	*init { arg inports, outports; // by default initialize all available ports
@@ -7,7 +8,7 @@
 		this.list;
 		if(inports.isNil,{inports = sources.size});
 		if(outports.isNil,{outports = destinations.size});
-//			this.disposeClient;
+			// this.disposeClient;
 
 		this.prInit(inports,outports);
 		initialized = true;
@@ -35,3 +36,4 @@
 	}
 	
 }
+*/

@@ -139,18 +139,18 @@ LNX_Studio {
 	init {|server|
 		
 		GUI.qt;                   // use the cocoa gui framework
-		// this.initInstance;			 // initialise this instance of the studio
-		// this.createInstrumentList;   // 
-		// this.initLibrary;            // make all the files & folders for the inst library
-		// this.initVars;			 // all the main vars are initialised here
-		// this.initMIDI;			 // start all midi services
-		// this.initNetwork;			 // initialise the network
-		// this.startResponders;		 // start responders for SCSynth >> SCLang
+		this.initInstance;			 // initialise this instance of the studio
+		this.createInstrumentList;   // 
+		this.initLibrary;            // make all the files & folders for the inst library
+		this.initVars;			 // all the main vars are initialised here
+		this.initMIDI;			 // start all midi services
+		this.initNetwork;			 // initialise the network
+		this.startResponders;		 // start responders for SCSynth >> SCLang
 
-		// this.initServer(server);	 // init the audio server
-		// this.initModels;		 	 // make studio models
-		// this.initServerPostModels;   // do any server stuff after models have initialised
-		// this.bootServer;			 // and now boot it
+		this.initServer(server);	 // init the audio server
+		this.initModels;		 	 // make studio models
+		this.initServerPostModels;   // do any server stuff after models have initialised
+		this.bootServer;			 // and now boot it
 				
 		// this.createMixerWindow;      // the main lnx window
 		// this.createMixerWidgets;     // add the mixer widgets
@@ -161,7 +161,7 @@ LNX_Studio {
 		
 		// this.libraryGUIBugFix;       // a bug fix
 		// LNX_SplashScreen.init(this); // start splash screen
-		// CmdPeriod.add(this);		 // add this object to CmdPeriod
+		CmdPeriod.add(this);		 // add this object to CmdPeriod
 		
 		// this.startClockOff;          // and start off_clock for client side lfos
 		
@@ -206,9 +206,9 @@ LNX_Studio {
 		Class.initClassTree(LNX_AudioDevices);
 		Class.initClassTree(LNX_MIDIPatch);
 		("curl http://lnxstudio.sourceforge.net/lnx_version.scd > \""++
-			String.scDir+/+"lnx_version\"").unixCmd; // get the latest version number online
+			Platform.lnxResourceDir+/+"lnx_version\"").unixCmd; // get the latest version number online
 		{
-			internetVersion = (String.scDir+/+"lnx_version").loadList;
+			internetVersion = (Platform.lnxResourceDir+/+"lnx_version").loadList;
 			
 			if (internetVersion.notNil) {
 				if (internetVersion.size>0) {
@@ -261,7 +261,6 @@ LNX_Studio {
 		absTime     = 2.5/bpm;
 		extTiming   = [];
 		MVC_StepSequencer.studio_(this);      // not great, why am i doing this? To get absTime
-		HelpBrowser.studio_(this);            // for loading the demo song via HelpBrowser
 		LNX_SampleBank.studio_(this);         // to find out if playing to change download speed
 		LNX_PianoRollSequencer.studio_(this); // for pianoroll guiJumpTo call
 		MVC_Model.studio_(this);              // is playing 
@@ -319,11 +318,11 @@ LNX_Studio {
 	// post initModel
 	
 	initServerPostModels{
-		server.options.blockSize_((2**(5..9))[models[\blockSize].value].postln);
+		server.options.blockSize_((2**(5..9))[models[\blockSize].value]);
 	}
 	
 	// boot the server and run postBootFuncs when done
-	
+
 	bootServer{ LNX_AudioDevices.bootServer(server) }
 	
 	// send all the instrument UGens to the server, and other misc stuff
@@ -1426,7 +1425,7 @@ LNX_Studio {
 	loadDemoSong{
 		if (this.canLoadSong) {
 			"loading demo".postln;
-			this.loadPath(String.scDir+/+"demo song",false);
+			this.loadPath(Platform.lnxResourceDir+/+"demo song",false);
 		};
 	}
 	

@@ -80,7 +80,7 @@
 			if (me.value == 1) {
 				if (batchOn.not) {
 					path = server.prepareForRecord(	
-						"~/Desktop".standardizePath +/+
+						Platform.userHomeDir+/+"Desktop".standardizePath +/+
 						(this.name) +
 						(Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2)) ++
 						"." ++ (server.recHeaderFormat)
@@ -190,7 +190,10 @@
 		// connect server stats & serverRunning to models
 		SimpleController(server)
 			.put(\counts,{
-				mixerGUI[\cpu].string_(server.peakCPU.asInt.clip(0,100).asString++"%");
+				// @TODO: move to after server boot
+				if (mixerGUI.notNil and: { mixerGUI[\cpu].notNil } ) {
+					mixerGUI[\cpu].string_(server.peakCPU.asInt.clip(0,100).asString++"%");
+				};
 				//mixerGUI[\synths].string_( (server.numSynths-1).clip(0,inf) );
 
 			})
@@ -200,7 +203,9 @@
 				};
 				models[\serverRunning].value_(server.serverRunning.binaryValue);
 				if (server.serverRunning.not) {
-					mixerGUI[\cpu].string_("-");
+					if (mixerGUI.notNil and: { mixerGUI[\cpu].notNil } ) {
+						mixerGUI[\cpu].string_("-");
+					};
 					//mixerGUI[\synths].string_("-");
 				};
 			});
