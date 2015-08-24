@@ -1,0 +1,383 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="1265.19">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 18.0px Helvetica; color: #0326cb}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; color: #000000}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; color: #000000; min-height: 14.0px}
+p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
+p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #737373}
+p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #cd1c00}
+p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px}
+p.p8 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Helvetica; color: #000000}
+p.p9 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #008300}
+p.p10 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; color: #008300}
+p.p11 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; color: #008300; min-height: 14.0px}
+span.s1 {text-decoration: underline}
+span.s2 {color: #0326cb}
+span.s3 {color: #434ccb}
+span.s4 {color: #000000}
+span.s5 {color: #cd1c00}
+span.s6 {color: #737373}
+span.s7 {color: #008300}
+span.s8 {color: #0433ff}
+span.s9 {text-decoration: underline ; color: #0326cb}
+span.s10 {color: #797dcb}
+span.s11 {font: 12.0px Helvetica; color: #000000}
+span.s12 {font: 9.0px Monaco}
+span.s13 {font: 12.0px Helvetica}
+span.Apple-tab-span {white-space:pre}
+</style>
+</head>
+<body>
+<p class="p1"><b>SimpleMIDIFile</b></p>
+<p class="p2">part of <a href="wslib.html"><span class="s1">wslib</span></a></p>
+<p class="p3"><br></p>
+<p class="p2">a <span class="s2">MIDI</span> file implementation capable of reading and writing all types of<span class="Apple-converted-space"> </span></p>
+<p class="p2"><span class="s2">MIDI</span> data (except sysex messages).<span class="Apple-converted-space"> </span></p>
+<p class="p3"><br></p>
+<p class="p2">first an example:</p>
+<p class="p3"><br></p>
+<p class="p4">(</p>
+<p class="p4">m = <span class="s3">nil</span>;</p>
+<p class="p5"><span class="s4">{m = </span><span class="s2">SimpleMIDIFile</span><span class="s4">.read( </span>"~/Desktop/midifiletest.mid"<span class="s4"> ) }.try;</span></p>
+<p class="p4">if (m.notNil) {</p>
+<p class="p4"><span class="Apple-tab-span">	</span>m.midiEvents.postList; <span class="s5">// all midi events</span></p>
+<p class="p4"><span class="Apple-tab-span">	</span>m.metaEvents.postList; <span class="s5">// try again</span></p>
+<p class="p6"><span class="s4"><span class="Apple-tab-span">	</span>m.tempoMap; </span>// get the tempo map ( [[ startTime, bpm ], [ etc.. ]] )</p>
+<p class="p6"><span class="s4"><span class="Apple-tab-span">	</span>m.timeSignatures; </span>// get the time signatures ( ( [[ startTime, a/b ], [ etc.. ]] )</p>
+<p class="p4">};</p>
+<p class="p4">)</p>
+<p class="p3"><br></p>
+<p class="p4">(</p>
+<p class="p5"><span class="s4">m = </span><span class="s2">SimpleMIDIFile</span><span class="s4">( </span>"~/Desktop/midifiletest.mid"<span class="s4"> ); </span><span class="s5">// create empty file</span></p>
+<p class="p7"><br></p>
+<p class="p6"><span class="s4">m.init1( 3, 120, </span><span class="s6">"4/4"</span><span class="s4"> );<span class="Apple-tab-span">	</span></span>// init for type 1 (multitrack); 3 tracks, 120bpm, 4/4 measures</p>
+<p class="p7"><br></p>
+<p class="p6"><span class="s4">m.timeMode = </span><span class="s7">\seconds</span><span class="s4">;<span class="Apple-converted-space">  </span></span>// change from default to something useful</p>
+<p class="p7"><br></p>
+<p class="p4">((0,(1/8)..5)).do({ <span class="s8">|starttime|</span> <span class="s5">// add random notes</span></p>
+<p class="p4"><span class="Apple-tab-span">	</span>m.addNote( 36 + 50.rand, 64 + 64.rand, starttime, [0.1,0.05].choose, 127,<span class="Apple-converted-space"> </span></p>
+<p class="p4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>track: 1 )</p>
+<p class="p4"><span class="Apple-tab-span">	</span>});</p>
+<p class="p7"><br></p>
+<p class="p6"><span class="s4">((0,(1/4)..5)).do({ </span><span class="s8">|starttime|</span><span class="s4"> </span>// add random notes to next track</p>
+<p class="p4"><span class="Apple-tab-span">	</span>m.addNote( 36 + 50.rand, 64 + 64.rand, starttime, [0.1,0.025].choose, 127,<span class="Apple-converted-space"> </span></p>
+<p class="p6"><span class="s4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>channel: 1,<span class="Apple-converted-space">  </span></span>// note: = midi channel 2</p>
+<p class="p4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>track: 2 )</p>
+<p class="p4"><span class="Apple-tab-span">	</span>});</p>
+<p class="p4">)</p>
+<p class="p7"><span class="Apple-tab-span">	</span></p>
+<p class="p4">m.midiEvents.postList; <span class="s5">// all midi events</span></p>
+<p class="p6"><span class="s4">m.metaEvents.postList; </span>// notice the incorrect 'endOfTrack' events for track 1 &amp; 2;</p>
+<p class="p7"><br></p>
+<p class="p4">m.adjustEndOfTrack;</p>
+<p class="p4">m.metaEvents.postList; <span class="s5">// try again</span></p>
+<p class="p7"><br></p>
+<p class="p6"><span class="s4">m.tempoMap; </span>// get the tempo map ( [[ startTime, bpm ], [ etc.. ]] )</p>
+<p class="p6"><span class="s4">m.timeSignatures; </span>// get the time signatures ( ( [[ startTime, a/b ], [ etc.. ]] )</p>
+<p class="p7"><br></p>
+<p class="p7"><br></p>
+<p class="p6"><span class="s4">m.write; </span>// now play the file in Quicktime, or open with another app</p>
+<p class="p7"><br></p>
+<p class="p6"><span class="s4">m.plot;<span class="Apple-converted-space">  </span></span>// uses <a href="ScaledUserView.html"><span class="s1">ScaledUserView</span></a></p>
+<p class="p7"><br></p>
+<p class="p3"><br></p>
+<p class="p3"><br></p>
+<p class="p8"><span class="s9"><b>Instance</b></span><b><span class="s1"> variables:</span></b></p>
+<p class="p2">all variables stated here have getters and setters. <span class="s2">However</span> in some cases the setters</p>
+<p class="p2">are actually separate methods which may change or convert other variables as well.</p>
+<p class="p3"><br></p>
+<p class="p2"><b>pathName</b></p>
+<p class="p2">file path of the midi file. defaults to <span class="s6">"~/scwork/midi.mid"</span></p>
+<p class="p3"><br></p>
+<p class="p2"><b>midiEvents</b></p>
+<p class="p2">an array containing all <span class="s2">MIDI</span> events as arrays. Format:<span class="Apple-converted-space"> </span></p>
+<p class="p3"><br></p>
+<p class="p2"><b>[ trackNumber, absTime, type, channel, val1, val2 ]</b></p>
+<p class="p3"><b><span class="Apple-tab-span">	</span></b></p>
+<p class="p2"><b><span class="Apple-tab-span">	</span>trackNumber</b></p>
+<p class="p2"><b><span class="Apple-tab-span">	</span></b>the number of the track in which <span class="s10">this</span> event sits. <span class="s2">For</span> <b>format </b>type 0 files <span class="s10">this</span> is always 0,</p>
+<p class="p2"><span class="Apple-tab-span">	</span>for type 1 files track 0 is reserved for meta events, so midiEvent tracks start counting at 1</p>
+<p class="p3"><span class="Apple-tab-span">	</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><b>absTime</b></p>
+<p class="p2"><span class="Apple-tab-span">	</span>the absolute start-time of the event. <span class="s2">If</span> <b>timeMode </b>== <span class="s7">\ticks</span> the absTime is in ticks (tempo dependant),</p>
+<p class="p2"><span class="Apple-tab-span">	</span>if timeMode == <span class="s7">\seconds</span> it is in seconds (not depending on tempo). <span class="s2">In</span> the original midi file format all</p>
+<p class="p2"><span class="Apple-tab-span">	</span>times are relative to the previous event on a track, but for convenience <span class="s2">SimpleMIDIFile</span> converts them<span class="Apple-converted-space"> </span></p>
+<p class="p2"><span class="Apple-tab-span">	</span>to absolute times when reading in.</p>
+<p class="p3"><span class="Apple-tab-span">	</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><b>type</b></p>
+<p class="p2"><b><span class="Apple-tab-span">	</span></b>usually a <span class="s2">Symbol</span> which can be:</p>
+<p class="p9"><span class="s11"><span class="Apple-tab-span">	</span></span>\noteOff</p>
+<p class="p9"><span class="s4"><span class="Apple-tab-span">	</span></span>\noteOn</p>
+<p class="p9"><span class="s4"><span class="Apple-tab-span">	</span></span>\polyTouch</p>
+<p class="p9"><span class="s4"><span class="Apple-tab-span">	</span></span>\cc</p>
+<p class="p9"><span class="s4"><span class="Apple-tab-span">	</span></span>\program</p>
+<p class="p9"><span class="s4"><span class="Apple-tab-span">	</span></span>\afterTouch</p>
+<p class="p9"><span class="s4"><span class="Apple-tab-span">	</span></span>\pitchBend<span class="s4"><span class="Apple-converted-space"> </span></span></p>
+<p class="p7"><span class="Apple-tab-span">	</span></p>
+<p class="p2"><span class="s12"><span class="Apple-tab-span">	</span></span><b>channel</b></p>
+<p class="p2"><b><span class="Apple-tab-span">	</span></b>midi channel on which the event plays. <span class="s2">Starts</span> at 0 (= midi channel 1)</p>
+<p class="p3"><span class="Apple-tab-span">	</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><b>val1, val2<span class="Apple-converted-space"> </span></b></p>
+<p class="p2"><b><span class="Apple-tab-span">	</span></b>values for the event. <span class="s2">These</span> are usually 0-127. <span class="s2">The</span> contents of these vary per event type:</p>
+<p class="p3"><span class="Apple-tab-span">	</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><i>type<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>val1<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>val2</i></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>noteOn<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>note number<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>velocity</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>noteOff<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>note number<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>velocity</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>polyTouch<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>note number<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>amount</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>cc<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>control number<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>amount</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>program<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>program number<span class="Apple-tab-span">	</span><i>(no val2)</i></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>afterTouch<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>amount<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><i>(no val2)</i></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>pitchBend<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><i>depends on </i><b><i>pitchBendMode</i></b></p>
+<p class="p3"><span class="Apple-tab-span">	</span></p>
+<p class="p3"><br></p>
+<p class="p2"><b>metaEvents</b></p>
+<p class="p2">an array containing all <span class="s2">META</span> events as arrays. Format:<span class="Apple-converted-space"> </span></p>
+<p class="p3"><br></p>
+<p class="p2"><b>[ trackNumber, absTime, type, [values] / value / string ]</b></p>
+<p class="p3"><br></p>
+<p class="p2"><span class="s2">The</span> absTime represents the abslute time at which the event takes place. <span class="s2">In</span> the <span class="s2">Standard</span> <span class="s2">MIDI</span> file</p>
+<p class="p2">format time values are always relative to the previous event. <span class="s2">For</span> convenience reasons the</p>
+<p class="p2"><span class="s2">SimpleMIDIFile</span> class converts these to absolute times when reading a file.</p>
+<p class="p3"><br></p>
+<p class="p2"><span class="s2">The</span> format of last item in the array above depends on the type of the event:</p>
+<p class="p3"><br></p>
+<p class="p2">types of which the last item is a string</p>
+<p class="p9">\text</p>
+<p class="p9">\copyright<span class="s4"><span class="Apple-converted-space"> </span></span></p>
+<p class="p9">\trackName<span class="s4"><span class="Apple-converted-space"> </span></span></p>
+<p class="p9">\instName</p>
+<p class="p9">\lyrics</p>
+<p class="p9">\marker</p>
+<p class="p9">\cuePoint</p>
+<p class="p7"><br></p>
+<p class="p2">types of which the last item is a value</p>
+<p class="p9">\sequenceNumber</p>
+<p class="p4"><span class="s7">\tempo</span> -&gt; tempo in beats per minute</p>
+<p class="p7"><br></p>
+<p class="p2">types of which the last item is an array of values</p>
+<p class="p9">\timeSignature</p>
+<p class="p9">\keySignature</p>
+<p class="p9">\sequencerSpecific</p>
+<p class="p9">\midiChannelPrefix</p>
+<p class="p7"><br></p>
+<p class="p2">types of which the last item something else</p>
+<p class="p9">\smpteOffset<span class="s4"> -&gt; a <a href="SMPTE.html"><span class="s2">SMPTE</span></a></span></p>
+<p class="p9">\endOfTrack<span class="s4"> -&gt; </span><span class="s3">nil</span></p>
+<p class="p7"><br></p>
+<p class="p2">there can be unknown types of meta events. <span class="s2">They</span> have status byte number instead of</p>
+<p class="p2">a<span class="Apple-converted-space">  </span>symbol in the <span class="s7">'type'</span> slot of the array</p>
+<p class="p7"><br></p>
+<p class="p3"><br></p>
+<p class="p2"><b>tempo<span class="Apple-converted-space"> </span></b></p>
+<p class="p10"><span class="s4">a global tempo indicator in bpm. </span><span class="s2">If</span><span class="s4"> there</span>'s one or more tempo events in the metaEvents,</p>
+<p class="p10">tempo will always indicate the tempo of the first one found. The tempo mapping functionality</p>
+<p class="p10">uses the tempo events instead of this value. Setting the tempo with <b>tempo_</b> doesn'<span class="s4">t add or change</span></p>
+<p class="p10"><span class="s4">any tempo event ( a </span><span class="s2">MIDI</span><span class="s4"> file can but doesn</span>'t need to contain a tempo event ). To get the tempo</p>
+<p class="p10">again from the metaEvents if their there use <b>getTempo</b>.</p>
+<p class="p11"><br></p>
+<p class="p10"><b>timeMode</b></p>
+<p class="p10">can be <b>'</b><span class="s4"><b>ticks</b></span><b>'</b> or <b>'</b><span class="s4"><b>seconds</b></span><b>'</b>. Defaults to '<span class="s4">ticks</span>'. This affects all time information</p>
+<p class="p10">contained in the midiEvents and metaEvents. Whenever the timeMode is switched</p>
+<p class="p10">all time data will be <b>converted</b>.<span class="Apple-converted-space"> </span></p>
+<p class="p11"><br></p>
+<p class="p10"><span class="Apple-tab-span">	</span><b>ticks</b></p>
+<p class="p10"><b><span class="Apple-tab-span">	</span></b>ticks are the standard MIDI file format for time data. The duration of one tick</p>
+<p class="p10"><span class="Apple-tab-span">	</span>depends on the <b>division</b> and <b>tempo</b> at that specific point.</p>
+<p class="p11"><span class="Apple-tab-span">	</span></p>
+<p class="p10"><span class="Apple-tab-span">	</span><b>seconds</b></p>
+<p class="p10"><b><span class="Apple-tab-span">	</span></b>seconds are absolute seconds, not influenced by tempo or division</p>
+<p class="p11"><br></p>
+<p class="p10"><b>division</b></p>
+<p class="p10">number of '<span class="s4">ticks</span>' per quarter note. This should usually be 1024. Change it only when</p>
+<p class="p10">you experience problems with specific sequencer software (there seem to be some which</p>
+<p class="p10">use different divisions)</p>
+<p class="p11"><br></p>
+<p class="p10"><b>format</b></p>
+<p class="p10">can be 0, 1 or 2 (single, multi or pattern oriented)</p>
+<p class="p11"><br></p>
+<p class="p10"><b><span class="Apple-tab-span">	</span>0</b></p>
+<p class="p10"><b><span class="Apple-tab-span">	</span></b>format 0 files typically have all data in the first track (0)</p>
+<p class="p11"><span class="Apple-tab-span">	</span></p>
+<p class="p10"><span class="Apple-tab-span">	</span><b>1</b></p>
+<p class="p10"><span class="Apple-tab-span">	</span>format 1 files typically have al global metaData ins the first track (0)</p>
+<p class="p10"><span class="Apple-tab-span">	</span>and all midi data in the following tracks (1..). A trackName metaEvent</p>
+<p class="p10"><span class="Apple-tab-span">	</span>in track 0 is usually interpreted as the song name</p>
+<p class="p11"><span class="Apple-tab-span">	</span></p>
+<p class="p10"><span class="Apple-tab-span">	</span><b>2</b></p>
+<p class="p10"><b><span class="Apple-tab-span">	</span></b>format 2 is not very common. Works the same as format 1, but is meant for</p>
+<p class="p10"><span class="Apple-tab-span">	</span>separate patterns in one file, contained in sequences (tracks)</p>
+<p class="p11"><br></p>
+<p class="p10">Empty SimpleMIDIFiles need to be inited as format 0 or 1 first, using the <b>init0 </b>and <b>init1</b> methods</p>
+<p class="p11"><br></p>
+<p class="p10"><b>tracks</b></p>
+<p class="p10">number of tracks used. Can be fetched from midiEvents using the <b>adjustTracks</b> method</p>
+<p class="p11"><br></p>
+<p class="p10"><b>pitchBendMode</b></p>
+<p class="p2"><span class="s7">can be <b>'</b></span><b>int8</b><span class="s7"><b>'</b>, <b>'</b></span><b>int16</b><span class="s7"><b>'</b> or <b>'</b></span><b>float</b><span class="s7"><b>'</b>. The default is '</span>int8'. When the pitchBendMode is changed all existing</p>
+<p class="p2">values are <i>converted</i>.<span class="Apple-converted-space"> </span></p>
+<p class="p3"><span class="Apple-tab-span">	</span></p>
+<p class="p2"><b><span class="Apple-tab-span">	</span>int8</b></p>
+<p class="p2"><b><span class="Apple-tab-span">	</span></b>pitchbend stored as array of 2 int8 values (0-127), as stored in the midifile</p>
+<p class="p3"><span class="Apple-tab-span">	</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><b>int16</b></p>
+<p class="p2"><span class="Apple-tab-span">	</span>pitchbend stored as single int16 value (0-16383)</p>
+<p class="p3"><span class="Apple-tab-span">	</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><b>float</b></p>
+<p class="p2"><b><span class="Apple-tab-span">	</span></b>pitchbend stored as floating point values (-1.0 - 1.0)</p>
+<p class="p3"><span class="Apple-tab-span">	</span></p>
+<p class="p3"><br></p>
+<p class="p8"><b><span class="s1">Methods</span></b></p>
+<p class="p7"><br></p>
+<p class="p2"><span class="s12"><span class="Apple-converted-space">   </span></span><b>creation</b></p>
+<p class="p4"><span class="Apple-converted-space">   </span>*new ( pathname )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p2"><span class="s12"><span class="Apple-converted-space">   </span></span><b>initiation</b></p>
+<p class="p4"><span class="s13"><b><span class="Apple-converted-space">      </span></b></span>init0 ( inTempo, timeSignature )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>init1 ( inTracks, inTempo, timeSignature )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p2"><span class="s12"><span class="Apple-converted-space">   </span></span><b>read / write</b></p>
+<p class="p4"><span class="Apple-converted-space">   </span>*read ( pathname )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>read</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>write ( newFileName )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p2"><span class="s12"><span class="Apple-converted-space">   </span></span><b>correction</b></p>
+<p class="p4"><span class="Apple-converted-space">   </span>adjustTracks</p>
+<p class="p4"><span class="Apple-converted-space">   </span>adjustEndOfTrack ( track, wait )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>correctTempoEvents ( removeDuplicates, removeDoubles )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>sortMIDIEvents</p>
+<p class="p4"><span class="Apple-converted-space">   </span>sortMetaEvents</p>
+<p class="p4"><span class="Apple-converted-space">   </span>getTempo</p>
+<p class="p7"><span class="Apple-converted-space">      </span></p>
+<p class="p2"><span class="s12"><span class="Apple-converted-space">   </span></span><b>conversion / processing</b></p>
+<p class="p4"><span class="Apple-converted-space">   </span>convertNoteOns ( noteOffVelo )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>convertNoteOffs</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>shiftTime ( deltaTime )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p2"><span class="s12"><span class="Apple-converted-space">   </span></span><b>selection</b></p>
+<p class="p4"><span class="Apple-converted-space">   </span>midiTrackEvents ( trackNumber )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>midiChannelEvents ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>midiTrackTypeEvents ( track, type, channel )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>midiTypeEvents ( args )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>noteEvents ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>noteOnEvents ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>realNoteOnEvents ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>noteOffEvents ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>firstNoteOnTrack ( track )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>pitchBendEvents ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>afterTouchEvents ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>controllerEvents ( cc, channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>ccEvents ( cc, channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>modulationEvents ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>breathEvents ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>volumeEvents ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>panEvents ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>expressionEvents ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>damperEvents ( channel, track )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>metaTrackEvents ( trackNumber )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>timeSignatureEvents</p>
+<p class="p4"><span class="Apple-converted-space">   </span>keySignatureEvents</p>
+<p class="p4"><span class="Apple-converted-space">   </span>smpteOffsetEvents</p>
+<p class="p4"><span class="Apple-converted-space">   </span>tempoEvents</p>
+<p class="p4"><span class="Apple-converted-space">   </span>endOfTrack ( track )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p2"><span class="s12"><span class="Apple-converted-space">   </span></span><b>converted selection </b>to different array formats or Classes</p>
+<p class="p4"><span class="Apple-converted-space">   </span>noteSustainEvents( channel, track )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>midiDeltaEvents ( track, type, channel )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>midiDeltaCCEvents ( track, cc, channel )<span class="Apple-converted-space"> </span></p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>timeSignatures</p>
+<p class="p4"><span class="Apple-converted-space">   </span>keySignatures</p>
+<p class="p4"><span class="Apple-converted-space">   </span>trackNames</p>
+<p class="p4"><span class="Apple-converted-space">   </span>instNames</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>midiTracks</p>
+<p class="p4"><span class="Apple-converted-space">   </span>metaTracks</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>asDicts (<span class="Apple-converted-space">  </span>)</p>
+<p class="p4"><span class="Apple-converted-space">   </span>asNoteDicts ( channel, track )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>envFromType ( track, type, channel )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>envFromCC ( track, cc, channel )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p2"><span class="s12"><span class="Apple-converted-space">   </span></span><b>extraction </b>of single values</p>
+<p class="p4"><span class="Apple-converted-space">   </span>trackName ( track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>instName ( track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>length</p>
+<p class="p4"><span class="Apple-converted-space">   </span>smpteOffset</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p2"><span class="s12"><span class="Apple-converted-space">   </span></span><b>timing methods </b>(converted selection, extraction)</p>
+<p class="p4"><span class="Apple-converted-space">   </span>tempi</p>
+<p class="p4"><span class="Apple-converted-space">   </span>tempoMap</p>
+<p class="p4"><span class="Apple-converted-space">   </span>tempoEnv</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>beatAtTime ( time )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>timeAtBeat ( beat )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>tempoAtTime ( time )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>timeSignatureAsArray</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>measureAtBeat ( beat, measureFormat )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>measureAtTime ( time, measureFormat )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>beatAtMeasure ( measure, measureFormat )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>timeAtMeasure ( measure, measureFormat )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p2"><span class="s12"><span class="Apple-converted-space">   </span></span><b>addition </b>of events</p>
+<p class="p4"><span class="Apple-converted-space">   </span>addMIDIEvent ( event, sort )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>addAllMIDIEvents ( events, sort )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>addMIDIEventToTrack ( event, track, sort )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>addAllMIDIEventsToTrack ( events, track, sort )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>addMIDITypeEvent ( type, channel, args, absTime, track, sort )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>addAllMIDITypeEvents ( type, channel, args, absTime, track, sort )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>addNote ( noteNumber, velo, startTime, dur, upVelo, channel, track, sort )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>addCC ( cc, val, startTime, channel, track )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>addMetaEvent ( event, sort )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>addTrack ( name )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>addTimeSignature ( div, denom, time, sort, removeOld )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>addTimeSignatureString ( string, time, sort, removeOld )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>addTempo ( tempo, time, sort, removeOld )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>setTrackName ( name, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>setInstName ( name, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>setTempo ( newTempo )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p2"><span class="s12"><span class="Apple-converted-space">   </span></span><b>removal</b></p>
+<p class="p4"><span class="Apple-converted-space">   </span>removeMetaEvents ( type, time, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>removeTimeSignature ( time, doIt )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>removeTempo ( time, doIt )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p2"><span class="s12"><span class="Apple-converted-space">   </span></span><b>analysis</b></p>
+<p class="p4"><span class="Apple-converted-space">   </span>analyzeTypes</p>
+<p class="p4"><span class="Apple-converted-space">   </span>analyzeMetaTypes</p>
+<p class="p4"><span class="Apple-converted-space">   </span>analyzeChannels ( type )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>analyzeChannel ( channel, track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>analyzeUsedChannels ( track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>analyzeUsedTracks</p>
+<p class="p4"><span class="Apple-converted-space">   </span>analyzeUsedEvents</p>
+<p class="p4"><span class="Apple-converted-space">   </span>analyzeTracks ( type )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>analyzeCC</p>
+<p class="p4"><span class="Apple-converted-space">   </span>analyzeCCTracks</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>usedChannels ( track )</p>
+<p class="p4"><span class="Apple-converted-space">   </span>usedTracks ( channel )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>countMIDIEvents ( type, track, channel )</p>
+<p class="p7"><span class="Apple-converted-space">   </span></p>
+<p class="p4"><span class="Apple-converted-space">   </span>info</p>
+<p class="p3"><br></p>
+</body>
+</html>

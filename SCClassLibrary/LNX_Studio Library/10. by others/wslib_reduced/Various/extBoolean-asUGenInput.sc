@@ -1,0 +1,3 @@
++ Boolean {
+	asUGenInput { ^this.binaryValue }
+}
