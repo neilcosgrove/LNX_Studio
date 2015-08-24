@@ -1077,6 +1077,17 @@ gives min, max, averages and total
 	
 }
 
++ Platform {
+
+	* lnxResourceDir  {
+		^Platform.case(
+			\osx, { Platform.resourceDir },
+			\windows, { Platform.resourceDir },
+			\linux, { Platform.userHomeDir +/+ ".local/share/lnx/" }
+		);
+	}
+}
+
 // + TextField {
 
 // 	background_{|c|

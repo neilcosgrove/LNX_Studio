@@ -101,9 +101,21 @@ LNX_AudioDevices {
 		
 		var inDevStored = 
 		Dictionary[ "M-Track Eight" -> 8, "Soundflower (16ch)" -> 16, "Soundflower (64ch)" -> 64 ];
-						
-		outputDevices = ["nil"] ++ ServerOptions.outDevices;
-		inputDevices  = ["nil"] ++ ServerOptions.inDevices;
+				
+		Platform.case(
+		    \osx, {
+				outputDevices = ["nil"] ++ ServerOptions.outDevices;
+				inputDevices  = ["nil"] ++ ServerOptions.inDevices;
+			},
+		    \linux, {
+				outputDevices = ["nil"];
+				inputDevices  = ["nil"];
+			},
+		    \windows, {
+				outputDevices = ["nil"];
+				inputDevices  = ["nil"];
+			}
+		);
 		
 		friendlyOutputNames=[];
 		outputDevices.do{|n|

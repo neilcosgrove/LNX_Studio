@@ -133,7 +133,9 @@ MVC_TextView : MVC_View {
 			menus=menus.add(list);
 		};
 		// call the above funtion on UGens
-		function.value(Help.global.tree["[[UGens]]"]);	
+		Platform.case(
+			\osx, { function.value(Help.global.tree["[[UGens]]"]) }
+		);
 	}
 	
 	// get a list of menus that contain symbol

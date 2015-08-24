@@ -5,30 +5,25 @@ MVC_ImageView : MVC_View {
 
 	classvar gs, lnx;
 
-	var <image="LNX.jpg", scimage;
+	var <image="lnx.jpg", scimage;
 
 	*initClass{
-		// @TODO: xplatform path for this image
-		lnx = Image.new(String.scDir +/+ "LNX.jpg");
+		lnx = Image.new(Platform.lnxResourceDir +/+ "lnx.jpg");
 		// gs = SCImage.new(String.scDir +/+ "GS Rhythm.jpg");
 	}
 
 	// set your defaults
 	initView{
-		if (image=="LNX.jpg") {
-			scimage=lnx
-		}{
-			if (image=="GS Rhythm.jpg") {
-				scimage=gs
-			}{
-				scimage=SCImage.new(String.scDir +/+ image)
-			}	
+		if (image=="lnx.jpg") {
+			scimage = lnx
+		} {
+			scimage = Image.new(Platform.lnxResourceDir +/+ image)
 		}
 	}
 	
 	// make the view
 	createView{
-		view=SCUserView.new(window,rect)
+		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				scimage.drawInRect(Rect(0,0,w,h),Rect(0,0,scimage.width,scimage.height),2,1.0);

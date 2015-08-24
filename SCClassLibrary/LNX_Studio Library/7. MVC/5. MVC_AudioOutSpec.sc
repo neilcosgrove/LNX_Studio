@@ -5,12 +5,13 @@ MVC_AudioOutSpec : ControlSpec {
 	
 	*initClass {
 		Class.initClassTree(Warp);
+		Class.initClassTree(LNX_AudioDevices);
 		specs = specs.addAll([
 			\audioOut -> MVC_AudioOutSpec()
 		])
 	}
 	
-	*new { arg minval=0.0, maxval=1.0, warp='lin', step=0.0, default, units;
+	*new { arg minval=0.0, maxval=1.0, warp='lin', step=0.0, default=0, units="";
 		^super.new.init
 	}
 

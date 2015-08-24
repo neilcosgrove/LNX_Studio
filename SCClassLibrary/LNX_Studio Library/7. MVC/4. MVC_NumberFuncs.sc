@@ -7,6 +7,7 @@ MVC_NumberFunc{
 
 	*initClass{
 		
+		Class.initClassTree(Spec);
 		Class.initClassTree(ControlSpec);
 	
 		// any extra specs i want
