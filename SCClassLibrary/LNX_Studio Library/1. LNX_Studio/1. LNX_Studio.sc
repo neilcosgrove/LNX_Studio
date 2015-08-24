@@ -1,11 +1,12 @@
-   //                          //        //||     //  || //                                        .
-  //**************************//        // ||    //   ||//
- // LNX_STUDIO Version 1.6   //        //  ||   //    |// 
-//**************************//        //   ||  //     //|
-//                         //        //    || //     //||
-//     2015 (by lnx)      //======= //     ||//     // ||
+   //                                //        //||     // || //                               .
+  // ****************************** //        // ||    //   ||//
+ //     LNX_STUDIO Version 1.6     //        //  ||   //    |// 
+// ****************************** //        //   ||  //     //|
+//                               //        //    || //     //||
+//   2015 by neil cosgrove      //======= //     ||//     // ||
+//     for Mac & Linux
 //
-// 1.6 release for Mac OS>=10.6
+// Linux port (andrew lambert)
 //
 // (nc) no copyright. use and abuse. :)
 // refer to a gpl or something similar
@@ -140,7 +141,7 @@ LNX_Studio {
 		
 		GUI.cocoa;                   // use the cocoa gui framework
 		this.initInstance;			 // initialise this instance of the studio
-		this.createInstrumentList;   // 
+		this.createInstrumentList;   // create the lists of instruments available
 		this.initLibrary;            // make all the files & folders for the inst library
 		this.initVars;			 // all the main vars are initialised here
 		this.initMIDI;			 // start all midi services
