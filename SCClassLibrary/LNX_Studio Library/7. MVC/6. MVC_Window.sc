@@ -73,7 +73,7 @@ MVC_Window {
 		suppressTime = AppClock.now;
 	
 		// the window
-		view=SCWindow.new(name++" ",bounds.convert, resizable, border, nil, scroll)
+		view = Window.new(name++" ",bounds.convert, resizable, border, nil, scroll)
 			.userCanClose_(userCanClose)
 			.alwaysOnTop_(alwaysOnTop)
 			.drawFunc_(drawHook)
@@ -120,7 +120,7 @@ MVC_Window {
 		
 		// used for resize functions. will not work if Rect(0,0,1,1) is off view.
 		// So window scrollers will stop this working.
-		resizeview=SCUserView(view,Rect(0,0,1,1))
+		resizeview = UserView(view,Rect(0,0,1,1))
 			.canFocus_(false)
 			.drawFunc={
 				var oldRect,oldW,oldH,w,h;
@@ -437,9 +437,9 @@ MVC_Window {
 		
 		view = v ? view;
 		
-		gui[\scrolView]= SCScrollView(view,Rect(0,0,view.bounds.width,view.bounds.height));
+		gui[\scrolView] = ScrollView(view,Rect(0,0,view.bounds.width,view.bounds.height));
 		
-		gui[\view]=UserView(gui[\scrolView],Rect(0,0,view.bounds.width,view.bounds.height))
+		gui[\view] = UserView(gui[\scrolView],Rect(0,0,view.bounds.width,view.bounds.height))
 			.resize_(5)
 			.drawFunc_{|view|
 				ps.do{|p,n|

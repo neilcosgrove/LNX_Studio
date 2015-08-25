@@ -68,7 +68,7 @@ MVC_FlatDisplay : MVC_View {
 		
 		var bgRect, r2=Rect(0,0,0,0), r3=Rect(0,0,0,0);
 		
-		view=SCUserView.new(window,rect)
+		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				var val, hv;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };

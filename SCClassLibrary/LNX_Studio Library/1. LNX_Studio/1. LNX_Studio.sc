@@ -152,12 +152,12 @@ LNX_Studio {
 		this.initServerPostModels;   // do any server stuff after models have initialised
 		this.bootServer;			 // and now boot it
 				
-		// this.createMixerWindow;      // the main lnx window
-		// this.createMixerWidgets;     // add the mixer widgets
-		// this.createLibraryWidgets;   // add the library widgets
-		// this.createNetworkWidgets;   // and the network widgets
-		// this.autoSizeGUI;			 // autosize to number of users. (to add widgets & remove)
-		// mixerWindow.create;          // now make the window
+		this.createMixerWindow;      // the main lnx window
+		this.createMixerWidgets;     // add the mixer widgets
+		this.createLibraryWidgets;   // add the library widgets
+		this.createNetworkWidgets;   // and the network widgets
+		this.autoSizeGUI;			 // autosize to number of users. (to add widgets & remove)
+		mixerWindow.create;          // now make the window
 		
 		// this.libraryGUIBugFix;       // a bug fix
 		// LNX_SplashScreen.init(this); // start splash screen

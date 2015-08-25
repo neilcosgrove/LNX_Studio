@@ -16,7 +16,7 @@ MVC_ProgramChangeMoog : MVC_View {
 	
 	createView{
 		
-		view=SCUserView(window,Rect(rect.left,rect.top,16*20,1*18))
+		view=UserView(window,Rect(rect.left,rect.top,16*20,1*18))
 			.drawFunc_{|me|	
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{

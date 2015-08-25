@@ -84,7 +84,7 @@
 			labelBounds=nil!(label.size);
 			label.size.do{|j|	
 				labelBounds[j]=this.getLabelRect(j);
-				labelGUI[j]=SCUserView.new(window, labelBounds[j])
+				labelGUI[j] = UserView.new(window, labelBounds[j])
 				.drawFunc_{|me|
 					if (verbose) { [this.class.asString, 'labelFunc' , label].postln };
 					if (showLabelBackground) {
@@ -224,9 +224,9 @@
 	// make the number box gui 
 	createNumberGUI{
 		if (showNumberBox) {
-			numberFont = numberFont ?? {SCFont("Helvetica",12)};
+			numberFont = numberFont ?? { Font("Helvetica",12) };
 			numberBounds=this.getNumberRect;
-			numberGUI=SCUserView.new(window,numberBounds.moveBy(0,numberOffset))
+			numberGUI = UserView.new(window,numberBounds.moveBy(0,numberOffset))
 				.drawFunc_{|me|
 					var active,col;
 					

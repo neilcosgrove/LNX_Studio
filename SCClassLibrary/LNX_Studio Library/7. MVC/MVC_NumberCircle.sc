@@ -27,7 +27,7 @@ MVC_NumberCircle : MVC_View {
 	
 	// make it
 	createView{
-		view=SCUserView.new(window,rect)
+		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
@@ -193,7 +193,7 @@ MVC_NumberCircle : MVC_View {
 		
 				numberFont = numberFont ?? {Font("Helvetica",12)};
 				numberBounds=this.getNumberRect("UNIT");
-				numberGUI=SCUserView.new(window,numberBounds)
+				numberGUI=UserView.new(window,numberBounds)
 					.drawFunc_{|me|
 						var active,col;
 						if (verbose) { [this.class.asString, 'numberUnits' , label].postln };

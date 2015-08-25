@@ -40,7 +40,7 @@ MVC_DownloadStatus : MVC_View {
 	}
 	
 	createView{
-		view=SCUserView.new(window,rect)
+		view = UserView.new(window,rect)
 			.drawFunc={|me|
 				var val, r,c;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };

@@ -146,7 +146,7 @@ MVC_CompositeView : MVC_ScrollView {
 				parent = argView;
 				argView.addView(this);
 			}
-			{argView.isKindOf(SCWindow)} {
+			{argView.isKindOf(Window)} {
 				window=argView;  // else is view or window
 				rect=bounds;
 			};
@@ -188,7 +188,7 @@ MVC_CompositeView : MVC_ScrollView {
 		
 		var l,t,w,h;
 		
-		view=SCCompositeView.new(window,rect)
+		view = CompositeView.new(window,rect)
 //			.hasBorder_(hasBorder)
 //			.autoScrolls_(autoScrolls)
 //			.hasHorizontalScroller_(hasHorizontalScroller)
@@ -214,7 +214,7 @@ MVC_CompositeView : MVC_ScrollView {
 			
 			myGUI=[
 			
-				SCUserView(window,Rect(l,t-1,w,1))
+				UserView(window,Rect(l,t-1,w,1))
 					.canFocus_(false)
 					.drawFunc_{|me|
 						Pen.use{
@@ -225,7 +225,7 @@ MVC_CompositeView : MVC_ScrollView {
 						}
 					} ,
 					
-				SCUserView(window,Rect(l-1,t,1,h))
+				UserView(window,Rect(l-1,t,1,h))
 					.canFocus_(false)
 					.drawFunc_{|me|
 						Pen.use{
@@ -236,7 +236,7 @@ MVC_CompositeView : MVC_ScrollView {
 						}
 					} ,
 				
-				SCUserView(window,Rect(l,t+h,w,1))
+				UserView(window,Rect(l,t+h,w,1))
 					.canFocus_(false)
 					.drawFunc_{|me|
 						Pen.use{
@@ -247,7 +247,7 @@ MVC_CompositeView : MVC_ScrollView {
 						}
 					},
 		
-				SCUserView(window,Rect(l+w,t,1,h))
+				UserView(window,Rect(l+w,t,1,h))
 					.canFocus_(false)
 					.drawFunc_{|me|
 						Pen.use{

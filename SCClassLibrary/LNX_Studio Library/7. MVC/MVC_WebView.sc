@@ -95,9 +95,9 @@ MVC_WebView{
 			};
 			window=nil;			// MVC_ScrollView is not a real view so don't use as a window
 		}{
-			window=args.findKindOf(SCWindow)
-					?? { args.findKindOf(SCScrollView)}
-					?? {args.findKindOf(SCCompositeView)};
+			window=args.findKindOf(Window)
+					?? { args.findKindOf(ScrollView)}
+					?? {args.findKindOf(CompositeView)};
 		};
 		
 		// and make it if in a standard window

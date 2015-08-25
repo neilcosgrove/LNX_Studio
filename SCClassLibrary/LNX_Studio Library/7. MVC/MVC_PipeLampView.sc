@@ -39,7 +39,7 @@ MVC_PipeLampView : MVC_View {
 	
 	// make the view
 	createView{
-		view=SCUserView.new(window,rect)
+		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				var val;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };

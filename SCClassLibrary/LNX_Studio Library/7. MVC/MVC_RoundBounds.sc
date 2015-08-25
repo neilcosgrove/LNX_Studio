@@ -94,7 +94,7 @@ MVC_RoundBounds : MVC_View {
 		w=rect.width;
 		h=rect.height;
 		
-		views[\top]=SCUserView.new(window,Rect(l-width,t-width,w+(width*2),width))
+		views[\top]=UserView.new(window,Rect(l-width,t-width,w+(width*2),width))
 			.canFocus_(false)
 			.resize_(rt)
 			.drawFunc={|me|
@@ -127,7 +127,7 @@ MVC_RoundBounds : MVC_View {
 			
 		view=views[\top];
 			
-		views[\bottom]=SCUserView.new(window,Rect(l-width,t+h,w+(width*2),width))
+		views[\bottom]=UserView.new(window,Rect(l-width,t+h,w+(width*2),width))
 			.canFocus_(false)
 			.resize_(rb)
 			.drawFunc={|me|
@@ -158,7 +158,7 @@ MVC_RoundBounds : MVC_View {
 				}; // end.pen
 			};
 			
-		views[\left]=SCUserView.new(window,Rect(l-width,t,width,h))
+		views[\left]=UserView.new(window,Rect(l-width,t,width,h))
 			.canFocus_(false)
 			.resize_(rl)
 			.drawFunc={|me|
@@ -174,7 +174,7 @@ MVC_RoundBounds : MVC_View {
 				}; // end.pen
 			};
 
-		views[\right]=SCUserView.new(window,Rect(l+w,t,width,h))
+		views[\right]=UserView.new(window,Rect(l+w,t,width,h))
 			.canFocus_(false)
 			.resize_(rr)
 			.drawFunc={|me|

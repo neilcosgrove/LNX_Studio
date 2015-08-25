@@ -140,7 +140,7 @@ MVC_SCTextField : TextView {
 	var <>editColor, <>isEditing=false;
 	var <>clearOnEnter=true,	<>clearOnEnterAction;
 
-	*viewClass { ^TextView } // this ensures that SCUserView's primitive is called
+	*viewClass { ^TextView } // this ensures that UserView's primitive is called
 
 	init { arg argParent, argBounds;
 		this.setParent(argParent.asView); // actual view
@@ -222,7 +222,7 @@ MVC_SCTextField2 : TextField {
 
 	var <>storedString="";
 
-	*viewClass { ^TextField } // this ensures that SCUserView's primitive is called
+	*viewClass { ^TextField } // this ensures that UserView's primitive is called
 
 	// fixes cmd-w bug
 	getProperty { arg key, value;

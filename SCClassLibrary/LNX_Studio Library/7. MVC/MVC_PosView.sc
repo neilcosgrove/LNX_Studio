@@ -23,7 +23,7 @@ MVC_PosView : MVC_View {
 
 	// make the view
 	createView{
-		view=SCUserView.new(window,extend.if(rect.resizeBy(0,4),rect))
+		view=UserView.new(window,extend.if(rect.resizeBy(0,4),rect))
 			.drawFunc={|me|
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{

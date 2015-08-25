@@ -27,7 +27,7 @@ MVC_ButtonLamp : MVC_View {
 	
 	// make the view
 	createView{
-		view=SCUserView.new(window,rect)
+		view = UserView.new(window,rect)
 			.drawFunc={|me|
 				var w2,h2;
 				

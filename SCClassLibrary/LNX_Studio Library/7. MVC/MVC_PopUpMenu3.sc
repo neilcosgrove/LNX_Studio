@@ -54,7 +54,7 @@ MVC_PopUpMenu3 : MVC_View {
 	}
 	
 	createView{
-		view=SCUserView.new(window,rect)
+		view=UserView.new(window,rect)
 			.drawFunc_{|me|
 				var r1=Rect(0,0,w,h);
 				var r2=Rect(0,2,h-3,h-3);

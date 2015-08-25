@@ -273,7 +273,7 @@ MVC_NumberBox : MVC_View {
 		
 				numberFont = numberFont ?? {Font("Helvetica",12)};
 				numberBounds=this.getNumberRect("UNIT");
-				numberGUI=SCUserView.new(window,numberBounds)
+				numberGUI=UserView.new(window,numberBounds)
 					.drawFunc_{|me|
 						var active,col;
 						if (verbose) { [this.class.asString, 'numberUnits' , label].postln };

@@ -51,7 +51,7 @@ MVC_TabbedView {
 				rect=bounds;
 				argView.addView(this);
 			}
-			{argView.isKindOf(SCWindow)} {
+			{argView.isKindOf(Window)} {
 				window=argView;  // else is view or window
 				rect=bounds;
 			};

@@ -1,5 +1,5 @@
 
-// SCUserView
+// UserView
 
 MVC_UserView{
 
@@ -40,9 +40,9 @@ MVC_UserView{
 				window = window.view;	
 			};
 		}{
-			window=args.findKindOf(SCWindow)
-					?? { args.findKindOf(SCScrollView)}
-					?? {args.findKindOf(SCCompositeView)};
+			window=args.findKindOf(Window)
+					?? { args.findKindOf(ScrollView)}
+					?? {args.findKindOf(CompositeView)};
 		};
 		
 		// and make it if in a standard window
@@ -59,7 +59,7 @@ MVC_UserView{
 	}
 	
 	createView{
-		view=SCUserView(window,rect)
+		view=UserView(window,rect)
 			.canFocus_(canFocus)
 			.drawFunc_(drawFunc)
 			.mouseDownAction_(mouseDownAction)

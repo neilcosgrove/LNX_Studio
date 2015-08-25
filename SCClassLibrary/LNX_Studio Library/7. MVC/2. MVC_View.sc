@@ -90,9 +90,9 @@ MVC_View {
 							// the real view doesn't exist yet so don't use as one
 			};
 		}{
-			window=args.findKindOf(SCWindow)
-				?? { args.findKindOf(SCScrollView) }
-				?? { args.findKindOf(SCCompositeView) };
+			window=args.findKindOf(Window)
+				?? { args.findKindOf(ScrollView) }
+				?? { args.findKindOf(CompositeView) };
 			
 		};
 		
@@ -174,7 +174,7 @@ MVC_View {
 	
 	// override this
 	createView{
-		view=SCUserView.new(window,rect)
+		view = UserView.new(window,rect)
 			.drawFunc={|me|
 				Pen.use{
 					Pen.smoothing_(false);

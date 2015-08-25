@@ -27,7 +27,7 @@ MVC_MyKnob2 : MVC_View {
 	}
 	
 	createView{
-		view=SCUserView.new(window,rect)
+		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				var di,active,col,val,val2;
 				var radius,offset,circum;

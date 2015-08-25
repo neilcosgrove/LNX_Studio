@@ -30,7 +30,7 @@ MVC_PinSlider : MVC_FlatSlider {
 	}
 	
 	createView{
-		view=SCUserView.new(window,rect)
+		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				var w2,h2, rect2, x2, zeroVal;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };

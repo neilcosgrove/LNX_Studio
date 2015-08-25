@@ -21,7 +21,7 @@ MVC_BinaryCircleView : MVC_View {
 	
 	// make the view
 	createView{
-		view=SCUserView.new(window,rect)
+		view = UserView.new(window,rect)
 			.drawFunc={|me|
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{

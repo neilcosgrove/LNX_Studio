@@ -58,7 +58,7 @@
 		
 		bounds = bounds.setExtent(width,height).moveBy(0,0);
 		
-		mixerWindow=MVC_Window("LNX_Studio",bounds, resizable: true)
+		mixerWindow = MVC_Window("LNX_Studio",bounds, resizable: true)
 			.userCanClose_(false)
 			.minHeight_(height)
 			.maxHeight_(height)

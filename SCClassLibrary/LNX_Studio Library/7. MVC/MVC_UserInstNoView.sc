@@ -22,7 +22,7 @@ MVC_UserInstNoView : MVC_View {
 	
 	// make the view
 	createView{
-		view=SCUserView.new(window,rect)
+		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				var str=(value+1).asString;
 				var x,y;

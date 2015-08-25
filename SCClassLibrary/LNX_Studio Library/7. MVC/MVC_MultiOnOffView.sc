@@ -21,7 +21,7 @@ MVC_MultiOnOffView : MVC_View {
 	// make the view
 	createView{
 		var state;
-		view=SCUserView.new(window,rect)
+		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				state=states[value];

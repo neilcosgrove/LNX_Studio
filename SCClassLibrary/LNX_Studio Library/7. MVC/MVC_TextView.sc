@@ -322,7 +322,7 @@ MVC_SCTextView : TextView {
 
 	var <>enterAction;
 
-	*viewClass { ^TextView } // this ensures that SCUserView's primitive is called
+	*viewClass { ^TextView } // this ensures that UserView's primitive is called
 
 	init { arg argParent, argBounds;
 		this.setParent(argParent.asView); // actual view

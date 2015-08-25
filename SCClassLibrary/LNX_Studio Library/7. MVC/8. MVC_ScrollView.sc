@@ -4,7 +4,7 @@
 MVC_RoundedComView : MVC_RoundedScrollView {
 
 	createView{
-		view=SCCompositeView.new(window,rect).resize_(resize);
+		view = CompositeView.new(window,rect).resize_(resize);
 		if (colors[\background].notNil) { view.background_(colors[\background]) };
 		if (addFlowLayout) { view.addFlowLayout(margin, gap) };
 		gui.do(_.create(view)); // now make all views inside this view
@@ -92,7 +92,7 @@ MVC_RoundedScrollView : MVC_ScrollView {
 		
 		if (colors[\border2].notNil) {
 			
-			SCUserView(window,Rect(l-width,t+h+width,w+width+width,width))
+			UserView(window,Rect(l-width,t+h+width,w+width+width,width))
 				.canFocus_(false)
 				.resize_(8)
 				.drawFunc_{|me|
@@ -101,7 +101,7 @@ MVC_RoundedScrollView : MVC_ScrollView {
 					Pen.fillRect(Rect(0,0,thisRect.width,thisRect.height));
 				};
 				
-			SCUserView(window,Rect(l+w+width,t-width-width,width,h+width+width+width))
+			UserView(window,Rect(l+w+width,t-width-width,width,h+width+width+width))
 				.canFocus_(false)
 				.resize_(6)
 				.drawFunc_{|me|
@@ -114,7 +114,7 @@ MVC_RoundedScrollView : MVC_ScrollView {
 		
 		// these 4 are the border
 		
-		views[\left]=SCUserView.new(window,Rect(l-width,t,width,h))
+		views[\left] = UserView.new(window,Rect(l-width,t,width,h))
 			.canFocus_(false)
 			.resize_(resizeList[1]?4)
 			.drawFunc={|me|
@@ -130,7 +130,7 @@ MVC_RoundedScrollView : MVC_ScrollView {
 				}; // end.pen
 			};
 		
-		views[\top]=SCUserView.new(window,Rect(l-width,t-width,w+(width*2),width))
+		views[\top] = UserView.new(window,Rect(l-width,t-width,w+(width*2),width))
 			.canFocus_(false)
 			.resize_(resizeList[2]?2)
 			.drawFunc={|me|
@@ -151,7 +151,7 @@ MVC_RoundedScrollView : MVC_ScrollView {
 				}; // end.pen
 			};	
 			
-		views[\right]=SCUserView.new(window,Rect(l+w,t,width,h))
+		views[\right] = UserView.new(window,Rect(l+w,t,width,h))
 			.canFocus_(false)
 			.resize_(resizeList[3]?6)
 			.drawFunc={|me|
@@ -167,7 +167,7 @@ MVC_RoundedScrollView : MVC_ScrollView {
 				}; // end.pen
 			};
 			
-		views[\bottom]=SCUserView.new(window,Rect(l-width,t+h,w+(width*2),width))
+		views[\bottom] = UserView.new(window,Rect(l-width,t+h,w+(width*2),width))
 			.canFocus_(false)
 			.resize_(resizeList[4]?8)
 			.drawFunc={|me|
@@ -248,7 +248,7 @@ MVC_ScrollView {
 				parent = argView;
 				argView.addView(this);
 			}
-			{argView.isKindOf(SCWindow)} {
+			{argView.isKindOf(Window)} {
 				window=argView;  // else is view or window
 				rect=bounds;
 			};
@@ -292,9 +292,9 @@ MVC_ScrollView {
 	
 	// override this
 	createView{
-		view=SCScrollView.new(window,rect)
+		view = ScrollView.new(window,rect)
 			.hasBorder_(hasBorder)
-			.autoScrolls_(autoScrolls)
+			// .autoScrolls_(autoScrolls)
 			.hasHorizontalScroller_(hasHorizontalScroller)
 			.hasVerticalScroller_(hasVerticalScroller)
 			.visible_(visible)

@@ -31,7 +31,7 @@ MVC_ProgramChange : MVC_View {
 			.hasVerticalScroller_(true)
 			.hasHorizontalScroller_(false)
 			.autoScrolls_(false);
-		view=SCUserView(scrollView,Rect(0,0,4*20,64*18))
+		view=UserView(scrollView,Rect(0,0,4*20,64*18))
 			.drawFunc_{|me|	
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{

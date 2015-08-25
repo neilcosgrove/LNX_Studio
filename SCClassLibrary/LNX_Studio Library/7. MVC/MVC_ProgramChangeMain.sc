@@ -19,7 +19,7 @@ MVC_ProgramChangeMain : MVC_View {
 	
 	createView{
 
-		view=SCUserView(window,Rect(rect.left,rect.top,ww,hh*noPOP+1))
+		view=UserView(window,Rect(rect.left,rect.top,ww,hh*noPOP+1))
 			.drawFunc_{|me|	
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{

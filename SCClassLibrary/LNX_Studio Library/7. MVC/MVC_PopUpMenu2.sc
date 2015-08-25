@@ -41,12 +41,13 @@ MVC_PopUpMenu2 : MVC_View {
 	
 	createView{
 			
-		view=NSPopUpButton(window,rect,true);
+		view = PopUpMenu(window,rect,true);
 		
 		view.items_(items)
 			.visible_(visible);
 			
-		view.initAction("doAction:");
+		// @TODO: needed? does not exist in Qt
+		// view.initAction("doAction:");
 	
 	}
 
