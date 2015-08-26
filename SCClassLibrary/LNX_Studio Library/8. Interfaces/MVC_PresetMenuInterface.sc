@@ -98,7 +98,7 @@ MVC_PresetMenuInterface{
 		
 		// 1.text box	
 		gui[\text]=MVC_TextField(gui[\view],Rect(17,1,width+(15*2)-1-3,14+1))
-			.string_(value.isNumber.if(presetNames@@value,"No presets"))
+			.value_(value.isNumber.if(presetNames@@value,"No presets"))
 			.maxStringSize_(25)
 			.actions_(\stringAction,{|me|
 				if (presetNames.size>0) {

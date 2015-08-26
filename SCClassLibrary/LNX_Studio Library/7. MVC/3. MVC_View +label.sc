@@ -82,10 +82,10 @@
 		if (label.notNil) {
 			labelFont = labelFont ?? { Font("Helvetica",12) };
 			labelBounds=nil!(label.size);
-			label.size.do{|j|	
+			label.size.do{|j|
 				labelBounds[j]=this.getLabelRect(j);
-				labelGUI[j] = UserView.new(window, labelBounds[j])
-				.drawFunc_{|me|
+				labelGUI[j] = UserView(window, labelBounds[j])
+				.drawFunc_({|me|
 					if (verbose) { [this.class.asString, 'labelFunc' , label].postln };
 					if (showLabelBackground) {
 						Color.black.alpha_(0.2).set;
@@ -112,11 +112,11 @@
 					Pen.stringCenteredIn(label[j],
 					Rect(0,0,labelBounds[j].width,labelBounds[j].height));
 		
-				}
+				})
 				.visible_(visible)
 				.canFocus_(false)
 				.resize_(resize)
-				.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
+				.mouseDownAction_({|me,x, y, modifiers, buttonNumber, clickCount|
 					// check apple not pressed because of dra
 					if (editMode) {
 						lw=lh=nil;
@@ -133,18 +133,20 @@
 								this.toggleMIDIactive
 						}
 					};
-				}
-				.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
+				})
+				.mouseMoveAction_({|me, x, y, modifiers, buttonNumber, clickCount|
 					// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl,
 					var val;
 					if (editMode) {
 						this.moveBy(x-startX,y-startY);
 					}
-				}
-				.onClose_{
-					labelGUI[j].drawFunc_(nil).mouseDownAction_(nil).onClose_(nil);
-					labelGUI[j]=nil;
-				};
+				})
+				.onClose_({
+					if (labelGUI[j].notNil) {
+						labelGUI[j].drawFunc_({}).mouseDownAction_({}).onClose_({});
+						labelGUI[j]=nil;
+					};
+				});
 			}; // end.do				
 		}; // end.if	
 	}

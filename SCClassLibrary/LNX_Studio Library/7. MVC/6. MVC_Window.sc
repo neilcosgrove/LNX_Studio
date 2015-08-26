@@ -80,7 +80,8 @@ MVC_Window {
 			.acceptsMouseOver_(acceptsMouseOver)
 			.acceptsClickThrough_(acceptsClickThrough)
 			.toFrontAction_{
-				isFront=true;
+				isFront = true;
+				bounds = view.bounds.convert;
 				if (missFirstToFront) {
 					missFirstToFront=false;
 				}{
@@ -97,7 +98,6 @@ MVC_Window {
 //			.endFrontAction_{endFrontAction.value(this)}  // this is the apple Y bug, can't fix
 			.onClose_{
 				resizeview.remove;
-				bounds=view.bounds.convert;
 				onClose.value(this);
 				view.drawFunc_(nil);
 				view.toFrontAction_(nil);
