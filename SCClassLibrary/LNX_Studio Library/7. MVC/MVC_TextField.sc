@@ -119,11 +119,12 @@ m="".asModel
 	.actions_(\downAction,{|me| ("downAction"+me.string).postln})
 	.actions_(\mouseUpAction,{|me| ("mouseUpAction"+me.string).postln});
 w=MVC_Window();
-MVC_TextField(m,w,Rect(10,10,100,30));
+t = MVC_TextField(m,w,Rect(10,10,100,30));
 MVC_TextField(m,w,Rect(10,50,100,30)).clearOnEnter_(true);
 MVC_TextView(m,w,Rect(10,90,100,60));
 w.create;
 )
+t.string = "test"
 w.close;
 w.open;
 */
@@ -231,7 +232,7 @@ MVC_SCTextField2 : TextField {
 
 	// fixes cmd-w bug
 	getPropertyPrivate { arg key, value;
-		_QView_GetProperty
+		_QObject_GetProperty
 		^this.primitiveFailed
 	}
 
@@ -245,11 +246,10 @@ MVC_SCTextField2 : TextField {
 		normalColor=Color.black;
 		editColor=Color.red;
 	}
-	
-	string_ { arg argString;
-		this.string = argString.asString;
-		this.setProperty(\string, this.string);
-		storedString=argString;
+
+	string_ { arg aString;
+		super.string_(aString);
+		storedString = aString;
 	}
 	
 	//string{^storedString}
@@ -263,7 +263,7 @@ MVC_SCTextField2 : TextField {
 	
 	align_{} // this makes myTextView exchangable with myTextField
 	
-	keyDown { arg char, modifiers, unicode,keycode;
+	keyDown { arg char, modifiers, unicode, keycode, key;
 		var val, tempS;
 		//[char, modifiers, unicode,keycode].postln;
 			
@@ -336,3 +336,8 @@ MVC_SCTextField2 : TextField {
 
 }
 
+/*
+(
+w = MVC_Window();
+)
+*/
