@@ -231,17 +231,16 @@ MVC_SCTextField2 : TextField {
 
 	// fixes cmd-w bug
 	getPropertyPrivate { arg key, value;
-		_SCView_GetProperty
+		_QView_GetProperty
 		^this.primitiveFailed
 	}
 
-	init { arg argParent, argBounds;
-		this.setParent(argParent.asView); // actual view
+	*new { arg argParent, argBounds;
+		^super.new(argParent.asView, argBounds).initMVC_SCTextField2;
+	}
+
+	initMVC_SCTextField2 {
 		this.background = Color.clear;
-		// call asView again because parent by this point might be a FlowView
-		this.prInit(this.parent.asView, argBounds.asRect,this.class.viewClass);
-		argParent.add(this);//maybe window or viewadapter
-		//this.enterInterpretsSelection_(false)
 		this.font_(Font("Helvetica",12));
 		normalColor=Color.black;
 		editColor=Color.red;

@@ -162,8 +162,8 @@ LNX_Studio {
 		// this.libraryGUIBugFix;       // a bug fix
 		// LNX_SplashScreen.init(this); // start splash screen
 		CmdPeriod.add(this);		 // add this object to CmdPeriod
-		
-		// this.startClockOff;          // and start off_clock for client side lfos
+	
+		//	 this.startClockOff;          // and start off_clock for client side lfos
 		
 	}
 	
@@ -720,10 +720,10 @@ LNX_Studio {
 	
 	hostAddInst{|list|
 		var id, userID, class, userIsListening, loadList, name, autoAdd, autoBeat, bus;
-		
+
 		#userID, class, userIsListening, name, autoAdd, autoBeat...loadList = list;
 			
-		// i need to change so it doesn't matter if audio server is running
+		// // i need to change so it doesn't matter if audio server is running
 		if ((isLoading.not)and:{server.serverRunning}) {
 			
 			id=LNX_ID.nextID; // get the id for me and everyone else
@@ -747,7 +747,7 @@ LNX_Studio {
 			}{
 				// from someone else to the host
 				this.netAddInst(class,id,userID,userIsListening,0, autoAdd, autoBeat);
-			};	
+			};
 			
 			// put the load list if there is one (this only happens with duplicate i believe)
 			{
