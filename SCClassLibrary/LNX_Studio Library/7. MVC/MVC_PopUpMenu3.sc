@@ -40,12 +40,12 @@ MVC_PopUpMenu3 : MVC_View {
 		canFocus=true;
 		items=items ? [];
 		
-		if ({"".bounds( Font("HelveticaNeuew",15))}.try.notNil) {
+		// @TODO: standardise how we get fonts
+		if (Font.availableFonts.find("HelveticaNeuew").notNil) {
 			menuFont = Font("HelveticaNeue",15);
 		}{
-			menuFont = Font("Helvetica",15);
+			menuFont = Font.sansSerif(15);
 		};
-			
 	}
 	
 	items_{|array|
@@ -152,22 +152,24 @@ MVC_PopUpMenu3 : MVC_View {
 
 		if (items.size>0) {
 			
-			var moveY, rect2;
+			var mousePos, moveY, rect2;
 
 			sB = items.collect{|item| GUI.stringBounds(item,menuFont).rightBottom.asArray };
 			w = sB.collect(_.first).sort.last+4+40;
 			h = sB.first.last;
+
+			mousePos = Rect(GUI.cursorPosition.x, GUI.cursorPosition.y, 0, 0).convert;
 			
 			menuRect=rect=Rect(
-				(Platform.getMouseCoords.x-7).asInt,
-				(Platform.getMouseCoords.convert.y+8).asInt,
+				mousePos.left,
+				mousePos.top,
 				w+4, h*(items.size)+4
-			);
+			).convert;
 
 			// resize and adjust position for size of screen
 			rect2 = rect.copy;
-			rect2 = rect2.height_(rect2.height.clip(0,SCWindow.screenBounds.height-60)) ;
-			moveY = (SCWindow.screenBounds.height - rect2.top - rect2.height-80).clip(-inf,0);
+			rect2 = rect2.height_(rect2.height.clip(0,Window.screenBounds.height-60)) ;
+			moveY = (Window.screenBounds.height - rect2.top - rect2.height-80).clip(-inf,0);
 			rect2 = rect2.moveBy(0,moveY);
 
 			// the window
@@ -180,7 +182,7 @@ MVC_PopUpMenu3 : MVC_View {
 					menuWindow.front;
 					// and also front window after menu item not selected
 				};
-				if (menuWindow.bounds.contains(Platform.getMouseCoords.convert).not) {
+				if (menuWindow.bounds.contains(GUI.cursorPosition.convert).not) {
 					// not in bounds
 					if (selected.notNil){
 						selected=nil;	
@@ -189,7 +191,7 @@ MVC_PopUpMenu3 : MVC_View {
 					0.1.wait;	
 				}{
 					if (down) {
-						var cord = Platform.getMouseCoords.convert-(menuWindow.bounds.leftTop);
+						var cord = GUI.cursorPosition.convert-(menuWindow.bounds.leftTop);
 						textView.mouseOverAction.value(textView, cord.x, cord.y);
 						0.05.wait;
 					}{
@@ -272,7 +274,7 @@ MVC_PopUpMenu3 : MVC_View {
 					items.collect{|s|
 						if (s[0]==$() { s=s.drop(1) }; 
 						(s=="-").if {""} {s.asString} 
-					}.join("\r")
+					}.join("\r\n")
 				)
 				.font_(menuFont)
 				.color_(\string,Color.black)
@@ -352,7 +354,7 @@ MVC_PopUpMenu3 : MVC_View {
 			down = false;
 			if (editMode.not) {
 				if (SystemClock.now-startTime>0.5) {
-					var cord = Platform.getMouseCoords.convert-(menuWindow.bounds.leftTop);
+					var cord = GUI.cursorPosition.convert-(menuWindow.bounds.leftTop);
 					textView.mouseUpAction.value(textView, cord.x, cord.y);
 				};
 			};

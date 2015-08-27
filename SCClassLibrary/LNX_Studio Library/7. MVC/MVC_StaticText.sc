@@ -3,7 +3,7 @@
 w=MVC_Window().create;
 
 v=MVC_Text(w,Rect(20,20,200,14))
-	.string_("")
+	.string_("testing testing 123\r\n1234567890")
 	.canEdit_(true)
 	.enterStopsEditing_(false)
 	.stringAction_{|me,string|
