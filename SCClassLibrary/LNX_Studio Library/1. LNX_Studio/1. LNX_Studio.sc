@@ -1,4 +1,4 @@
-   //                                //        //||     // || //                               .
+   //                                //        //||     //  || //                               .
   // ****************************** //        // ||    //   ||//
  //     LNX_STUDIO Version 1.6     //        //  ||   //    |// 
 // ****************************** //        //   ||  //     //|
@@ -15,7 +15,8 @@
 // Instruments, FX's, MIDI Instruments, Save, Load, Instrument Presets
 // MIDI In/Out patching, MIDI control of all GUI, Internal MIDI Ports, Internal/Ext MIDI Clock
 // Networking - Syncing over a network all of the Studio features
-// Automation, Instrument Library, Loading samples directly from a web browser into the instruments
+// Automation, Instrument Library, Preset sequencing
+// Loading samples directly from a web browser into the instruments
 //
 // Instruments &  Effects:
 // =======================
@@ -26,7 +27,7 @@
 // SC Code FX   - A programmable effect using sc code
 // Step Seq     - A 32x8 Step Sequencer
 // Controllers  - Internal Midi Controller
-// FreeVerb     - SC's FreeVerb (coded from experiments with faust.)
+// FreeVerb     - SC's FreeVerb (coded from experiments with faust)
 // PitchShift   - A pitch shifter
 // GVerb        - The "GVerb" LADSPA effect (by Juhana Sadeharju)
 // Limiter      - A Limiter
@@ -222,7 +223,7 @@ LNX_Studio {
 			};	
 		}.defer(2);
 		
-		studios        = [];
+		studios = [];
 		//macOSisPPC = LNX_AudioDevices.macOSisPPC;      // get audio device info
 		
 	}
@@ -320,7 +321,7 @@ LNX_Studio {
 	// post initModel
 	
 	initServerPostModels{
-		server.options.blockSize_((2**(5..9))[models[\blockSize].value].postln);
+		server.options.blockSize_((2**(5..9))[models[\blockSize].value]);
 	}
 	
 	// boot the server and run postBootFuncs when done

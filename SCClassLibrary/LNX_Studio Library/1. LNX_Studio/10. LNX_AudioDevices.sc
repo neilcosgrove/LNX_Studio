@@ -35,7 +35,7 @@ LNX_AudioDevices {
 		numFXBusChannels=defaultFXBusChannels;
 		numAudioBusChannels=defaultAudioBusChannels;
 		this.updateDeviceList;
-		this.devices_(defaultOutput,defaultInput);
+		this.devices_(defaultOutput,defaultInput,false);
 		if (verbose) { this.post };
 	}
 	
@@ -59,12 +59,12 @@ LNX_AudioDevices {
 	
 	*getFXChannelIndex{|i| ^(this.firstFXBus)+(i*2) }
 	
-	*devices_{|out,in|
+	*devices_{|out,in,save=true|
 		if ((outDevice!=out) or:{inDevice!=in}) {
 			this.outDevice_(out);
 			this.inDevice_(in);
 			this.updateMenuLists;
-			this.savePref;
+			if (save) {this.savePref};
 		};
 	}
 	

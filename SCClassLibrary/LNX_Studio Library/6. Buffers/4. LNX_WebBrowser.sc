@@ -633,6 +633,8 @@ LNX_WebBrowser{
 			"https://www.google.com",
 			"http://www.findsounds.com/types.html",
 			"http://www.freesound.org/",
+			"https://www.youtube.com/",
+			"http://anything2mp3.com/",
 			"http://www.soundjay.com/",
 			"http://www.grsites.com/archive/sounds/",
 			"http://www.mediacollege.com/downloads/sound-effects/"
