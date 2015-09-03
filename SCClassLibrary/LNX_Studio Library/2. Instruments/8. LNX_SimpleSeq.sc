@@ -181,29 +181,25 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 			
 	}
 	
-	*thisWidth  {^686}
-	*thisHeight {^470}
+	*thisWidth  {^686+25}
+	*thisHeight {^470+25+3}
 
 	createWindow{|bounds|	
-		this.createTemplateWindow(Color.grey,resizable: true);
+		this.createTemplateWindow(bounds,Color(0,0,0.2),resizable: true);
 	}
 
 	createWidgets{
 	
-		var cH=143, osY=17;
-	
-		gui[\seqView] = MVC_ScrollView(window,
-									Rect(10,32,bounds.width-18, bounds.height-40))
-			.color_(\background,Color(0.4,0.4,0.4))
-			.hasVerticalScroller_(true)
-			.hasHorizontalScroller_(false)
-			.hasBorder_(true)
-			.resize_(5);
-	
+		var cH=144, osY=17;
+		
 	// Themes
+		
 		
 		gui[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
+
+		gui[\onOffTheme1]=( \font_		: Font("Helvetica", 12),
+						 \colors_     : (\on : Color(0.25,1,0.25), \off : Color(0.4,0.4,0.4)));
 		
 		gui[\onOffTheme2]=( \font_		: Font("Helvetica-Bold", 12),
 						 \colors_     : (\on : Color(0.25,1,0.25), \off : Color(0.4,0.4,0.4)));
@@ -217,54 +213,88 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 										\background : Color(0.2,0.2,0.2),
 										\string : Color(0.7,0.7,1),
 										\focus : Color(0,0,0,0)));
+										
+		gui[\button] = (	\rounded_		: true,
+						\shadow_		: true,
+						\canFocus_	: false,
+						\colors_		: (\up    : Color(0.7,0.7,1)/1.5,
+									   \down  : Color(0.5,0.5,1.0)/4,
+									   \string:Color.white));
 						
 		gui[\knobTheme]=(	\labelFont_ 	: Font("Helvetica",10),
 						\numberFont_	: Font("Helvetica",10),
 						\numberWidth_	: -22,
-						\colors_		: ( \numberUp : Color.black, \numberDown : Color.yellow));
+						\colors_		: ( \numberUp : Color.black, \numberDown : Color.purple,
+										\on : Color.purple));
+		
+			
+		gui[\scrollTheme]=( \background	: Color.grey*1.2,
+						 \border		: Color(0.6 , 0.4, 1)*0.6);
 						
 	// widgets
 	
-		// 0.solo
-		MVC_OnOffView(models[0],window     ,Rect( 30,10,17,17),gui[\soloTheme  ]);
+		gui[\scrollView] = MVC_RoundedComView(window,
+							Rect(11,11,thisWidth-22,thisHeight-22-1), gui[\scrollTheme]);
+							
+		gui[\seqView] = MVC_ScrollView(gui[\scrollView],
+									Rect(10,32,bounds.width-18-25, bounds.height-40-25))
+			.color_(\background,Color(0.35,0.35,0.35,0.6))
+			.color_(\border,Color(0.2,0.2,0.3)*0.75)
+			.hasVerticalScroller_(true)
+			.hasHorizontalScroller_(false)
+			.hasBorder_(true)
+			.resize_(5);
+	
+	
 		// 1.on/off
-		MVC_OnOffView(models[1],window     ,Rect( 10,10,17,17),gui[\onOffTheme2]);
+		MVC_OnOffView(models[1],gui[\scrollView] ,Rect( 10, 6,22,18),gui[\onOffTheme1])
+			.rounded_(true)
+			.permanentStrings_(["On"]);
+			
+		// 0.solo
+		MVC_OnOffView(models[0],gui[\scrollView] ,Rect( 37, 6,20,18),gui[\soloTheme  ])
+			.rounded_(true);
+			
 		
 		defaultChannels.do({|y|
 			
+			var yOffset=y*cH+2;
+			
 			// dividing line
-			MVC_PlainSquare(gui[\seqView],Rect(0,((y+1)*cH)+osY-18,71 + (32*18) + 8,1))
+			MVC_PlainSquare(gui[\seqView],Rect(0,((y+1)*cH+2)+osY-18,71 + (32*18) + 8,1))
 				.color_(\off,((y==7).if(Color(0.5,0.5,1),Color.black)));
 
 			// sliders
 			defaultSteps.do({|x|
 				var c;
 				c=((x)%(sP[y][4])).map(0,sP[y][4],1,0.4);
-				seqMVCViews[y][x]=MVC_FlatSlider(gui[\seqView],seqModels[y][x],
-							Rect(71+(x*18), 21+(y*cH)+osY, 17, cH-53+3))
+				seqMVCViews[y][x]=MVC_PinSlider(gui[\seqView],seqModels[y][x],
+							Rect(71+(x*18), 21+(yOffset)+osY, 17, cH-53+3))
 					.seqItems_(seqMVCViews[y])
-					.rounded_(true)
+					.hiliteMode_(\inner)
 					.color_(\background,Color.black)
-					.color_(\slider,Color(c*0.5,c*0.3,c*1))
-					.color_(\border,Color(c*0.5,c*0.3,c*1)/1.7)
-					.color_(\belowZero,Color.purple);
+					.color_(\on,Color(c*0.5,c*0.3,c*1))
+					.color_(\hilite,Color(c*0.5,c*0.3,c*1)/1.7);
 			});
 			
 			// 0. on / Off
-			MVC_OnOffView(spModels[y][0],gui[\seqView],Rect(3,y*cH+osY-15,17,16))
+			MVC_OnOffView(spModels[y][0],gui[\seqView],Rect(3,yOffset+osY-15,19,16))
+				.rounded_(true)
 				.strings_((y+1).asString)
 				.color_(\on,Color.ndcOnOffON2)
 				.color_(\off,Color(0.7,0.7,0.7));
 				
 			// 7. type 0=midiNote, 1=midiControl
-			MVC_OnOffView(spModels[y][7],gui[\seqView],Rect(23,y*cH+osY-15,42,16))
+			MVC_OnOffView(spModels[y][7],gui[\seqView],Rect(24,yOffset+osY-15,42,16))
+				.rounded_(true)
 				.strings_(["Note","Control"])
 				.font_(Font("Helvetica",11))
-				.color_(\on,Color.purple)
-				.color_(\off,Color(0.5,0.5,1));
+				.color_(\on,Color(0.5,0.5,1))
+				.color_(\off,Color.purple);
 					
 			// learn button
-			MVC_FlatButton(gui[\seqView],Rect(71,y*cH+osY-15,(2*18)-1,15),"Learn")
+			MVC_FlatButton(gui[\seqView],Rect(71-3,yOffset+osY-15,35+3,16),"Learn")
+				.rounded_(true)
 				.action_{
 					var name;
 					name=midi.learn(sP[y][2],64);
@@ -276,22 +306,8 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 				.color_(\down,Color(0.5,0.5,1.0)/4)
 				.color_(\up,Color(0.7,0.7,1)/1.5);
 				
-//			// learn button
-//			MVC_FlatButton(gui[\seqView],Rect(71+37,y*cH+osY-15,40,15),"Sub37")
-//				.action_{
-//					midiSet=y;
-//				}
-//				.font_(Font("Helvetica-Bold",11))
-//				.color_(\focus,Color.grey(alpha:0.05))
-//				.color_(\string,Color.black)
-//				.color_(\down,Color(0.5,0.5,1.0)/4)
-//				.color_(\up,Color(0.7,0.7,1)/1.5);
-					
-			
-			// this need to do value as you type, it doesn't at the moment
-			
 			// learn name ( look at nameSafe we use : alot in control names )
-			nameViews[y]=MVC_TextField(gui[\seqView],Rect(107,y*cH+osY-15,468,15))
+			nameViews[y]=MVC_TextField(gui[\seqView],Rect(107,yOffset+osY-15,468,16))
 				.actions_(\stringAction,{|me|
 					var string=me.string.nameSafe;
 					me.string_(string);
@@ -305,7 +321,7 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 				.font_(Font("Helvetica",11));
 						
 			//  8. interpolation  (x1,x2,x3,x4,x6,x8,x12,x16)  index:(0-7)
-			MVC_PopUpMenu3(spModels[y][8],gui[\seqView],Rect(608,(y*cH)+osY-15,38,16))
+			MVC_PopUpMenu3(spModels[y][8],gui[\seqView],Rect(608,(yOffset)+osY-15,38,16))
 				.color_(\background,Color(0.7,0.7,1)/1.5)
 				.font_(Font("Helvetica-Bold",11))
 				.orientation_(\horizontal)
@@ -314,52 +330,53 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 				.canFocus_(false);
 
 			// 4.ruler	
-	 	 	MVC_NumberBox(spModels[y][4],gui[\seqView],Rect(42,y*cH+20,23,17),gui[\numTheme]);
+	 	 	MVC_NumberBox(spModels[y][4],gui[\seqView],Rect(42,yOffset+20,23,17),gui[\numTheme]);
 	 	  	MVC_RulerView(spModels[y][4],gui[\seqView],
-	 	  								Rect(70,y*cH+osY+3,defaultSteps*18,15))
+	 	  								Rect(70,yOffset+osY+3,defaultSteps*18,15))
 	 	   		.label_(nil).steps_(defaultSteps)
-	 	   		.color_(\on,Color(0.8,0.8,1))
-				.color_(\background,Color(0.7/2.9,0.7/2.9,0.9/2.9));
+	 	   		.color_(\on,Color.black)
+	 	   		.color_(\string,Color.white*0.7)
+				.color_(\background,Color(0,0,0,0.2));
 		
 			// 3.steps
-			MVC_NumberBox(spModels[y][3],gui[\seqView],Rect(42,y*cH+38,23,17),gui[\numTheme]);
+			MVC_NumberBox(spModels[y][3],gui[\seqView],Rect(42,yOffset+38,23,17),gui[\numTheme]);
 			
 			// 6. speed divider
-			MVC_NumberBox(spModels[y][6],gui[\seqView],Rect(42,y*cH+56,23,17),gui[\numTheme]);
+			MVC_NumberBox(spModels[y][6],gui[\seqView],Rect(42,yOffset+56,23,17),gui[\numTheme]);
 			
 			// 2. midi note 
-			MVC_NumberBox(spModels[y][2],gui[\seqView],Rect(42,y*cH+74,23,17),gui[\numTheme]);
+			MVC_NumberBox(spModels[y][2],gui[\seqView],Rect(42,yOffset+74,23,17),gui[\numTheme]);
 
 			// pos
-		  	MVC_PosView(posModels[y],gui[\seqView],Rect(70,(y+1)*cH+osY-26,32*18,5))
+		  	MVC_PosView(posModels[y],gui[\seqView],Rect(70,(y+1)*cH+osY-28+2,32*18,9))
 				.color_(\on,Color(0.55,0.55,1))
-				.color_(\background,Color(0.35,0.35,0.4)/2);
+				.type_(\circle)
+				.color_(\background,Color.clear);
 				
+			// pos Hilite Adaptor
+			gui[\posHiliteAdaptor]=MVC_HiliteAdaptor(posModels[y])
+				.refreshZeros_(false)
+				.views_(seqMVCViews[y]);
+					
 			// 1. duration
-			MVC_MyKnob(spModels[y][1],gui[\seqView],Rect(11,y*cH+osY+89,26,26),gui[\knobTheme]);
+			MVC_MyKnob3(spModels[y][1],gui[\seqView],Rect(11,yOffset+osY+89,26,26),gui[\knobTheme]);
 
 			// 5. adjust
-			MVC_MyKnob(spModels[y][5],gui[\seqView],Rect(41,y*cH+osY+89,26,26),gui[\knobTheme]);
+			MVC_MyKnob3(spModels[y][5],gui[\seqView],Rect(41,yOffset+osY+89,26,26),gui[\knobTheme]);
 
 		});
 		
 	// other gui stuff
 //		
 //		// midi out
-//		midi.createOutMVUA (window, 57@10, false);
-//		midi.createOutMVUB (window, 205@10);
+//		midi.createOutMVUA (gui[\scrollView], 57@10, false);
+//		midi.createOutMVUB (gui[\scrollView], 205@10);
 //		
-//		//midi.createInMVUA (window, 57@10, false);
-//		//midi.createInMVUB (window, 205@10, false);
+//		//midi.createInMVUA (gui[\scrollView], 57@10, false);
+//		//midi.createInMVUB (gui[\scrollView], 205@10, false);
 		
 		// MIDI Settings
- 		MVC_FlatButton(window,Rect(63, 9, 43, 19),"MIDI")
-			.rounded_(true)
-			.shadow_(true)
-			.canFocus_(false)
-			.color_(\up,Color(6/11,29/65,42/83))
-			.color_(\down,Color(6/11,29/65,42/83)/2)
-			.color_(\string,Color.white)
+ 		MVC_FlatButton(gui[\scrollView],Rect(70, 6, 43, 19),"MIDI",gui[\button])
 			.action_{ this.createMIDIInOutModelWindow(window,nil,nil,(
 				background:Color(63/77,59/77,59/77),
 				border2:Color(7/11,42/83,29/65),
@@ -367,23 +384,15 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 			))};
 		
 		
-		
-		
 		// midi control button
-		MVC_RoundButton(window,Rect(265, 9, 43, 19))
-			.states_([ [ "Cntrl", Color(1.0, 1.0, 1.0, 1.0), Color(0.15,0.15,0.3) ] ])
-			.canFocus_(false)
-			.font_(Font("Helvetica",12))
+		MVC_FlatButton(gui[\scrollView],Rect(122, 6, 43, 19),"Cntrl",gui[\button])
 			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
 				
-		MVC_RoundButton(window,Rect(313 , 9, 43, 19))
-			.states_([ [ "All", Color(1.0, 1.0, 1.0, 1.0), Color(0.2,0.2,0.4) ] ])
-			.canFocus_(false)
-			.font_(Font("Helvetica",12))
+		MVC_FlatButton(gui[\scrollView],Rect(176 , 6, 43, 19),"All",gui[\button])
 			.action_{ LNX_MIDIControl.editControls(studio); LNX_MIDIControl.window.front };
 		
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(window,(375+134)@(9),75,
+		presetView=MVC_PresetMenuInterface(gui[\scrollView],(375+134-50)@(6),75+50,
 				Color.grey,Color(0.7,0.7,1)/3,Color(0.7,0.7,1)/1.5);
 		this.attachActionsToPresetGUI;	
 	}
@@ -393,8 +402,8 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 			var c,col;
 			c=((x)%value).map(0,value,1,0.4);
 			seqMVCViews[y][x]
-				.color_(\border,Color(c*0.5,c*0.3,c*1)/1.7)
-				.color_(\slider,Color(c*0.5,c*0.3,c*1));
+				.color_(\on,Color(c*0.5,c*0.3,c*1))
+				.color_(\hilite,Color(c*0.5,c*0.3,c*1)/1.7);
 		}	
 	}
 
