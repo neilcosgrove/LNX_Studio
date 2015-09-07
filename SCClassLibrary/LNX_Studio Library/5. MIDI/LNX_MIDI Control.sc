@@ -349,9 +349,9 @@ LNX_MIDIControl {
 		}{
 			if (displayParent.notNil) {
 					// this stops opening before 1st call. this could be done in a clearer way
-				window=SCWindow.new("MIDI Controls",
-						Rect	(SCWindow.screenBounds.left+LNX_Studio.osx,
-							 SCWindow.screenBounds.height-147-(22*3)-(LNX_Studio.thisHeight),
+				window=Window.new("MIDI Controls",
+						Rect	(Window.screenBounds.left+LNX_Studio.osx,
+							 Window.screenBounds.height-147-(22*3)-(LNX_Studio.thisHeight),
 							 550-13+22, 280-25+22), resizable: false);
 				window.view.background = Color(0,1/103,3/77,65/77);
 				window.toFrontAction_{studio.frontWindow_(window)};
@@ -364,7 +364,7 @@ LNX_MIDIControl {
 					.color_(\background, Color(29/65,42/83,6/11));
 				
 				// the main view
-				gui[\scrollView]=SCCompositeView(window, Rect(11,11,window.bounds.width-22,window.bounds.height-22-1))
+				gui[\scrollView]=CompositeView(window, Rect(11,11,window.bounds.width-22,window.bounds.height-22-1))
 					.background_(Color(50/77,56/77,59/77));
 					//.hasHorizontalScroller_(false)
 					//.hasVerticalScroller_(false);
@@ -372,13 +372,13 @@ LNX_MIDIControl {
 				
 				
 				
-				headerGUI=SCStaticText.new(gui[\scrollView],Rect(16, 6, 480, 22))
+				headerGUI = StaticText.new(gui[\scrollView],Rect(16, 6, 480, 22))
 					.font_(Font("Helvetica-Bold",12))
 					.string_("MIDI Controls: "++(displayParent.controlTitle))
 					.stringColor_(Color.black)
 					.action_{|v| };
 			
-				SCStaticText.new(gui[\scrollView],Rect(16, 8+17, 480, 22))
+				StaticText.new(gui[\scrollView],Rect(16, 8+17, 480, 22))
 					.string_("       Path                        Parameter"++						"               MIDI Port                 Ch    Num  Min   Max  Type")
 					.stringColor_(Color.black)
 					.action_{|v| };
