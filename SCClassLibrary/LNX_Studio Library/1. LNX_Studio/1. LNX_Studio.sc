@@ -1,11 +1,12 @@
-   //                          //        //||     //  || //                                        .
-  //**************************//        // ||    //   ||//
- // LNX_STUDIO Version 1.6   //        //  ||   //    |// 
-//**************************//        //   ||  //     //|
-//                         //        //    || //     //||
-//     2015 (by lnx)      //======= //     ||//     // ||
+   //                                //        //||     //  || //                               .
+  // ****************************** //        // ||    //   ||//
+ //     LNX_STUDIO Version 1.6     //        //  ||   //    |// 
+// ****************************** //        //   ||  //     //|
+//                               //        //    || //     //||
+//   2015 by neil cosgrove      //======= //     ||//     // ||
+//     for Mac & Linux
 //
-// 1.6 release for Mac OS>=10.6
+// Linux port (andrew lambert)
 //
 // (nc) no copyright. use and abuse. :)
 // refer to a gpl or something similar
@@ -14,7 +15,8 @@
 // Instruments, FX's, MIDI Instruments, Save, Load, Instrument Presets
 // MIDI In/Out patching, MIDI control of all GUI, Internal MIDI Ports, Internal/Ext MIDI Clock
 // Networking - Syncing over a network all of the Studio features
-// Automation, Instrument Library, Loading samples directly from a web browser into the instruments
+// Automation, Instrument Library, Preset sequencing
+// Loading samples directly from a web browser into the instruments
 //
 // Instruments &  Effects:
 // =======================
@@ -25,7 +27,7 @@
 // SC Code FX   - A programmable effect using sc code
 // Step Seq     - A 32x8 Step Sequencer
 // Controllers  - Internal Midi Controller
-// FreeVerb     - SC's FreeVerb (coded from experiments with faust.)
+// FreeVerb     - SC's FreeVerb (coded from experiments with faust)
 // PitchShift   - A pitch shifter
 // GVerb        - The "GVerb" LADSPA effect (by Juhana Sadeharju)
 // Limiter      - A Limiter
@@ -140,7 +142,7 @@ LNX_Studio {
 		
 		GUI.qt;                   // use the cocoa gui framework
 		this.initInstance;			 // initialise this instance of the studio
-		this.createInstrumentList;   // 
+		this.createInstrumentList;   // create the lists of instruments available
 		this.initLibrary;            // make all the files & folders for the inst library
 		this.initVars;			 // all the main vars are initialised here
 		this.initMIDI;			 // start all midi services
@@ -221,7 +223,7 @@ LNX_Studio {
 			};	
 		}.defer(2);
 		
-		studios        = [];
+		studios = [];
 		//macOSisPPC = LNX_AudioDevices.macOSisPPC;      // get audio device info
 		
 	}

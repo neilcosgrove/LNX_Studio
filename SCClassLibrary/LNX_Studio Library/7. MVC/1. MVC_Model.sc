@@ -362,14 +362,14 @@ MVC_Model {
 
 	// same as above but no testing on auto. used in LNX_POP for program changes
 	lazyValueActionDoAutoBeat_{|val,latency,send=false,toggle=false,beat,offset|
+		var draw = false;
 		if (constrain &&(controlSpec.notNil)) { val=controlSpec.constrain(val) };
-		
 		if (hasMIDIcontrol) {this.autoValue_(val,value,beat)};
+		if (value!=val) { draw = true };
 		value=val;
 		action.value(this,value,latency,send,toggle, offset:offset); // this,latency,send
 		this.changed(\value,value);
-		this.lazyValueRefresh;
-			
+		if (draw) { this.lazyValueRefresh };
 	}
 
 	// register this model with LNX_MIDIControl

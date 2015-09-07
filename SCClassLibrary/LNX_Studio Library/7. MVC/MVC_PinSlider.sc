@@ -7,7 +7,7 @@ m=0.asModel;
 q=MVC_PinSlider(w,m,Rect(20,20,16,100)).width_(8);
 r=MVC_PinSlider(w,m,Rect(50,20,14,100)).width_(6);
 r=MVC_PinSlider(w,m,Rect(80,20,12,100)).width_(4);
-w.front;
+w.create;
 ) */
 
 
@@ -32,8 +32,11 @@ MVC_PinSlider : MVC_FlatSlider {
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
-				var w2,h2, rect2, x2, zeroVal;
+				var w2,h2, rect2, x2, zeroVal, val;
+				
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
+				
+				if (controlSpec.notNil) { val = controlSpec.unmap(value) }{ val = value };
 							
 				zeroVal=zeroValue ? 0;	
 						
@@ -91,12 +94,12 @@ MVC_PinSlider : MVC_FlatSlider {
 					Pen.width_(width-3);
 					Pen.capStyle_(1);
 					
-					Pen.line((w/2)@(value.map(1,0,width+1,h-width-1)),
+					Pen.line((w/2)@(val.map(1,0,width+1,h-width-1)),
 						(w/2)@(h-width-1));
 					
 					Pen.stroke;
 					
-					if ((hilite)and:{hiliteMode!='inner'}and:{value>zeroVal}) {
+					if ((hilite)and:{hiliteMode!='inner'}and:{val>zeroVal}) {
 						colors[\hiliteTrue].set;
 					}{
 						if (midiLearn) {
@@ -111,14 +114,14 @@ MVC_PinSlider : MVC_FlatSlider {
 					
 					Pen.width_(2);
 					
-					rect2=Rect(0,(h-h2)*(1-value),w2,h2);
+					rect2=Rect(0,(h-h2)*(1-val),w2,h2);
 					
-					if ((down)and:{value>zeroVal}) { rect2=rect2.insetBy(2) };
+					if ((down)and:{val>zeroVal}) { rect2=rect2.insetBy(2) };
 					
-					if (value==0) { rect2=rect2.insetBy(3) };
+					if (val==0) { rect2=rect2.insetBy(3) };
 					
 					Pen.fillOval(rect2);
-					if (value>zeroVal) {
+					if (val>zeroVal) {
 						if (midiLearn) {
 							colors[\background].set;
 						}{
@@ -126,7 +129,7 @@ MVC_PinSlider : MVC_FlatSlider {
 						};
 						Pen.fillOval(rect2.insetBy(2,2));
 						
-						if ((hilite)and:{hiliteMode=='inner'}and:{value>zeroVal}) {
+						if ((hilite)and:{hiliteMode=='inner'}and:{val>zeroVal}) {
 							colors[\hiliteTrue].set;
 						}{
 							if (midiLearn) {
