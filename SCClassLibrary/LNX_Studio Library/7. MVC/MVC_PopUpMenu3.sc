@@ -168,9 +168,9 @@ MVC_PopUpMenu3 : MVC_View {
 
 			// resize and adjust position for size of screen
 			rect2 = rect.copy;
-			rect2 = rect2.height_(rect2.height.clip(0,Window.screenBounds.height-60)) ;
-			moveY = (Window.screenBounds.height - rect2.top - rect2.height-80).clip(-inf,0);
-			rect2 = rect2.moveBy(0,moveY);
+			// rect2 = rect2.height_(rect2.height.clip(0,Window.screenBounds.height-60)) ;
+			// moveY = (Window.screenBounds.height - rect2.top - rect2.height-80).clip(-inf,0);
+			// rect2 = rect2.moveBy(0,moveY);
 
 			// the window
 			menuWindow=MVC_Window("", rect2, border:false, scroll:true);
@@ -182,7 +182,7 @@ MVC_PopUpMenu3 : MVC_View {
 					menuWindow.front;
 					// and also front window after menu item not selected
 				};
-				if (menuWindow.bounds.contains(GUI.cursorPosition.convert).not) {
+				if (menuWindow.view.view.absoluteBounds.contains(GUI.cursorPosition).not) {
 					// not in bounds
 					if (selected.notNil){
 						selected=nil;	
@@ -251,7 +251,7 @@ MVC_PopUpMenu3 : MVC_View {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.black);
 						Pen.font_(menuFont);
-						Pen.stringLeftJustIn("Ã", Rect(2,indexValue*h+1,w+4,h));
+						Pen.stringLeftJustIn(" *", Rect(2,indexValue*h+1,w+4,h));
 					};
 					
 					items.do{|t,i|
@@ -268,16 +268,23 @@ MVC_PopUpMenu3 : MVC_View {
 					};
 				};
 				
-			textView=MVC_StaticText(menuWindow,Rect(22,1,w-20,h*(items.size)))
-				.shadow_(false)
-				.string_(
-					items.collect{|s|
+
+			// textView=MVC_View(menuWindow,Rect(22,1,w-20,h*(items.size)))
+			// 	.color_(\background, Color.clear)
+
+			items.do {|s, i|
+				textView = MVC_StaticText(menuWindow, Rect(22,2+(h*i),w-20,h))
+					.shadow_(false)
+					.string_(
 						if (s[0]==$() { s=s.drop(1) }; 
-						(s=="-").if {""} {s.asString} 
-					}.join("\r\n")
-				)
-				.font_(menuFont)
-				.color_(\string,Color.black)
+						(s=="-").if {""} {s.asString};
+					)
+					.font_(menuFont)
+					.color_(\string,Color.black)
+			};
+
+			MVC_StaticText(menuWindow,Rect(0,1,w+3,h*(items.size)))
+				.string_("")
 				.mouseOverAction_{|me, x, y|
 					var val = (y/h).asInt.clip(0,items.size-1);
 					if (selected!=val) {
@@ -306,11 +313,6 @@ MVC_PopUpMenu3 : MVC_View {
 						menuWindow.free;
 					};
 				};
-
-			MVC_StaticText(menuWindow,Rect(0,1,22,h*(items.size)))
-				.string_("")
-				.mouseOverAction_(textView.mouseOverAction)
-				.mouseUpAction_(textView.mouseUpAction);
 			
 			menuWindow.create;			
 			menuWindow.view.alpha_(0.95);
@@ -334,7 +336,6 @@ MVC_PopUpMenu3 : MVC_View {
 				lw=lh=nil;
 				startX=x;
 				startY=y;
-				view.bounds.postln;
 			}{	
 				if (buttonNumber==2) {
 					this.toggleMIDIactive
