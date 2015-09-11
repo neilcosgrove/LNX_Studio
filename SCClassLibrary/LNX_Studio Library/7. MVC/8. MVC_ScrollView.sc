@@ -200,7 +200,7 @@ MVC_RoundedScrollView : MVC_ScrollView {
 
 MVC_ScrollView {
 
-	var	<parent,		<>window, 	<rect,	<view;
+	var	<parent,		<>window, 	<rect,	<view, <action;
 		
 	var	<hasBorder=true,
 		<autoScrolls=false,			<autohidesScrollers=true,
@@ -265,6 +265,13 @@ MVC_ScrollView {
 
 	}
 
+	action_ {|func|
+		action = func;
+		if (view.notNil) {
+			view.action = func;
+		};
+	}
+
 	postInit{}
 
 	// add or remove an MVC_View to the view, all views will be created this scrollView
@@ -301,6 +308,7 @@ MVC_ScrollView {
 //			.autohidesScrollers_(autohidesScrollers)  // this causes redraws on creation
 			.resize_(resize)
 		;
+		if (action.notNil) { view.action = action };
 		if (colors[\background].notNil) { view.background_(colors[\background]) };
 		if (addFlowLayout) { view.addFlowLayout(margin, gap) };
 		gui.do(_.create(view)); // now make all views inside this view

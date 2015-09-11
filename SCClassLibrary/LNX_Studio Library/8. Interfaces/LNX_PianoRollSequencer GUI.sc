@@ -65,8 +65,8 @@
 	
 	// set the position of the transport marker
 	pos_{|x|
-		pos =  x;	
-		if (gui.notNil) { gui[\notes].refresh };
+		pos =  x;
+		if (gui.notNil) { gui[\notesPosAndMouse].refresh };
 	}
 	
 	createDetachableWindow{
@@ -313,7 +313,9 @@
 				.hasVerticalScroller_(true)
 				.hasHorizontalScroller_(true)
 				.autoScrolls_(true)
-				.resize_(5);
+				.resize_(5)
+				.action_({ this.refresh(true, false) })
+			;
 				
 	// I'm going to remove tabs to make it easier to code !!! /////////////////////////////////////
 			
@@ -372,39 +374,39 @@
 		x2=(voR/(gridW*xScale)).ceil;
 		x2=x2-x1+1; // now width here
 		
-		SCPen.use{
+		Pen.use{
 			// background
-			SCPen.smoothing_(false);
+			Pen.smoothing_(false);
 			colors[\background].alpha_(1).set;
-			SCPen.fillRect(Rect(0,0,w,h));
+			Pen.fillRect(Rect(0,0,w,h));
 			
 			colors[\grid].set;
 			// grid (horiz)
 			(h.div(gridH*yScale)+1).do{|y|
 				if ((y*yScale)%spo==0) {
-					SCPen.stroke;
+					Pen.stroke;
 					colors[\grid2].set;
 				}{
-					SCPen.stroke;
+					Pen.stroke;
 					colors[\grid].set;
 				};
-				SCPen.line(voL@(y*gridH*yScale),voR@(y*gridH*yScale));
+				Pen.line(voL@(y*gridH*yScale),voR@(y*gridH*yScale));
 			};
-			SCPen.stroke;
+			Pen.stroke;
 			
 			Pen.font_(Font("Helvetica",10));
 			
 			// grid (vert)
-			if (snapToGrid.not) { SCPen.lineDash_(gridDash1) };
+			if (snapToGrid.not) { Pen.lineDash_(gridDash1) };
 			(x2).asInt.do{|x| x=x+x1;
 				if ((x*xScale)%vBars==0) {
-					//SCPen.stroke;
+					//Pen.stroke;
 					colors[\grid2].set;
 				}{
 					colors[\grid].set;
 				};
-				SCPen.line((x*gridW*xScale)@voT,(x*gridW*xScale)@voB);
-				SCPen.stroke;
+				Pen.line((x*gridW*xScale)@voT,(x*gridW*xScale)@voB);
+				Pen.stroke;
 				
 				//
 				if ((x*xScale)%(xScale*vNum)==0) {
@@ -422,7 +424,7 @@
 			if ((selectArea.notNil)and:{notesSelected.size>1}) {
 				colors[\selectArea].set;
 				
-				SCPen.fillRect(Rect( selectArea.left*gridW, (127-selectArea.top+1)*gridH,
+				Pen.fillRect(Rect( selectArea.left*gridW, (127-selectArea.top+1)*gridH,
 						selectArea.width*gridW, (selectArea.height.neg-1)*gridH ));
 			};
 			
@@ -431,35 +433,35 @@
 				var dur;
 				if (rect.intersects(visibleRect)){
 					
-					SCPen.lineDash_(noDash);
+					Pen.lineDash_(noDash);
 					
 					if (notesSelected.includes(key)) {
 						colors[\noteBS].set;
-						SCPen.fillRect(rect);
+						Pen.fillRect(rect);
 						colors[\noteBGS].set;
-						SCPen.fillRect(rect.insetBy(1,1));
+						Pen.fillRect(rect.insetBy(1,1));
 					}{													colors[\noteB].set;
-						SCPen.fillRect(rect);
+						Pen.fillRect(rect);
 						colors[\noteBG].set;
-						SCPen.fillRect(rect.insetBy(1,1));
+						Pen.fillRect(rect.insetBy(1,1));
 					};
 					
 					
-					SCPen.lineDash_(selectDash);
+					Pen.lineDash_(selectDash);
 					colors[\durDiv].set;
 					dur=(rect.right)-((rect.width*0.25));//.clip(0,gridW));
-					SCPen.line(dur@(rect.top+2), dur@(rect.bottom-1));
-					SCPen.stroke;
+					Pen.line(dur@(rect.top+2), dur@(rect.bottom-1));
+					Pen.stroke;
 				};
 			};
 			
 			// the selction rect
 			if (selectRect.notNil) {
 				Color(1,1,1,0.065).set;
-				SCPen.fillRect(selectRect);
+				Pen.fillRect(selectRect);
 				colors[\selectRect].set;
-				SCPen.lineDash_(selectDash);
-				SCPen.strokeRect(selectRect);
+				Pen.lineDash_(selectDash);
+				Pen.strokeRect(selectRect);
 			};
 			
 		};
@@ -490,17 +492,17 @@
 			visibleOrigin=gui[\scrollView].visibleOrigin;
 			svb=me.bounds;
 			voT = visibleOrigin.y;
-			voB = voT+svb.height;	
-			SCPen.use{
-				SCPen.smoothing_(false);
+			voB = voT+svb.height;
+			Pen.use{
+				Pen.smoothing_(false);
 				Color.white.set;
-				SCPen.line((pos*gridW)@(voT),(pos*gridW)@voB);
-				SCPen.stroke;
+				Pen.line((pos*gridW)@(voT),(pos*gridW)@voB);
+				Pen.stroke;
 				
-				SCPen.lineDash_(markerDash);
+				Pen.lineDash_(markerDash);
 				colors[\marker].set;
-				SCPen.line((marker*gridW)@(voT),(marker*gridW)@voB);
-				SCPen.stroke;
+				Pen.line((marker*gridW)@(voT),(marker*gridW)@voB);
+				Pen.stroke;
 			};
 		}
 		
@@ -730,13 +732,13 @@
 	// drag and drop midi files /////////////////////////////////////////////////////////////////
 	
 	.canReceiveDragHandler_{
-		(SCView.currentDrag.isArray)and:{SCView.currentDrag[0].isString}
+		(View.currentDrag.isArray)and:{View.currentDrag[0].isString}
 	}
 	
 	.receiveDragHandler_{
 		var file;
-		if ((SCView.currentDrag.isArray)and:{SCView.currentDrag[0].isString}) {
-			{file = SimpleMIDIFile.read( SCView.currentDrag[0] ) }.try;
+		if ((View.currentDrag.isArray)and:{View.currentDrag[0].isString}) {
+			{file = SimpleMIDIFile.read( View.currentDrag[0] ) }.try;
 			if (file.notNil) {
 				var tempoAdjust=12;
 				if (file.tempoMap[0].notNil) { tempoAdjust= file.tempoMap[0][1]/2 };
@@ -769,15 +771,15 @@
 			
 			xos = vox%gridW;
 			
-			SCPen.use{
+			Pen.use{
 					
 				// background
-				SCPen.smoothing_(false);
+				Pen.smoothing_(false);
 				colors[\velocityBG].set;
-				SCPen.fillRect(Rect(0,0,w,h+7));
+				Pen.fillRect(Rect(0,0,w,h+7));
 							
-				SCPen.smoothing_(true);
-				SCPen.width_(1.25);
+				Pen.smoothing_(true);
+				Pen.width_(1.25);
 				
 				// notes
 				noteRects.pairsDo{|key,rect|
@@ -794,8 +796,8 @@
 							colors[\velocity].set
 						};
 							
-						SCPen.line(p1, x@(h+7));
-						SCPen.stroke;
+						Pen.line(p1, x@(h+7));
+						Pen.stroke;
 						Pen.fillOval(Rect.aboutPoint(p1,3.5,3.5));
 						
 						colors[\velocityBG].set;
