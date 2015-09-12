@@ -261,7 +261,8 @@ MVC_MIDIKeyboard {
 					});
 				})
 			})
-			.keyDownAction_{|me,char, modifiers, unicode, keycode|
+			// @TODO: new Qt "key" codes
+			.keyDownAction_{|me,char, modifiers, unicode, keycode, key|
 			
 				var kcm=keyCodeMap.indexOf(keycode);
 				

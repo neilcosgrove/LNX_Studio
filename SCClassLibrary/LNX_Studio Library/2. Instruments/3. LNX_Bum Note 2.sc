@@ -652,11 +652,11 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 				this.noteOff2(note, velocity*127,latency);
 			}
 			.releaseAllAction_{ voicer.releaseAllNotes(studio.actualLatency) }
-			.keyDownAction_{|me, char, modifiers, unicode, keycode|
-				gui[\keyboardView].view.keyDownAction.value(me,char, modifiers, unicode, keycode)
+			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
+				gui[\keyboardView].view.keyDownAction.value(me,char, modifiers, unicode, keycode, key)
 			}
-			.keyUpAction_{|me, char, modifiers, unicode, keycode|
-				gui[\keyboardView].view.keyUpAction.value(me, char, modifiers, unicode, keycode)
+			.keyUpAction_{|me, char, modifiers, unicode, keycode, key|
+				gui[\keyboardView].view.keyUpAction.value(me, char, modifiers, unicode, keycode, key)
 			}
 			.recordFocusAction_{ gui[\keyboardView].focus }
 			//.spoModel_(models[11]) // wrong spec

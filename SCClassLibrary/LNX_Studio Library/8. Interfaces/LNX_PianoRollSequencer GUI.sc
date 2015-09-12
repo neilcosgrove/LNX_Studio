@@ -707,25 +707,25 @@
 	
 	// Keydown /////////////////////////////////////////////////////////////////
 	
-	.keyDownAction_{|me, char, modifiers, unicode, keycode,a|
-		// [char, modifiers, unicode,keycode].postln;
+	.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
+		// [char, modifiers, unicode, keycode, key].postln;
 		// kc 51=delete, 36=return, 126,125,123,124=up,down,left,right
 		// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 
-		bCount=bCount+1;
+		// bCount=bCount+1;
 		
-		if (bCount.even) {
-			if (keycode==8) {this.guiCopy }; // copy
-			if (keycode==9) {this.guiPaste}; //paste
-			if (keycode==0) {this.guiSelectAll}; 
+		if (modifiers.isCtrl or: { modifiers.isCmd }) {
+			if (key.isAlphaKey(\C)) {this.guiCopy }; // copy
+			if (key.isAlphaKey(\V)) {this.guiPaste}; //paste
+			if (key.isAlphaKey(\A)) {this.guiSelectAll}; 
 		};
 		
-		if (keycode==51) { this.guiDelete};
+		if (key.isDel) { this.guiDelete};
 		
-		keyDownAction.value(this, char, modifiers, unicode, keycode);
+		keyDownAction.value(this, char, modifiers, unicode, keycode, key);
 		
 	}
-	.keyUpAction_{|me, char, modifiers, unicode, keycode|
+	.keyUpAction_{|me, char, modifiers, unicode, keycode, key|
 		keyUpAction.value(this, char, modifiers, unicode, keycode);
 	}
 	

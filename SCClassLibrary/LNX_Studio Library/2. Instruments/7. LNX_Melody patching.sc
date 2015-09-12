@@ -26,11 +26,11 @@ a.a.touch(0);
 				this.stopAllNotes;
 				{gui[\keyboard].clear}.defer(studio.actualLatency);
 			}
-			.keyDownAction_{|me, char, modifiers, unicode, keycode|
-				gui[\keyboard].view.keyDownAction.value(me,char, modifiers, unicode, keycode)
+			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
+				gui[\keyboard].view.keyDownAction.value(me,char, modifiers, unicode, keycode, key)
 			}
-			.keyUpAction_{|me, char, modifiers, unicode, keycode|
-				gui[\keyboard].view.keyUpAction.value(me, char, modifiers, unicode, keycode)
+			.keyUpAction_{|me, char, modifiers, unicode, keycode, key|
+				gui[\keyboard].view.keyUpAction.value(me, char, modifiers, unicode, keycode, key)
 			}
 			.recordFocusAction_{ gui[\keyboard].focus }
 			.spoModel_(models[27]);

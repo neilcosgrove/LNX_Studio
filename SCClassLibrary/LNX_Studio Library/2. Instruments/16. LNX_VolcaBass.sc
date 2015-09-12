@@ -46,11 +46,11 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 				if (((p[23]>0)&&(this.isOff)).not) {seqOutBuffer.pipeIn(pipe)};
 			}
 			.releaseAllAction_{ seqOutBuffer.releaseAll }
-			.keyDownAction_{|me, char, modifiers, unicode, keycode|
-				keyboardView.view.keyDownAction.value(me,char, modifiers, unicode, keycode)
+			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
+				keyboardView.view.keyDownAction.value(me,char, modifiers, unicode, keycode, key)
 			}
-			.keyUpAction_{|me, char, modifiers, unicode, keycode|
-				keyboardView.view.keyUpAction.value(me, char, modifiers, unicode, keycode)
+			.keyUpAction_{|me, char, modifiers, unicode, keycode, key|
+				keyboardView.view.keyUpAction.value(me, char, modifiers, unicode, keycode, key)
 			}
 			.recordFocusAction_{ keyboardView.focus };
 	}

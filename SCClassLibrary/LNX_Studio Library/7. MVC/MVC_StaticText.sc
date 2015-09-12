@@ -419,8 +419,8 @@ MVC_StaticText : MVC_View {
 			
 		};
 		
-		
-		view.keyDownAction_{|me,char,mod,uni,keycode|
+		// @TODO: new Qt "key" codes
+		view.keyDownAction_{|me,char,mod,uni,keycode,key|
 			
 			// help fixes double press bug by see if cmd is pressed
 			if (mod.isCmd) { noKeyPresses=noKeyPresses+1 }{ noKeyPresses=1 };

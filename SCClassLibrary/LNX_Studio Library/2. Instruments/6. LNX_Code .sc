@@ -260,11 +260,11 @@ LNX_Code : LNX_InstrumentTemplate {
 				voicer.releaseAllNotes(studio.actualLatency);
 				{gui[\keyboardView].clear}.defer(studio.actualLatency);
 			}
-			.keyDownAction_{|me, char, modifiers, unicode, keycode|
-				gui[\keyboardView].view.keyDownAction.value(me,char, modifiers, unicode, keycode)
+			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
+				gui[\keyboardView].view.keyDownAction.value(me,char, modifiers, unicode, keycode, key)
 			}
-			.keyUpAction_{|me, char, modifiers, unicode, keycode|
-				gui[\keyboardView].view.keyUpAction.value(me, char, modifiers, unicode, keycode)
+			.keyUpAction_{|me, char, modifiers, unicode, keycode, key|
+				gui[\keyboardView].view.keyUpAction.value(me, char, modifiers, unicode, keycode, key)
 			}
 			.recordFocusAction_{ gui[\keyboardView].focus };
 		

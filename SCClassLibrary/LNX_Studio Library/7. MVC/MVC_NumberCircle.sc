@@ -127,7 +127,8 @@ MVC_NumberCircle : MVC_View {
 			down=false;
 			view.refresh;	
 		}
-		.keyDownAction_{|me,char,mod,uni,keycode|
+		// @TODO: new Qt "key" codes
+		.keyDownAction_{|me,char,mod,uni,keycode, key|
 			var val;
 
 			if ((keycode==126)or:{keycode==124}) {

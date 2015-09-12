@@ -132,7 +132,8 @@ MVC_ListView : MVC_View {
 			if (editMode) { this.moveBy(x-startX,y-startY) };
 		};
 		
-		view.keyDownAction_{|me, char, modifiers, unicode|
+		// @TODO new qt "key" codes
+		view.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 			var index;
 			//[me, char, modifiers, unicode].postln;
 

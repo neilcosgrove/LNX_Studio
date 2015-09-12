@@ -114,8 +114,8 @@ MVC_Window {
 		
 		if (toFront) {view.front}; // why the delay between the 2 windows ?
 		
-		view.view.keyDownAction_{|me, char, modifiers, unicode, keycode|
-			keyDownAction.value(me, char, modifiers, unicode, keycode)
+		view.view.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
+			keyDownAction.value(me, char, modifiers, unicode, keycode, key)
 		};
 		
 		// used for resize functions. will not work if Rect(0,0,1,1) is off view.

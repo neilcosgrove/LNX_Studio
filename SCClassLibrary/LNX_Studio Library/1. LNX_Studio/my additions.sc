@@ -1035,6 +1035,9 @@ gives min, max, averages and total
 	asNote3 { ^#["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"].wrapAt(this) }
 
 	asNote4 {|spo=12| ^(this % (spo.asInt) + 65).asAscii ++((this div: spo).asString) }
+
+	isAlphaKey {|char| ^this == char.ascii[0]}
+	isDel { ^this == 0x01000007 }
 	
 }
 

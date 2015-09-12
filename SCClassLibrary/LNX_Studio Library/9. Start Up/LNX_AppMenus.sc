@@ -264,7 +264,8 @@ if (studio.batchOn) {
 		SCMenuSeparator.new(tools);
 		//lang
 		SCMenuItem.new(tools,  "Auto Syntax Colorizing").setShortCut("b").action_({
-		Document.current.keyDownAction_{|doc, char, mod, unicode, keycode|
+		// @TODO: new Qt "key" codes
+		Document.current.keyDownAction_{|doc, char, mod, unicode, keycode, key|
 	  		  if(unicode==13 or:(unicode==32) or: (unicode==3)){
 	     		   Document.current.syntaxColorize
 	   		 }

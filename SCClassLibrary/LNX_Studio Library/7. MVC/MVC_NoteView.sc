@@ -71,7 +71,8 @@ MVC_NoteView : MVC_View {
 			this.valueActions(\upAction,this);
 			if (model.notNil) {model.valueActions(\upAction,model)};		};
 			
-		view.keyDownAction={|me, char, modifiers, unicode, keycode|
+		// @TODO: new QT "key" codes
+		view.keyDownAction={|me, char, modifiers, unicode, keycode, key|
 			//[modifiers, unicode, keycode].postln;
 			var val;
 			// up

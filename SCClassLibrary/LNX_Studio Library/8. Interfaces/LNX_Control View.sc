@@ -133,7 +133,8 @@ LNX_MIDIControlInterface {
 				
 		};
 		
-		presetView.keyDownAction_{|me, char, modifiers, unicode,keycode|
+		// @TODO: new Qt "key" codes
+		presetView.keyDownAction_{|me, char, modifiers, unicode,keycode,key|
 		
 			//["mods", modifiers,"unicode", unicode, "keycode", keycode].postln;
 			

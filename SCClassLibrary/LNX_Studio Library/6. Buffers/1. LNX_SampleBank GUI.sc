@@ -229,8 +229,9 @@
 				};
 				moved=false;
 			}
-			.keyDownAction_{|me, char, modifiers, unicode, keycode|
+			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 				// 49 space, 36 return, 51 delete, up,down,left,right 126,125,123,124
+				// @TODO: key Qt "key" codes
 				switch (keycode)
 					{49} { }
 					{36} {
@@ -320,7 +321,7 @@
 					moved=false;
 				}
 		
-				.keyDownAction_{|me, char, modifiers, unicode, keycode|
+				.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 					// 49 space, 36 return, 51 delete, up,down,left,right 126,125,123,124
 					switch (keycode)
 						{49} { // space
@@ -1063,7 +1064,7 @@
 				scrollTask.stop;
 				scrollTask=nil;
 			}
-			.keyDownAction_{|me, char, modifiers, unicode, keycode|
+			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 				// 27 -, 24 +, 49 space, 125 down, 126 up, 123 left, 124 right
 				switch (keycode)
 					{27} { if (this.notEmpty) {zoom.multipyValueAction_(2)} }
