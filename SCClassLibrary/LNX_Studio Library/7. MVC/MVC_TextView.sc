@@ -324,14 +324,13 @@ MVC_SCTextView : TextView {
 
 	*viewClass { ^TextView } // this ensures that UserView's primitive is called
 
-	init { arg argParent, argBounds;
-		this.setParent(argParent.asView); // actual view
+	initView { arg argParent;
+		super.initView(argParent); // actual view
 		this.background = Color.clear;
-			// call asView again because parent by this point might be a FlowView
-		this.prInit(this.parent.asView, argBounds.asRect,this.class.viewClass);
-		argParent.add(this);//maybe window or viewadapter
 		this.enterInterpretsSelection_(false)
-			.font_(Font("Helvetica",12));
+			.font_(Font("Helvetica",12))
+			.keyDownAction_{|char, modifiers, unicode, keycode, key|
+				this.onKeyDown(char, modifiers, unicode, keycode, key)};
 	}
 	
 	value{^this.string}
@@ -340,20 +339,17 @@ MVC_SCTextView : TextView {
 	
 	align_{} // this makes myTextView exchangable with myTextField
 	
-	keyDown { arg char, modifiers, unicode,keycode;
-	
-		//["Mod:", modifiers,"Uni:", unicode, "Key:",keycode].postln;
-		
-		if (#[123,124,125,126].includes(keycode).not) {
+	onKeyDown {|char, modifiers, unicode, keycode, key|
+		if (key.isArrow.not) {
 			{
 				action.value(this);
-				if (keycode==36) {
+				if (key.isEnter) {
 					enterAction.value(this);
 				}; // enter action. (put here incase of paste)
 			}.defer(0.05);
 		};
 	}
-	
+
 	// unselected the range selected in view
 	clearRangeSize{
 		if (this.selectionSize>0) {
