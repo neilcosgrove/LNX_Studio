@@ -23,7 +23,7 @@ MVC_PopUpMenu : MVC_View {
 	}
 	
 	createView{
-		view=SCPopUpMenu.new(window,rect)
+		view = PopUpMenu.new(window,rect)
 			.background_(colors[midiLearn.if(\midiLearn,
 						enabled.if(\background,\backgroundDisabled))])
 			.items_(items)

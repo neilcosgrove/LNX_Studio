@@ -351,7 +351,7 @@ MVC_ScrollView {
 	// auto scroll
 	autoScrolls_{|bool|
 		autoScrolls=bool;
-		if (view.notClosed) {	view.autoScrolls_(bool) }
+		// if (view.notClosed) {	view.autoScrolls_(bool) }
 	}
 	
 	visible_{|bool|
