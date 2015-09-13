@@ -1038,6 +1038,11 @@ gives min, max, averages and total
 
 	isAlphaKey {|char| ^this == char.ascii[0]}
 	isDel { ^this == 0x01000007 }
+	isLeft { ^this == 0x01000012 }
+	isUp { ^this == 0x01000013 }
+	isRight { ^this == 0x01000014 }
+	isDown { ^this == 0x01000015 }
+	isSpace { ^this == 0x20 }
 	
 }
 

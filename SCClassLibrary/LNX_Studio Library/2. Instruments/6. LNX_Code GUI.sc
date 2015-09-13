@@ -136,8 +136,6 @@
 			
 		gui[\keyboardOuterView] = MVC_CompositeView(gui[\scrollView],Rect(5,365+30+5+4,640,90));
 			
-		toFrontAction={ gui[\keyboardView].focus};
-			
 		gui[\keyboardView]=MVC_MIDIKeyboard(gui[\keyboardOuterView],Rect(0,0,640,90),6,24)
 			.keyDownAction_{|note|
 				this.keyboardNoteOn(note,100/127);
@@ -153,6 +151,8 @@
 				};
 				lastKeyboardNote=note;
 			};
+			
+		toFrontAction = { gui[\keyboardView].focus };
 			
 		// master
 		

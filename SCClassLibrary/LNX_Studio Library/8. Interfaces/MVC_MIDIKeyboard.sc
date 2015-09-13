@@ -51,7 +51,7 @@ MVC_MIDIKeyboard {
 	}
 	
 	init { arg argwindow, argbounds, argoctaves=3, argstartnote;
-		var r, pix, pen;
+		var r, pix, pen, keys2;
 		octaves = argoctaves ? 4;
 		bounds = argbounds ? Rect(20, 10, 364, 60);
 		
@@ -61,8 +61,12 @@ MVC_MIDIKeyboard {
 		pix = [ 0, 0.1, 0.17, 0.27, 0.33, 0.5, 0.6, 0.67, 0.77, 0.83, 0.93, 1 ]; // as above but normalized
 		keys = List.new;
 		
-		keyCodeMap=[6,1,7,2,8,9,5,11,4,45,38,46,12,19,13,20,14,
-									15,23,17,22,16,26,32,34,25,31,29,35];
+		// keyCodeMap=[6,1,7,2,8,9,5,11,4,45,38,46,12,19,13,20,14,
+		// 							15,23,17,22,16,26,32,34,25,31,29,35];
+		keys2 = [\Z,\S,\X,\D,\C,\V,\G,\B,\H,\N,\J,\M, //',',\L,'.',';','/',
+					\Q,'2',\W,'3',\E,\R,'5',\T,'6',\Y,'7',\U,
+					\I,'9',\O,'0',\P];
+		keyCodeMap = Array.fill(keys2.size, {|i| keys2[i].ascii[0]});
 		keyCodesPressed=[];
 		
 		keyboardColor=Colour(0.5,0.5,0.5);
@@ -128,10 +132,10 @@ MVC_MIDIKeyboard {
 	
 		var	pen	= GUI.pen;
 		
-		view = GUI.userView.new(window, bounds); // thanks ron!
+		view = UserView.new(window, bounds); // thanks ron!
  		bounds = view.bounds;
 	
-		view	.canFocus_(true)
+		view.canFocus_(true)
 			.focusColor_(Color.clear)
 			.mouseDownAction_({|me, x, y, mod|
 				chosenkey = this.findNote(x, y);
@@ -261,36 +265,35 @@ MVC_MIDIKeyboard {
 					});
 				})
 			})
-			// @TODO: new Qt "key" codes
-			.keyDownAction_{|me,char, modifiers, unicode, keycode, key|
+			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 			
-				var kcm=keyCodeMap.indexOf(keycode);
+				var kcm = keyCodeMap.indexOf(key);
 				
-				if (modifiers.asBinaryDigits[4]==0) {  // no apple modifier
+				if (modifiers.isCmd.not) {  // no apple modifier
 				
-					if (keycode==126) {miscKeyAction.value(\up)   ;};
-					if (keycode==125) {miscKeyAction.value(\down) ;};
-					if (keycode==123) {miscKeyAction.value(\left) ;};
-					if (keycode==124) {miscKeyAction.value(\right);};
-					if (keycode== 49) {
-							miscKeyAction.value(\space);
-							spaceBarAction.value;
-						};
+					if (key.isUp) { miscKeyAction.value(\up)    };
+					if (key.isDown) { miscKeyAction.value(\down)  };
+					if (key.isLeft) { miscKeyAction.value(\left)  };
+					if (key.isRight) { miscKeyAction.value(\right) };
+					if (key.isSpace) {
+						miscKeyAction.value(\space);
+						spaceBarAction.value;
+					};
 					
-					if (keycode== 27) {transpose=(transpose-1).clip(-2,5)};
-					if (keycode== 24) {transpose=(transpose+1).clip(-2,5)};
+					if (key.isAlphaKey('-')) {transpose=(transpose-1).clip(-2,5)};
+					if (key.isAlphaKey('+')) {transpose=(transpose+1).clip(-2,5)};
 					
 					// keyboard note pressed
-					if (kcm.isNumber) {									if (keyCodesPressed.includes(keycode).not) { // test for repeat key press
+					if (kcm.isNumber) {	if (keyCodesPressed.includes(keycode).not) { // test for repeat key press
 							this.keyOn((kcm+(transpose*12)).clip(-24,127-24)); // play note
-							keyCodesPressed=keyCodesPressed.add(keycode); // store for next key test
+							keyCodesPressed = keyCodesPressed.add(keycode); // store for next key test
 						}
 					}
 	
 				}
 			}
-			.keyUpAction = { |me,char,modifiers,unicode,keycode|
-				var kcm=keyCodeMap.indexOf(keycode);
+			.keyUpAction = {|me, char, modifiers, unicode, keycode, key|
+				var kcm = keyCodeMap.indexOf(key);
 				if (kcm.isNumber) {	
 					this.keyOff((kcm+(transpose*12)).clip(-24,127-24)); // note off
 					keyCodesPressed.remove(keycode); // remove from repeat key list
