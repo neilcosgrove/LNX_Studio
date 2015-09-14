@@ -142,7 +142,7 @@
 					}
 				})
 				.onClose_({
-					if (labelGUI[j].notNil) {
+					if (labelGUI.notNil and: { labelGUI[j].notNil }) {
 						labelGUI[j].drawFunc_({}).mouseDownAction_({}).onClose_({});
 						labelGUI[j]=nil;
 					};
