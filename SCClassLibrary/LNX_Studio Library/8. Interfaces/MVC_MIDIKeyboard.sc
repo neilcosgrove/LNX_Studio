@@ -7,7 +7,7 @@ MVC_MIDIKeyboard {
 	var trackKey, chosenkey, <view;
 	var window, bounds, octaves, startnote;
 	var downAction, upAction, trackAction, spaceBarAction;
-	var keyCodeMap, keyCodesPressed;
+	var keyCodeMap, keyCodesPressed, keyUpTasks;
 	var <transpose=0, <>miscKeyAction;
 	var <>keyboardColor, <resize=1;
 	var <>useSelect=false, <>stopGUIUpdate=false;
@@ -67,6 +67,7 @@ MVC_MIDIKeyboard {
 					\Q,'2',\W,'3',\E,\R,'5',\T,'6',\Y,'7',\U,
 					\I,'9',\O,'0',\P];
 		keyCodeMap = Array.fill(keys2.size, {|i| keys2[i].ascii[0]});
+		keyUpTasks = Array.newClear(128);
 		keyCodesPressed=[];
 		
 		keyboardColor=Colour(0.5,0.5,0.5);
@@ -284,9 +285,14 @@ MVC_MIDIKeyboard {
 					if (key.isAlphaKey('+')) {transpose=(transpose+1).clip(-2,5)};
 					
 					// keyboard note pressed
-					if (kcm.isNumber) {	if (keyCodesPressed.includes(keycode).not) { // test for repeat key press
-							this.keyOn((kcm+(transpose*12)).clip(-24,127-24)); // play note
-							keyCodesPressed = keyCodesPressed.add(keycode); // store for next key test
+					if (kcm.isNumber) {
+						var note = (kcm+(transpose*12)).clip(-24,127-24)+24;
+						if (keyUpTasks[note].notNil) {
+							keyUpTasks[note].stop;
+						};
+						if (keyCodesPressed.includes(key).not) { // test for repeat key press
+							this.keyOn(note-24); // play note
+							keyCodesPressed = keyCodesPressed.add(key); // store for next key test
 						}
 					}
 	
@@ -295,8 +301,18 @@ MVC_MIDIKeyboard {
 			.keyUpAction = {|me, char, modifiers, unicode, keycode, key|
 				var kcm = keyCodeMap.indexOf(key);
 				if (kcm.isNumber) {	
-					this.keyOff((kcm+(transpose*12)).clip(-24,127-24)); // note off
-					keyCodesPressed.remove(keycode); // remove from repeat key list
+					var note = (kcm+(transpose*12)).clip(-24,127-24)+24,
+						kb = this;
+					if (keyUpTasks[note].notNil) {
+						keyUpTasks[note].stop;
+					};
+					// avoid hardware repeat typing
+					keyUpTasks[note] = Task({
+						0.05.wait;
+						kb.keyOff(note-24); // note off
+						keyCodesPressed.remove(key); // remove from repeat key list
+						nil;
+					}, AppClock).play;
 				}	
 			};
 			
@@ -305,7 +321,7 @@ MVC_MIDIKeyboard {
 	
 	keyOn{|note|
 		note=note+24;
-		//("Key On"+(note.asString)).postln;
+		// ("Key On"+(note.asString)).postln;
 		this.outDownAction(note);
 		if (stopGUIUpdate.not) {
 			if (useSelect) {
@@ -318,7 +334,7 @@ MVC_MIDIKeyboard {
 	
 	keyOff{|note|
 		note=note+24;
-		//("Key Off"+(note.asString)).postln;
+		// ("Key Off"+(note.asString)).postln;
 		this.outUpAction(note);
 		if (stopGUIUpdate.not) {
 			if (useSelect) {
