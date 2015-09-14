@@ -58,7 +58,7 @@ MVC_View {
 	
 	var <>locked = false, <>numberOffset = 0;
 	
-	// you can supply a MVC_Model, MVC_TabView, a SCWindow, a MVC_Window, a MVU_ScrollView, a Rect
+	// you can supply a MVC_Model, MVC_TabView, a Window, a MVC_Window, a MVU_ScrollView, a Rect
 	// or a themeMethod Dict in any order
 	
 	*new {|...args| ^super.new.init(*args) }

@@ -159,7 +159,7 @@ LNX_Mode {
 			"this", "thisMethod", "thisProcess", "platform", "Main", "shutdown",
 			"ClassBrowser", "current", "currentMethod", "currentClass", "interpretCmdLine",
 			
-			"SCWindow", "Window", "allWindows", "children",
+			"Window", "Window", "allWindows", "children",
 			"Document", "allDocuments", "open", "listener", "string_", "prSetFileName",
 			"CocoaDocument",  "promptToSave_", "propen", "prSetFileName", 
 			"implementationClass", "makeWikiPage", "autoRun_", "readNew",

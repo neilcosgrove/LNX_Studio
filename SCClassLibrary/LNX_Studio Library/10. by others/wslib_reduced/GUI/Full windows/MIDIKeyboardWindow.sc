@@ -113,7 +113,7 @@ KeyboardWindow {
 		var scale;
 		//var blackKeysStructure = [0,1,1,0,1,1,1];
 					
-		window = SCWindow( "keys (channel " ++ channel ++ " )", bounds );
+		window = Window( "keys (channel " ++ channel ++ " )", bounds );
 		window.view.background_( Color.white );	
 		window.front;
 				

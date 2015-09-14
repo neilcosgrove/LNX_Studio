@@ -59,7 +59,7 @@ bus = 0;
 addAct = \addToTail; 
 fxOn = false; 
 slider = Array.newClear(param[0].size); 
-win = SCWindow(" fastgui: " ++ name, Rect(10 + 20.rand, 500 + 20.rand, 300, (param[0].size * 20) + 50), false); 
+win = Window(" fastgui: " ++ name, Rect(10 + 20.rand, 500 + 20.rand, 300, (param[0].size * 20) + 50), false); 
 win.view.decorator = lay = FlowLayout(win.view.bounds, 5@5, 5@5); 
 
 SCStaticText(win, 50 @ 15).font_(Font("Helvetica", 9)).string_("Bus").align_(\right); 
@@ -209,7 +209,7 @@ sendAlways {arg target, outbus = 0, fadeTime=0.02, addAction=\addToHead;
 + Routine {
 	fastgui { arg name = "routine";
 		var win, controls, clock, isPlaying = false, tempoClock;
-		win = SCWindow(" fastgui: " ++ name, Rect(10 + 20.rand, 500 + 20.rand, 180, 60), false);
+		win = Window(" fastgui: " ++ name, Rect(10 + 20.rand, 500 + 20.rand, 180, 60), false);
 		win.front;
 		tempoClock = TempoClock.default;
 		clock = SCPopUpMenu(win, Rect(80, 10, 80,18))

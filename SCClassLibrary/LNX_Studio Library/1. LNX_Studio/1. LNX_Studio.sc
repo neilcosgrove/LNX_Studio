@@ -1180,7 +1180,7 @@ LNX_Studio {
 	///////////////  info  /////////////////////////
 		
 	openHelp{
-		if ( (frontWindow.isKindOf(SCWindow))
+		if ( (frontWindow.isKindOf(Window))
 			or: {frontWindow.isNil}
 			or: {frontWindow.helpAction.value}) {
 				"LNX_Studio Help".help

@@ -1,6 +1,6 @@
 
 (
-	w = SCWindow.new("NSTableView", Rect(200,500,400,220));
+	w = Window.new("NSTableView", Rect(200,500,400,220));
 	w.onClose_({ t.release; c.release; });
 
 	t = SCNSObject("NSTableView", "initWithFrame:", [ Rect(0,0,380,200) ]);

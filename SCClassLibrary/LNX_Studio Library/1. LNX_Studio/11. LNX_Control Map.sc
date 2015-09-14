@@ -60,7 +60,7 @@ LNX_ControlMap {
 	/*
 	*edit{|control|
 		var window,env;
-		window=SCWindow.new("Edit control:"+(control.asString)).front;
+		window=Window.new("Edit control:"+(control.asString)).front;
 		env=this.env(control);
 		LNX_EnvelopeEdit.new(window,Rect(10,10,window.bounds.width-30,window.bounds.height-30),env, 100)
 			.background_(Color(0.7,0.7,0.7))

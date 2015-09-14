@@ -12,7 +12,7 @@ PlotPoint {
 		}
 		
 	init { |point|
-		window = SCWindow( "Point" ).front;
+		window = Window( "Point" ).front;
 		pointColor = pointColor ?? { Color.black };
 		lineColor = lineColor ?? { Color.black.alpha_(0.5) };
 		labelFont = labelFont ?? { Font( "Monaco", 9 ) };

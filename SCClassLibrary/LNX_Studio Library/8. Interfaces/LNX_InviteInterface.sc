@@ -138,7 +138,7 @@ LNX_InviteInterface {
 			{ 
 				if ((win.isNil)or:{win.isClosed}) {
 					window = SCModalWindow( name, 
-						Rect.aboutPoint( SCWindow.screenBounds.center, 
+						Rect.aboutPoint( Window.screenBounds.center, 
 							((buttons.size * 42) + 2).max( 160 ), 
 								((26 + (string.occurrencesOf( $\n ) * 10) ) + 4).max( 52 )
 								).resizeBy(w,h), false, border ? true );
@@ -146,7 +146,7 @@ LNX_InviteInterface {
 				}{
 			
 					window = SCModalSheet( win, 
-						Rect.aboutPoint( SCWindow.screenBounds.center, 
+						Rect.aboutPoint( Window.screenBounds.center, 
 							((buttons.size * 42) + 2).max( 160 ), 
 								((26 + (string.occurrencesOf( $\n ) * 10) ) + 4).max( 52 )
 								).resizeBy(w,h), false, border ? true );
@@ -154,7 +154,7 @@ LNX_InviteInterface {
 				}
 			} {
 			window = Window( name, 
-				Rect.aboutPoint( SCWindow.screenBounds.center, 
+				Rect.aboutPoint( Window.screenBounds.center, 
 					((buttons.size * 42) + 2).max( 160 ), 
 						((26 + (string.occurrencesOf( $\n ) * 10) ) + 4).max( 52 )
 						).resizeBy(w,h), false, border ? true );

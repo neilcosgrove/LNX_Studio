@@ -1,7 +1,7 @@
 
 // NSButton
 (
-	w = SCWindow.new("Window", Rect(100,550,350,250)).front;
+	w = Window.new("Window", Rect(100,550,350,250)).front;
 	p = AppKitView.new(w, "NSButton", "initWithFrame:", Rect(100,50,100,24));
 )
 SCNSObject.dumpPool;
@@ -34,7 +34,7 @@ SCNSObject.dumpPool;
 
 // decorator
 (
-	w = SCWindow.new("Window", Rect(100,550,320,250)).front;
+	w = Window.new("Window", Rect(100,550,320,250)).front;
 	w.view.decorator = FlowLayout.new(w.view.bounds); // <--- decorator!
 
 	p = Array.fill(24, { arg i;
@@ -51,7 +51,7 @@ SCNSObject.dumpPool;
 
 //
 (
-	w = SCWindow.new("Window", Rect(200,550,320,170)).front;
+	w = Window.new("Window", Rect(200,550,320,170)).front;
 	p = AppKitView.new(w, "NSButton", "initWithFrame:", Rect(100,50,100,24));
 	p.setBezelStyle_(1);
 	p.initAction("doAction:");
@@ -144,7 +144,7 @@ SCNSObject.dumpPool;
 
 // NSSlider
 (
-	w = SCWindow.new("Window", Rect(250,550,550,250)).front;
+	w = Window.new("Window", Rect(250,550,550,250)).front;
 	w.view.decorator = FlowLayout.new(w.view.bounds);
 
 	p = AppKitView.new(w, "NSSlider", "initWithFrame:", Rect(100,70,250,20));
@@ -175,7 +175,7 @@ SCNSObject.dumpPool;
 
 // NSTextField
 (
-	w = SCWindow.new("Window", Rect(10,400,550,250)).front;
+	w = Window.new("Window", Rect(10,400,550,250)).front;
 	w.view.decorator = FlowLayout.new(w.view.bounds);
 
 	p = AppKitView.new(w, "NSTextField", "initWithFrame:", Rect(100,50,200,22));
@@ -201,7 +201,7 @@ SCNSObject.dumpPool;
 
 // NSPopUpButton
 (
-	w = SCWindow.new("Window", Rect(100,600,350,100)).front;
+	w = Window.new("Window", Rect(100,600,350,100)).front;
 	w.view.decorator = FlowLayout.new(w.view.bounds);
 
 	p = AppKitView.new(w, "NSPopUpButton", "initWithFrame:", Rect(100,50,100,22));
@@ -237,7 +237,7 @@ SCNSObject.dumpPool;
 
 // PullDownButton
 (
-	w = SCWindow.new("Window", Rect(10,400,550,250)).front;
+	w = Window.new("Window", Rect(10,400,550,250)).front;
 	w.view.decorator = FlowLayout.new(w.view.bounds);
 
 	p = AppKitView.new(w, "NSPopUpButton", 
@@ -266,7 +266,7 @@ SCNSObject.dumpPool;
 
 // in SCCompositeView
 (
-	w = SCWindow.new("Window", Rect(10,400,550,250)).front;
+	w = Window.new("Window", Rect(10,400,550,250)).front;
 	w.view.decorator = FlowLayout.new(w.view.bounds);
 	
 	c = SCCompositeView.new(w, Rect(20,5,250,200))
@@ -288,7 +288,7 @@ w.close;
 
 // NSSegmentedControl
 (
-	w = SCWindow.new("Window", Rect(200,500,550,250)).front;
+	w = Window.new("Window", Rect(200,500,550,250)).front;
 //	w.view.decorator = FlowLayout.new(w.view.bounds);
 
 	p = AppKitView.new(w, "NSSegmentedControl", "initWithFrame:", Rect(10,10,210,20));
@@ -344,7 +344,7 @@ SCNSObject.dumpPool;
 
 // NSProgressIndicator
 (
-	w = SCWindow.new("Window", Rect(100,650,410,40)).front;
+	w = Window.new("Window", Rect(100,650,410,40)).front;
 	w.view.decorator = FlowLayout.new(w.view.bounds);
 
 	p = AppKitView.new(w, "NSProgressIndicator", "initWithFrame:", Rect(100,50,400,16));
@@ -501,7 +501,7 @@ SCNSObject.dumpPool;
 
 // NSTableView
 (
-	w = SCWindow.new("NSTableView", Rect(200,500,400,220));
+	w = Window.new("NSTableView", Rect(200,500,400,220));
 	w.onClose_({ t.release; c.release; });
 
 	t = SCNSObject("NSTableView", "initWithFrame:", [ Rect(0,0,380,200) ]);
@@ -572,7 +572,7 @@ SCNSObject.dumpPool;
 
 // NSMatrix - todo
 (
-	w = SCWindow.new("Window", Rect(100,650,300,200)).front;
+	w = Window.new("Window", Rect(100,650,300,200)).front;
 //	w.view.decorator = FlowLayout.new(w.view.bounds);
 
 	q = SCNSObject.new("NSButtonCell", "initTextCell:", ["Radio Btns"]);

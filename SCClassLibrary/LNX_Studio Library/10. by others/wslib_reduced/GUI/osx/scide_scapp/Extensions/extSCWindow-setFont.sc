@@ -1,8 +1,8 @@
 // wslib 2006
 
-// set all fonts of a SCWindow at once
+// set all fonts of a Window at once
 
-+ SCWindow {
++ Window {
 	
 	setFont { |font|
 		font = (font ? Font.default) ? Font( "Helvetica", 12);

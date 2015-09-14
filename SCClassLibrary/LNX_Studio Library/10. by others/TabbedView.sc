@@ -63,7 +63,7 @@ TabbedView {
 		
 		windowBounds = bounds.moveBy(2,5);
 		
-		//if (window.isKindOf(SCWindow)) { windowBounds=windowBounds.moveTo(0,0) };
+		//if (window.isKindOf(Window)) { windowBounds=windowBounds.moveTo(0,0) };
 		
 		
 		view = GUI.compositeView.new(window,bounds).resize_(resize);

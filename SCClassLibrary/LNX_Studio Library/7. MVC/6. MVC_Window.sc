@@ -1,5 +1,5 @@
 
-// SCWindow
+// Window
 
 MVC_Window {
 

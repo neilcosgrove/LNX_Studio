@@ -363,7 +363,7 @@ if (studio.batchOn) {
 				//lnx[\doc].bounds.resizeTo(80,60).moveBy(-80,lnx[\doc].bounds.height-80);
 				lnx[\refreshRate]
 			});
-			lnx[\win]=SCWindow("Close Query",
+			lnx[\win]=Window("Close Query",
 				lnx[\doc].bounds.resizeTo(80,60).moveBy(-80,lnx[\doc].bounds.height-80))
 				.front
 				.alwaysOnTop_(true)
@@ -393,7 +393,7 @@ if (studio.batchOn) {
 		
 		SCMenuItem.new(menu,  "Inspect: Studio").action_({
 			var w,t,text,string,tSize;
-			w = SCWindow.new("Inspect Studio").alwaysOnTop_(true).front;
+			w = Window.new("Inspect Studio").alwaysOnTop_(true).front;
 			t = TextView(w.asView,Rect(10,10, 380,360))
 				.hasHorizontalScroller_(true)
 				.hasVerticalScroller_(true)
@@ -419,7 +419,7 @@ if (studio.batchOn) {
 		
 		SCMenuItem.new(menu,  "Inspect: Instruments").action_({
 			var w,t,text,string,tSize,skipNext=false;
-			w = SCWindow.new("Inspect LNX_Instruments",Rect(128,64,900,240))
+			w = Window.new("Inspect LNX_Instruments",Rect(128,64,900,240))
 							.alwaysOnTop_(true).front;
 			t = TextView(w.asView,Rect(10,10, 880,220))
 				.hasHorizontalScroller_(true)
@@ -455,7 +455,7 @@ if (studio.batchOn) {
 	
 		SCMenuItem.new(menu,  "Inspect: Insts[0]").action_({
 			var w,t,text,string,tSize;
-			w = SCWindow.new("Inspect Insts[0]").alwaysOnTop_(true).front;
+			w = Window.new("Inspect Insts[0]").alwaysOnTop_(true).front;
 			t = TextView(w.asView,Rect(10,10, 380,360))
 				.hasHorizontalScroller_(true)
 				.hasVerticalScroller_(true)
@@ -481,7 +481,7 @@ if (studio.batchOn) {
 		
 		SCMenuItem.new(menu,  "Inspect: Network").action_({
 			var w,t,text,string,tSize;
-			w = SCWindow.new("Inspect Network").alwaysOnTop_(true).front;
+			w = Window.new("Inspect Network").alwaysOnTop_(true).front;
 			t = TextView(w.asView,Rect(10,10, 380,360))
 				.hasHorizontalScroller_(true)
 				.hasVerticalScroller_(true)
@@ -507,7 +507,7 @@ if (studio.batchOn) {
 		
 		SCMenuItem.new(menu,  "Inspect: Collaboration").action_({
 			var w,t,text,string,tSize;
-			w = SCWindow.new("Inspect Collaboration").alwaysOnTop_(true).front;
+			w = Window.new("Inspect Collaboration").alwaysOnTop_(true).front;
 			t = TextView(w.asView,Rect(10,10, 380,360))
 				.hasHorizontalScroller_(true)
 				.hasVerticalScroller_(true)
@@ -533,7 +533,7 @@ if (studio.batchOn) {
 		
 		SCMenuItem.new(menu,  "Inspect: Protocols").action_({
 			var w,t,text,string,tSize;
-			w = SCWindow.new("Inspect Comms",Rect(128,64,500,160)).alwaysOnTop_(true).front;
+			w = Window.new("Inspect Comms",Rect(128,64,500,160)).alwaysOnTop_(true).front;
 			t = TextView(w.asView,Rect(10,10, 480,130))
 				.hasHorizontalScroller_(true)
 				.hasVerticalScroller_(true)
@@ -562,7 +562,7 @@ if (studio.batchOn) {
 		
 		SCMenuItem.new(menu,  "Inspect: OnSoloGroup").action_({
 			var w,t,text,string,tSize,oSG;
-			w = SCWindow.new("Inspect OnSoloGroup",Rect(928,264,200,460))
+			w = Window.new("Inspect OnSoloGroup",Rect(928,264,200,460))
 				.alwaysOnTop_(true).front;
 			t = TextView(w.asView,Rect(10,10, 180,430))
 				.hasHorizontalScroller_(true)

@@ -1,6 +1,6 @@
 // W. Snoei 2005
 
-+ SCWindow {
++ Window {
 
 	// SC2 methods
 	views { ^view.children }

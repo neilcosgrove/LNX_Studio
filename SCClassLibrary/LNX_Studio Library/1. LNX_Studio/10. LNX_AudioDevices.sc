@@ -307,8 +307,8 @@ LNX_AudioDevices {
 		);
 	
 		window=MVC_Window("Audio Server",
-				Rect	(SCWindow.screenBounds.left+LNX_Studio.osx,
-					 SCWindow.screenBounds.height-147-(22*3)-(LNX_Studio.thisHeight),
+				Rect	(Window.screenBounds.left+LNX_Studio.osx,
+					 Window.screenBounds.height-147-(22*3)-(LNX_Studio.thisHeight),
 					 270, 170), resizable: false);
 		window.color_(\background,(Color(0,1/103,3/77,65/77))).alwaysOnTop_(true);
 	

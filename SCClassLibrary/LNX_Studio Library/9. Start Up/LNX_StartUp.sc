@@ -66,8 +66,8 @@ LNX_StartUp {
 // 					if (doc.name=="Quick Start Guide") {
 // 						b=doc.bounds;
 // 						doc.bounds_(Rect( 
-// 							SCWindow.screenBounds.width/2-(498/2),
-// 							SCWindow.screenBounds.height-635-40,
+// 							Window.screenBounds.width/2-(498/2),
+// 							Window.screenBounds.height-635-40,
 // 							497,635));
 // 						doc.alwaysOnTop_(true);
 // 					};

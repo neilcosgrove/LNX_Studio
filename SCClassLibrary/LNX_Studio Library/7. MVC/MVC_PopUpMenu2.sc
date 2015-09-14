@@ -4,6 +4,10 @@
 
 MVC_PopUpMenu2 : MVC_View {
 
+	var <revert;
+
+	revert_{|val| revert = val } 
+
 	initView{
 		colors=colors++(
 			'backgroundDisabled'	: Color.grey,
@@ -54,14 +58,16 @@ MVC_PopUpMenu2 : MVC_View {
 	addControls{
 		var val;
 		view.action_{|me|
-			
-			val=items.indexOfString(me.titleOfSelectedItem)-1;
+			val=items.indexOfString(me.item)-1;
 			
 			if (controlSpec.isKindOf(MVC_AudioOutSpec)) {
 				this.viewValueAction_(controlSpec.unmap2(val),nil,true,false);
 			}{
 				this.viewValueAction_(val,nil,true,false);
-			}
+			};
+			if (revert) {
+				me.value = 0;
+			};
 		};
 
 	}

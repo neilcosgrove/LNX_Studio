@@ -757,7 +757,7 @@ LNX_MIDIPatch {
 				removalsOut.do({|i| text=text++"     "++midiDestinationNames[i]++("\n"); });
 			};	
 		 
-	 		win=SCWindow.new("MIDI / Pitch",
+	 		win=Window.new("MIDI / Pitch",
 			Rect(200,600, 460, 200), resizable: false);
 			win.view.background = Gradient(Color.ndcBack2,Color.ndcBack3);
 			win.front.alwaysOnTop_(true);

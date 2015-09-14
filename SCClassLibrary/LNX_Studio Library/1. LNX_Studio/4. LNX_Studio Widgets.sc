@@ -137,7 +137,7 @@
 						"Add Instrument to Library",
 						"-",
 						"Close Song","-","Network","Preferences..."])
-			.action_{|me,val|
+			.action_({|me,val|
 				switch (me.value.asInt)
 				 {0}  {this.loadDialog		    }
 				 {1}  {this.addDialog		    }
@@ -149,7 +149,8 @@
 				 {10} {network.guiConnect       }
 				 {11} {this.preferences		    }
 				;
-			};
+			})
+			.revert_(true);
 		
 		// edit menu 10
 		MVC_PopUpMenu2(mixerWindow,Rect(80, 3, 75, 22))
@@ -163,7 +164,8 @@
 				{4} {this.guiDeleteInst	}
 				{6} {LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front; }
 			}
-			.visible_(alwaysOnTop.not);
+			.visible_(alwaysOnTop.not)
+			.revert_(true);
 			
 		// all or 1 window		
 		MVC_BinaryCircleView(models[\show1],mixerWindow,Rect(160, 4, 20, 20))

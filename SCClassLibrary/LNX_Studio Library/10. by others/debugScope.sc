@@ -8,7 +8,7 @@
 		title = title ? "bus %".format( index );
 		
 		m = 0.0; n=0.0;
-		w = SCWindow( title, Rect( 0, 0, 510, 510 ), scroll:true, resizable:false );
+		w = Window( title, Rect( 0, 0, 510, 510 ), scroll:true, resizable:false );
 		w.view.hasHorizontalScroller = false;
 
 		listArray = Array.fill(200,0.0) ! numChannels;
