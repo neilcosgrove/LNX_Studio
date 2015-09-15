@@ -410,7 +410,7 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 	///////////////////////////
 	
 	// any post midiInit stuff
-	iInitMIDI{ midi.putLoadList([0, -1 ]++LNX_MIDIPatch.nextUnusedOut) }
+	iInitMIDI{ midi.putLoadList([0, 0 ]++LNX_MIDIPatch.nextUnusedOut) }
 	
 	// anything else that needs doing after a server reboot; 
 	iServerReboot{}

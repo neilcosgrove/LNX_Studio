@@ -62,6 +62,7 @@ LNX_InstrumentTemplate {
 	//                                    //
 	//// init stuff ////////////////////////
 		
+	// use the new midi pipes and not the old style midi functions
 	useMIDIPipes{
 		midi.pipeFunc_{|pipe| this.pipeIn(pipe) };
 		midi.noteOnFunc  = nil;
@@ -235,7 +236,7 @@ LNX_InstrumentTemplate {
 	
 	// create both midiIn&Out & midiControl
 	initMIDI{
-		midi=LNX_MIDIPatch(1,0,0,0); // all midi in&out for this inst and their default settings
+		midi=LNX_MIDIPatch(0,0,0,0); // all midi in&out for this inst and their default settings
 		midi.noteOnFunc  = {|src, chan, note, vel ,latency| this.noteOn (note, vel,  latency)};
 		midi.noteOffFunc = {|src, chan, note, vel ,latency| this.noteOff(note, vel,  latency)};
 		midi.controlFunc = {|src, chan, num,  val ,latency| this.control(num,  val,  latency)};

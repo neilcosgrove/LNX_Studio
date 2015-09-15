@@ -512,10 +512,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	}
 	
 	//// midi players & uGens //////////////////////////
-	
-	// any post midiInit stuff
-	iInitMIDI{ midi.putLoadList(LNX_MIDIPatch.nextUnusedIn++[1, 0 ]) }
-	
+
 	// noteOn
 	noteOn	{|note, vel, latency|
 		if ((note<p[7])or:{note>p[8]}) {^nil}; // drop out if out of midi range
@@ -528,19 +525,20 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		sequencers.do(_.clockIn(beat,latency));	 // the bundles are then made here
 	
 		// then play the bundles so choke has a chance to work on the other channels
-		voicer.playAll(latency, {|channel|
-			
-			
-			//this.bangMIDI(channel,latency);
-			
+		voicer.playAll(latency, {|channel,velocity|
+			this.bangMIDI(channel,velocity,latency);
 			{gui[\lamps][channel].value_(chokeLamp[channel][0],0.1)}.defer(chokeLamp[channel][1]);
 		});
 
 	}
 	
 	// temp to hook up volca beats
-	bangMIDI{|channel, latency, volume=1|
-		//midi.noteOn([36,38,43,50,42,46,39,75,67,49][channel], 127, latency);
+	bangMIDI{|channel,velocity, latency, volume=1|
+		midi.noteOn(channel+44, velocity*127, latency);
+		{
+			midi.noteOff(channel+44, velocity*127, latency);
+			nil;
+		}.sched(studio.absTime*3);
 	}
 	
 	// reset sequencers posViews
@@ -640,7 +638,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 			rand         = this.getAndStoreSynthArg(\rand   ,i);
 			overlap      = this.getAndStoreSynthArg(\overlap,i);
 			
-			voicer.storeBundle(i, \samplePlayer, thisNode, duration,
+			voicer.storeBundle(i, \samplePlayer, thisNode, duration, vel,
 				[\s_new, #[["monoGSNF","monoGS-F"],
 							["stereoGSNF","stereoGS-F"]][sample.numChannels-1][filterOn],
 							thisNode, 0,  groupIDs[\inst],
@@ -672,7 +670,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 			// normal player
 			duration = sample.duration / rate * p[5] * p[52+i];
 
-			voicer.storeBundle(i, \samplePlayer, thisNode, duration,
+			voicer.storeBundle(i, \samplePlayer, thisNode, duration, vel,
 				[\s_new, #[["monoNF","mono-F"],
 							["stereoNF","stereo-F"]][sample.numChannels-1][filterOn],
 							thisNode, 0,  groupIDs[\inst],

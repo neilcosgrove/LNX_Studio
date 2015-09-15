@@ -146,8 +146,6 @@ LNX_Limiter : LNX_InstrumentTemplate {
 	
 	}
 	
-	iInitMIDI{ midi.putLoadList([ 1, 0, 1, 0 ]) }
-
 	////////
 	
 	*initUGens{|s|

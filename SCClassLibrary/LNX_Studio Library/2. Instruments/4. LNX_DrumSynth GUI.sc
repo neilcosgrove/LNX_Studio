@@ -180,7 +180,7 @@
 			.color_(\up,Color(223/375,2/3,10665/19997) )
 			.color_(\down,Color(223/375,2/3,10665/19997) )
 			.color_(\string,Color.white)
-			.action_{ this.createMIDIInModelWindow(gui[\compositeView],low:23,high:24) };
+			.action_{ this.createMIDIInModelWindow(window,low:23,high:24) };
 		
 		// MIDI Control
 		MVC_FlatButton(gui[\compositeView],Rect(329, 156, 43, 19),"Cntrl")

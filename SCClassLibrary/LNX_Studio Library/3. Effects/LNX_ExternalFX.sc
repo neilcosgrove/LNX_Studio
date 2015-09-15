@@ -205,8 +205,6 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		this.attachActionsToPresetGUI;
 	
 	}
-	
-	iInitMIDI{ midi.putLoadList([ 1, 0, 1, 0 ]) }
 
 	////////
 	

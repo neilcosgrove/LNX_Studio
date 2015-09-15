@@ -191,7 +191,7 @@ LNX_Controllers : LNX_InstrumentTemplate {
 	
 	////////////////////////
 	
-	iInitMIDI{ midi.putLoadList([0, -1 ]++LNX_MIDIPatch.nextUnusedOut) }
+	iInitMIDI{ midi.putLoadList([0, 0]++LNX_MIDIPatch.nextUnusedOut) }
 	
 	// midi note on
 	noteOn{|note, vel, latency|

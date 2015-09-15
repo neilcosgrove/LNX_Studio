@@ -326,9 +326,6 @@ LNX_Code : LNX_InstrumentTemplate {
 	
 	// MIDI and synth control ////////////////////////////////////////////////////////////
 	
-	// any post midiInit stuff
-	iInitMIDI{ midi.putLoadList(LNX_MIDIPatch.nextUnusedIn++[1, 0 ]) }
-	
 	clockIn{|beat,latency|
 		if (systemIndices[\clock].notNil) {
 			this.updateSynthArg(systemIndices[\clock],beat,latency);
