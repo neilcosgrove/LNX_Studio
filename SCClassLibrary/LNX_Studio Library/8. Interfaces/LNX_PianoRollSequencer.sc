@@ -98,7 +98,7 @@ LNX_Note{
 
 // a score ///////////////////////////////////////////////////////////////////////////
 // max 132 notes with 6 variables before clumping is used to send adjustments (slower but needed)
-// i'm also manually clumping velocity updates @350, ideally will need to develope a clumpedVP
+// i'm also manually clumping velocity updates @350, ideally will need to develop a clumpedVP
 
 LNX_Score{
 
