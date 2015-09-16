@@ -234,11 +234,11 @@ LNX_AudioDevices {
 	
 		guiItems=[];
 		
-		SCStaticText.new(window,Rect(xy.x+42,xy.y+3,100, 22))
+		StaticText.new(window,Rect(xy.x+42,xy.y+3,100, 22))
 			.string_("Audio Hardware")
 			.stringColor_(Color.black);
 
-		SCStaticText.new(window,Rect(xy.x-10,xy.y+24,20, 22))
+		StaticText.new(window,Rect(xy.x-10,xy.y+24,20, 22))
 			.string_("In")
 			.stringColor_(Color.black);
 			
@@ -254,7 +254,7 @@ LNX_AudioDevices {
 			.font_(Font("Arial", 10));
 		guiItems=guiItems.add(item);
 	
-		SCStaticText.new(window,Rect(xy.x-14,xy.y+43,20, 22))
+		StaticText.new(window,Rect(xy.x-14,xy.y+43,20, 22))
 			.string_("Out")
 			.stringColor_(Color.black);
 		

@@ -23,35 +23,35 @@ LNX_InviteInterface {
 	
 	string_ {  |newString = ""|
 		string = newString;
-		if( window.notNil && { window.dataptr.notNil } )
+		if( window.notNil && { window.isClosed.not } )
 			{ stringView.string = string };
 		}
 		
 	string2_ {  |newString = ""|
-		if( window.notNil && { window.dataptr.notNil } )
+		if( window.notNil && { window.isClosed.not } )
 			{ gui[\bottomString].string = newString };
 		}
 		
 	iconName_ { |newIconName = \warning|
 		iconName = newIconName.asSymbol;
-		if( window.notNil && { window.dataptr.notNil } )
+		if( window.notNil && { window.isClosed.not } )
 			{ iconView.refresh; };
 		}
 		
 	color_ { |newColor|
 		color = newColor ? Color.red.alpha_(0.75);
-		if( window.notNil && { window.dataptr.notNil } )
+		if( window.notNil && { window.isClosed.not } )
 			{ window.refresh; };
 		}
 		
 	background { ^window.view.background }
 	background_ { |aColor|
-		if( window.notNil && { window.dataptr.notNil } )
+		if( window.notNil && { window.isClosed.not } )
 			{  window.view.background = aColor };
 		}
 		
 	hit { |index| // focussed or last if no index provided
-		if( window.notNil && { window.dataptr.notNil } )
+		if( window.notNil && { window.isClosed.not } )
 			{ index = index ?? { buttonViews.detectIndex({ |bt| bt.hasFocus }) ?
 					 ( buttonViews.size - 1 ) }; 
 				 buttonViews[ index ] !? 
@@ -137,15 +137,16 @@ LNX_InviteInterface {
 		if( modal )		
 			{ 
 				if ((win.isNil)or:{win.isClosed}) {
-					window = SCModalWindow( name, 
+					window = Window( name, 
 						Rect.aboutPoint( Window.screenBounds.center, 
 							((buttons.size * 42) + 2).max( 160 ), 
 								((26 + (string.occurrencesOf( $\n ) * 10) ) + 4).max( 52 )
 								).resizeBy(w,h), false, border ? true );
 					win=window;
+					window.front;
 				}{
 			
-					window = SCModalSheet( win, 
+					window = Window( win.name, 
 						Rect.aboutPoint( Window.screenBounds.center, 
 							((buttons.size * 42) + 2).max( 160 ), 
 								((26 + (string.occurrencesOf( $\n ) * 10) ) + 4).max( 52 )
@@ -189,7 +190,7 @@ LNX_InviteInterface {
 												     window.bounds.width - 84,20 ) )
 			.string_("Waiting...").font_( Font( "Helvetica-Bold", 12 ) );
 		
-		gui[\userList]=SCUserView(window,Rect(80,75, window.bounds.width - 84, 
+		gui[\userList]=UserView(window,Rect(80,75, window.bounds.width - 84, 
 											 window.bounds.height - 119 ))
 						.canFocus_( false )
 						.drawFunc_{|me|
@@ -281,7 +282,7 @@ LNX_InviteInterface {
 							{ 
 								doOnClose=false;
 								actions.wrapAt(i).value( button, this );
-								if( buttonClosesWindow && { window.dataptr.notNil } ){
+								if( buttonClosesWindow && { window.isClosed.not } ){
 									if (doClose.wrapAt(i)) {
 										window.close;
 									}}

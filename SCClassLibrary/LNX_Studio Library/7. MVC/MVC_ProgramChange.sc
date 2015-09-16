@@ -26,7 +26,7 @@ MVC_ProgramChange : MVC_View {
 	
 	
 	createView{
-		scrollView=SCScrollView.new(window, rect)
+		scrollView=ScrollView.new(window, rect)
 			.hasBorder_(true)
 			.hasVerticalScroller_(true)
 			.hasHorizontalScroller_(false)

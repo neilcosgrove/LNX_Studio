@@ -147,7 +147,7 @@
 		}
 	}
 
-+ SCStaticText {
++ StaticText {
 	asCode { |varName = "w", extraMethods|
 		^super.asCode(varName, [\string, \font, \stringColor] ++ extraMethods.asCollection)
 		}

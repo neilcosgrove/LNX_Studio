@@ -62,13 +62,13 @@ slider = Array.newClear(param[0].size);
 win = Window(" fastgui: " ++ name, Rect(10 + 20.rand, 500 + 20.rand, 300, (param[0].size * 20) + 50), false); 
 win.view.decorator = lay = FlowLayout(win.view.bounds, 5@5, 5@5); 
 
-SCStaticText(win, 50 @ 15).font_(Font("Helvetica", 9)).string_("Bus").align_(\right); 
+StaticText(win, 50 @ 15).font_(Font("Helvetica", 9)).string_("Bus").align_(\right); 
 SCNumberBox(win, 30 @ 15).font_(Font("Helvetica", 9)).value_(bus).action_({|val| 
    	val.value = 0.max(val.value);
 	bus = val.value; 
   	if (fxOn, { synth.set(\outbus,bus) }); 
 }); 
-SCStaticText(win, 15 @ 15).font_(Font("Helvetica", 9)).string_("Tgt").align_(\right); 
+StaticText(win, 15 @ 15).font_(Font("Helvetica", 9)).string_("Tgt").align_(\right); 
 SCNumberBox(win, 40 @ 15).font_(Font("Helvetica", 9)).value_(tgt).action_({|val| 
 	val.value = 0.max(val.value); 
 	tgt = val.value.asInteger; 
@@ -138,8 +138,8 @@ param[0].size.do({|i|
 	slider[i].value = param[3][i]; 
 	lay.nextLine; 
 }); 
-SCStaticText(win,50 @ 15).font_(Font("Helvetica", 9)).align_(\right).string_("nodeID"); 
-nodeLabel = SCStaticText(win,50 @ 15).font_(Font("Helvetica", 9)).align_(\left).string_("none"); 
+StaticText(win,50 @ 15).font_(Font("Helvetica", 9)).align_(\right).string_("nodeID"); 
+nodeLabel = StaticText(win,50 @ 15).font_(Font("Helvetica", 9)).align_(\left).string_("none"); 
 moveSynth = { 
 	if ( fxOn, { 
 		case 

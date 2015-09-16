@@ -54,7 +54,7 @@ LNX_Network {
 		this.socketAsNil;
 		
 		isLAN="isLAN".loadPref;
-		if (isLAN.isNil) { isLAN = false } { isLAN = isLAN[0].isTrue };
+		if (isLAN.isNil) { isLAN = true } { isLAN = isLAN[0].isTrue };
 
 		// connect this network to everything
 		[
@@ -544,42 +544,42 @@ LNX_Network {
 		
 		prefGUI=IdentityDictionary[];
 	
-		prefWin=SCModalSheet.new(window, 300@235);
+		prefWin=Window.new(window, 300@235);
 		prefWin.view.background = Gradient(Color(0.2,0.2,0.2)*0.8,Color(0.6,0.6,0.4)*0.8);
 
-		SCStaticText.new(prefWin,Rect(72+4, 5, 200, 22))
+		StaticText.new(prefWin,Rect(72+4, 5, 200, 22))
 			.font_(Font("Helvetica", 16))
 			.string_("Network Preferences")
 			.stringColor_(Color.black);
 
-		SCStaticText.new(prefWin,Rect(71+4, 4, 200, 22))
+		StaticText.new(prefWin,Rect(71+4, 4, 200, 22))
 			.font_(Font("Helvetica", 16))
 			.string_("Network Preferences")
 			.stringColor_(Color.black);
 
-		SCStaticText.new(prefWin,Rect(70+4, 3, 200, 22))
+		StaticText.new(prefWin,Rect(70+4, 3, 200, 22))
 			.font_(Font("Helvetica", 16))
 			.string_("Network Preferences")
 			.stringColor_(Color.white);
 			
-		SCStaticText.new(prefWin,Rect(5+2, 95-73+2, 60, 22))
+		StaticText.new(prefWin,Rect(5+2, 95-73+2, 60, 22))
 			.font_(Font("Helvetica",13))
 			.string_("Client")
 			.stringColor_(Color.black);
 			
-		SCStaticText.new(prefWin,Rect(5, 95-73, 60, 22))
+		StaticText.new(prefWin,Rect(5, 95-73, 60, 22))
 			.font_(Font("Helvetica",13))
 			.string_("Client")
 			.stringColor_(Color.white);
 			
 		// line		
-		SCUserView(prefWin,Rect(50,107-73,300-55-10+5,1))
+		UserView(prefWin,Rect(50,107-73,300-55-10+5,1))
 			.background_(Color.orange*1.5/1.5).canFocus_(false);
-		SCUserView(prefWin,Rect(51,108-73,300-55-10+5,1))
+		UserView(prefWin,Rect(51,108-73,300-55-10+5,1))
 			.background_(Color.black).canFocus_(false);
 			
 
-		SCStaticText.new(prefWin,Rect(5, 23+4+17, 70, 22))
+		StaticText.new(prefWin,Rect(5, 23+4+17, 70, 22))
 			.string_("On Open")
 			.align_(\right)
 			.stringColor_(Color.white);
@@ -595,7 +595,7 @@ LNX_Network {
 			.color_(\on,Color.orange)
 			.color_(\off,Color(0.4,0.4,0.4));
 			
-		SCStaticText.new(prefWin,Rect(27,70,120,22))
+		StaticText.new(prefWin,Rect(27,70,120,22))
 			.string_("In public rooms show")
 			.stringColor_(Color.white);
 			
@@ -622,13 +622,13 @@ LNX_Network {
 			.color_(\off,Color(0.4,0.4,0.4));
 			
 		
-		SCStaticText.new(prefWin,Rect(208-11, 25+18, 80, 22))
+		StaticText.new(prefWin,Rect(208-11, 25+18, 80, 22))
 			.string_("Connect to :")
 			.align_(\right)
 			.font_(Font("Helvetica",11))
 			.stringColor_(Color.white);
 		
-		SCStaticText.new(prefWin,Rect(208, 25+17+20, 30, 22))
+		StaticText.new(prefWin,Rect(208, 25+17+20, 30, 22))
 			.string_("Port")
 			.align_(\right)
 			.font_(Font("Helvetica",11))
@@ -652,23 +652,23 @@ LNX_Network {
 					
 		// server options ////////////////////////
 		
-		SCStaticText.new(prefWin,Rect(5+2, 95+2, 60, 22))
+		StaticText.new(prefWin,Rect(5+2, 95+2, 60, 22))
 			.font_(Font("Helvetica",13))
 			.string_("Server")
 			.stringColor_(Color.black);
 
-		SCStaticText.new(prefWin,Rect(5, 95, 60, 22))
+		StaticText.new(prefWin,Rect(5, 95, 60, 22))
 			.font_(Font("Helvetica",13))
 			.string_("Server")
 			.stringColor_(Color.white);
 			
 		// line		
-		SCUserView(prefWin,Rect(55,107,300-55-10,1))
+		UserView(prefWin,Rect(55,107,300-55-10,1))
 			.background_(Color.orange*1.5/1.5).canFocus_(false);
-		SCUserView(prefWin,Rect(56,108,300-55-10,1))
+		UserView(prefWin,Rect(56,108,300-55-10,1))
 			.background_(Color.black).canFocus_(false);
 			
-		SCStaticText.new(prefWin,Rect(5, 63+55, 70, 22))
+		StaticText.new(prefWin,Rect(5, 63+55, 70, 22))
 			.string_("On Open")
 			.align_(\right)
 			.stringColor_(Color.white);
@@ -684,7 +684,7 @@ LNX_Network {
 			.color_(\on,Color.orange)
 			.color_(\off,Color(0.4,0.4,0.4));
 		
-		SCStaticText.new(prefWin,Rect(5, 83+55, 70, 22))
+		StaticText.new(prefWin,Rect(5, 83+55, 70, 22))
 			.string_("On Close")
 			.align_(\right)
 			.stringColor_(Color.white);
@@ -701,7 +701,7 @@ LNX_Network {
 			.color_(\on,Color.yellow)
 			.color_(\off,Color.orange);
 				
-		gui[\severIcon]=SCUserView(prefWin,Rect(190,60-8+55,110,110))
+		gui[\severIcon]=UserView(prefWin,Rect(190,60-8+55,110,110))
 			.canFocus_( false )
 			.drawFunc_{|me|
 				var isRunning;
@@ -728,7 +728,7 @@ LNX_Network {
 				
 			};
 			
-		SCStaticText.new(prefWin,Rect(5, 109-1+55, 70, 22))
+		StaticText.new(prefWin,Rect(5, 109-1+55, 70, 22))
 			.string_("Max Users")
 			.align_(\right)
 			.font_(Font("Helvetica",11))
@@ -750,7 +750,7 @@ LNX_Network {
 			.color_(\background,Color.ndcMenuBG)
 			.align_(\center);
 			
-		SCStaticText.new(prefWin,Rect(1+4, 109+22-1+55, 70, 22))
+		StaticText.new(prefWin,Rect(1+4, 109+22-1+55, 70, 22))
 			.string_("Max Groups")
 			.font_(Font("Helvetica",11))
 			.align_(\right)
@@ -772,13 +772,13 @@ LNX_Network {
 			.color_(\background,Color.ndcMenuBG)
 			.align_(\center);
 			
-		SCStaticText.new(prefWin,Rect(5, 109+22+22-1+55, 70, 22))
+		StaticText.new(prefWin,Rect(5, 109+22+22-1+55, 70, 22))
 			.string_("Timeout users")
 			.align_(\right)
 			.font_(Font("Helvetica",11))
 			.stringColor_(Color.white);
 			
-		SCStaticText.new(prefWin,Rect(76+4+35+4, 109+22+22-1+55, 40, 22))
+		StaticText.new(prefWin,Rect(76+4+35+4, 109+22+22-1+55, 40, 22))
 			.string_("(secs)")
 			.font_(Font("Helvetica",11))
 			.stringColor_(Color.white);
@@ -799,7 +799,7 @@ LNX_Network {
 			.color_(\background,Color.ndcMenuBG)
 			.align_(\center);
 
-		SCStaticText.new(prefWin,Rect(125, 109-1+55, 30, 22))
+		StaticText.new(prefWin,Rect(125, 109-1+55, 30, 22))
 			.string_("Port")
 			.align_(\right)
 			.font_(Font("Helvetica",11))
@@ -911,7 +911,7 @@ LNX_Network {
 				.color_(\background, Color(29/65,6/11,42/83));
 			
 			// the main view
-			gui[\bg]=SCScrollView(window, Rect(11,11,525,521-1+3))
+			gui[\bg]=ScrollView(window, Rect(11,11,525,521-1+3))
 				.background_(Color(56/77,59/77,56/77))
 				.hasHorizontalScroller_(false)
 				.hasVerticalScroller_(false);
@@ -934,7 +934,7 @@ LNX_Network {
 				.color_(\iconDown,Color.grey/2);
 				
 			MVC_ImageView(gui[\bg],Rect(10,7,25,35))
-				.image_("LNX.jpg");
+				.image_("lnx.jpg");
 			
 			s=		"          "++
 					"Room"++
@@ -944,7 +944,7 @@ LNX_Network {
 					isLAN.if("          My Address","Password");
 			
 			// Text Labels
-			SCStaticText(gui[\bg],Rect(65,4,450,17))
+			StaticText(gui[\bg],Rect(65,4,450,17))
 				.font_(Font("Helvetica-Bold",12))
 				.string_(s).align_(\left).stringColor_(Color.black);
 			
@@ -963,7 +963,7 @@ LNX_Network {
 				
 
 			// room text
-			gui[\roomText]=SCTextField.new(gui[\bg], Rect(95-30,15+6,95,16))
+			gui[\roomText]=TextField.new(gui[\bg], Rect(95-30,15+6,95,16))
 				.action_{|me|
 					me.value_(me.value.addressSafe);
 					//this.gotoUserTextRoom
@@ -978,7 +978,7 @@ LNX_Network {
 
 			if (isLAN.not) {
 				// @
-				SCStaticText(gui[\bg],Rect(195-35+1,15+6+1,18,17))
+				StaticText(gui[\bg],Rect(195-35+1,15+6+1,18,17))
 					.string_("@").align_(\center).stringColor_(Color.black);
 			}{
 				
@@ -991,7 +991,7 @@ LNX_Network {
 					.action_{socket.search(gui[\ipField].value)};
 						
 				// ip field
-				gui[\ipField]=SCTextField(gui[\bg], Rect(194,15+6,125,16))
+				gui[\ipField]=TextField(gui[\bg], Rect(194,15+6,125,16))
 					.action_{|me| socket.search(me.value) }
 					.value_("")
 					.background_(Color.ndcMenuBG)
@@ -1005,7 +1005,7 @@ LNX_Network {
 			};
 				
 			// server address
-			gui[\serverAddress]=SCTextField.new(gui[\bg],
+			gui[\serverAddress]=TextField.new(gui[\bg],
 					isLAN.if(Rect(0,0,0,0), Rect(215-35,15+6,190,16))
 				)
 				.action_{|me|
@@ -1020,7 +1020,7 @@ LNX_Network {
 				.font_(Font("Helvetica",11));
 				
 			// password text
-			gui[\passwordText]=SCTextField.new(gui[\bg],
+			gui[\passwordText]=TextField.new(gui[\bg],
 					isLAN.if(Rect(0,0,0,0), Rect(390-15,21,85,16))
 				)
 				.action_{|me|	this.gotoUserTextRoom}

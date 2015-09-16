@@ -194,7 +194,7 @@ MVC_RoundedScrollView : MVC_ScrollView {
 }
 
 
-// SCScrollView
+// ScrollView
 
 // a scroll view forces every item to redraw
 

@@ -33,12 +33,12 @@ MVC_ListView : MVC_View {
 	}
 	
 	createView{
-		scrollView=SCScrollView.new(window, rect)
+		scrollView=ScrollView.new(window, rect)
 			.hasBorder_(true)
 			.hasVerticalScroller_(true)
 			.hasHorizontalScroller_(false)
 			.autohidesScrollers_(false);
-		view=SCListView.new(scrollView,Rect(0,0,w,this.internalHeight))
+		view=ListView.new(scrollView,Rect(0,0,w,this.internalHeight))
 			.background_(colors[midiLearn.if(\midiLearn,
 						enabled.if(\background,\backgroundDisabled))])
 			.hiliteColor_(colors[\hilite])

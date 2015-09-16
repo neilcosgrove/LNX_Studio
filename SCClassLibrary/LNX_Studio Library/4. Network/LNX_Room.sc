@@ -527,7 +527,7 @@ LNX_Room{
 			
 			
 		// Room Dialog text
-		SCStaticText(window,Rect(404, 226+40, 100, 18))
+		StaticText(window,Rect(404, 226+40, 100, 18))
 				.string_(" Room").align_(\center).stringColor_(Color.black)
 				.font_(GUI.font.new("Helvetica",12));
 			

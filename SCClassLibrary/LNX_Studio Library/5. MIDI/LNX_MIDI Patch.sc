@@ -762,7 +762,7 @@ LNX_MIDIPatch {
 			win.view.background = Gradient(Color.ndcBack2,Color.ndcBack3);
 			win.front.alwaysOnTop_(true);
 			
-			SCStaticText.new(win,Rect(20, 10, 460, 42))
+			StaticText.new(win,Rect(20, 10, 460, 42))
 			.string_("                                                         WARNING !\n"
 				++"The following MIDI Device(s) have been removed from the system.")
 			.stringColor_(Color.white);
@@ -1071,7 +1071,7 @@ LNX_MIDIPatch {
 		});
 
 		if (label==true) {
-			SCStaticText.new(window,Rect(x, y, 30, 20))
+			StaticText.new(window,Rect(x, y, 30, 20))
 				.string_("   In")
 				.stringColor_(Color.white);
 		};
@@ -1120,7 +1120,7 @@ LNX_MIDIPatch {
 		});
 
 		if (label==true) {
-			SCStaticText.new(window,Rect(x, y, 30, 20)).string_("Out").stringColor_(Color.white);
+			StaticText.new(window,Rect(x, y, 30, 20)).string_("Out").stringColor_(Color.white);
 		};
 					
 		portOutGUI=MVC_PopUpMenu3(window,Rect(x+25,y+2,220-35-35,17))
@@ -1164,7 +1164,7 @@ LNX_MIDIPatch {
 		});
 
 		if (label==true) {
-			SCStaticText.new(window,Rect(x-25, y-2, 30, 20))
+			StaticText.new(window,Rect(x-25, y-2, 30, 20))
 				.string_("Out")
 				.stringColor_(Color.white);
 		};

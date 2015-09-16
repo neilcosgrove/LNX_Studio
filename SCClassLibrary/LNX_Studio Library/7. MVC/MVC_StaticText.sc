@@ -27,7 +27,7 @@ v.charSizesIntegral
 
 */
 
-// SCStaticText or a label
+// StaticText or a label
 // idea: add a prefix and postfix
 
 MVC_Text : MVC_StaticText {}

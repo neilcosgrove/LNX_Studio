@@ -860,7 +860,7 @@ LNX_Collaboration{
 			.action_{ this.guiLeave };
 				
 		// Invite to... text
-		SCStaticText(window,Rect(284+x-200+6-20,436+y+40,180+20,18))
+		StaticText(window,Rect(284+x-200+6-20,436+y+40,180+20,18))
 			.canFocus_(false)
 			.string_("Invite to a collaboration in…").align_(\right).stringColor_(Color.black)
 			.font_(GUI.font.new("Helvetica",12));

@@ -34,7 +34,7 @@
 			comp = SCCompositeView( w, Rect( 0, y, 500, 120) )
 				.resize_(2)
 				.background_(Color.grey);
-			SCStaticText( comp, Rect( 20, 40, 350, 40 ))
+			StaticText( comp, Rect( 20, 40, 350, 40 ))
 				.font_( Font("Helvetica-Bold", 34) )
 				.stringColor_( Color.grey(0.2) )
 				.string_( names.notNil.if({ names[i] }, { i + index }) );

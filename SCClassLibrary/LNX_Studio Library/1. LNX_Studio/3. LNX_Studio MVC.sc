@@ -595,7 +595,7 @@
 
 
 			// midi controller in
-			SCStaticText(scrollView,Rect(200+16, 6, 180, 22))
+			StaticText(scrollView,Rect(200+16, 6, 180, 22))
 				.string_("           MIDI Controller: in")
 				.stringColor_(Color.black);
 			midi.createInGUIA (scrollView, 170@27, false, false);
@@ -603,7 +603,7 @@
 			midi.action_{|me| this.saveControllerKeyboardPrefs};
 
 			// internal midi buses
-			SCStaticText(scrollView,Rect(254, 72-25, 180, 22))
+			StaticText(scrollView,Rect(254, 72-25, 180, 22))
 				.string_("Internal MIDI")
 				.stringColor_(Color.black);
 			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(200+65+65,93-50+7,70,17))
@@ -620,13 +620,13 @@
 				.font_(Font("Arial", 10));
 
 			// midi clock
-			SCStaticText(scrollView,Rect(416+10,6, 180, 22))
+			StaticText(scrollView,Rect(416+10,6, 180, 22))
 				.string_("                    MIDI Clock")
 				.stringColor_(Color.black);
-			SCStaticText(scrollView,Rect(400+10,30, 30, 22))
+			StaticText(scrollView,Rect(400+10,30, 30, 22))
 				.string_("In")
 				.stringColor_(Color.black);
-			SCStaticText(scrollView,Rect(400+10,50-3, 30, 22))
+			StaticText(scrollView,Rect(400+10,50-3, 30, 22))
 				.string_("Out")
 				.stringColor_(Color.black);
 
@@ -641,7 +641,7 @@
 				};
 
 			// latency
-			SCStaticText(scrollView,Rect(16+5,280-4-205, 170, 22))
+			StaticText(scrollView,Rect(16+5,280-4-205, 170, 22))
 				.string_("Latency (secs)")
 				.align_(\centre)
 				.stringColor_(Color.black);
@@ -711,7 +711,7 @@
 				};
 						 					   
 			// midi latency
-			SCStaticText(scrollView,Rect(384-20, 71, 190, 22))
+			StaticText(scrollView,Rect(384-20, 71, 190, 22))
 				.string_("MIDI Sync Latency Adj (secs)")
 				.align_(\centre)
 				.stringColor_(Color.black);
