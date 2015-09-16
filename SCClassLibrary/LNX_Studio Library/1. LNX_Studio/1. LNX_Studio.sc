@@ -1276,7 +1276,7 @@ LNX_Studio {
 		if (tasks[\saveInterval].isPlaying) {
 			tasks[\saveInterval].stop;
 		}{
-			CocoaDialog.savePanel({|path| 
+			Dialog.savePanel({|path| 
 				tasks[\saveInterval]=Task({|a,b,c|
 					loop {
 						if (this.isPlaying) {
@@ -1300,7 +1300,7 @@ LNX_Studio {
 		if (this.isStandalone && LNX_Mode.isSafe) {
 			this.safeModeSaveDialog
 		}{
-			CocoaDialog.savePanel({|path| this.save(path)})
+			Dialog.savePanel({|path| this.save(path)})
 		}
 	}
 
@@ -1390,35 +1390,38 @@ LNX_Studio {
 				};
 				g.close;
 			};
-		}
-	}
+		
+}	}
 	
 	// load user dialog
 	
 	loadDialog{
 		if (this.canLoadSong) {
-			CocoaDialog.getPaths({ arg paths;
+			Dialog.openPanel({ arg paths;
 				var i=(-1);
 				if (paths.size>1) {
 					if (gui[\songsMenu].notNil) {
 						gui[\songsMenu].remove;
 						gui[\songsMenu]=nil
 					};
-					gui[\songsMenu]=SCMenuGroup.new(nil, "Songs",9);
-					SCMenuItem.new(gui[\songsMenu],  "Previous song").setShortCut("1")
-						.action_{i=i-1; this.loadPath(paths.wrapAt(i))};
-					SCMenuItem.new(gui[\songsMenu],  "Next song").setShortCut("2")
-						.action_{i=i+1; this.loadPath(paths.wrapAt(i))};
-					SCMenuSeparator(gui[\songsMenu]); // add a separator
-					
-					paths.do{|path,j|
-						SCMenuItem.new(gui[\songsMenu],  path.basename)
-							.action_{ i=j; this.loadPath(path) };
-					};		
+
+					Platform.case(\osx, {
+						gui[\songsMenu]=SCMenuGroup.new(nil, "Songs",9);
+						SCMenuItem.new(gui[\songsMenu],  "Previous song").setShortCut("1")
+							.action_{i=i-1; this.loadPath(paths.wrapAt(i))};
+						SCMenuItem.new(gui[\songsMenu],  "Next song").setShortCut("2")
+							.action_{i=i+1; this.loadPath(paths.wrapAt(i))};
+						SCMenuSeparator(gui[\songsMenu]); // add a separator
+						
+						paths.do{|path,j|
+							SCMenuItem.new(gui[\songsMenu],  path.basename)
+								.action_{ i=j; this.loadPath(path) };
+						};
+					});	
 				}{
 					this.loadPath(paths@0);
 				}	
-			});
+			}, multipleSelection: true);
 		}
 	}
 	
@@ -1695,7 +1698,7 @@ LNX_Studio {
 
 	addDialog{
 		if ((server.serverRunning) and: {isLoading.not} and: {network.isConnecting.not}) {
-			CocoaDialog.getPaths({ arg path;
+			Dialog.openPanel({ arg path;
 				var g,l,i;
 				path=path@0;	
 				g = File(path,"r");

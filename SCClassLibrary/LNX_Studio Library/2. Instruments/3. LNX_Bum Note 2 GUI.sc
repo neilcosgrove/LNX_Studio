@@ -311,7 +311,7 @@
 					var h = me.bounds.height-3;
 					Color(1,1,1,0.25).set;
 					Pen.width_(3);
-					SCPen.lineDash_(FloatArray[2,3]);
+					Pen.lineDash_(FloatArray[2,3]);
 					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
 					Pen.stroke;
 					Color(1,1,1,0.15).set;
@@ -371,7 +371,7 @@
 					var h = me.bounds.height-3;
 					Pen.width_(3);
 					Color(1,1,1,0.25).set;
-					SCPen.lineDash_(FloatArray[2,3]);
+					Pen.lineDash_(FloatArray[2,3]);
 					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
 					Pen.stroke;
 					Color(1,1,1,0.15).set;

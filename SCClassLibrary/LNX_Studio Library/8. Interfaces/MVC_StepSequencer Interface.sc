@@ -525,7 +525,7 @@ MVC_StepSequencer {
 										\focus : Color(0,0,0,0)));
 		
 		nameWidget = MVC_StaticText(nameModel, window, Rect(l-2-5,t+rh-2,os-8+8+5,sw-1+5+1))
-			.font_(SCFont("Arial", 12))
+			.font_(Font("Arial", 12))
 			.color_(\stringDown,Color.black)
 			.shadowDown_(false)
 			.action_{ nameClickAction.value(this) };
@@ -777,7 +777,7 @@ MVC_StepSequencer {
 										\focus : Color(0,0,0,0)));
 		
 		nameWidget = MVC_StaticText(nameModel, window, Rect(l-2-5,t+(h/2)-15,os-8+8+5,20))
-			.font_(SCFont("Arial", 12))
+			.font_(Font("Arial", 12))
 			.color_(\stringDown,Color.black)
 			.shadowDown_(false)
 			.action_{ nameClickAction.value(this) };
@@ -899,7 +899,7 @@ MVC_StepSequencer {
 										\focus : Color(0,0,0,0)));
 										
 		nameWidget = MVC_StaticText(nameModel, window, Rect(l-7,t+(h/2)-15,os+5,20))
-			.font_(SCFont("Arial", 12))
+			.font_(Font("Arial", 12))
 			.color_(\stringDown,Color.black)
 			.shadowDown_(false)
 			.action_{ nameClickAction.value(this) };
@@ -1012,7 +1012,7 @@ MVC_StepSequencer {
 										\focus : Color(0,0,0,0)));
 		
 		nameWidget = MVC_StaticText(nameModel, window, Rect(l-2-5,t+(h/2)-15,os-8+8+5,20))
-			.font_(SCFont("Arial", 12))
+			.font_(Font("Arial", 12))
 			.color_(\stringDown,Color.black)
 			.shadowDown_(false)
 			.action_{ nameClickAction.value(this) };
@@ -1031,7 +1031,7 @@ MVC_StepSequencer {
 				.numberOffset_(12*(x%2)+20)
 				.drawNegative_(false)
 				.thumbSize_(8)
-				.numberFont_(SCFont("Helvetica",11))
+				.numberFont_(Font("Helvetica",11))
 				.numberWidth_(-17)
 				.color_(\background,colors[\background])
 				.color_(\on,colors[\pinOn]??{Color.green})

@@ -999,12 +999,12 @@ MVC_Automation {
 						var x=cx.(selA*beatWidth)+1;
 						var w1=cx.((selB)*beatWidth)+1-x;
 						if (selA==selB) {
-							SCPen.lineDash_(FloatArray[4,2]);
+							Pen.lineDash_(FloatArray[4,2]);
 							Color(0.8,0.8,1,0.4).set;
 							Pen.moveTo(x@1);
 							Pen.lineTo(x@(h-1));
 							Pen.stroke;
-							SCPen.lineDash_(FloatArray[]);
+							Pen.lineDash_(FloatArray[]);
 						}{	
 							Pen.fillColor_(Color(0.6,0.6,1,0.2));
 							Pen.fillRect(Rect(x,1,w1,h-1));

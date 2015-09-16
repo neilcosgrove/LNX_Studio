@@ -544,7 +544,7 @@
 			// tab2 labels
 			gui[\text][i] = MVC_StaticText(gui[(\sv++i).asSymbol],Rect(302, 5, 340, 21),"")
 				.align_(\left)	
-				.font_(SCFont("Arial", 14))
+				.font_(Font("Arial", 14))
 				.shadowDown_(false)
 				.color_(\stringDown,Color.black)
 				.action_{webBrowsers[i].open };	
@@ -603,7 +603,7 @@
 				.align_(\right)
 				.shadow_(false)
 				.color_(\string,Color.black)
-				.font_(SCFont("Arial", 11));
+				.font_(Font("Arial", 11));
 
 			MVC_StaticText(gui[(\sv++i).asSymbol],Rect(652+10, 43+10, 20, 70))
 				.align_(\rotate)
