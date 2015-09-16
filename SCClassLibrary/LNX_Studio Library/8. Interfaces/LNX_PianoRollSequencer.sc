@@ -609,6 +609,7 @@ LNX_PianoRollSequencer{
 		if (gui[\notes].notNil) {
 			lastVisibleRect=nil;
 			gui[\notes].bounds_(Rect(0,0,gridW*(score.dur),gridH*128));
+			gui[\notes].refresh;
 			
 			gui[\notesPosAndMouse].bounds_(Rect(0,0,gridW*(score.dur),gridH*128));
 		};

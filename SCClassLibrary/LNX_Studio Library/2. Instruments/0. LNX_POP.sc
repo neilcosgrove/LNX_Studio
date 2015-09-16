@@ -48,6 +48,9 @@ LNX_POP {
 		midi.findByName("pad","pad"); // find launch pad
 		midi.noteOnFunc  = {|src, chan, note, vel ,latency|
 			var prog =padNotes.indexOf(note);
+
+			note.postln;
+
 			if (prog.notNil and: {prog<noPOP}) {
 				if (lastNote.notNil) { midi.noteOn(lastNote,0) }; // 0 off
 				lastNote=note;
@@ -160,7 +163,7 @@ LNX_POP {
 		pad = #[120, 104, 88, 72, 56, 40, 24, 8].at(pad);
 		if (pad != lastPad) {
 			if (lastPad.notNil) { midi.noteOn(lastPad,0,latency) }; // 0 off
-			midi.noteOn(pad, 48,latency);
+			midi.noteOn(pad, 48, latency);
 			lastPad = pad;
 		}
 	}
