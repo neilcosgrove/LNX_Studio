@@ -628,10 +628,10 @@ LNX_MIDIPatch {
 		# uidIn,midiInChannel,uidOut,midiOutChannel = l.asInteger;
 		previousInUID=uidIn;
 		midiIn =midiSourceUIDs.indexOf(uidIn)?0;
-		if (midiIn==0) {uidIn=0};
+		//if (midiIn==0) {uidIn=0};
 		previousOutUID=uidOut;
 		midiOut=midiDestinationUIDs.indexOf(uidOut)?0;
-		if (midiOut==0) {uidOut=0};
+		//if (midiOut==0) {uidOut=0};
 		midiInName=midiSourceNames[midiIn];
 		midiOutName=midiDestinationNames[midiOut];
 		this.refreshGUI;
@@ -1287,9 +1287,7 @@ LNX_MIDIPatch {
 } ////////////////////////////// end.LNX_MIDIPatch Object /////////////////////////////
 
 // used as a fake in & out device for the "None" midi device
-// and it is used as if it was an instrance rather than an object
-// any functionality added to LNX_MIDIPatch that is called by other objects also need
-// to be added here
+// any functionality added to LNX_MIDIPatch must also br added here
 
 NoMIDI {
 	
@@ -1309,8 +1307,8 @@ NoMIDI {
 	*noteOffLatency{}
 	*controlLatency{}
 	*programLatency{}
-	touchLatency   {}
-	bendLatency    {}
+	*touchLatency   {}
+	*bendLatency    {}
 	*songPtrLatency{}
 	*startLatency  {}
 	*stopLatency   {}

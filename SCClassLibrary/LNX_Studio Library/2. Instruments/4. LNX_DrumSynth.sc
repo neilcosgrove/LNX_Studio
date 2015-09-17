@@ -167,8 +167,10 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 				}],
 			
 			// 26.show sequencer
-			[1, \switch, (\strings_:"Seq"), midiControl, 26, "Show/Hide Seq",
-			{|me,val,latency,send|  p[26]=val; {this.arrangeWindow}.defer }],// not networked
+			[1, \switch, //(\strings_:"Seq"), midiControl, 26, "Show/Hide Seq",
+			{|me,val,latency,send| 
+			//	p[26]=val; {this.arrangeWindow}.defer
+			}],// not networked
 			
 		/// for all drums				
 		// 27-31.out channel (defined below)
@@ -370,8 +372,10 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 				{|me,val,latency,send|}],
 			
 			// 119 keep sequencer
-			[\switch, midiControl, 119, "Lock Seq", (\strings_:"Lock Seq"), 
-				{|me,val,latency,send| this.setPVP(119,val,latency,send)}],
+			[\switch, //midiControl, 119, "Lock Seq", (\strings_:"Lock Seq"), 
+				{|me,val,latency,send|
+				//	this.setPVP(119,val,latency,send)
+				}],
 					
 		// 120-124 On/Off for each drum (defined below)
 		0,0,0,0,0,
@@ -546,9 +550,6 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 	
 	/////////////////////////////////////////////////////////////////////////////////
 	
-	// any post midiInit stuff
-	iInitMIDI{ midi.putLoadList(LNX_MIDIPatch.nextUnusedIn++[1, 0 ]) }
-	
 	// anything else that needs doing after a server reboot; 
 	iServerReboot{ synthsOn = nil ! channels; }
 		
@@ -603,11 +604,11 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 
 	// for your own load preset
 	iLoadPreset{|i,newP,latency|
-		if (p[119]==0) {
+		//if (p[119].isTrue) {
 			seq=seqPresetMemory[i].deepCopy;
 			sP=sPPresetMemory[i].deepCopy;
 			{this.iUpdateGUI}.defer;
-		};
+		//};
 	}
 	
 	 // for your own remove preset
@@ -715,7 +716,7 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 	
 	// anything that needs doing after a load
 	iPostLoad{
-		this.arrangeWindow;
+		//this.arrangeWindow;
 	}
 	
 	//// Networking ////////////////////////////////////

@@ -686,10 +686,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	iInitVars{
 		notesOn=[];
 	}
-	
-	// any post midiInit stuff
-	iInitMIDI{ midi.putLoadList(LNX_MIDIPatch.nextUnusedIn++[1, 0 ]) }
-	
+		
 	// anything else that needs doing after a server reboot; 
 	iServerReboot{}
 		

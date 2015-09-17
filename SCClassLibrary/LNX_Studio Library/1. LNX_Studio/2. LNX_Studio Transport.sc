@@ -277,7 +277,7 @@
 	resetTime{
 		tasks[\time].stop;
 		tasks[\time]=nil;
-		models[\time].valueAction_(0);
+		{models[\time].lazyValueAction_(0)}.defer;
 	}
 	
 	// refresh mixer gui of beat

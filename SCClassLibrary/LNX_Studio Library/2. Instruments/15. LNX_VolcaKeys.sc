@@ -437,6 +437,12 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 		this.updateDSP(oldP,latency); // and update any dsp
 		
 	}
+	
+	iPostLoad{
+		if (models[29].isTrue) {
+			(11..28).do{|j| models[j].doLazyValueAction_(p[j],0,false) }
+		};
+	}
 		
 
 	//////////////////////////*****************************************************

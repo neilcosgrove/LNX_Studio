@@ -588,7 +588,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			.color_(\up,Color(0.6 , 0.562, 0.5))
 			.color_(\down,Color(0.6 , 0.562, 0.5)/2)
 			.color_(\string,Color.white)
-			.action_{ LNX_MIDIControl.editControls(studio); LNX_MIDIControl.window.front };
+			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
 							
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(window,689@5,80+17,

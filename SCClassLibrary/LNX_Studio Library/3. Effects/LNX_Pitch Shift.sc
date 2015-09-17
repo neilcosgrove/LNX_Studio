@@ -163,9 +163,7 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 		this.attachActionsToPresetGUI;
 	
 	}
-	
-	iInitMIDI{ midi.putLoadList([ 1, 0, 1, 0 ]) }
-	
+		
 	////////
 	
 	*initUGens{|s|

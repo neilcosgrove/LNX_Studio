@@ -712,7 +712,7 @@ LNX_Melody : LNX_InstrumentTemplate {
 		gui[\cpMenu]=MVC_PopUpMenu3(gui[\rcv3],Rect(79,31,16,16),gui[\menuTheme ])
 			.staticText_("")
 			.showTick_(false)
-			.items_(["Copy Chords","Paste Chords","-","Delete Chord"])
+			.items_(["Copy Chords","Paste Chords","-","Delete Chord","Delete All Chords"])
 			.color_(\background,Color.ndcMenuBG)
 			.action_{|me|
 				if (me.value==0) { storeChordsMod.guiCopyChords };
@@ -720,6 +720,7 @@ LNX_Melody : LNX_InstrumentTemplate {
 				if (me.value==3) {
 					storeChordsMod.guiDeleteChord(gui[\storeChordsListView].value)
 				};
+				if (me.value==4) { storeChordsMod.guiAllDeleteChords };
 			}
 			.value_(0)
 			.font_(Font("Helvetica", 12));

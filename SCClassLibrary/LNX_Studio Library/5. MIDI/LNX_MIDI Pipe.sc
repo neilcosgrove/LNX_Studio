@@ -619,7 +619,8 @@ LNX_StoreChords {
 	
 	offset{^models[\root].value}
 	
-	apiID_{|id| api = LNX_API(this,id,#[\netAddChord, \netDeleteChord, \netPasteChords]) }
+	apiID_{|id| api = LNX_API(this,id,#[\netAddChord, \netDeleteChord, \netPasteChords,
+			\netDeleteAllChords]) }
 	
 	// which note is been used as a "store this chord" key
 	storeKey{ if (models[\record].value.isTrue) {^store} {^nil} }
@@ -795,6 +796,14 @@ LNX_StoreChords {
 			chordNames.removeAt(index);
 			this.changed(\chords,chords,chordNames);
 		}
+	}
+	
+	// gui of delete all chords
+	guiAllDeleteChords{  api.groupCmdOD(\netDeleteAllChords) } // send
+	
+	// net of delete all chords
+	netDeleteAllChords{
+		
 	}
 	
 	// gui copy the chords to the clipboard

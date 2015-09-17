@@ -13,16 +13,18 @@
 
 LNX_GSRVoicerNode{
 	
-	var <server, <nodeID, <bundle, <duration, <timeOfDeath;
+	var <server, <nodeID, <bundle, <duration, <timeOfDeath, <velocity;
 	
 	// you need to supply the nodeID and bundle. Will not been sent until .play is called
-	*new{|server, nodeID, duration, bundle| ^super.new.init(server, nodeID, duration, bundle) }
+	*new{|server, nodeID, duration, vel, bundle|
+		^super.new.init(server, nodeID, duration, vel, bundle) }
 	
 	// store the init vars
-	init{|argServer, argNodeID, argDuration, argBundle|
+	init{|argServer, argNodeID, argDuration, argVel, argBundle|
 		server=argServer;
 		nodeID=argNodeID;
 		duration=argDuration;
+		velocity=argVel;
 		bundle=argBundle;
 	}
 			
@@ -94,8 +96,8 @@ LNX_GSRVoicer{
 	}
 	
 	// this will only store the bundle not send it, you need to supply your own nodeID
-	storeBundle{|channel, nodeName, nodeID, duration ... bundle|
-		nodesOn[channel][nodeName] = LNX_GSRVoicerNode(server,nodeID,duration,bundle);
+	storeBundle{|channel, nodeName, nodeID, duration, vel ... bundle|
+		nodesOn[channel][nodeName] = LNX_GSRVoicerNode(server,nodeID,duration,vel,bundle);
 	}
 	
 	// choke other channels
@@ -126,7 +128,7 @@ LNX_GSRVoicer{
 	// play a channel, if beat happens evaluate func
 	play{|channel,latency,func|
 		nodesOn[channel].do{|node|	
-			node.play(latency).if { func.value(channel) };
+			node.play(latency).if { func.value(channel,node.velocity) };
 		}
 	}
 	
