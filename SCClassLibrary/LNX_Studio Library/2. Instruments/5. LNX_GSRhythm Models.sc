@@ -101,7 +101,7 @@
 				
 		];
 			
-		template=template.extend(289,0); // extend the list to add the channel parameters
+		template=template.extend(289+8,0); // extend the list to add the channel parameters
 			
 	// MASTER FILTER ///////////////////////////////////////////////////////////////////////
 						
@@ -254,9 +254,6 @@
 				(\numberFunc_:'db'),
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(28+i,val,latency,send);
-					
-					//this.updateSynthArg(\amp,i,latency);
-					
 					this.setBoth(\amp,i,latency); // new
 				}];
 				
@@ -264,12 +261,8 @@
 			template[36+i]=[0,\audioOutMaster, midiControl, 36+i, "Out channel"+(i+1),
 				(\items_:(["Master"]++LNX_AudioDevices.outputAndFXMenuList)),
 				{|me,val,latency,send|
-				
 					this.setPVH(36+i,val,latency,send);
-					
 					this.setBoth(\outputChannels,i,latency);
-					
-					
 				}];
 			
 			// 44-51. channel pan
@@ -360,10 +353,7 @@
 				(\label_:"Freq" , \numberFunc_:\freq),
 				{|me,val,latency,send,toggle|
 					this.setPVP(124+i,val,latency,send);
-					
-					//this.updateSynthArg(\filtFreq,i,latency);					
 					this.updateFilterArg(\filtFreq,i,latency); // new
-									
 				}];
 			
 			// 132-139. channel filt res
@@ -371,11 +361,7 @@
 				(\label_:"Res" , \numberFunc_:\float2),
 				{|me,val,latency,send,toggle|
 					this.setPVP(132+i,val,latency,send);
-					
-					//this.updateSynthArg(\filtRes,i,latency);
-					
 					this.updateFilterArg(\filtRes,i,latency); // new
-					
 				}];
 			
 			// 140-147. channel filter Drive
@@ -383,11 +369,7 @@
 				(\label_:"Drive",\numberFunc_:'float2'),
 				{|me,val,latency,send,toggle|
 					this.setPVP(140+i,val,latency,send);
-					
-					//this.updateSynthArg(\drive,i,latency)
-					
 					this.updateFilterArg(\drive,i,latency); // new
-					
 				}];
 					
 			// 148-155. channel grain on/off
@@ -471,10 +453,7 @@
 				(\strings_:["Filter"]), 
 				{|me,val,latency,send,toggle|
 					this.setPVP(236+i,val,latency,send);
-					
 					this.updateFilterOnOff(i,latency); // new
-					
-					
 				}];
 			
 			// 244-251. channel mod : filter freq
@@ -511,9 +490,12 @@
 			// 277-285.  attack
 			template[277+i]=[[0,1,2],midiControl, 277+i, "Attack"+(i+1),
 				(\label_:"Attack"),
-				{|me,val,latency,send,toggle|
-					this.setPVP(277+i,val,latency,send);
-				}];
+				{|me,val,latency,send,toggle| this.setPVP(277+i,val,latency,send) }];
+				
+			// 289-296. static or random sample
+			template[289+i]=[0,\switch,midiControl, 289+i, "Rand Smp"+(i+1),
+				(\strings_:["R"]),
+				{|me,val,latency,send,toggle| this.setPVP(289+i,val,latency,send) }];
 	
 		};
 		

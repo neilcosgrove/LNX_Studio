@@ -573,6 +573,10 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		//if (sampleBank.isLoading) {^nil}; // drop out if still loading
 		
 		if (sampleBank.size>0) {
+			
+			if (p[289+i].isTrue) {
+				models[108+i].lazyValueAction_(sampleBank.size.rand.asInt,latency); // random smp
+			};
 			sample = sampleBank.samples.wrapAt(p[108+i]);     // get the sample
 			if ((sample.isNil) or: {sample.buffer.isNil}) {   // if it's not there or not ready
 				sample = lastGoodSample[i];                  // then use last good sample

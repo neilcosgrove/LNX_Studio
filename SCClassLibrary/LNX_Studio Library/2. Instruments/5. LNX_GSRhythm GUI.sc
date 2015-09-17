@@ -621,9 +621,26 @@
 			MVC_PopUpMenu3(models[100+i],tab, Rect(10, 2, 59, 17),gui[\menuTheme ]);
 
 			// 108-115. channel sample
-			MVC_PopUpMenu3(tab, Rect(75, 2, 89+60+10+5-30, 17),gui[\menuTheme  ])
+			MVC_PopUpMenu3(tab, Rect(75, 2, 112, 17),gui[\menuTheme  ])
 				.items_(channelBanks[i][p[100+i]].names)
 				.model_(models[108+i]);	
+				
+							
+			// 116-123. channel bp on/off
+			MVC_OnOffView(models[116+i], tab, Rect(219, 1, 19, 19),gui[\onOffTheme2])
+				.rounded_(true);	
+				
+				
+				
+							
+			// 289-296. static or random sample
+			MVC_OnOffView(models[289+i], tab, Rect(193, 1, 19, 19),gui[\onOffTheme2])
+				.rounded_(true);	
+				
+				
+				
+				
+				
 			
 			MVC_FuncAdaptor(models[108+i])
 				.func_{|me,value|
@@ -655,10 +672,7 @@
 			// 36-43. channel out channel (master vs individual)
 			MVC_PopUpMenu3(models[36+i],tab, Rect(395, 2, 70, 17),gui[\menuTheme  ])
 				.orientation_(\horizontal);	
-				
-			// 116-123. channel bp on/off
-			MVC_OnOffView(models[116+i], tab, Rect(219, 1, 19, 19),gui[\onOffTheme2])
-				.rounded_(true);
+
 				
 			
 				
