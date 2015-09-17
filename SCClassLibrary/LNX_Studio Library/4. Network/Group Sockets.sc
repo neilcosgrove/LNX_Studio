@@ -91,7 +91,7 @@ LNX_LANGroup {
 		myAddrs = Pipe.findValuesForKey("ifconfig", "inet")
 			.reverse
 			.collect{|ip| NetAddr(ip.replace("addr:", ""),port) }
-			.reject {|addr| addr.digit(0)==127} // remove 127. so not selected by mistake
+			.reject {|addr| addr.digit(0)==127 or: { addr.digit(4)==0 }} // remove 127. so not selected by mistake
 			.reverse 						   // this put 192 at the top of the list for me
 			;
 		// is local if size>0
@@ -157,7 +157,7 @@ LNX_LANGroup {
 					tryAddr = NetAddr.fromIP(intAddr+a,port+p);
 					// do i also want to check for intAddr equal
 					// and warning 126. is this ok ?  myNetAddr.array[0]==tryAddr.array[0]
-					if (tryAddr!=myNetAddr) {
+					if (tryAddr!=myNetAddr and: {tryAddr.digit(3)!=0}) {
 						tryAddr.sendBundle(nil, [\m,uid]++[\scan]++
 							(lanAddrs.collect{|addr| [addr.addr,addr.port]}.asList.flat)
 						);

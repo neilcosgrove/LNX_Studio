@@ -822,7 +822,7 @@ LNX_Network {
 			.align_(\center);
 					
 		// start
-		gui[\startButton]=SCButton.new(prefWin,Rect(125+19+7+5+2, 113+30-11+55, 38, 19))  
+		gui[\startButton]=Button.new(prefWin,Rect(125+19+7+5+2, 113+30-11+55, 38, 19))  
 			.states_([ ["Start", Color.green, Color.grey*0.4 ],
 								["Stop", Color.red, Color.grey*0.4 ]])
 			.value_(OscGroupServer.isRunning.if(1,0))
@@ -855,7 +855,7 @@ LNX_Network {
 		};
 	
 		// Ok
-		SCButton.new(prefWin,Rect(240, 210, 50, 20))  
+		Button.new(prefWin,Rect(240, 210, 50, 20))  
 			.states_([ [ "OK", Color.black, Color.orange ]])
 			.action_{	 prefWin.close }
 			.focus;

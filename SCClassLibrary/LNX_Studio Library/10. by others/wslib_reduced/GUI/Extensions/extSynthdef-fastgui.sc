@@ -84,7 +84,7 @@ SCPopUpMenu(win, 60@15)
 		moveSynth.value; 
 	}); 
 	 
-SCButton(win,18@15)
+Button(win,18@15)
 	.font_(Font("Helvetica", 9))
 	.states_([["#"]])
 	.action_({|val| 
@@ -96,7 +96,7 @@ SCButton(win,18@15)
 				", target: " ++ tgt ++ ", addAction: \\" ++ addAct ++ ")").postln; 
 	}); 
 
-SCButton(win,40@15)
+Button(win,40@15)
 	.font_(Font("Helvetica", 9))
 	.states_([["On"],["On", Color.black, Color.red(alpha:0.2)]])
 	.action_({|val| 
@@ -215,7 +215,7 @@ sendAlways {arg target, outbus = 0, fadeTime=0.02, addAction=\addToHead;
 		clock = SCPopUpMenu(win, Rect(80, 10, 80,18))
 			.items_(["TempoClock","AppClock","SystemClock"]);
 		controls = (
-		play: SCButton(win, Rect(10,10,65,18) )
+		play: Button(win, Rect(10,10,65,18) )
 			.states_([["play"],["stop", Color.black, Color.red]])
 			.action_({ |button| case 
 				{button.value == 1}
@@ -225,9 +225,9 @@ sendAlways {arg target, outbus = 0, fadeTime=0.02, addAction=\addToHead;
 				{button.value == 0}
 					{ this.stop; isPlaying = false; }
 				}),
-		reset: SCButton(win, Rect(10,30,65,18) ).states_([["reset"]])
+		reset: Button(win, Rect(10,30,65,18) ).states_([["reset"]])
 			.action_({ this.reset }),
-		next: SCButton(win, Rect(80,30,80,18) ).states_([["next >>"]])
+		next: Button(win, Rect(80,30,80,18) ).states_([["next >>"]])
 			.action_({ this.next })
 		/* tempo: SCSlider(win, Rect(10,30,160,18)).value_(0.5)
 			.action({ |slider| tempoClock.tempo = slider.value.rangeExp(0.25,4) }) */

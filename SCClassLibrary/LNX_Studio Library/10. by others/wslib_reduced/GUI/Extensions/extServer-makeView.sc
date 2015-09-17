@@ -235,7 +235,7 @@
 			};
 			booter.value = serverRunning.binaryValue;
 			/*
-			killer = SCButton(w, Rect(0,0, 24, 24));
+			killer = Button(w, Rect(0,0, 24, 24));
 			killer.states = [["K", Color.black, Color.clear]];
 			
 			killer.action = { Server.killAll };

@@ -369,7 +369,7 @@ if (studio.batchOn) {
 				.alwaysOnTop_(true)
 				.userCanClose_(false);
 				
-			SCButton(lnx[\win],Rect(10,10,60,40)).states_([["Close", Color.black, Color.red]])
+			Button(lnx[\win],Rect(10,10,60,40)).states_([["Close", Color.black, Color.red]])
 				.action_{
 					lnx[\refreshRate]=nil;
 					lnx[\doc].close;

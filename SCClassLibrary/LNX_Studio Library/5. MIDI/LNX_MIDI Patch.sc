@@ -45,7 +45,7 @@ LNX_MIDIPatch {
 	// find in & out port by name (uses find not ==)
 	findByName{|inName,outName|
 		var inIndex, outIndex;
-		midiSourceNames.do{|name,i| [name, name.find(inName)].postln; if (name.find(inName).notNil) { inIndex=i } };
+		midiSourceNames.do{|name,i| if (name.find(inName).notNil) { inIndex=i } };
 		midiDestinationNames.do{|name,i| if (name.find(outName).notNil) { outIndex=i } };
 		if (inIndex.notNil) { uidIn = midiSourceUIDs[inIndex] };
 		if (outIndex.notNil) { uidOut = midiDestinationUIDs[outIndex] };
@@ -772,7 +772,7 @@ LNX_MIDIPatch {
 			.editable_(false)
 			.string_(text);
 				
-			SCButton.new(win,Rect(373, 158, 60, 25))  
+			Button.new(win,Rect(373, 158, 60, 25))  
 			.states_([ [ "OK", Color(1.0, 1.0, 1.0, 1.0), Color.ndcDarkButtonBG ]])
 			.action_{win.close}
 			.focus;
