@@ -669,12 +669,12 @@
 						 \boxes:		Color(0.1,0.05,0,0.5)
 						));
 		
-		MVC_FlatButton(gui[\tabView].mvcTab(1),Rect(400+38-65, 322, 58, 18),"Colorize")
-			.canFocus_(false)
-			.color_(\up,Color.cyan/2)
-			.color_(\down,Color.cyan/3)
-			.resize_(9)
-			.action_{ gui[\code].syntaxColorize };
+		// MVC_FlatButton(gui[\tabView].mvcTab(1),Rect(400+38-65, 322, 58, 18),"Colorize")
+		// 	.canFocus_(false)
+		// 	.color_(\up,Color.cyan/2)
+		// 	.color_(\down,Color.cyan/3)
+		// 	.resize_(9)
+		// 	.action_{ gui[\code].syntaxColorize };
 
 
 
