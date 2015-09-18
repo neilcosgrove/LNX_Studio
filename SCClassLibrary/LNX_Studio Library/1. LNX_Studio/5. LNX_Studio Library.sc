@@ -3,75 +3,82 @@
 
 + LNX_Studio {
 	
-	// comment this neil!!
 	checkForLibraryUpdates{
-		var internetLibraryIndex;
+		var internetLibraryIndex, getInetLib, onGetInetLib, attempts = 0;
+		// try 3 times to get internet_library_index
 		if (LNX_Mode.isSafe.not) {
-			{
-				(Platform.lnxResourceDir+/+"internet_library_index").removeFile(false,false,true);
-				this.dialog1("Checking...",Color.white);
-				this.dialog2("",Color.white);
-				("curl http://lnxstudio.sourceforge.net/default_library/index > \""++
-					Platform.lnxResourceDir+/+"internet_library_index\"").unixCmd;
-				3.wait;
-				internetLibraryIndex = (Platform.lnxResourceDir+/+"internet_library_index").loadList;
-				if (internetLibraryIndex[0]=="*** LNX Library Index ***") {
+			(Platform.lnxResourceDir+/+"internet_library_index").removeFile(false,false,true);
+			onGetInetLib = {
+				{
 					this.dialog2("Connected",Color.white);
-					1.wait;
+					"Connected".postln;
 					this.downLoadUpdates(internetLibraryIndex.drop(1));
-				}{
-					this.dialog1("Checking......",Color.white);
-					("curl http://lnxstudio.sourceforge.net/default_library/index > \""++
-						Platform.lnxResourceDir+/+"internet_library_index\"").unixCmd;
-					5.wait;
-					internetLibraryIndex = (Platform.lnxResourceDir+/+"internet_library_index").loadList;
-					if (internetLibraryIndex[0]=="*** LNX Library Index ***") {
-						this.dialog2("Connected",Color.white);
-						1.wait;
-						this.downLoadUpdates(internetLibraryIndex.drop(1));
-					}{
-						this.dialog1("Checking.........",Color.white);
-						("curl http://lnxstudio.sourceforge.net/default_library/index > \""++
-							Platform.lnxResourceDir+/+"internet_library_index\"").unixCmd;
-						7.wait;
-						internetLibraryIndex = (Platform.lnxResourceDir+/+
-							"internet_library_index").loadList;
-						if (internetLibraryIndex[0]=="*** LNX Library Index ***") {
-							this.dialog2("Connected",Color.white);
-							1.wait;
-							this.downLoadUpdates(internetLibraryIndex.drop(1));
-						}{
-							this.dialog1(
-						"Failed connecting to http://lnxstudio.sourceforge.net",Color.white);
-							this.dialog2("",Color.white);
-						};	
+				}.defer;
+			};
+			getInetLib = {
+				var dots = "...";
+				if (attempts == 2) {
+					this.dialog1(
+						"Failed connecting to http://lnxstudio.sourceforge.net",
+						Color.white);
+					this.dialog2("",Color.white);
+				} {
+					attempts.do {
+						dots = dots ++ "...";
 					};
+					this.dialog1("Checking"++dots,Color.white);
+					("Checking"++dots).postln;
+					this.dialog2("",Color.white);
+					Platform.getURL(
+						"http://lnxstudio.sourceforge.net/default_library/index",
+						Platform.lnxResourceDir+/+"internet_library_index",
+						{|status|
+							if (status == 0) {
+								internetLibraryIndex = (Platform.lnxResourceDir+/+
+									"internet_library_index").loadList;
+								if (internetLibraryIndex[0]=="*** LNX Library Index ***") {
+									onGetInetLib.();
+								} {
+									attempts = attempts + 1;
+									getInetLib.();
+								};
+							} {
+								attempts = attempts + 1;
+								getInetLib.();
+							};
+						}
+					);
 				};
-			}.fork(AppClock);
-		};
+			};
+			// start the recursion
+			getInetLib.();
+		}
 	}
 	
 	// comment this neil!!
 	downLoadUpdates{|internetLibraryIndex|	
 		var folder = Platform.lnxResourceDir++"/default library".absolutePath;
-		internetLibraryIndex.collect{|file|
-			if ((folder+/+file).pathExists(false).not) {
-				this.dialog1("Downloading... ",Color.white);
-				this.dialog2(file,Color.white);
-				("curl http://lnxstudio.sourceforge.net/default_library/"
-					++ (file.replace(" ", "%20"))
-					++ " > \""
-					++ folder+/+file
-					++"\""
-				).unixCmd;
-				(0.25/4).wait;		
+		{
+			internetLibraryIndex.collect{|file|
+				if ((folder+/+file).pathExists(false).not) {
+					this.dialog1("Downloading... ",Color.white);
+					("Downloading "++file).postln;
+					this.dialog2(file,Color.white);
+					Platform.getURL("http://lnxstudio.sourceforge.net/default_library/"
+						++ (file.replace(" ", "%20")),
+						folder+/+file
+					);
+					(0.25/4).wait;		
+				};
 			};
-		};
-		this.dialog1("Installing... ",Color.white);
-		this.dialog2("",Color.white);
-		1.wait;
-		this.restoreLibraryDefaults;
-		this.dialog1("Finished",Color.white);
+			this.dialog1("Installing... ",Color.white);
+			this.dialog2("",Color.white);
+			"Installing...".postln;
+			1.wait;
+			this.restoreLibraryDefaults;
+			this.dialog1("Finished",Color.white);
+			"Finished".postln;
+		}.fork(AppClock);
 	}
 	
 	backupLibrary{

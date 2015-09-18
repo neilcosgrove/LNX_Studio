@@ -207,21 +207,24 @@ LNX_Studio {
 		Class.initClassTree(LNX_File);
 		Class.initClassTree(LNX_AudioDevices);
 		Class.initClassTree(LNX_MIDIPatch);
-		("curl http://lnxstudio.sourceforge.net/lnx_version.scd > \""++
-			Platform.lnxResourceDir+/+"lnx_version\"").unixCmd; // get the latest version number online
-		{
-			internetVersion = (Platform.lnxResourceDir+/+"lnx_version").loadList;
-			
-			if (internetVersion.notNil) {
-				if (internetVersion.size>0) {
-					internetVersion = internetVersion[0].asFloat;
-					if (internetVersion>version.drop(1).asFloat) {
-						studios[0].addTextToDialog( "New LNX_Studio available on sourceforge v"
-							++(internetVersion.asString),true,true);
-					};
-				}
-			};	
-		}.defer(2);
+		// get the latest version number online
+		Platform.getURL(
+			"http://lnxstudio.sourceforge.net/lnx_version.scd",
+			Platform.lnxResourceDir+/+"lnx_version",
+			{|status|
+				internetVersion = (Platform.lnxResourceDir+/+"lnx_version").loadList;
+				
+				if (internetVersion.notNil) {
+					if (internetVersion.size>0) {
+						internetVersion = internetVersion[0].asFloat;
+						if (internetVersion>version.drop(1).asFloat) {
+							studios[0].addTextToDialog( "New LNX_Studio available on sourceforge v"
+								++(internetVersion.asString),true,true);
+						};
+					}
+				};	
+			}
+		);
 		
 		studios = [];
 		//macOSisPPC = LNX_AudioDevices.macOSisPPC;      // get audio device info

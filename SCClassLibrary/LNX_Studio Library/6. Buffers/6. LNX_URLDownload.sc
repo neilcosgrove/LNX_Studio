@@ -464,17 +464,33 @@ LNX_FreeSoundAPIKey{
 	}
 	
 	afconvert{|action, format="AIFF", data="BEI16", outputPath|
-		^("afconvert"
-			++ " -f "
-			++ format
-			++ " -d "
-			++ data
-			++ " \""
-			++ this 
-			++ "\" \""
-			++ (outputPath ?? { this.getNewPath(format) })
-			++ "\""
-		).unixCmd(action); 
+		^Platform.case(
+			\osx, {
+				("afconvert"
+					++ " -f "
+					++ format
+					++ " -d "
+					++ data
+					++ " "
+					++ this.unixSafe 
+					++ " "
+					++ (outputPath ?? { this.getNewPath(format) }).unixSafe
+				).unixCmd(action);
+			},
+			\linux, {
+				("ffmpeg"
+					++ " -i "
+					++ this.unixSafe
+					++ " "
+					++ (outputPath ?? { this.getNewPath(format) }).unixSafe
+				).unixCmd(action);
+			},
+			\windows, {
+				"afconvert not imlemented".postln;
+				action.(127);
+				nil;
+			}
+		);
 	}
 	
 	// get the new path with the new extenstion

@@ -1096,6 +1096,17 @@ gives min, max, averages and total
 			\linux, { Platform.userHomeDir +/+ ".local/share/LNX_Studio/" }
 		);
 	}
+
+	*getURL {|url, savePath, action|
+		if (String.unixCmdActions.isNil) { Class.initClassTree(String) };
+		Platform.case(
+			\windows, {
+				"Platform.getURL is not yet supported on windows".postln;
+				if (action.notNil) { action.(1, nil) };
+			},
+			{ ("curl -s " ++ url ++ " > " ++ savePath.unixSafe).unixCmd(action) }
+		);
+	}
 }
 
 // + TextField {

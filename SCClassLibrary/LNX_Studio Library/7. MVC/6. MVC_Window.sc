@@ -105,6 +105,7 @@ MVC_Window {
 			}
 		;	
 		if (colors[\background].notNil) {
+			[name, colors[\background]].postln;
 			view.view.background_(colors[\background])
 		};
 		
