@@ -471,7 +471,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 			'Rand', {
 				// rand bank as well ?
 				channels.do{|y|
-					models[100+y].lazyValueAction_((channelBanks[y].size).rand,send:true);
+					//models[100+y].lazyValueAction_((channelBanks[y].size).rand,send:true);
 					models[108+y].lazyValueAction_((channelBanks[y][p[100+y]].size-1).rand,
 						send:true);
 				}
