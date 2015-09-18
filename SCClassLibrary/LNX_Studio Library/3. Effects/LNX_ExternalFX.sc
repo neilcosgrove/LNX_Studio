@@ -106,10 +106,21 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 				{|me,val,latency,send|
 					this.setSynthArgVH(10,val,\mute,val,latency,send);
 				}],
-					
-	
-	
-		
+				
+			// 11. sendChannels
+			[-1, \audioOut, midiControl, 11, "Send Channel",
+				(\items_:LNX_AudioDevices.outputAndFXMenuList),
+				{|me,val,latency,send|
+					var channel = LNX_AudioDevices.getOutChannelIndex(val);
+					this.setSynthArgVH(11,val,\sendChannels,channel,latency,send);
+				}],
+			
+			// 12. sendAmp
+			[-inf,\db6,midiControl, 12, "Send amp", (label_:"Send"),
+				{|me,val,latency,send,toggle|
+					this.setSynthArgVP(12,val,\sendAmp,val.dbamp,latency,send);
+				}], 
+			
 		];
 
 		#models,defaults=template.generateAllModels;
@@ -124,7 +135,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		// return the volume model
 	volumeModel{^models[13] }
 	
-	*thisWidth  {^215+22}
+	*thisWidth  {^215+22+24}
 	*thisHeight {^155+26+22}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
@@ -164,39 +175,46 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 								Rect(11,11,thisWidth-22,thisHeight-22-1),gui[\scrollTheme]);
 	
 		// midi control button
-		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(85, 6, 43, 19),"Cntrl", gui[\midiTheme])
+		MVC_FlatButton(gui[\scrollView],Rect(97, 131, 43, 19),"Cntrl", gui[\midiTheme])
 			.action_{ LNX_MIDIControl.editControls(this).front };
 	
 		// 2.in
-		gui[\in] = MVC_PopUpMenu3(models[2],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);
+		MVC_PopUpMenu3(models[2],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);
+		
+		
+		// 11. sendChannels
+		MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(85,7,70,17),gui[\menuTheme]);
 		
 		// 3.out
-		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(138,7,70,17),gui[\menuTheme]);
+		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(138+25,7,70,17),gui[\menuTheme]);
 					
 		// 6. external out channel	
 		MVC_PopUpMenu3(models[6],gui[\scrollView],Rect(7,110,70,17), gui[\menuTheme ] );
 	
 		// 7. external in channels
-		MVC_PopUpMenu3(models[7],gui[\scrollView],Rect(138,110,70,17), gui[\menuTheme ] );
+		MVC_PopUpMenu3(models[7],gui[\scrollView],Rect(138+25,110,70,17), gui[\menuTheme ] );
 		
 		// 8.to external channelSetup
 		MVC_PopUpMenu3(models[8],gui[\scrollView],Rect(7,130,70,17), gui[\menuTheme ] );
 		
 		// 9. from external xChannelSetup
-		MVC_PopUpMenu3(models[9],gui[\scrollView],Rect(138,130,70,17), gui[\menuTheme ] );
+		MVC_PopUpMenu3(models[9],gui[\scrollView],Rect(138+25,130,70,17), gui[\menuTheme ] );
 
 		// 4. inAmp
-		MVC_MyKnob3(models[4],gui[\scrollView],Rect(53,48,30,30),gui[\knobTheme]);
+		MVC_MyKnob3(models[4],gui[\scrollView],Rect(28,48,30,30),gui[\knobTheme]);
+		
+		// 12. sendAmp
+		MVC_MyKnob3(models[12],gui[\scrollView],Rect(105,48,30,30),gui[\knobTheme]);
 		
 		// 5. outAmp		
-		MVC_MyKnob3(models[5],gui[\scrollView],Rect(133,48,30,30),gui[\knobTheme]);
+		MVC_MyKnob3(models[5],gui[\scrollView],Rect(183,48,30,30),gui[\knobTheme]);
 
 		// 10.mute
-		MVC_OnOffView(models[10], gui[\scrollView], Rect(85,117,43,19),gui[\onOffTheme]);
+		MVC_OnOffView(models[10], gui[\scrollView], Rect(97,107,43,19),gui[\onOffTheme]);
 		
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],
-									17@(gui[\scrollView].bounds.height-23),80,
+									17@(gui[\scrollView].bounds.height-23),80+25,
 			Color(0.74, 0.74, 0.88)*0.6,
 			Color.black,
 			Color(0.74, 0.74, 0.88),
@@ -214,7 +232,8 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 	
 		SynthDef("External FX", {
 			|outputChannels=0, inputChannels=4, pan=0, inAmp=1, outAmp=1, mute=0,
-			xOutputChannels=0, xInputChannels=0, channelSetup=0, xChannelSetup=0|
+			xOutputChannels=0, xInputChannels=0, channelSetup=0, xChannelSetup=0,
+			sendChannels=4, sendAmp=0|
 			
 			var in2Out, out2In, silent, mono;
 		
@@ -229,12 +248,14 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 
 			Out.ar(xOutputChannels,in2Out);
 
-			out2In = In.ar(xInputChannels, 2)*Lag.kr((outAmp.dbamp*(1-mute)));
+			out2In = In.ar(xInputChannels, 2)*Lag.kr(1-mute);
 
 			out2In = Select.ar(xChannelSetup,[
 				[out2In[0],out2In[1]],(out2In[0]+out2In[1]).dup, out2In[0].dup, out2In[1].dup]);
 
-			Out.ar(outputChannels,out2In);
+			Out.ar(outputChannels, out2In * (outAmp.dbamp)); // out
+			
+			Out.ar(sendChannels, out2In * sendAmp); // and send
 			
 		}).send(s);
 
