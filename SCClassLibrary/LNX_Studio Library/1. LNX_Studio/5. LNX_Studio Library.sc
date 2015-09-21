@@ -172,7 +172,7 @@
 	// scroll view for library widgets
 	createLibraryScrollView{
 		// the library scroll view
-		mixerGUI[\libraryScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(11, 33, 190, 299))
+		mixerGUI[\libraryScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(11, 33+menuGap, 190, 299))
 			.resizeList_([1,1,1,1,1]) //  0:view 1:left 2:top 3:right 4:bottom
 			.hasBorder_(false)
 			.addFlowLayout(nil,1@1)

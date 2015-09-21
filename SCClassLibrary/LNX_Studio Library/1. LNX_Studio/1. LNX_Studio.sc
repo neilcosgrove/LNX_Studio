@@ -83,7 +83,7 @@ LNX_Studio {
 		
 	classvar	studios,			<instTypes, 
 			<thisWidth=212, 	<thisHeight,		<defaultHeight=374,
-			<>osx=0,			<visibleTypes,	<instLibraryFileNames;
+			<>osx=0,			<visibleTypes,	<instLibraryFileNames, menuGap=0;
 			
 	classvar <>verbose=false;
 		

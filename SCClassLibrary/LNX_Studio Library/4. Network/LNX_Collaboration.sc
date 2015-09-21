@@ -903,17 +903,19 @@ LNX_Collaboration{
 			gui[\userScrollView].hasHorizontalScroller_(true)
 		}{
 			gui[\userScrollView].hasHorizontalScroller_(false)
-		};		
+		};
 		
-		
-		h = (noLines*16+8).clip(1,4*16+5);
-		
-		if (noLines==0) { h=0 };
-		
+		if (noLines==0) {
+			h=0;
+			gui[\userScrollView].parent.removeView(gui[\userScrollView]);
+		} {
+			h = (noLines*16+8).clip(1,4*16+5);
+			gui[\userScrollView].parent.removeView(gui[\userScrollView]);
+		};
 		
 	//	gui[\userScrollView].bounds_(gui[\userScrollView].bounds.height_(h));
 			
-			
+		h.postln;
 		gui[\userScrollView].bounds_( Rect(5,473-h,202,h) );
 			
 			
