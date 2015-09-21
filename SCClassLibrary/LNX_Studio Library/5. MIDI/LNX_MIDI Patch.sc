@@ -89,8 +89,8 @@ LNX_MIDIPatch {
 	
 		if (initialized.not) {
 		 
-		 	//MIDIClient.init;
-			MIDIClient.init(50,50); // why 50?
+		 	// MIDIClient.init;
+			MIDIClient.init(16,16); // why 50?
 			noInPorts=MIDIClient.sources.size;
 			noOutPorts=MIDIClient.destinations.size;
 			
@@ -149,7 +149,8 @@ LNX_MIDIPatch {
 			outPoints=[NoMIDI];
 			noOutPorts.do({|i|
 				outPoints = outPoints.add(LNX_MIDIEndPoint(MIDIClient.destinations[i]));
-				outs = outs.add( MIDIOut(i, MIDIClient.destinations[i].uid));
+				MIDIOut.connectByUID(i, MIDIClient.destinations[i].uid);
+				outs = outs.add(MIDIOut(i));
 				outs[i].latency_(0);
 				// latency is set to zero, the studio will control when latency is apllied
 				// this depends on internal sequencers, external midi in
