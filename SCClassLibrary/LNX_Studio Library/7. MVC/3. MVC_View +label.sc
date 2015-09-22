@@ -245,8 +245,10 @@
 						numberString=numberString++(controlSpec.units)
 					};
 					Pen.font_(numberFont);
-					Pen.fillColor_(colors[active.if(\numberUp,col)]);
-					if (numberHeld) {Pen.fillColor_(colors[\numberDown])};
+					if (colors.notNil) {
+						Pen.fillColor_(colors[active.if(\numberUp,col)]);
+						if (numberHeld) {Pen.fillColor_(colors[\numberDown])};
+					};
 					
 					if (orientation==\horizontal) {
 						Pen.stringLeftJustIn(numberString,

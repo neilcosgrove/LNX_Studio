@@ -151,7 +151,7 @@ LNX_InviteInterface {
 							((buttons.size * 42) + 2).max( 160 ), 
 								((26 + (string.occurrencesOf( $\n ) * 10) ) + 4).max( 52 )
 								).resizeBy(w,h), false, border ? true );
-					win.front;
+					window.front;
 				}
 			} {
 			window = Window( name, 
