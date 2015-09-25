@@ -28,8 +28,8 @@
 		var path;
 								
 		// block size
-		models[\blockSize] = [(("blockSize".loadPref?[1])[0]).asInt,[0,6,\lin,1],
-			(\label_:"Block Size", \items_: (2**(5..11)).collect(_.asString) ),
+		models[\blockSize] = [(("blockSize".loadPref?[1])[0]).asInt,[0,4,\lin,1],
+			(\label_:"Block Size", \items_: (2**(5..9)).collect(_.asString) ),
 			{|me,val,latency,send|
 				this.initServerPostModels;   // update server options
 				Server.killAll;              // and restart

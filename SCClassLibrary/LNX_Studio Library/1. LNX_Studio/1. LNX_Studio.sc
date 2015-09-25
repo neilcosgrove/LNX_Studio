@@ -321,7 +321,7 @@ LNX_Studio {
 	// post initModel
 	
 	initServerPostModels{
-		server.options.blockSize_((2**(5..11))[models[\blockSize].value]);
+		server.options.blockSize_((2**(5..9))[models[\blockSize].value]);
 	}
 	
 	// boot the server and run postBootFuncs when done
