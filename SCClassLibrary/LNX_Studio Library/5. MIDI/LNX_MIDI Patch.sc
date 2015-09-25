@@ -89,8 +89,8 @@ LNX_MIDIPatch {
 	
 		if (initialized.not) {
 		 
-		 	//MIDIClient.init;
-			MIDIClient.init(50,50); // why 50?
+		 	MIDIClient.init;
+			//MIDIClient.init(50,50); // why 50?
 			noInPorts=MIDIClient.sources.size;
 			noOutPorts=MIDIClient.destinations.size;
 			

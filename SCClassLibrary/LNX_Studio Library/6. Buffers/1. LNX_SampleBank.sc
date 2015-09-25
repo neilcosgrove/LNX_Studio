@@ -105,11 +105,9 @@ LNX_SampleBank{
 		
 	// variable parameter uses send until end value is sent using sendOD via host
 	setModelVP{|index,key,value,latency,send=true|
-		if (metaModels[index][key]!=value) { 
-			if (send) {
-				api.sendVP(id++key++"_vp_"++index,'netSetModelVP',index,key,value);
-			};
-		}
+		if (send) {
+			api.sendVP(id++key++"_vp_"++index,'netSetModelVP',index,key,value);
+		};
 	}
 	
 	// net reciever of all the 5 methods above
