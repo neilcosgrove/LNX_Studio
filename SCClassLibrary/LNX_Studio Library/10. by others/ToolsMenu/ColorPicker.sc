@@ -69,12 +69,14 @@ ColorPicker {
 		keyList = MVC_PopUpMenu(w, Rect(27,70+20+22,150+45,18))
 			.items_([])
 			.action_{
-				color=object[keys[keyList.value]];
-				r.value_(color.red);
-				g.value_(color.green);
-				b.value_(color.blue);
-				a.value_(color.alpha);
-				colorview.background_(color);
+				if (object.notNil) {
+					color=object[keys[keyList.value]];
+					r.value_(color.red);
+					g.value_(color.green);
+					b.value_(color.blue);
+					a.value_(color.alpha);
+					colorview.background_(color);
+				}
 			};
 			
 		if (object.notNil) {
@@ -175,7 +177,7 @@ ColorPicker {
 		};		
 
 		w.front;
-		
+
 		keyList.viewDoValueAction_(0);
 		{update.value}.defer(0.1);
 

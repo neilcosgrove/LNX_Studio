@@ -16,12 +16,19 @@ LNX_StartUp {
 	
 	*initClass{
 
-
 		StartUp.add {
 			
-			// SCDoc.indexAllDocuments;
+			SCDoc.indexAllDocuments;
 						
 			studio = LNX_Studio(Server.local); 	// start the studio
+
+			// add appropriate menus
+			if (studio.isStandalone) {
+				LNX_AppMenus.addDeveloperMenus(studio); // to remove for release
+				LNX_AppMenus.addReleaseMenus(studio);
+			}{	
+				LNX_AppMenus.addDeveloperMenus(studio);
+			};
 
 			Platform.case(\osx, {
 			
@@ -42,14 +49,8 @@ LNX_StartUp {
 				
 				// add appropriate menus
 				if (studio.isStandalone) {
-					LNX_AppMenus.addDeveloperMenus(studio); // to remove for release
-					LNX_AppMenus.addReleaseMenus(studio);
-					
-					//Document.listener.close;
-					
 					Document.listener.bounds=Rect(LNX_Studio.osx,32,535,175);
-				}{	
-					LNX_AppMenus.addDeveloperMenus(studio);
+				}{
 					QuarkSVNRepository.svnpath= "/opt/subversion/bin/svn"; // svn for supercollider
 				};
 								

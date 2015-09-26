@@ -1916,6 +1916,49 @@ LNX_Studio {
 		insts[id].solo_(v);
 		this.refreshOnOffEnabled;
 	}
+
+	quit {
+		var gui = (),
+		colors = (
+			background: 		Color(59/77,59/77,59/77),
+			border2: 			Color(6/11,42/83,29/65),
+			border1: 			Color(3/77,1/103,0,65/77),
+			menuBackground:	Color(1,1,0.9)
+		) ++ (colors?());
+		
+		gui[\window] = MVC_ModalWindow(mixerWindow.view, (250-60)@(150-18), colors);
+		gui[\scrollView] = gui[\window].scrollView;
+		
+		MVC_StaticText( gui[\scrollView], Rect(10,23-18,190,18))
+			.shadow_(false)
+			.color_(\string,Color.black)
+			.font_(Font("Helvetica-Bold", 13))
+			.string_("Quit LNX_Studio?");
+		
+		MVC_StaticText( gui[\scrollView], Rect(10,30,190,18*2))
+			.shadow_(false)
+			.color_(\string,Color.black)
+			.font_(Font("Helvetica", 11))
+			.string_("Any unsaved information\n will be lost");
+		
+		// Ok
+		MVC_OnOffView(gui[\scrollView],Rect(105-52, 78, 50, 20),"Ok")
+			.rounded_(true)  
+			.color_(\on,Color(1,1,1,0.5))
+			.color_(\off,Color(1,1,1,0.5))
+			.action_{
+				gui[\window].close;
+				CmdPeriod.run;
+				{ 0.exit }.defer(0.2);
+		};
+		
+		// Cancel
+		MVC_OnOffView(gui[\scrollView],Rect(105, 78, 50, 20),"Cancel")
+			.rounded_(true)  
+			.color_(\on,Color(1,1,1,0.5))
+			.color_(\off,Color(1,1,1,0.5))
+			.action_{	 gui[\window].close };
+	}
 			
 }
 

@@ -1,5 +1,6 @@
 .DS_Store
-Icon
+Icon
+
 English.lproj/
 GoToLinePanel.nib/
 Help/
@@ -36,3 +37,4 @@ sounds/SinedPink.aiff
 sounds/a11wlk01-44_1.aiff
 sounds/a11wlk01.wav
 synthdefs/
+scratch.scd

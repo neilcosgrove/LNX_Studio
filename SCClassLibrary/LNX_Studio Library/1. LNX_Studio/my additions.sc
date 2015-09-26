@@ -1121,6 +1121,17 @@ gives min, max, averages and total
 
 // }
 
++ Quarks {
+	*initClass {
+		folder = Platform.lnxResourceDir +/+ "downloaded-quarks";
+		additionalFolders = additionalFolders ? [];
+		if(File.exists(folder).not, {
+			folder.mkdir();
+		});
+		cache = Dictionary.new;
+	}
+}
+
 
 ////////////////////////////////////////////////
 

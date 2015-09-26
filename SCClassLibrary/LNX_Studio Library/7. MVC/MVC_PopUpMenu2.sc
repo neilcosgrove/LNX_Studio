@@ -4,7 +4,7 @@
 
 MVC_PopUpMenu2 : MVC_View {
 
-	var <revert;
+	var <revert=false;
 
 	revert_{|val| revert = val } 
 
@@ -25,8 +25,8 @@ MVC_PopUpMenu2 : MVC_View {
 	}
 	
 		// create the gui's items that make this MVC_View
-	create{|argWindow|
-		if (view.isClosed) {
+	create{|argWindow, override=false|
+		if (override or: { view.isClosed }) {
 			if (argWindow.notNil) { window = argWindow };
 			// the following order is important
 			// DOES this happen any more? >> also makes sure the view overlaps number
