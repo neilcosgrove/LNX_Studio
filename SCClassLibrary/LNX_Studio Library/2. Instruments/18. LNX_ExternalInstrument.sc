@@ -6,7 +6,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	var <sequencer, <keyboardView, lastKeyboardNote, <midiInBuffer, <midiOutBuffer, <seqOutBuffer;
 
 	*initClass{ Class.initClassTree(LNX_VolcaBeats) }
-	*isVisible{ ^LNX_VolcaBeats.isVisible }
+	*isVisible{ ^true }
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
 		^super.new(server,studio,instNo,bounds,open,id)
