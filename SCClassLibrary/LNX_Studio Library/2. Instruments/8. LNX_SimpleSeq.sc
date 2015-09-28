@@ -20,14 +20,14 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 	}
 	
 	*studioName {^"Step Sequencer"}
-	
 	isMIDI{^true}
-	
 	*sortOrder{^2}
 	isInstrument{^true}
 	onColor{^Color(0.5,0.7,1)} 
-	
 	clockPriority{^3}
+	alwaysOnModel{^models[2]}
+	alwaysOn{^models[2].isTrue} // am i? used by melody maker to change onOff widgets
+	canAlwaysOn{^true} // can i?
 
 	header { 
 		// define your document header details
@@ -51,7 +51,15 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
 				{|me,val,latency,send,toggle| this.onOff(val,latency,send,toggle) },
-				\action2_ -> {|me| this.onOffAlt(me.value) }]
+				\action2_ -> {|me| this.onOffAlt(me.value) }],
+				
+			// 2. Always ON
+			[0, \switch, (\strings_:"Always"), midiControl, 2, "Always On",
+				{|me,val,latency,send,toggle|
+					this.setPVPModel(2,val,latency,send);
+					if ((val==0)&&(instOnSolo.isOff)) {this.stopAllNotes}; 
+					{studio.updateAlwaysOn(id,val.isTrue)}.defer;
+				}],
 			
 		].generateAllModels;
 
@@ -247,14 +255,21 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 	
 	
 		// 1.on/off
-		MVC_OnOffView(models[1],gui[\scrollView] ,Rect( 10, 6,22,18),gui[\onOffTheme1])
+		MVC_OnOffView(models[1],gui[\scrollView] ,Rect( 10, 6,22,19),gui[\onOffTheme1])
 			.rounded_(true)
 			.permanentStrings_(["On"]);
 			
 		// 0.solo
-		MVC_OnOffView(models[0],gui[\scrollView] ,Rect( 37, 6,20,18),gui[\soloTheme  ])
+		MVC_OnOffView(models[0],gui[\scrollView] ,Rect( 37, 6,20,19),gui[\soloTheme  ])
 			.rounded_(true);
-			
+
+
+	
+		// 1.always on
+		MVC_OnOffView(models[2],gui[\scrollView] ,Rect(65, 6,75,19),gui[\onOffTheme1])
+			.rounded_(true)
+			.permanentStrings_(["Always On"]);
+						
 		
 		defaultChannels.do({|y|
 			
@@ -366,17 +381,8 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 
 		});
 		
-	// other gui stuff
-//		
-//		// midi out
-//		midi.createOutMVUA (gui[\scrollView], 57@10, false);
-//		midi.createOutMVUB (gui[\scrollView], 205@10);
-//		
-//		//midi.createInMVUA (gui[\scrollView], 57@10, false);
-//		//midi.createInMVUB (gui[\scrollView], 205@10, false);
-		
 		// MIDI Settings
- 		MVC_FlatButton(gui[\scrollView],Rect(70, 6, 43, 19),"MIDI",gui[\button])
+ 		MVC_FlatButton(gui[\scrollView],Rect(237, 6, 43, 19),"MIDI",gui[\button])
 			.action_{ this.createMIDIInOutModelWindow(window,nil,nil,(
 				background:Color(63/77,59/77,59/77),
 				border2:Color(7/11,42/83,29/65),
@@ -385,10 +391,10 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 		
 		
 		// midi control button
-		MVC_FlatButton(gui[\scrollView],Rect(122, 6, 43, 19),"Cntrl",gui[\button])
+		MVC_FlatButton(gui[\scrollView],Rect(294, 6, 43, 19),"Cntrl",gui[\button])
 			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
 				
-		MVC_FlatButton(gui[\scrollView],Rect(176 , 6, 43, 19),"All",gui[\button])
+		MVC_FlatButton(gui[\scrollView],Rect(354 , 6, 43, 19),"All",gui[\button])
 			.action_{ LNX_MIDIControl.editControls(studio); LNX_MIDIControl.window.front };
 		
 		// the preset interface
@@ -659,22 +665,7 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 	// this will be called by studio after booting
 	*initUGens{|server| }
 	
-	control	{|num,  val|
-		var midiS=midiSet;
-		if (midiSet.notNil) {
-			spModels[midiSet][2].lazyValueAction_(num,nil,true);
-//			num.post;
-//			": \"\", ".post;
-			{
-				if (Sub37.at(num).notNil) {
-					this.changeName(midiS,Sub37.at(num));
-					nameViews[midiS].string_(Sub37.at(num))
-				};
-			}.defer;
-			
-			midiSet=nil;	
-		}	
-	}      // control
+	control	{|num,  val|}      // control
 	bend 	{|bend|     }		// bend
 	touch	{|pressure| }		// and pressure
 	
@@ -702,7 +693,9 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 						
 				// this is a temp fix for noUsers=1
 				// but breaks model symmetry when not in group listening mode
-				if ((instOnSolo.isOn) and: {sP[y][0]==1}) {
+				
+				
+				if ((p[2].isTrue)or: {((instOnSolo.isOn) and: {sP[y][0].isTrue})}) {
 						
 					if (sP[y][7].isTrue) {
 						// control

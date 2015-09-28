@@ -803,7 +803,10 @@ LNX_StoreChords {
 	
 	// net of delete all chords
 	netDeleteAllChords{
-		
+		chords     = []; 					// storage as ints
+		pipes      = []; 					// storage as pipes
+		chordNames = [];
+		this.changed(\chords,chords,chordNames);
 	}
 	
 	// gui copy the chords to the clipboard
