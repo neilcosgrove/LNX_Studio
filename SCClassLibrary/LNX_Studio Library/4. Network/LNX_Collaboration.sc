@@ -897,7 +897,7 @@ LNX_Collaboration{
 	// autosize window and gui items to no of users /////////////
 	
 	autoSizeGUI{
-		var noLines, h;
+		var noLines, h, y = 0;
 		noLines=((users.size/2).ceil);
 		if (noLines>4) {
 			gui[\userScrollView].hasHorizontalScroller_(true)
@@ -906,22 +906,19 @@ LNX_Collaboration{
 		};
 		
 		if (noLines==0) {
-			h=0;
-			gui[\userScrollView].parent.removeView(gui[\userScrollView]);
+			h = -6;
+			y = 100;
+			// gui[\userScrollView].parent.removeView(gui[\userScrollView]);
 		} {
 			h = (noLines*16+8).clip(1,4*16+5);
-			gui[\userScrollView].parent.removeView(gui[\userScrollView]);
 		};
 		
 	//	gui[\userScrollView].bounds_(gui[\userScrollView].bounds.height_(h));
 			
-		h.postln;
-		gui[\userScrollView].bounds_( Rect(5,473-h,202,h) );
+		gui[\userScrollView].bounds_( Rect(5,473-h+y,202,h) );
 			
 			
 		gui[\userView].bounds_(gui[\userView].bounds.height_(noLines*16+5));
-		
-		if (noLines==0) { h=(-6) };
 		
 		^h;
 	}

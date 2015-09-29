@@ -155,9 +155,9 @@ LNX_Studio {
 		this.bootServer;			 // and now boot it
 				
 		this.createMixerWindow;      // the main lnx window
+		this.createNetworkWidgets;   // and the network widgets
 		this.createMixerWidgets;     // add the mixer widgets
 		this.createLibraryWidgets;   // add the library widgets
-		this.createNetworkWidgets;   // and the network widgets
 		this.autoSizeGUI;			 // autosize to number of users. (to add widgets & remove)
 		mixerWindow.create;          // now make the window
 		
