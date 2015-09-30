@@ -4,24 +4,20 @@ w=MVC_Window().create;
 
 v=MVC_Text(w,Rect(20,20,200,14))
 	.string_("")
+	.align_(\center)
+	.shadow_(false)
 	.canEdit_(true)
-	.enterStopsEditing_(false)
-	.stringAction_{|me,string|
-		string.postln;
-	}
-	.enterKeyAction_{|me,string|
-		string.postln;
-		//me.string_("");
-	}
+	.enterStopsEditing_(true)
+	.stringAction_{|me,string| string.postln }
+	.enterKeyAction_{|me,string| string.postln }
 	.color_(\string,Color(59/77,59/77,59/77)*1.4)
 	.color_(\edit,Color(59/77,59/77,59/77)*1.4)
 	.color_(\background,Color(0.14,0.12,0.11)*0.4)
+	.color_(\cursor,Color.white)
 	.color_(\focus,Color.orange)
-	.color_(\editBackground, Color(0,0,0,0.7))
+	.color_(\editBackground, Color(0.3,0.2,0.2))
 	.font_(Font.new("STXihei", 12));
-	
 )
-
 
 v.charSizesIntegral
 
@@ -34,18 +30,16 @@ MVC_Text : MVC_StaticText {}
 
 MVC_StaticText : MVC_View {
 
-	var <align='left', <shadow=true, <>noShadows=1, <rotate=0, <down=false, <>shadowDown=true, 
-		clicks, <>downColor, <>active=true, <>alwaysDown=false;
-	var <>excludeFromVerbose=false;
-	var <>keyDownAction, <>keyUpAction,
-	    <>upKeyAction, <>downKeyAction, <>enterKeyAction, <>stringAction;
-	var <charSizes, <charSizesIntegral, <clipChars=false;
-	var <clipString, <>hasBorder=false;
-	var <editing=false, <cursor=nil, <cursorFlash=false, <canEdit=false;
-	var <>enterStopsEditing = true;
-	var <>rightIfIcon=false;
-	var <>tasks;
-	var <>penShadow=false;
+	var <align='left', 	<shadow=true, 	<>noShadows=1;
+	var <rotate=0,		<down=false, 		<>shadowDown=true;
+	var clicks, 			<>downColor, 		<>active=true;	var <>alwaysDown=false,	<>excludeFromVerbose=false;
+	var <>keyDownAction, 	<>keyUpAction, 	<>upKeyAction;
+	var <>downKeyAction, 	<>enterKeyAction, 	<>stringAction;
+	var <clipChars=false,	<charSizes, 		<charSizesIntegral;
+	var <clipString, 		<>hasBorder=false;
+	var <editing=false, 	<cursor=nil, 		<cursorFlash=false;
+	var <canEdit=false,	<>enterStopsEditing = true;
+	var <>tasks,			<>penShadow=false, <>rightIfIcon=false;
 	
 	// add the colour to the Dictionary, no testing to see if its there already
 	addColor_{|key,color|
@@ -63,6 +57,7 @@ MVC_StaticText : MVC_View {
 		}
 	}
 	
+	// can the text be edited
 	canEdit_{|bool|
 		canEdit=bool;
 		this.canFocus_(bool);
@@ -82,6 +77,13 @@ MVC_StaticText : MVC_View {
 		this.refresh;
 	}
 	
+	// does widget clip chars on display
+	clipChars_{|bool|
+		clipChars=bool;
+		this.calcCharSizes;
+	}
+	
+	// calculate the size of all characters and intergate
 	calcCharSizes{
 		if (clipChars||canEdit) {
 			charSizes=[];
@@ -93,11 +95,7 @@ MVC_StaticText : MVC_View {
 		this.makeClipString;
 	}
 	
-	clipChars_{|bool|
-		clipChars=bool;
-		this.calcCharSizes;
-	}
-	
+	// clip the number of chars displayed
 	makeClipString{
 		if (clipChars) {	
 			if (string.size==0) {
@@ -109,19 +107,22 @@ MVC_StaticText : MVC_View {
 		}{
 			clipString=string;
 		};
-		
 	}
 		
-	startEditing{
+	// start editing the text, called by mouseclick or return on keyboard
+	startEditing{|x|
+		// find index for cursor
+		if (x.isNumber) { cursor = ([0]++charSizesIntegral).indexOfNearest(x) };
 		editing=true; 
 		this.calcCharSizes;
 		tasks[\cursorFlash] = {{
 			cursorFlash = cursorFlash.not;
 			this.refresh;
 			0.6.wait;
-		}.loop}.fork(AppClock);
+		}.loop}.fork(AppClock); // start flashing cursor task
 	}
 	
+	// stop editing and flashing cursor task
 	stopEditing{
 		editing=false; 
 		tasks[\cursorFlash].stop;
@@ -130,20 +131,17 @@ MVC_StaticText : MVC_View {
 	
 	// set your defaults
 	initView{
-		charSizes=[];
-		charSizesIntegral=[];
-		colors['icon'] = nil;
-		
-		colors['background']= Color.clear;
-		colors['editBackground']=  Color(0,0,0,0.8);
-		colors['string']= Color.white;
-		colors['stringDown']= Color.black;
-		colors['edit']=  Color.orange;
-		colors['border'] = Color(0,0,0,0.5);
-		colors['cursor'] = Color(0,0,0);
-		
+		charSizes         = [];
+		charSizesIntegral = [];
+		colors['icon']           = nil;
+		colors['background']     = Color.clear;
+		colors['editBackground'] = Color(0,0,0,0.8);
+		colors['string']         = Color.white;
+		colors['stringDown']     = Color.black;
+		colors['edit']           = Color.orange;
+		colors['border']         = Color(0,0,0,0.5);
+		colors['cursor']         = Color(0,0,0);
 		canFocus=true;
-		
 		tasks = IdentityDictionary[];
 	}
 	
@@ -152,30 +150,25 @@ MVC_StaticText : MVC_View {
 		var r1, align2;
 		
 		view=UserView(window,rect)
-			.canFocus_(true)
+			.canFocus_(true) // without focus we can't use keyboard
 			.drawFunc_{|me|
-
-	
-				if (me.hasFocus.not) {this.stopEditing};
-
+				if (me.hasFocus.not) {this.stopEditing}; // stop editing if we loose focus
 				if (verbose && (excludeFromVerbose.not)) {
 					[this.class.asString, 'drawFunc', label].postln };
-			
+					
 				r1=Rect(0,0,w,h);
 				Pen.use{
-					//Pen.smoothing_(false);
+					// draw background
 					if (colors[\background].notNil) {
 						colors[\background].set;
-						
 						if (editing) { colors['editBackground'].set};
-						
 						Pen.fillRect(r1);
 					};
 					if (showLabelBackground) {
 						Color.black.alpha_(0.2).set;
 						Pen.fillRect(r1);
 					};
-					
+					// draw border
 					if (hasBorder) {
 						colors[\border].set;
 						Pen.strokeRect(r1);
@@ -183,10 +176,9 @@ MVC_StaticText : MVC_View {
 					
 					align2=align;
 					
+					// draw user Icon
 					if (colors[\icon].notNil) {
-						
 						if (rightIfIcon) {
-						
 							Pen.fillColor_(Color.black);
 							DrawIcon( \user, Rect(-1,1,h,h).insetBy(-1,-1) );
 							DrawIcon( \user, Rect(1,1,h,h).insetBy(-1,-1) );
@@ -194,9 +186,7 @@ MVC_StaticText : MVC_View {
 							DrawIcon( \body, Rect(0,1,h,h).insetBy(0,0) );
 							Pen.fillColor_(colors[\icon]*1.3+0.3);
 							DrawIcon( \head, Rect(0,1,h,h).insetBy(0,0) );
-							
 						}{
-												
 							Pen.fillColor_(Color.black);
 							DrawIcon( \user, Rect(0,1,h,h).insetBy(-1,-1) );
 							DrawIcon( \user, Rect(2,1,h,h).insetBy(-1,-1) );
@@ -204,15 +194,12 @@ MVC_StaticText : MVC_View {
 							DrawIcon( \body, Rect(1,1,h,h).insetBy(0,0) );
 							Pen.fillColor_(colors[\icon]*1.3+0.3);
 							DrawIcon( \head, Rect(1,1,h,h).insetBy(0,0) );
-							
 						};
-							
 						if (rightIfIcon) {align2='right'};
 					};
-		
 					
+					// manually draw shadow
 					Pen.rotate(rotate,w/2,h/2);
-					
 					Pen.fillColor_(Color.black);
 					Pen.font_(font);
 					if ((shadow)&&((down.not)||(shadowDown))) {
@@ -239,22 +226,20 @@ MVC_StaticText : MVC_View {
 					};
 					if (midiLearn) {
 						Pen.fillColor_(colors[\midiLearn]);
-					}{
-								
+					}{			
 						Pen.fillColor_(colors[enabled.if(
-							
 							(down&&(shadowDown.not)&&(colors['stringDown'].notNil)).if(
 								\stringDown,\string),
-						\disabled)
-						]);
-						
+						\disabled)]);	
 					};
 					if (editing) { Pen.fillColor_(colors[\edit])};
 					
+					// use pen shadow
 					if (penShadow) {
 						Pen.setShadow((-2)@(-2), 5, Color.black);
 					};
 
+					// draw text
 					switch (align2)
 						{'left'}  { Pen.stringLeftJustIn (clipString,r1) }
 						{'center'}  { Pen.stringCenteredIn (clipString,r1) }
@@ -263,27 +248,41 @@ MVC_StaticText : MVC_View {
 						}
 						{'right'} {
 							if ((rightIfIcon)and:{colors[\icon].notNil}) {
-						
 								Pen.stringRightJustIn(clipString,r1.moveBy(-2,0))
 							}{
 								Pen.stringRightJustIn(clipString,r1)
-							};
-							
+							};	
 						};
-						
+					
+					// draw cursor
 					if (editing&&cursorFlash) {
-					
-						var x = ([0]++charSizesIntegral).last+3;
-						
-						if (align=='left') { x=x };
-						if (align=='center') { x= (x+w)/2 };
-						Pen.smoothing_(false);
-						Pen.strokeColor_(colors[\cursor]);
-						Pen.line((x@1),(x@(h-2)));
-						Pen.stroke;
-						
+						case {cursor.isNil} { // cursor auto at end
+							var x = (([0]++charSizesIntegral)?0).last;
+							if (align=='left') { x=x+3 };							if (align=='center') {
+								x= (w - (charSizesIntegral.last?0))/2 + x;
+							};
+							Pen.smoothing_(false);
+							Pen.strokeColor_(colors[\cursor]);
+							Pen.line((x@1),(x@(h-2)));
+							Pen.stroke;	
+						} {cursor.isNumber} { // cursor pos as index, 0 is before 1st char
+							var x = ((([0]++charSizesIntegral)[cursor])?0);
+							if (align=='left') { x=x+3 };
+							if (align=='center') {
+								if (clipChars && (clipString.size!=string.size)) {
+									x=x;
+								}{
+									x= (w - (charSizesIntegral.last?0))/2 + x;
+								};
+							};
+							Pen.smoothing_(false);
+							Pen.strokeColor_(colors[\cursor]);
+							Pen.line((x@1),(x@(h-2)));
+							Pen.stroke;
+						} {cursor.isCollection} { // cursor is selection [begin,end], to do?
+							
+						};	
 					};
-					
 				}; // end.pen
 			};		
 	}
@@ -299,18 +298,19 @@ MVC_StaticText : MVC_View {
 		labelGUI.do{|labelView| labelView.beginDragAction_(view.beginDragAction) };
 	}
 	
-	
+	// align 'left' or 'center'. right not done yet
 	align_{|symbol|
 		align=symbol;
 		if (view.notClosed) { view.refresh };
 	}
 
-
+	// rotate the text by an angle
 	rotate_{|angle|
 		rotate=angle;
 		if (view.notClosed) { view.refresh };
 	}
 	
+	// draw a manual shadow
 	shadow_{|bool|
 		shadow=bool;
 		if (view.notClosed) { view.refresh };
@@ -322,54 +322,38 @@ MVC_StaticText : MVC_View {
 		var didAnything=false, noKeyPresses=0;
 		
 		view.mouseDownAction_{|me, x, y, modifiers, buttonNumber, clickCount|
-		// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-		
+			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			didAnything=false; 
-			
 			this.stopEditing;
-		
 			mouseDownAction.value(me, x, y, modifiers, buttonNumber, clickCount);
-
 			if (modifiers==524576) { buttonNumber=1 };
 			if (modifiers==262401) { buttonNumber=2 };
 			buttonPressed=buttonNumber;
-			
 			clicks=clickCount;
-			
 			if (modifiers.asBinaryDigits[4]==0) { // check apple not pressed because of drag
 				if (editMode) {
 					lw=lh=nil; startX=x; startY=y; view.bounds.postln; // for moving
 				}{
-					//buttonPressed=buttonNumber;
 					evaluateAction=true;
-					//if (modifiers==524576) { buttonPressed=1 };
-					//if (modifiers==262401) { buttonNumber=2 };
-					//buttonPressed=buttonNumber;
-					
 					if (buttonNumber==2) {
 						this.toggleMIDIactive
 					}{
 						down=true;
-					//	view.refresh;
 					};
 				}
 			};
-			
 			this.refresh
-			
 		};
 		
 		view.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
-			
+			// moving stops us from begin able to edit text. insted we can move insts & fx
 			if (enterStopsEditing && didAnything.not) {
 				didAnything=true; 
 				this.stopEditing;
 				this.refresh
 			};
-			
 			mouseMoveAction.value(me, x, y, modifiers, buttonNumber, clickCount);
-			
 			if (editMode) {
 				this.moveBy(x-startX,y-startY,buttonPressed)
 			}{				
@@ -379,120 +363,165 @@ MVC_StaticText : MVC_View {
 						view.refresh;
 					};
 				}{
-					if (down) {
-						if (alwaysDown.not) {
-							down=false;
-							view.refresh;
-						};
-					}
+					if ((down)and:{alwaysDown.not}) {
+						down=false;
+						view.refresh;
+					};
 				};
-			};
-			
+			};	
 		};
 		
 		view.mouseUpAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
-			
 			if (active) {value=0};
-			
 			down=false;
-			
-			
 			mouseUpAction.value(me, x, y, modifiers, buttonNumber, clickCount);
-			
 			if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}and:{evaluateAction}and:{editMode.not}) {
-				
 				this.viewDoValueAction_(value,nil,true,false);
 				if (clicks==2) {
 					this.valueActions(\mouseUpDoubleClickAction,this);
 					if (model.notNil){ model.valueActions(\mouseUpDoubleClickAction,model) };
-		
 				}
 			};
-			
-			if ((didAnything.not)&&canEdit) {
-				this.startEditing;
+			if ((didAnything.not)&&canEdit) {	
+				switch (align) {'left'} {
+					this.startEditing(x);	
+				}{'center'}{
+					if (clipChars && (clipString.size!=string.size)) {
+						this.startEditing(x);
+					}{
+						this.startEditing(x- ((w - (charSizesIntegral.last?0))/2));
+					};
+				};
 				this.refresh
-			}; 
-			
+			};			
 			if (alwaysDown) { this.refresh };
-			
 		};
 		
-		
 		view.keyDownAction_{|me,char,mod,uni,keycode|
-			
+
+			//keycode.postln;
+
 			// help fixes double press bug by see if cmd is pressed
-			if (mod.isCmd) { noKeyPresses=noKeyPresses+1 }{ noKeyPresses=1 };
+			if (mod.isCmd) {
+				noKeyPresses=noKeyPresses+1;
+				case {keycode==123} { // left	
+					cursor = 0;
+					if (editing.not) {this.startEditing};
+					this.refresh;
+				} {keycode==124} { // right
+					cursor = string.size;
+					if (editing.not) {this.startEditing};
+					this.refresh;
+				};
+			}{ noKeyPresses=1 };
 			
 			if (noKeyPresses.odd) { // stops double press bug
-				
 				keyDownAction.value(me,char,mod,uni,keycode);
-				
 				if (mod.isCmd) { // apple cmd key
-					
-					if (keycode==8) { ("echo"+string+"| pbcopy").unixCmd }; // copy
+					if (keycode==8) { // cmd copy	
+						case {cursor.isNil} {
+							("echo"+string+"| pbcopy").unixCmd
+						} {cursor.isNumber} {									("echo"+string+"| pbcopy").unixCmd
+						} {cursor.isCollection} {	
+							
+						};
+					}; 
 					
 					if (editing) {
-						case {keycode==9} { //paste
-							string=string++("pbpaste".unixCmdGetStdOut);
-							
-							if (string.last==$\n) {string=string.drop(-1)};
-							
+						case {keycode==9} { // cmd paste
+							var clipboard = "pbpaste".unixCmdGetStdOut;
+							clipboard = clipboard.select{|char| 
+								(char.isAlphaNum)||(char.isPunct)||(char==($\ ))
+							};
+							case {cursor.isNil} {
+								string=string++clipboard;
+							} {cursor.isNumber} {									string=string.insert(cursor,clipboard);
+								cursor = (cursor+(clipboard.size)).clip(0,string.size);
+							} {cursor.isCollection} {		
+							};					
 							this.calcCharSizes;
 							this.refresh;
 							this.valueActions(\stringAction,this);
 							if (model.notNil){ model.stringAction_(string,this) };
-					
-						}{keycode==51} { // delete
-							string="";
+						}{keycode==51} { // cmd delete
+							case {cursor.isNil} {
+								string="";
+							} {cursor.isNumber} {									string = string.drop(cursor);
+								cursor=0;
+							} {cursor.isCollection} {		
+							};	
 							this.calcCharSizes;
 							this.refresh;
 							this.valueActions(\stringAction,this);
 							if (model.notNil){ model.stringAction_(string,this) };
 							stringAction.value(this,string);
 						}
-					};
-						
+					};	
 				}{ // not cmd key
-					
 					case {keycode==126} { // up
 						this.stopEditing;
 						this.refresh;
 						upKeyAction.value(this,string);
-					
 					} {keycode==125} { // down
 						this.stopEditing;
 						this.refresh;
 						downKeyAction.value(this,string);
-					};
-		
-					if (editing) {
+					} {keycode==123} { // left	
+						case {cursor.isNil} {
+							cursor = string.size;
+						} {cursor.isNumber} {	
+							cursor = (cursor-1).clip(0,string.size);
+						} {cursor.isCollection} {	
 							
+						};
+						this.refresh;
+					} {keycode==124} { // right
+						case {cursor.isNil} {
+							cursor = string.size;
+						} {cursor.isNumber} {	
+							cursor = (cursor+1).clip(0,string.size);
+						} {cursor.isCollection} {	
+							
+						};
+						this.refresh;
+					};
+					if (editing) {		
 						case {keycode==51} { // delete
-							string=string.drop(-1);
+							case {cursor.isNil} {
+								string=string.drop(-1);
+							} {cursor.isNumber} {
+								if (cursor>0) {
+									string = string.select{|i,index| index != (cursor-1) };
+									cursor= (cursor-1).clip(0,string.size);
+								}
+							} {cursor.isCollection} {		
+							};					
 							this.calcCharSizes;
 							this.refresh;
 							this.valueActions(\stringAction,this);
 							if (model.notNil){ model.stringAction_(string,this) };
 							stringAction.value(this,string);
-		
 						} {keycode==36} { // enter
+							cursor=nil;
 							if (enterStopsEditing) {this.stopEditing};
 							this.refresh;
 							enterKeyAction.value(this,string);
-						
 						}{ 		
-							if ((char.isAlphaNum)||(char.isPunct)||(char.isSpace)) {
-								// alphaNum etc..
-								string=string++char;
+							// alphaNum etc..
+							if ((char.isAlphaNum)||(char.isPunct)||(char==($\ ))) {
+								case {cursor.isNil} {
+									string=string++char;
+								} {cursor.isNumber} {									string=string.insert(cursor,char);
+									cursor = (cursor+1).clip(0,string.size);
+								} {cursor.isCollection} {	
+								};
 								this.calcCharSizes;
 								this.refresh;
 								this.valueActions(\stringAction,this);
 								if (model.notNil){ model.stringAction_(string,this) };
 								stringAction.value(this,string);
 							};
-							
 						}
 					}{
 						if ((canEdit)&&(keycode==36)) { // enter
@@ -501,13 +530,10 @@ MVC_StaticText : MVC_View {
 						};
 					}
 				}	
-				
 			}
-			
 		};
 		
 		view.keyUpAction_{ noKeyPresses=0 }
-		
 		
 	}
 
