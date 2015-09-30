@@ -738,16 +738,25 @@ LNX_WebBrowser{
 		));
 		gui[\scrollView] = gui[\window].scrollView;
 	
-		MVC_StaticText(gui[\scrollView],Rect(0,5,280,20))
+		MVC_Text(gui[\scrollView],Rect(0,5,280,20))
 					.align_(\center)
 					.string_("FreeSound API Key")
 					.shadow_(false)
 					.color_(\string,Color.black)
 					.font_(Font("Helvetica",16));
 								
-		MVC_TextField(gui[\scrollView],Rect(5,30,270,20), LNX_FreeSoundAPIKey.keyModel)
+		MVC_Text(gui[\scrollView],Rect(5,30,270,20), LNX_FreeSoundAPIKey.keyModel)
+			.canEdit_(true)
+			.shadow_(false)
+			.hasBorder_(true)
+			.color_(\string,Color.black)
+			.color_(\border,Color.black)
 			.color_(\edit,Color.black)
-			.font_(Font("Helvetica",15));	
+			.color_(\background,Color.white)
+			.color_(\cursor,Color.black)
+			.color_(\focus,Color(0,0,0,0.5))
+			.color_(\editBackground, Color(1,1,1))
+			.font_(Font("Helvetica",15));		
 				
 		// Ok
 		MVC_OnOffView(gui[\scrollView],Rect(220, 60, 50, 20),"Ok")
@@ -836,9 +845,18 @@ LNX_WebBrowser{
 	
 		funcs[\setColors].value;
 		
-		gui[\text]=MVC_TextField(gui[\scrollView],Rect(40,350,243-15,20))
+		gui[\text]=MVC_Text(gui[\scrollView],Rect(40,350,243-15,20),"".asModel)
+			.canEdit_(true)
+			.shadow_(false)
+			.hasBorder_(true)
+			.color_(\string,Color.black)
+			.color_(\border,Color.black)
 			.color_(\edit,Color.black)
-			.font_(Font("Helvetica",15));	
+			.color_(\background,Color.white)
+			.color_(\cursor,Color.black)
+			.color_(\focus,Color(0,0,0,0.5))
+			.color_(\editBackground, Color(1,1,1))
+			.font_(Font("Helvetica",15));		
 			
 		// add
 		MVC_OnOffView(gui[\scrollView],Rect(317-25-18, 350, 35, 20),"Add")

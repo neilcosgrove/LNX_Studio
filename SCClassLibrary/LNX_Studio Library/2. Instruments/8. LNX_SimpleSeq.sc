@@ -322,18 +322,21 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 				.color_(\up,Color(0.7,0.7,1)/1.5);
 				
 			// learn name ( look at nameSafe we use : alot in control names )
-			nameViews[y]=MVC_TextField(gui[\seqView],Rect(107,yOffset+osY-15,468,16))
+			nameViews[y]=MVC_Text(gui[\seqView],Rect(107,yOffset+osY-15,468,16))
+				.string_("")
 				.actions_(\stringAction,{|me|
 					var string=me.string.nameSafe;
 					me.string_(string);
 					this.changeName(y,string);
 				})
+				.shadow_(false)
+				.canEdit_(true)
 				.maxStringSize_(100)
 				.color_(\background,Color.grey/4)
 				.color_(\focus,Color.grey(alpha:0))
 				.color_(\string,Color(0.6,0.6,1))
-				.color_(\edit,Color(0.6,0.6,1)*1.5)
-				.font_(Font("Helvetica",11));
+				.color_(\cursor,Color.white)
+				.font_(Font("Helvetica",12));
 						
 			//  8. interpolation  (x1,x2,x3,x4,x6,x8,x12,x16)  index:(0-7)
 			MVC_PopUpMenu3(spModels[y][8],gui[\seqView],Rect(608,(yOffset)+osY-15,38,16))

@@ -51,7 +51,7 @@ ColorPicker {
 		
 		[h,s,v].do({|item| item.action_({|v|updateHSV.()}).sliderView.canFocus_(false)});
 		
-		MVC_TextField(w,Rect(27,70+22,150+45,16))
+		MVC_Text(w,Rect(27,70+22,150+45,16))
 			.actions_(\enterAction,{|v|
 				var o=("{"+v.string+"}.try").interpret;
 				if (o.notNil) {
@@ -64,7 +64,16 @@ ColorPicker {
 					keyList.items_(keys.collect(_.asString));
 				};
 			})
-			.string_((object.notNil).if("\\\\supplied: "++(object.class.asString),"") );
+			.string_((object.notNil).if("\\\\supplied: "++(object.class.asString),"") )
+			.shadow_(false)
+			.canEdit_(true)
+			.color_(\string,Color(59/77,59/77,59/77)*1.4)
+			.color_(\edit,Color.orange)
+			.color_(\background,Color.black)
+			.color_(\cursor,Color.white)
+			.color_(\focus,Color.orange)
+			.color_(\editBackground, Color(0.2,0.2,0.2))
+			.font_(Font.new("STXihei", 12));
 			
 		keyList = MVC_PopUpMenu(w, Rect(27,70+20+22,150+45,18))
 			.items_([])
@@ -86,7 +95,7 @@ ColorPicker {
 			keyList.items_(keys.collect(_.asString));
 		};
 		
-		MVC_TextField(w,Rect(27,70+22+20+20,150+45,16))
+		MVC_Text(w,Rect(27,70+22+20+20,150+45,16))
 			.actions_(\enterAction,{|v|
 				var o=("{"+v.string+"}.try").interpret;
 				if (o.notNil) {
@@ -94,7 +103,16 @@ ColorPicker {
 				};
 			})
 			.string_((updateObject.notNil).if(
-				"\\\\supplied: "++(updateObject.class.asString),"") );
+				"\\\\supplied: "++(updateObject.class.asString),"") )
+			.shadow_(false)
+			.canEdit_(true)
+			.color_(\string,Color(59/77,59/77,59/77)*1.4)
+			.color_(\edit,Color.orange)
+			.color_(\background,Color.black)
+			.color_(\cursor,Color.white)
+			.color_(\focus,Color.orange)
+			.color_(\editBackground, Color(0.2,0.2,0.2))
+			.font_(Font.new("STXihei", 12));
 		
 		
 		colorview = UserView(w,Rect(160,0,86,64+22))

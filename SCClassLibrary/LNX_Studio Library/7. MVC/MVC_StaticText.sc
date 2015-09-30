@@ -2,20 +2,18 @@
 (
 w=MVC_Window().create;
 
-v=MVC_Text(w,Rect(20,20,200,14))
-	.string_("")
-	.align_(\center)
+v=MVC_Text(w,Rect(20,20,200,14), "".asModel.maxStringSize_(10))
 	.shadow_(false)
 	.canEdit_(true)
 	.enterStopsEditing_(true)
 	.stringAction_{|me,string| string.postln }
 	.enterKeyAction_{|me,string| string.postln }
 	.color_(\string,Color(59/77,59/77,59/77)*1.4)
-	.color_(\edit,Color(59/77,59/77,59/77)*1.4)
-	.color_(\background,Color(0.14,0.12,0.11)*0.4)
+	.color_(\edit,Color.orange)
+	.color_(\background,Color.black)
 	.color_(\cursor,Color.white)
 	.color_(\focus,Color.orange)
-	.color_(\editBackground, Color(0.3,0.2,0.2))
+	.color_(\editBackground, Color(0.2,0.2,0.2))
 	.font_(Font.new("STXihei", 12));
 )
 
@@ -40,6 +38,7 @@ MVC_StaticText : MVC_View {
 	var <editing=false, 	<cursor=nil, 		<cursorFlash=false;
 	var <canEdit=false,	<>enterStopsEditing = true;
 	var <>tasks,			<>penShadow=false, <>rightIfIcon=false;
+	var <>maxStringSize;
 	
 	// add the colour to the Dictionary, no testing to see if its there already
 	addColor_{|key,color|
@@ -439,7 +438,8 @@ MVC_StaticText : MVC_View {
 							} {cursor.isNumber} {									string=string.insert(cursor,clipboard);
 								cursor = (cursor+(clipboard.size)).clip(0,string.size);
 							} {cursor.isCollection} {		
-							};					
+							};
+							this.clipStringToMaxSize;
 							this.calcCharSizes;
 							this.refresh;
 							this.valueActions(\stringAction,this);
@@ -496,7 +496,7 @@ MVC_StaticText : MVC_View {
 									cursor= (cursor-1).clip(0,string.size);
 								}
 							} {cursor.isCollection} {		
-							};					
+							};		
 							this.calcCharSizes;
 							this.refresh;
 							this.valueActions(\stringAction,this);
@@ -513,9 +513,11 @@ MVC_StaticText : MVC_View {
 								case {cursor.isNil} {
 									string=string++char;
 								} {cursor.isNumber} {									string=string.insert(cursor,char);
-									cursor = (cursor+1).clip(0,string.size);
+									this.clipStringToMaxSize;
 								} {cursor.isCollection} {	
 								};
+								this.clipStringToMaxSize;
+								cursor= (cursor+1).clip(0,string.size);
 								this.calcCharSizes;
 								this.refresh;
 								this.valueActions(\stringAction,this);
@@ -536,6 +538,8 @@ MVC_StaticText : MVC_View {
 		view.keyUpAction_{ noKeyPresses=0 }
 		
 	}
+	
+	clipStringToMaxSize{ if (maxStringSize.isNumber) { string = string[0..(maxStringSize-1)] } }
 
 	down_{|bool|
 		down=bool;

@@ -577,8 +577,10 @@ LNX_Room{
 		
 		// the fields of my profile
 		8.do{|i|
-			gui[("f"++i).asSymbol]=MVC_TextField(gui[\tabView].views[1],Rect(105,(i*16)+4,280,16))
+			gui[("f"++i).asSymbol]=MVC_Text(gui[\tabView].views[1],Rect(105,(i*16)+4,280,16))
 				.maxStringSize_(38)
+				.shadow_(false)
+				.canEdit_(true)
 				.actions_(\stringAction,{|me|
 					var val=me.string.profileSafe;
 					if (i==1) {val=val[0..7]};
@@ -586,10 +588,10 @@ LNX_Room{
 					network.thisUser.setField(i,val);
 					if (i==1) {network.refreshUserView};
 				})
-				//.editable_(true)
 				.color_(\background,Color(0.267,0.282,0.267))
+				.color_(\edit,Color.orange)
+				.color_(\cursor,Color.white)
 				.color_(\string,Color.white)
-				.color_(\edit,Color.white)
 				.font_(Font("Monaco",12))
 				.string_(network.thisUser.field(i));
 		};

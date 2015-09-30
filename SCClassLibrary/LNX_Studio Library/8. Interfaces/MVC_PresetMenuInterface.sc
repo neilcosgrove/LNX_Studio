@@ -21,8 +21,6 @@ MVC_PresetMenuInterface{
 		<>addAction,
 		<>removeAction,
 		<>writeAction,
-		<>saveAction,  // to remove
-		<>loadAction,  // to remove
 		<>clearAction,
 		<>randomAction,
 		<>midiAction,
@@ -69,7 +67,7 @@ MVC_PresetMenuInterface{
 		if (resize.notNil) { gui[\view].resize_(resize) };
 			
 		// 0.menu
-		gui[\menu]=MVC_PopUpMenu3(gui[\view],Rect(1,1,15,15))
+		gui[\menu]=MVC_PopUpMenu3(gui[\view],Rect(2,2,14,14))
 			.staticText_("")
 			.showTick_(false)
 			.action_{|me|
@@ -97,9 +95,10 @@ MVC_PresetMenuInterface{
 
 		
 		// 1.text box	
-		gui[\text]=MVC_TextField(gui[\view],Rect(17,1,width+(15*2)-1-3,14+1))
+		gui[\text]=MVC_Text(gui[\view],Rect(17,2,width+(15*2)-1-3,14))
 			.string_(value.isNumber.if(presetNames@@value,"No presets"))
-			.maxStringSize_(25)
+			.shadow_(false)
+			.canEdit_(true)
 			.actions_(\stringAction,{|me|
 				if (presetNames.size>0) {
 					if (value.isNumber) {
@@ -113,7 +112,7 @@ MVC_PresetMenuInterface{
 					me.string_("No presets");
 				};
 			})
-			.actions_(\downAction,{
+			.downKeyAction_{
 				var v;
 				if (value.notNil) {
 					v=(value+1).wrap(0,presetNames.size-1);
@@ -121,8 +120,8 @@ MVC_PresetMenuInterface{
 				}{
 					this.valueAction_(0)
 				}
-			})
-			.actions_(\upAction,{
+			}
+			.upKeyAction_{
 				var v;
 				if (value.notNil) {
 					v=(value-1).wrap(0,presetNames.size-1);
@@ -130,9 +129,10 @@ MVC_PresetMenuInterface{
 				}{
 					this.valueAction_(presetNames.size-1)
 				}
-			})
+			}
 			.font_(Font("Arial", 11))
-			.color_(\editColor,editColor)
+			.color_(\cursor,Color.white)
+			.color_(\editBackground,editColor)
 			.color_(\background,textBackground)
 			.color_(\string,stringColor)
 			.color_(\focus,Color(0,0,0,0));
@@ -167,24 +167,8 @@ MVC_PresetMenuInterface{
 			.font_(Font("Helvetica-Bold",10))
 			.color_(\down,buttonColor/2)
 			.color_(\up,buttonColor);
-
-//		// 5.load
-//		gui[\load]=MVC_FlatButton(gui[\view],Rect(width+17+(15*3),1,14,14),"L")
-//			.action_{loadAction.value(this)}
-//			.font_(Font("Helvetica",10))
-//			.color_(\up,Color.green)
-//			.color_(\down,Color.green/2);
-//
-//		// 6.save
-//		gui[\save]=MVC_FlatButton(gui[\view],Rect(width+17+(15*4),1,14,14),"S")
-//			.action_{saveAction.value(this)}
-//			.font_(Font("Helvetica",10))
-//			.color_(\up,Color.red)
-//			.color_(\down,Color.red/2);
-//			
 	}
 
-	//indexToSelection_{}
 	value_{|i|
 		if (presetNames.size>0) {
 			if (i.notNil) {
@@ -276,7 +260,7 @@ MVC_PresetMenuInterface{
 	free{
 		gui.do(_.free);
 		gui=presetNames=window=action=renameAction=addAction=removeAction=writeAction=
-		saveAction=loadAction=clearAction=randomAction=nil;
+		clearAction=randomAction=nil;
 	}
 	remove{}
 	

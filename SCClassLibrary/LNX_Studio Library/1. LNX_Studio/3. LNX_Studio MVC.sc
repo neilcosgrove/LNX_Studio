@@ -362,11 +362,18 @@
 		scrollView = window.scrollView;
 
 		// text field for the instrument / filename
-		MVC_TextField(scrollView,Rect(10,20,142,16))
+		MVC_Text(scrollView,Rect(10,20,142,16))
 			.string_(filename)
 			.label_("Save song as...")
 			.labelShadow_(false)
-			.color_(\edit,Color.black)
+			.canEdit_(true)
+			.shadow_(false)
+			.color_(\string,Color(59/77,59/77,59/77)*1.4)
+			.color_(\edit,Color.orange)
+			.color_(\background,Color.black)
+			.color_(\cursor,Color.white)
+			.color_(\focus,Color.orange)
+			.color_(\editBackground, Color.black)
 			.font_(Font.new("STXihei", 13))
 			.actions_(\stringAction,{|me|
 				filename=me.string.filenameSafe;
@@ -447,6 +454,7 @@
 		// user dialog input
 		MVC_StaticText(gui[\netScrollView],Rect(1,1+h-36-6,w-30,14))
 			.string_("")
+			.shadow_(false)
 			.canEdit_(true)
 			.enterStopsEditing_(false)
 			.enterKeyAction_{|me,string|
