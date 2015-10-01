@@ -321,7 +321,9 @@ LNX_Studio {
 	// post initModel
 	
 	initServerPostModels{
-		server.options.blockSize_((2**(5..9))[models[\blockSize].value]);
+		var blockSize = (2**(5..9))[models[\blockSize].value];
+		server.options.blockSize_(blockSize);
+		
 	}
 	
 	// boot the server and run postBootFuncs when done
@@ -345,6 +347,7 @@ LNX_Studio {
 			instTypes.do(_.initUGens(server));   // init all instrument uGens
 			insts.do(_.initUGens(server));		// used by SC Code FX
 			LNX_SampleBank.initUGens(server);	// sample bank for tuning
+			LNX_Voicer.update_(server);			// update voicer
 			{this.initGroups}.defer(0.1);		// start inst, code, fx & out groups
 			{this.startDSP}.defer(0.2);			// if using internal, wait for it to catch up.
 			{server.volume_(models[\volume].value);}.defer(0.25);

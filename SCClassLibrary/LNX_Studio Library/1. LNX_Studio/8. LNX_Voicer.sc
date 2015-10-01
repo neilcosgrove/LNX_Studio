@@ -27,22 +27,31 @@ LNX_VoicerNode{
 
 LNX_Voicer {
 	
-	var <>verbose=false;
-	var <>server, <>poly=8, <minDur, <minDurL; // poly is how many notes to play at once
+	classvar <sampleRate, <blockSize, <minDur, <minDurL;
+	var <>verbose = false;
+	var <>server, <>poly=8;
 	var <onNodes, <releasedNodes, <>allNodes, <>noteToNode;
 	
 	*new{|server| ^super.new.init(server) }
 	
 	init{|argSever|
-		minDur        = 2048/44100*0.6; // why this long ?? i did have;
-		minDurL       = 64/44100;  // block size is now changable
+		
 		server        = argSever;
+		LNX_Voicer.update_(server);
 		onNodes       = [];
 		releasedNodes = [];
 		allNodes      = [];
 		noteToNode	= IdentityDictionary[];
 	}
-
+	
+	// get server details and update minDur & minDur
+	*update_{|server|
+		sampleRate    = server.sampleRate;
+		blockSize     = server.options.blockSize;
+		minDur        = (blockSize*19.2)/sampleRate;   // min dur before we adjust latency
+		minDurL       = blockSize/sampleRate;          // dur to add to midi latency
+	}
+	
 	// create a new note and return a LNX_VoicerNode
 	noteOn{|note, velocity, latency|
 		
@@ -82,7 +91,7 @@ LNX_Voicer {
 	// release a note
 	releaseNote{|note,inLatency|
 		
-		var durOn, voicerNode,latency;
+		var durOn, voicerNode, latency;
 		
 		if (verbose) { ("Release:"+note).postln };
 		
@@ -90,20 +99,18 @@ LNX_Voicer {
 		voicerNode = noteToNode[note];
 		
 		if ((voicerNode.notNil)and:{onNodes.includes(voicerNode)}) {
-		
+			
 			latency = voicerNode.latency; // use the latency the note was created with
 			
 			// clip duration to block/sampleRate else gates might not close
 			durOn = (SystemClock.now) - (voicerNode.start);
-					//- (voicerNode.latency?0) - (latency ?0); // how long on
 			
 			if (durOn<minDur) {
 				if (latency.isNil) {
 					latency = minDur
 				}{
-					latency=latency+minDurL;
+					latency = latency + minDurL;
 				};
-				
 			};
 			
 			// release it and move to released nodes
@@ -123,6 +130,7 @@ LNX_Voicer {
 	killNote{|note,inLatency|
 		
 		var durOn, voicerNode, latency;
+		
 		note = note.asInt;
 		voicerNode = noteToNode[note];
 		
@@ -134,13 +142,12 @@ LNX_Voicer {
 	
 			// clip duration to block/sampleRate else gates might not close
 			durOn = (SystemClock.now) - (voicerNode.start);
-					//- (voicerNode.latency?0) - (latency ?0); // how long on
 					
 			if (durOn<minDur) {
 				if (latency.isNil) {
 					latency = minDur
 				}{
-					latency=latency+minDurL;
+					latency = latency + minDurL;
 				};
 			};
 			
