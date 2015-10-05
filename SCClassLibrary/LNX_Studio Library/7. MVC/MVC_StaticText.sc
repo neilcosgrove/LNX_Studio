@@ -517,7 +517,7 @@ MVC_StaticText : MVC_View {
 								} {cursor.isCollection} {	
 								};
 								this.clipStringToMaxSize;
-								cursor= (cursor+1).clip(0,string.size);
+								if (cursor.isNumber) {cursor=(cursor+1).clip(0,string.size)};
 								this.calcCharSizes;
 								this.refresh;
 								this.valueActions(\stringAction,this);

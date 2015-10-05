@@ -11,6 +11,8 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	var <sequencer, <keyboardView, <noControl, <midiInBuffer, <midiOutBuffer, <seqOutBuffer,
 		<lastProgram;
 
+	// goto updateGUI
+
 	*initClass{
 		Class.initClassTree(LNX_File);
 		isVisiblePref = ("MoogIsVisible".loadPref ? [false])[0].isTrue;
@@ -52,7 +54,9 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	}
 	
 	// an immutable list of methods available to the network
-	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn]}
+	interface{^#[\netMidiControlVP, 
+//		\netExtCntIn,
+	\extProgIn]}
 
 	// MIDI patching ///////////////////////////////////////////////////////
 
@@ -98,7 +102,12 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				if (index.notNil) {
 					models[index+14].lazyValue_(pipe.val, true); // set model, no action
 					p[index+14]=pipe.val;                        // set p[]
-					api.sendOD(\netExtCntIn, index+14, pipe.val);   // network it
+					
+					
+					// this should work ?
+					this.midiControlVP(index, pipe.val, pipe.latency);					
+					
+					
 				};		
 				^this // and drop 
 			}
@@ -109,7 +118,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				// api.groupCmdOD(\extProgIn, pipe.program,false);
 				^this // drop	
 			};
-		midiInBuffer.pipeIn(pipe); // to in Buffer
+		midiInBuffer.pipeIn(pipe); // to in Buffer. (control & progam are dropped above)
 	}
 	
 	// midi coming from in buffer
@@ -119,7 +128,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		// drop out and Don't send if pipe is external and coming from Sub37 going to Sub37
 		if ((pipe.source==\external) && {midi.outPoint.isSameDeviceAndName(pipe[\endPoint])}) {
 			^this
-		};
+		};	
 		this.toMIDIOutBuffer(pipe);             // to midi out buffer
 	}
 	
@@ -148,11 +157,11 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		{keyboardView.clear}.defer(studio.actualLatency);
 	}
 	
-	// external midi setting controls (these are network methods)
-	netExtCntIn{|index,val|
-		p[index.asInt]=val.asFloat;
-		models[index.asInt].lazyValue_(val.asFloat,false); // false is no auto
-	}
+//	// external midi setting controls (these are network methods)
+//	netExtCntIn{|index,val|
+//		p[index.asInt]=val.asFloat;
+//		models[index.asInt].lazyValue_(val.asFloat,false); // false is no auto
+//	}
 	
 	// external midi setting prog number (these are network methods)
 	extProgIn{|prog,send=false|
