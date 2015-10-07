@@ -465,29 +465,12 @@
 				.color_(\on,gui[\highlightColours][y])
 				.color_(\background,Color.clear);
 				
-							
 			// pos Hilite Adaptor
 			gui[\posHiliteAdaptor]=MVC_HiliteAdaptor(posModels[y])
 				.refreshZeros_(false)
 				.views_(seqMVCViews[y]);
 			
 		}
-	}
-		
-	arrangeWindow{
-//		// use p[26];
-//		if (p[26]==1) {
-//			gui[\tabView].bounds_(Rect(10, 32, bounds.width-40+15, 140));
-//			gui[\miscView].bounds_(Rect(265,158,400,20));
-//			gui[\masterView].bounds_(Rect(10,179,650,225));
-//			window.setInnerExtent(thisWidth,thisHeight);
-//			
-//		}{
-//			gui[\tabView].bounds_(Rect(10, -1032, 0, 0));
-//			gui[\miscView].bounds_(Rect(50,30,400,20));
-//			gui[\masterView].bounds_(Rect(10,179-138,650,225));
-//			window.setInnerExtent(thisWidth,thisHeight-138);
-//		};
 	}
 	
 	changeSeqColours{|y,value|
