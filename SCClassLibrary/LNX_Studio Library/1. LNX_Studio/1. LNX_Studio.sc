@@ -1520,17 +1520,19 @@ LNX_Studio {
 		var l;
 		l=this.getSaveList;
 		l=[insts.size,LNX_ID.queryNextID]++(insts.visualOrder.collect(_.id))++l;
-		api.sendClumpedList(\netSyncCollaboration,l);
-		this.netSyncCollaboration(l.copy); // a quick fix
-	}
+		api.sendClumpedList(\netSyncCollaboration,l);	
+		// this.netSyncCollaboration(l.copy); // a quick fix.
+		// what is this a quick fix for?
+		// This breaks ids so why do it?
+ 	}
 	
 	// net of above (new need to preserve the id of objects)
 	
 	netSyncCollaboration{|l|
 		var noI,ids,newID;		
-		noI   =l[0];
-		newID =l[1];
-		ids   =l[2..(noI+1)];
+		noI   =l[0].asInt;
+		newID =l[1].asInt;
+		ids   =l[2..(noI+1)].asInt;
 		this.putLoadList(l.drop(noI+2),ids);
 		songPath=nil;
 		LNX_ID.setNextID(newID); // after load because clear resets nextID in comms

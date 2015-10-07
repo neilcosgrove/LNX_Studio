@@ -28,6 +28,14 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 	isMixerInstrument{^true}
 	hasLevelsOut{^true}
 	mixerColor{^Color(0.75,1,0.75,0.4)} // colour in mixer
+	peakModel{^models[131]}
+	volumeModel{^models[2] }
+	outChModel{^models[25]}
+	soloModel{^models[0]}
+	onOffModel{^models[1]}
+	panModel{^models[130]}
+	sendChModel{^models[132]}
+	sendAmpModel{^models[133]}
 	
 	// an immutable list of methods available to the network
 	interface{^#[ \netSeq, \netChannelItem, \netSteps, \netRuler]}
@@ -157,13 +165,21 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 					if (value!=val) {{me.value_(value)}.defer(0.05)};
 				}],
 				
+//			// 25.output channels
+//			[0, \LNX_audiobus, midiControl, 25, "Output channels",
+//				(\numberFunc_:\LNX_audiobus,\showNumberBox_:false,
+//					\items_:LNX_AudioDevices.outputChannelList),
+//				{|me,val,latency,send|
+//					this.instOutChannel_(val*2);
+//					this.setPVPModel(25,val,0,true);
+//				}],
+				
 			// 25.output channels
-			[0, \LNX_audiobus, midiControl, 25, "Output channels",
-				(\numberFunc_:\LNX_audiobus,\showNumberBox_:false,
-					\items_:LNX_AudioDevices.outputChannelList),
+			[0, \audioOut,  midiControl, 25, "Output Channel",
+				(\items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
-					this.instOutChannel_(val*2);
-					this.setPVPModel(25,val,0,true);
+					this.setPVH(25,val,latency,send);
+					this.instOutChannel_( LNX_AudioDevices.getOutChannelIndex(p[25]),latency );
 				}],
 			
 			// 26.show sequencer
@@ -415,12 +431,16 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 				(\label_:"Pan", zeroValue_:0),
 				{|me,val,latency,send| this.setPVP(32+y,val,latency,send)}];
  		
- 			// 37-41.send channel
-			template[37+y]=[2, \LNX_audiobus, midiControl, 37+y, shortNames[y]+"send channel",
-				(\numberFunc_:\LNX_audiobus,\showNumberBox_:false,
-					\items_:LNX_AudioDevices.outputChannelList),
-				{|me,val,latency,send| this.setPVH(37+y,val,latency,send)}];
- 		
+// 			// 37-41.send channel
+//			template[37+y]=[2, \LNX_audiobus, midiControl, 37+y, shortNames[y]+"send channel",
+//				(\numberFunc_:\LNX_audiobus,\showNumberBox_:false,
+//					\items_:LNX_AudioDevices.outputChannelList),
+//				{|me,val,latency,send| this.setPVH(37+y,val,latency,send)}];
+				
+			// 37-41.send channel
+			template[37+y]=[-1, \audioOut,  midiControl, 37+y, shortNames[y]+"send channel",
+				(\items_:LNX_AudioDevices.outputAndFXMenuList),
+				{|me,val,latency,send| this.setPVH(37+y,val,latency,send) }];	
  			// 42-46.send
 			template[42+y]=[-inf, \db6, midiControl, 42+y, shortNames[y]+"Send", (\label_:"Send"),
 				{|me,val,latency,send| this.setPVP(42+y,val,latency,send)}];
@@ -460,20 +480,6 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 		autoExclusion=[26];
 
 	}
-	
-	// peak / target volume model
-	peakModel{^models[131]}
-
-	// return the volume model
-	volumeModel{^models[2] }
-	outChModel{^models[25]}
-	
-	soloModel{^models[0]}
-	onOffModel{^models[1]}
-	panModel{^models[130]}
-	
-	sendChModel{^models[132]}
-	sendAmpModel{^models[133]}
 		
 	// your own vars
 	iInitVars{
@@ -801,7 +807,7 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 	
 	updateDSP{|oldP,latency|
 	
-		 this.instOutChannel_( p[25]*2, latency)
+		 this.instOutChannel_(  LNX_AudioDevices.getOutChannelIndex(p[25]), latency)
 		 
 	} // also used for server reboot
 	
@@ -864,11 +870,13 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 			outputChannels= this.instGroupChannel; // select group if master
 		}{
 			outputChannels=(outputChannels-1)*2;
-			if (outputChannels==(p[25]*2)) { outputChannels= this.instGroupChannel };
+			if (outputChannels==( LNX_AudioDevices.getOutChannelIndex(p[25]))) {
+				outputChannels= this.instGroupChannel
+			};
 			// select group if the same as master
 		}; 
 		
-		sendChannels=p[37+drum]*2;
+		sendChannels=LNX_AudioDevices.getOutChannelIndex(p[37+drum]);
 		send=vel.mapVelocityToRange(p[42+drum].dbamp,p[47+drum],0,1);
 		dur=p[117]**2;
 		
