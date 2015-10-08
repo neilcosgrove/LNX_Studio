@@ -164,12 +164,19 @@ gives min, max, averages and total
 + Function {
 	
 	benchMark{|n=10,print=true|
+		var dt;
+		var t0;
+		var total=0;
+		var min=inf, max=0;
 		
-		var times=Array.newClear(n), total;
-		
-		n.do{|i| times.put(i,this.bench(false)) };
-		
-		total=times.sum;
+		n.do{|i| 
+			t0 = Main.elapsedTime;
+			this.value;
+			dt = Main.elapsedTime - t0;
+			total = total + dt;
+			if (dt<min) { min=dt};
+			if (dt>max) { max=dt};
+		};
 		
 		if (print) {
 			"".postln;
@@ -179,13 +186,11 @@ gives min, max, averages and total
 			n.post;
 			")".postln;
 			"Average: ".post;
-			times.average.postln;
+			(total / n).postln;
 			"Min: ".post;
-			times=times.sort;
-			times.first.postln;
+			min.postln;
 			"Max: ".post;
-			times.last.postln;			
-			
+			max.postln;			
 		};
 		
 		^total

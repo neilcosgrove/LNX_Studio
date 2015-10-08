@@ -570,7 +570,7 @@ MVC_Model {
 + SequenceableCollection {
 	
 	/*
-	[500, \freq, (label_:"A control"), LNX_MIDIControl() , 1, { "action".postln }].asModel
+	[500, \freq, (label_:"A control"), LNX_MIDIControl() , 1, "A", { "action".postln }].asModel
 
 	resolve items in collection into args for a new model
 	the following rules apply:

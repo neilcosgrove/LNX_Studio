@@ -43,7 +43,7 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 	header { 
 		// define your document header details
 		instrumentHeaderType="SC DrumSynth Doc";
-		version="v1.3";
+		version="v1.4";
 	}
 	
 	initModel {
@@ -843,8 +843,6 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 		
 		masterSendAmp = p[133].dbamp;
 		masterSendChannels = LNX_AudioDevices.getOutChannelIndex(p[132]);
-		
-		sendChannels.postln;
 		
 		switch (drum)
 		
