@@ -90,7 +90,7 @@ LNX_Studio {
 	//// instruments & main studio ///////////////////////////////
 	var	<server,			<songPath	,		<title="LNX_Studio",
 		<insts,			<onSoloGroup,		<>groups,
-		<>groupIDs;
+		<>groupIDs,		<serverBootNo;
 
 	//// groups // to be replaced by groups & groupIDs above;
 	var	<instGroup, 		<fxGroup,			<channelOutGroup,
@@ -224,7 +224,6 @@ LNX_Studio {
 		}.defer(2);
 		
 		studios = [];
-		//macOSisPPC = LNX_AudioDevices.macOSisPPC;      // get audio device info
 		
 	}
 	
@@ -332,39 +331,47 @@ LNX_Studio {
 	
 	// send all the instrument UGens to the server, and other misc stuff
 	
-	postBootFuncs{
+	postBootFuncs{	
 		{
-			Server.default_(server);			// set as default server
-			server.sendMsg("error",0);			// turn off error messaging
-			this.latency_(("latency".loadPref ? [latency])[0].asFloat); // set the latency
+			//[serverBootNo, LNX_AudioDevices.bootNo].postln;
 			
-			//fxBuses to use properly later
-		
-			((LNX_AudioDevices.numFXBusChannels/2).asInt.collect{ Bus.audio(server,2) });
+			if (serverBootNo != LNX_AudioDevices.bootNo) {
 			
-			LNX_BufferProxy.serverReboot;		// load bufers
-			this.initUGens;					// send studio SynthDefs (Limiter Out)
-			instTypes.do(_.initUGens(server));   // init all instrument uGens
-			insts.do(_.initUGens(server));		// used by SC Code FX
-			LNX_SampleBank.initUGens(server);	// sample bank for tuning
-			LNX_Voicer.update_(server);			// update voicer
-			{this.initGroups}.defer(0.1);		// start inst, code, fx & out groups
-			{this.startDSP}.defer(0.2);			// if using internal, wait for it to catch up.
-			{server.volume_(models[\volume].value);}.defer(0.25);
-			{
-				insts.visualOrder
-					.do(_.serverReboot)
-					.do(_.startInstOutDSP)
-					.do(_.startDSP)
-					.do(_.updateDSP);
-			}.defer(0.3); // defer used to help LNX_CodeFX
-			{
-				if (songToLoad.notNil) {
-					api.sendClumpedList(\netSyncSong,songToLoad);
-					this.putLoadList(songToLoad);
-					songToLoad=nil;
-				}
-			}.defer(0.4); // if a song is waiting to load, then load it
+				serverBootNo = LNX_AudioDevices.bootNo;
+				Server.default_(server);			// set as default server
+				server.sendMsg("error",0);			// turn off error messaging
+				this.latency_(("latency".loadPref ? [latency])[0].asFloat); // set the latency
+				
+				//fxBuses to use properly later
+				((LNX_AudioDevices.numFXBusChannels/2).asInt.collect{ Bus.audio(server,2) });
+
+				LNX_BufferProxy.serverReboot;		// load bufers
+				this.initUGens;					// send studio SynthDefs (Limiter Out)
+				instTypes.do(_.initUGens(server));   // init all instrument uGens
+				insts.do(_.initUGens(server));		// used by SC Code FX
+				LNX_SampleBank.initUGens(server);	// sample bank for tuning
+				LNX_Voicer.update_(server);			// update voicer
+				
+				{this.initGroups}.defer(0.1);		// start inst, code, fx & out groups
+				{this.startDSP}.defer(0.3);			// if using internal, wait 4 it 2 catch up
+				{server.volume_(models[\volume].value);}.defer(0.3);
+				{
+					insts.visualOrder
+						.do(_.serverReboot)
+						.do(_.startInstOutDSP)
+						.do(_.startDSP)
+						.do(_.updateDSP);
+				}.defer(0.3); // defer used to help LNX_CodeFX
+				{
+					if (songToLoad.notNil) {
+						api.sendClumpedList(\netSyncSong,songToLoad);
+						this.putLoadList(songToLoad);
+						songToLoad=nil;
+					}
+				}.defer(0.4); // if a song is waiting to load, then load it
+				
+			};
+					
 		}.defer(0.1);
 	}
 	
@@ -433,8 +440,8 @@ LNX_Studio {
 	
 	// start studio Synths
 	
-	startDSP{
-		
+	startDSP{		
+		//"<#>".postln;
 		// add a limiter to each stereo out pair
 		(LNX_AudioDevices.numOutputBusChannels/2).do{|i|
 			Synth.tail(channelOutGroup,"LNX_LimitOut",i*2)

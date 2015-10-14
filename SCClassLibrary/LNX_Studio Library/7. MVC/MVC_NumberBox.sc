@@ -16,6 +16,8 @@ MVC_NumberBox : MVC_View {
 	var startVal, <>resoultion=1,  <align='center', <>visualRound=0, <>moveRound=nil;
 	
 	var <>rounded=true, <showBorder=true, <postfix="", <postfixFunc, <step;
+	
+	var <>mouseWorks = true;
 
 	showBorder_{|bool|
 		showBorder=bool;
@@ -95,53 +97,59 @@ MVC_NumberBox : MVC_View {
 		}
 		.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-			if (modifiers==524576)	{buttonNumber = 1      }; 
-			if (modifiers==262401)	{buttonNumber = 2      };
-			buttonPressed = buttonNumber;
-			mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
-			startX=x;
-			startY=y;
-			if (editMode||viewEditMode) {lw=lh=nil;
-				//if (verbose) {
-					view.bounds.postln
-				//}
+			if (mouseWorks) {
+				if (modifiers==524576)	{buttonNumber = 1 }; 
+				if (modifiers==262401)	{buttonNumber = 2 };
+				buttonPressed = buttonNumber;
+				mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
+				startX=x;
+				startY=y;
+				if (editMode||viewEditMode) {lw=lh=nil;
+					//if (verbose) {
+						view.bounds.postln
+					//}
+				};
+				if (buttonNumber==2)	{this.toggleMIDIactive; };
+				if (buttonNumber==0) {
+					this.valueActions(\action1Down,this, x, y, modifiers);
+					if (model.notNil) { model.valueActions(\action1Down,this, x, y, modifiers) };
+				};
+				if (buttonNumber==1) {
+					this.valueActions(\action2Down,this, x, y, modifiers);
+					if (model.notNil) { model.valueActions(\action2Down,this, x, y, modifiers) };
+				};
+				buttonPressed=buttonNumber; // store for move
+				//startVal=value;
+				if (controlSpec.notNil) {
+					startVal=controlSpec.unmap(value);
+				}{
+					startVal=value;
+				};
+				me.stringColor_(Color.black);
 			};
-			if (buttonNumber==2)	{this.toggleMIDIactive; };
-			if (buttonNumber==0) {
-				this.valueActions(\action1Down,this, x, y, modifiers);
-				if (model.notNil) { model.valueActions(\action1Down,this, x, y, modifiers) };
-			};
-			if (buttonNumber==1) {
-				this.valueActions(\action2Down,this, x, y, modifiers);
-				if (model.notNil) { model.valueActions(\action2Down,this, x, y, modifiers) };
-			};
-			buttonPressed=buttonNumber; // store for move
-			//startVal=value;
-			if (controlSpec.notNil) {
-				startVal=controlSpec.unmap(value);
-			}{
-				startVal=value;
-			};
-			me.stringColor_(Color.black);
 		}
 		.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			var val,spenRange;
-			if (editMode||viewEditMode) {
-				this.moveBy(x-startX,y-startY,buttonPressed)
-			}{
-				val=(startVal+((startY-y)/200/resoultion/(buttonPressed*6+1))).clip(0,1);
-				if (controlSpec.notNil) { val=controlSpec.map(val) };
-				if (moveRound.notNil) { val=val.round(moveRound) };
-				if (val!=value) { 
-					this.viewValueAction_(val,nil,true,false);
-					me.value_(val.round(visualRound));
+			if (mouseWorks) {
+				if (editMode||viewEditMode) {
+					this.moveBy(x-startX,y-startY,buttonPressed)
+				}{
+					val=(startVal+((startY-y)/200/resoultion/(buttonPressed*6+1))).clip(0,1);
+					if (controlSpec.notNil) { val=controlSpec.map(val) };
+					if (moveRound.notNil) { val=val.round(moveRound) };
+					if (val!=value) { 
+						this.viewValueAction_(val,nil,true,false);
+						me.value_(val.round(visualRound));
+					};
 				};
-			};
 			mouseMoveAction.value(this, x, y, modifiers, buttonNumber, clickCount);
+			}
 		}
 		.mouseUpAction_{|me, x, y, modifiers, buttonNumber, clickCount|
-			me.stringColor_(colors[\string]);
-			mouseUpAction.value(this, x, y, modifiers, buttonNumber, clickCount);
+			if (mouseWorks.not) {
+				me.stringColor_(colors[\string]);
+				mouseUpAction.value(this, x, y, modifiers, buttonNumber, clickCount);
+			}
 		};		
 	}
 	

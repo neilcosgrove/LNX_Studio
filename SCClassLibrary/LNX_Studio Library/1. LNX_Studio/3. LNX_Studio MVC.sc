@@ -654,11 +654,23 @@
 			midiClock.createOutGUIA (scrollView, (435+60)@49, false);
 			midiClock.action_{|me| this.saveMIDIprefs };
 
+
+
+
+
+
+
 			// audio devices
 			LNX_AudioDevices.audioHardwareGUI(scrollView,20@4)
 				.action_{|devices|
-					LNX_AudioDevices.changeAudioDevices(server,devices,{this.postBootFuncs})
+					//LNX_AudioDevices.changeAudioDevices(server,devices,{this.postBootFuncs});
+					LNX_AudioDevices.changeAudioDevices(server,devices)
 				};
+
+
+
+
+
 
 			// latency
 			MVC_Text(scrollView,Rect(21, 71, 170, 22),gui[\textTheme])

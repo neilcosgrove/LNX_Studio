@@ -144,7 +144,6 @@ LNX_BufferProxy {
 		if (i<containers.size) {
 			
 			studio.flashServerIcon; // gui
-			
 			buf=containers[i];	
 			ifPresentIndex=nil;
 			tempPaths.do({|p,j| if (buf.path==p) { ifPresentIndex=j }});
@@ -157,9 +156,7 @@ LNX_BufferProxy {
 											
 						LNX_BufferArray.read(buf.server, buf.actualPath, action: {|thisBuffer|
 							buf.buffer=thisBuffer;
-							
 							buf.loaded;
-							
 							this.recursiveLoad(i+1);
 						});
 						

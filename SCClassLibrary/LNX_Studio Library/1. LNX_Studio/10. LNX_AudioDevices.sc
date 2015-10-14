@@ -35,7 +35,8 @@ LNX_AudioDevices {
 			
 	classvar	<>updateMenuAction,	<gui;
 	
-	classvar <>action,				<>verbose=false;
+	classvar <>action,				<>verbose=false,
+			<bootNo=0;
 	
 	classvar <channelHistoryIn,		<channelHistoryOut;
 
@@ -251,10 +252,13 @@ LNX_AudioDevices {
 		server.options.numInputBusChannels_(numInputBusChannels);
 		server.options.numAudioBusChannels_(numAudioBusChannels);
 		
-		server.boot;
-		server.waitForBoot({
-			postBootFunc.value;
-		});
+		
+		this.prBoot(server);
+		
+//		server.boot;
+//		server.waitForBoot({
+//			postBootFunc.value;
+//		});
 	
 	}
 
@@ -296,6 +300,7 @@ LNX_AudioDevices {
 			\labelFont_	 : Font("Helvetica",12),
 			\showNumberBox_: false,
 			\labelShadow_  : false,
+			\rounded_      : true,
 			\colors_       : (	\label : Color.black,
 							\background : Color(0.43,0.40,0.38),
 							\backgroundDown : Color(0.1,0.1,0.1,0.85),
@@ -326,10 +331,10 @@ LNX_AudioDevices {
 		// in channels
 		gui[\inNoChannels] = MVC_NumberBox(window, Rect(x+165,y+25,25,17), gui[\numberTheme])
 			.controlSpec_([2,64,\lin,2,2])
-			.rounded_(true)
 			.label_("Channels")
+			.mouseWorks_(false)
 			.action_{|me|
-				var value=me.value;
+				var value=me.value.asInt;
 				numInputBusChannels = value;
 				channelHistoryIn[inDevice]=value;
 				inputDevicesChannels[inputDevices.indexOfString(inDevice)]=value;
@@ -358,8 +363,9 @@ LNX_AudioDevices {
 		gui[\outNoChannels] = MVC_NumberBox(window, Rect(x+165,y+45,25,17), gui[\numberTheme])
 			.controlSpec_([2,64,\lin,2,2])
 			.rounded_(true)
+			.mouseWorks_(false)
 			.action_{|me|
-				var value=me.value;
+				var value=me.value.asInt;
 				numOutputBusChannels = value;
 				channelHistoryOut[outDevice]=value;
 				outputDevicesChannels[outputDevices.indexOfString(outDevice)]=value;
@@ -378,13 +384,22 @@ LNX_AudioDevices {
 		if (gui[\outNoChannels].notNil) { gui[\outNoChannels].value_(numOutputBusChannels) };
 	}
 	
+	// boot the sever	
+	*prBoot{|server|
+		bootNo = bootNo + 1;
+		"Bootng Server: ".post;
+		bootNo.postln;
+		server.waitForBoot({},1,true);	
+	}
+	
+	
 	// try and boot the server, supply a gui if it fails after 10s
 	*bootServer{|server|
 		if (server.serverRunning.not) {
 			server.options.numOutputBusChannels_(numOutputBusChannels);
 			server.options.numInputBusChannels_ (numInputBusChannels);
 			server.options.numAudioBusChannels_(numAudioBusChannels);
-			{ server.waitForBoot({},1,true) }.defer(0.2); // this should boot
+			{ this.prBoot(server) }.defer(0.2); // this should boot
 			{ if (server.serverRunning.not) { this.failToStart(server) } }.defer(10);
 		};
 	}
@@ -403,7 +418,7 @@ LNX_AudioDevices {
 				}{
 					Server.killAll;
 					0.5.wait;
-					server.waitForBoot({},1,true);
+					this.prBoot(server);
 				}
 			};
 		}.play;
@@ -477,7 +492,7 @@ LNX_AudioDevices {
 				window.close;
 				{ if (server.serverRunning.not) {
 					this.failToStart(server)
-				} }.defer(2);
+				} }.defer(3);
 			};
 		
 		window.create;
