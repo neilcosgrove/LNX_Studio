@@ -427,7 +427,7 @@ LNX_PianoRollSequencer{
 	
 	init{|argID|
 		id     = argID;
-		api    = LNX_API(this,id,#[\hostAddNote,\netAddNote,\hostDeleteNote,\netDeleteNote,
+		api    = LNX_API.newTemp(this,id,#[\hostAddNote,\netAddNote,\hostDeleteNote,\netDeleteNote,
 								\netAdjustList, \netDur_, \netAdjustVel, \returnRequestID,
 								\netRequestIDs, \updateIDs, \hostUseAdjustments,
 								\hostDeleteNotes, \netSpeed_, \netClear ]);

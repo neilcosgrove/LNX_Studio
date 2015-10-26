@@ -46,7 +46,7 @@ ExpandView {
 		if (doButton) {
 			button = RoundButton( composite, Rect(0,0, 14, smallBounds.height ) )
 				.border_(0)
-				.label_( [ 'triangle', 'triangle_0.5pi' ] )
+				.label_( [ 'triangle', 'triangle_1.5707963267949' ] )
 				.action_( [ { this.expand }, { this.collapse } ] )
 				.canFocus_( false )
 				.value_( collapsed.not.binaryValue )

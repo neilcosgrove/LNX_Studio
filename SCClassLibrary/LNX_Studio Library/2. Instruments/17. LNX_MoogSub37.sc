@@ -54,9 +54,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	}
 	
 	// an immutable list of methods available to the network
-	interface{^#[\netMidiControlVP, 
-//		\netExtCntIn,
-	\extProgIn]}
+	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn]}
 
 	// MIDI patching ///////////////////////////////////////////////////////
 
@@ -91,6 +89,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	pipeIn{|pipe|
 		if (instOnSolo.isOff and: {p[13]>0} ) {^this}; // drop if sequencer off
 		if (pipe.historyIncludes(this)) {^this};       // drop to prevent internal feedback loops
+		
 		switch (pipe.kind)
 			{\control} { // control	
 				var index = Sub37.keys.indexOf(pipe.num.asInt);
@@ -102,12 +101,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				if (index.notNil) {
 					models[index+14].lazyValue_(pipe.val, true); // set model, no action
 					p[index+14]=pipe.val;                        // set p[]
-					
-					
-					// this should work ?
-					this.midiControlVP(index, pipe.val, pipe.latency);					
-					
-					
+					this.extCntIn(index, pipe.val, pipe.latency);
 				};		
 				^this // and drop 
 			}
@@ -121,6 +115,21 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		midiInBuffer.pipeIn(pipe); // to in Buffer. (control & progam are dropped above)
 	}
 	
+	// set control
+	extCntIn{|item,value,latency|
+		api.sendVP((id++"_ccvp_"++item).asSymbol,
+			'netExtCntIn',item,value,midi.uidOut,midi.midiOutChannel);
+	}
+	
+	// net version of above
+	netExtCntIn{|item,value,uidOut,midiOutChannel|
+		p[item+14]=value;
+		models[item+14].lazyValue_(value,false);
+		// go on, do a pipe here
+		midi.control(Sub37.keyAt(item) ,value,nil,false,true);
+		// ignore set to true so no items learnt from this
+	}
+
 	// midi coming from in buffer
 	fromInBuffer{|pipe|
 		sequencer.pipeIn(pipe);                 // to the sequencer

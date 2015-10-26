@@ -53,16 +53,16 @@ ColorPicker {
 		
 		MVC_Text(w,Rect(27,70+22,150+45,16))
 			.actions_(\enterAction,{|v|
-				var o=("{"+v.string+"}.try").interpret;
-				if (o.notNil) {
-					object=o;
-					if (object.isKindOf(SequenceableCollection)){
-						keys=(0..object.size-1)	;
-					}{
-						keys=object.keys.asList;
-					};
-					keyList.items_(keys.collect(_.asString));
-				};
+//				var o=("{"+v.string+"}.try").interpret;
+//				if (o.notNil) {
+//					object=o;
+//					if (object.isKindOf(SequenceableCollection)){
+//						keys=(0..object.size-1)	;
+//					}{
+//						keys=object.keys.asList;
+//					};
+//					keyList.items_(keys.collect(_.asString));
+//				};
 			})
 			.string_((object.notNil).if("\\\\supplied: "++(object.class.asString),"") )
 			.shadow_(false)
@@ -97,10 +97,10 @@ ColorPicker {
 		
 		MVC_Text(w,Rect(27,70+22+20+20,150+45,16))
 			.actions_(\enterAction,{|v|
-				var o=("{"+v.string+"}.try").interpret;
-				if (o.notNil) {
-					updateObject=o;
-				};
+//				var o=("{"+v.string+"}.try").interpret;
+//				if (o.notNil) {
+//					updateObject=o;
+//				};
 			})
 			.string_((updateObject.notNil).if(
 				"\\\\supplied: "++(updateObject.class.asString),"") )

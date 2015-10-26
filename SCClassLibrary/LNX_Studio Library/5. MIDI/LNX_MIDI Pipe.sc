@@ -631,7 +631,7 @@ LNX_StoreChords {
 	
 	offset{^models[\root].value}
 	
-	apiID_{|id| api = LNX_API(this,id,#[\netAddChord, \netDeleteChord, \netPasteChords,
+	apiID_{|id| api = LNX_API.newTemp(this,id,#[\netAddChord, \netDeleteChord, \netPasteChords,
 			\netDeleteAllChords]) }
 	
 	// which note is been used as a "store this chord" key
@@ -1362,7 +1362,7 @@ LNX_MultiPipeOut{
 		
 	}
 	
-	apiID_{|id| api = LNX_API(this,id,#[\netOnOffID_, \netMIDIOut_]) }
+	apiID_{|id| api = LNX_API.newTemp(this,id,#[\netOnOffID_, \netMIDIOut_]) }
 	
 	model_{|key,model| models[key]=model }
 	

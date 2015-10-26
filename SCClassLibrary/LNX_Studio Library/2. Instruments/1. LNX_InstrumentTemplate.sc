@@ -107,7 +107,7 @@ LNX_InstrumentTemplate {
 			};
 		
 		// the network interface for all instruments 
-		api=LNX_API(this,id,#[
+		api=LNX_API.newTemp(this,id,#[
 			\netMidiChange, \netNewMidiControlAdded, \netName_, \hostAddPreset,
 			\netAddPresetList, \hostSavePreset, \netSavePresetList, \netLoadPreset,
 			\removePreset, \removeAllPresets, \netRenamePreset, \netOnOff, \netSolo,

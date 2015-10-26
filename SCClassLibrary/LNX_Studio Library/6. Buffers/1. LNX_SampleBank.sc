@@ -244,7 +244,8 @@ LNX_SampleBank{
 	init{|argServer,path,apiID|
 		id          = UniqueID.next; // each sampleBank has a UniqueID
 		server      = argServer;
-		api         = LNX_API(this, apiID, #[\netAddURL, \netRemove, \netSwap, \netSetModelVP] );
+		api         = LNX_API.newTemp(this, apiID,
+						#[\netAddURL, \netRemove, \netSwap, \netSetModelVP] );
 		sampleBanks = sampleBanks.add(this);        // add this to the list of all banks
 		this.initVars;                              // init the lists / arrays
 		if (path.isString) { this.loadFile(path) }; // load

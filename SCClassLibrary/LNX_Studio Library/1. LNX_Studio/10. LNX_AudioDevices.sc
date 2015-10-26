@@ -380,8 +380,8 @@ LNX_AudioDevices {
 	
 	// set the number of channels in the gui
 	*setNoChannelsGUI{
-		if (gui[\inNoChannels].notNil) { gui[\inNoChannels].value_(numInputBusChannels) };
-		if (gui[\outNoChannels].notNil) { gui[\outNoChannels].value_(numOutputBusChannels) };
+		if (gui[\inNoChannels].notNil) { gui[\inNoChannels].value_(numInputBusChannels ? 2) };
+		if (gui[\outNoChannels].notNil) { gui[\outNoChannels].value_(numOutputBusChannels ? 2) };
 	}
 	
 	// boot the sever	

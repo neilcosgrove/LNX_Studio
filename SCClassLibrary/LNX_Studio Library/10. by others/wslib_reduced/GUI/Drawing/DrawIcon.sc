@@ -14,7 +14,8 @@ DrawIcon {
 		var more;
 		more = name.asString.split( $_ );
 		name = more[0].asSymbol;
-		more = more[1..].collect( _.interpret );
+		more = more[1..].collect( _.asFloat );    // safer
+//		more = more[1..].collect( _.interpret ); // i've remove this neil
 		^this.new( name, rect, *more );
 		}
 		

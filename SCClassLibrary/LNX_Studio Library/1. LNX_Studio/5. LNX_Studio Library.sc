@@ -297,7 +297,7 @@
 			scrollView = window.scrollView;
 	
 			// text field for the instrument / filename
-			~q=MVC_Text(scrollView,Rect(10,21,142,16))
+			MVC_Text(scrollView,Rect(10,21,142,16))
 				.string_(filename)
 				.label_("Add instrument to library as...")
 				.labelShadow_(false)

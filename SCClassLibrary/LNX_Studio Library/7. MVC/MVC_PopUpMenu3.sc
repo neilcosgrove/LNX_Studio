@@ -95,7 +95,7 @@ MVC_PopUpMenu3 : MVC_View {
 					};
 					// icon
 					Pen.smoothing_(true);
-					DrawIcon(\down, r2.insetBy(1).moveBy(0,-1));
+					DrawIcon(\down, r2.moveBy(0,-1));
 					// and text
 					
 					if (isPOPcanTurnOnOff) {
