@@ -124,7 +124,9 @@ LNX_Controllers : LNX_InstrumentTemplate {
 			.color_(\down,Color(0.3,0.5,1)+0.3/6)
 			.color_(\string,Color.white)
 			.resize_(9)
-			.action_{ this.createMIDIInOutModelWindow(window)};
+			.action_{ this.createMIDIInOutModelWindow(window,
+				colors:(border1:Color(0,1/103,9/77,65/77), border2:Color(59/108,65/103,505/692))
+			)};
 		
 		// midi controls
 		MVC_FlatButton(gui[\compositeView],Rect(242, 9, 43, 19),"Cntrl")

@@ -610,31 +610,65 @@
 			colors_: (up:Color(0.9,0.9,0.9), down:Color(0.9,0.9,0.9)/2)
 		);
 
+		gui[\labelTheme]=( \font_		:  Font("Helvetica-Bold", 14),
+						\align_		: \left,
+						\shadow_		: false,
+						\noShadows_	: 0,
+						\colors_		: (\string : Color.black));
 
 		if ( (midiWin.isNil) or: {midiWin.window.isClosed } ) {
 
 			midiWin = MVC_ModalWindow(
 				(mixerWindow.isVisible).if(mixerWindow.view,window.view),
-				(675)@(180));
+				(420)@(415));
 			scrollView = midiWin.scrollView.view;
 
-			// midi controller in
-			MVC_Text(scrollView,Rect(216+60, 6, 180, 22),gui[\textTheme])
-				.string_("           MIDI Controller: in");
-			midi.createInGUIA (scrollView, (170+60)@27, false, false);
-			midi.createInGUIB (scrollView, (322+60)@27, false, false);
+
+
+			MVC_StaticText(scrollView, Rect(10, 10, 170, 18),gui[\labelTheme])
+			.string_("LNX_Studio Preferences");
+
+			// MIDI Controller Keyboard In
+			midi.createInGUIA (scrollView, (170-25)@(272-2), false, false);
+			midi.createInGUIB (scrollView, (330-25)@(272-2), false, false);
 			midi.action_{|me| this.saveControllerKeyboardPrefs};
+			midi.portInGUI
+				.label_("MIDI Controller Keyboard In")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
+				
+
+			// midi preset controller in
+			LNX_POP.midi.createInGUIA (scrollView, (170-25)@(222-2), false, false);
+			LNX_POP.midi.createInGUIB (scrollView, (330-25)@(222-2), false, false);
+			LNX_POP.midi.action_{|me| LNX_POP.saveMIDIPrefs };
+			LNX_POP.midi.portInGUI
+				.label_("Preset MIDI controller In")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
+			
+			// midi preset controller OUT
+			LNX_POP.midi.createOutGUIA (scrollView, (170)@(242), false);
+			LNX_POP.midi.createOutGUIB (scrollView, (330)@(242), false);
+			LNX_POP.midi.portOutGUI	
+				.label_("Out")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
 
 			// internal midi buses
-			MVC_Text(scrollView,Rect(254+60, 47, 180, 22),gui[\textTheme])
-				.string_("Internal MIDI");
-				
-			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(330+60, 50, 70, 17))
+			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 300, 70, 17))
 				.items_(["None","1 Bus","2 Buses","3 Buses"
 						 ,"4 Buses","5 Buses","6 Buses","7 Buses","8 Buses"
 						 ,"9 Buses","10 Buses","11 Buses","12 Buses","13 Buses"
 						 ,"14 Buses","15 Buses","16 Buses"])
 				.color_(\background,Color.ndcMenuBG)
+				.label_("No. of Internal MIDI Buses")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
 				.action_{|me|
 					this.guiNoInternalBuses_(me.value);
 					this.saveMIDIprefs;
@@ -643,78 +677,76 @@
 				.font_(Font("Arial", 10));
 
 			// midi clock
-			MVC_Text(scrollView,Rect(426+60,6, 180, 22),gui[\textTheme])
-				.string_("                    MIDI Clock");
-			MVC_Text(scrollView,Rect(410+60,30, 30, 22),gui[\textTheme])
-				.string_("In");
-			MVC_Text(scrollView,Rect(410+60,50-3, 30, 22),gui[\textTheme])
-				.string_("Out");
-
-			midiClock.createInGUIA (scrollView, (410+60)@27, false);
-			midiClock.createOutGUIA (scrollView, (435+60)@49, false);
+			midiClock.createInGUIA (scrollView, (170-25)@(168-2), false);
+			midiClock.createOutGUIA (scrollView, (170)@(188), false);
 			midiClock.action_{|me| this.saveMIDIprefs };
-
-
-
-
-
-
+			midiClock.portInGUI
+				.label_("MIDI Clock In")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
+			midiClock.portOutGUI
+				.label_("Out")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
 
 			// audio devices
-			LNX_AudioDevices.audioHardwareGUI(scrollView,20@4)
+			LNX_AudioDevices.audioHardwareGUI(scrollView,(170-10)@(36-25))
 				.action_{|devices|
 					//LNX_AudioDevices.changeAudioDevices(server,devices,{this.postBootFuncs});
 					LNX_AudioDevices.changeAudioDevices(server,devices)
 				};
 
-
-
-
-
-
 			// latency
-			MVC_Text(scrollView,Rect(21, 71, 170, 22),gui[\textTheme])
-				.string_("Latency (secs)")
-				.align_(\center);
-
-			// latency
-			MVC_SmoothSlider(scrollView, Rect(32,91,146, 16), gui[\sliderTheme])
+			~w=MVC_SmoothSlider(scrollView, Rect(170,117,150, 16), gui[\sliderTheme])
+				.label_("Latency (secs)")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.color_(\numberUp,Color.black)
 				.numberFunc_(\float3)
 				.controlSpec_([0.05,1,\linear,0.001])
 				.value_(latency)
 				.action_{|me| this.latency_(me.value) };
 				
 			// blocksize
-			MVC_PopUpMenu3(models[\blockSize],scrollView,Rect(65,130,75,17),
-				( \font_		: Font("Arial", 10),
+			MVC_PopUpMenu3(models[\blockSize],scrollView,Rect(170,85,75,17),
+				( \font_		 : Font("Arial", 10),
 				  \labelShadow_: false,
-				\colors_      : (\background : Color.ndcMenuBG, \label : Color.black ))
+				  \orientation_: \horiz,
+				  \colors_     : (\background : Color.ndcMenuBG, \label : Color.black ))
 			);
 			
 			// Ok
-			MVC_FlatButton(scrollView,Rect(537+60, 128, 50, 20),"Ok",gui[\buttonTheme])
+			MVC_FlatButton(scrollView,Rect(332, 362, 50, 20),"Ok",gui[\buttonTheme])
 				.canFocus_(true)
 				.color_(\up,Color.white)
 				.action_{	 midiWin.close };
 
 			// scan for new midi equipment
-			MVC_FlatButton(scrollView,Rect(255+60 ,90, 70, 20),"Scan MIDI",gui[\buttonTheme])
+			MVC_FlatButton(scrollView,Rect(240 ,362, 70, 20),"Scan MIDI",gui[\buttonTheme])
 				.canFocus_(false)
 				.action_{ LNX_MIDIPatch.refreshPorts };
 
 			// network master volume changes
-			MVC_OnOffView(models[\networkMaterVolume],scrollView,Rect(240+60, 125, 100, 19),
-				"Network Volume", ( \font_		: Font("Helvetica", 11),
+			MVC_OnOffView(models[\networkMaterVolume],scrollView,Rect(170, 328, 70, 19),
+				"Volume", ( \font_		: Font("Helvetica", 11),
 								 \colors_     : (\on : Color.orange+0.25,
-						 					   \off : Color.grey/2)));
+						 					   \off : Color.grey/2)))
+				.label_("Network")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
 						 					   
 			// moog sub 37 is visible
-			MVC_OnOffView(scrollView,Rect(362+60, 125, 72, 19), "Sub 37",
+			MVC_OnOffView(scrollView,Rect(311, 299, 72, 19), "Sub 37",
 								( \font_		: Font("Helvetica", 11),
 								 \colors_     : (\on : Color.orange+0.25,
 						 					   \off : Color.grey/2)))
 				.value_(LNX_MoogSub37.isVisiblePref.asInt)
 				.label_("Moog")
+				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black)
 				.action_{|me|
@@ -723,12 +755,13 @@
 				};
 				
 			// korg volva is visible
-			MVC_OnOffView(scrollView,Rect(443+60, 125, 72, 19), "Volca",
+			MVC_OnOffView(scrollView,Rect(311, 328, 72, 19), "Volca",
 								( \font_		: Font("Helvetica", 11),
 								 \colors_     : (\on : Color.orange+0.25,
 						 					   \off : Color.grey/2)))
 				.value_(LNX_VolcaBeats.isVisiblePref.asInt)
 				.label_("Korg")
+				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black)
 				.action_{|me|
@@ -736,16 +769,15 @@
 					this.recreateLibraryGUI;
 				};
 						 					   
-			// midi latency
-			MVC_Text(scrollView,Rect(364+60, 71, 190, 22),gui[\textTheme])
-				.string_("MIDI Sync Latency Adj (secs)")
-				.align_(\center);
-						 					   
-			// midi latency
-			MVC_SmoothSlider(scrollView, Rect(385+60, 91,146, 16),gui[\sliderTheme])
+			// midi sync latency
+			MVC_SmoothSlider(scrollView, Rect(170, 139,150, 16),gui[\sliderTheme])
 				.numberFunc_(\float3Sign)
 				.controlSpec_([-0.1,0.1,\linear,0.001,0])
 				.value_(midiSyncLatency)
+				.label_("MIDI Sync Latency Adj (secs)")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
 				.action_{|me|
 					midiSyncLatency=me.value;
 					LNX_MIDIPatch.midiSyncLatency_(midiSyncLatency);

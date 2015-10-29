@@ -592,11 +592,9 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			.color_(\up,Color(0.6 , 0.562, 0.5))
 			.color_(\down,Color(0.6 , 0.562, 0.5)/2)
 			.color_(\string,Color.white)
-			.action_{ this.createMIDIInOutModelWindow(window,nil,nil,(
-				background:Color(63/77,59/77,59/77),
-				border2:Color(7/11,42/83,29/65),
-				border1:Color(3*3/77,1/103,0,65/77)
-			))};
+			.action_{ this.createMIDIInOutModelWindow(window,nil,nil,
+				(border1:Color(0.1221, 0.0297, 0.0297), border2: Color(0.6 , 0.562, 0.5))
+			)};
 	
 		// MIDI Controls
 	 	MVC_FlatButton(window,Rect(634, 5, 43, 18),"Cntrl")

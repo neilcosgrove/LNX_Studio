@@ -328,7 +328,9 @@
 			.color_(\down,Color(10665/19997,223/375,2/3) )
 			.color_(\string,Color.white)
 			.resize_(9)
-			.action_{ this.createMIDIInOutModelWindow(window,low:7,high:8) };
+			.action_{ this.createMIDIInOutModelWindow(window,low:7,high:8,
+				colors:(border1:Color(0,1/103,9/77,65/77) , border2:Color(59/108,65/103,505/692))
+			) };
 			
 		// MIDI Control
  		MVC_FlatButton(tab,Rect(63, 1, 43, 19),"Cntrl")

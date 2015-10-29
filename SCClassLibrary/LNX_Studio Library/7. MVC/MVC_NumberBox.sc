@@ -97,18 +97,20 @@ MVC_NumberBox : MVC_View {
 		}
 		.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-			if (mouseWorks) {
-				if (modifiers==524576)	{buttonNumber = 1 }; 
-				if (modifiers==262401)	{buttonNumber = 2 };
-				buttonPressed = buttonNumber;
+			
+			if (modifiers==524576)	{buttonNumber = 1 }; 
+			if (modifiers==262401)	{buttonNumber = 2 };
+			buttonPressed = buttonNumber;
+			
+			startX=x;
+			startY=y;
+			if (editMode||viewEditMode) {lw=lh=nil;
+				//if (verbose) {
+					view.bounds.postln
+				//}
+			};
+			if (mouseWorks) {		
 				mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
-				startX=x;
-				startY=y;
-				if (editMode||viewEditMode) {lw=lh=nil;
-					//if (verbose) {
-						view.bounds.postln
-					//}
-				};
 				if (buttonNumber==2)	{this.toggleMIDIactive; };
 				if (buttonNumber==0) {
 					this.valueActions(\action1Down,this, x, y, modifiers);
@@ -130,10 +132,11 @@ MVC_NumberBox : MVC_View {
 		}
 		.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			var val,spenRange;
-			if (mouseWorks) {
-				if (editMode||viewEditMode) {
-					this.moveBy(x-startX,y-startY,buttonPressed)
-				}{
+			
+			if (editMode||viewEditMode) {
+				this.moveBy(x-startX,y-startY,buttonPressed)
+			}{
+				if (mouseWorks) {
 					val=(startVal+((startY-y)/200/resoultion/(buttonPressed*6+1))).clip(0,1);
 					if (controlSpec.notNil) { val=controlSpec.map(val) };
 					if (moveRound.notNil) { val=val.round(moveRound) };
@@ -142,8 +145,10 @@ MVC_NumberBox : MVC_View {
 						me.value_(val.round(visualRound));
 					};
 				};
-			mouseMoveAction.value(this, x, y, modifiers, buttonNumber, clickCount);
-			}
+			};
+			if (mouseWorks) {
+				mouseMoveAction.value(this, x, y, modifiers, buttonNumber, clickCount);
+			};
 		}
 		.mouseUpAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			if (mouseWorks.not) {

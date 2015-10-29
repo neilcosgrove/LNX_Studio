@@ -309,16 +309,15 @@ LNX_AudioDevices {
 							\focus : Color(0,0,0,0))
 		);
 		
-		MVC_Text.new(window,Rect(x+42,y+3,100, 22),gui[\textTheme])
-			.string_("Audio Hardware");
-
-		MVC_Text.new(window,Rect(x-10,y+24,20, 22),gui[\textTheme])
-			.string_("In");
 			
 		// in device menu
 		gui[\inMenu]=MVC_PopUpMenu3(window,Rect(x+10,y+25,150,17))
 			.items_(friendlyInputNames)
 			.color_(\background,Color.ndcMenuBG)
+			.label_("Audio In")
+			.orientation_(\horiz)
+			.labelShadow_(false)
+			.color_(\label,Color.black)
 			.action_{|me|
 				this.devices_(outputDevices[gui[\outMenu].value],
 							 inputDevices[gui[\inMenu].value]);
@@ -343,13 +342,15 @@ LNX_AudioDevices {
 				action.value(this.devices);
 			};	
 		
-		MVC_Text.new(window,Rect(xy.x-14,xy.y+43,20, 22),gui[\textTheme])
-			.string_("Out");
 		
 		// out device menu
 		gui[\outMenu]=MVC_PopUpMenu3(window,Rect(xy.x+10,xy.y+45,150,17))
 			.items_(friendlyOutputNames)
 			.color_(\background,Color.ndcMenuBG)
+			.label_("Out")
+			.orientation_(\horiz)
+			.labelShadow_(false)
+			.color_(\label,Color.black)
 			.action_{|me|
 				this.devices_(outputDevices[gui[\outMenu].value],
 							 inputDevices[gui[\inMenu].value]);

@@ -1008,7 +1008,7 @@ LNX_MIDIPatch {
 		y=xy.y;
 		window=argWindow;
 							
-		channelInGUI=MVC_PopUpMenu3(window,Rect(x+25,y+2,97-40-4,17))
+		channelInGUI=MVC_PopUpMenu3(window,Rect(x+25,y+2,53,17))
 			.items_(["All","Ch. 1","Ch. 2","Ch. 3"
 					 ,"Ch. 4","Ch. 5","Ch. 6","Ch. 7","Ch. 8"
 		               ,"Ch. 9","Ch. 10","Ch. 11","Ch. 12","Ch. 13"
@@ -1222,7 +1222,7 @@ LNX_MIDIPatch {
 
 		window=argWindow;
 
-		channelOutGUI=MVC_PopUpMenu3(window,Rect(x,y,50,17))
+		channelOutGUI=MVC_PopUpMenu3(window,Rect(x,y,53,17))
 			.items_(["Ch. 1","Ch. 2","Ch. 3"
 					 ,"Ch. 4","Ch. 5","Ch. 6","Ch. 7","Ch. 8"
 		               ,"Ch. 9","Ch. 10","Ch. 11","Ch. 12","Ch. 13"
