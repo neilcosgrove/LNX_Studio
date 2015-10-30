@@ -533,7 +533,7 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 	
 	// for freeing anything when closing
 	iFree{
-		seqModels.free;
+		seqModels.do{|c| c.do(_.free)};
 		spModels.do{|c| c.do(_.free)};
 	}
 	

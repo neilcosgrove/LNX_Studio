@@ -426,13 +426,13 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 	iClear{}
 	
 	iFreeAutomation{
-		seqModels.do{|c| c.do(_.freeAutomation)};
-		spModels.do{|c| c.do(_.freeAutomation)};
+		seqModels.do{|c| c.do(_.freeAutomation) };
+		spModels.do{|c| c.do(_.freeAutomation)  };
 	}
 	
 	// for freeing anything when closing
 	iFree{
-		seqModels.free;
+		seqModels.do{|c| c.do(_.free)};
 		spModels.do{|c| c.do(_.free)};
 	}
 	
