@@ -1,8 +1,8 @@
-SC Code Doc v1.4
-Template Version v1.1
+SC Code Doc v1.5
+Template Version v1.2
 LNX_Code
 Formant4
-17
+23
 0
 0
 1
@@ -21,14 +21,20 @@ Formant4
 1
 -inf
 9
--1008778969
+0.83402593085106
+0
+60
+12
+0
+0
+0
 0
 1
 0
 *** MIDI Control Doc v1.1
 0
 *** End MIDI Control Doc ***
-1554
+1543
 10
 47
 47
@@ -921,17 +927,6 @@ Formant4
 112
 115
 41
-46
-112
-111
-108
-108
-40
-112
-111
-108
-108
-41
 32
 41
 44
@@ -1588,7 +1583,7 @@ Formant4
 volume
 MVC_SmoothSlider
 *** MVC_View Document v1 ***
-12
+13
 0
 567
 20
@@ -1629,7 +1624,7 @@ border
 0
 0
 1
-numberUp
+knobBorder
 0
 0
 0
@@ -1638,6 +1633,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+numberUp
+0
+0
+0
 1
 label
 1
@@ -2409,7 +2409,7 @@ focus
 MVC_SmoothSlider
 -3.7765633867126
 *** MVC_View Document v1 ***
-12
+13
 0
 240
 186
@@ -2450,7 +2450,7 @@ border
 0
 0
 1
-numberUp
+knobBorder
 0
 0
 0
@@ -2459,6 +2459,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+numberUp
+0
+0
+0
 1
 label
 1
@@ -2541,7 +2546,7 @@ focus
 MVC_SmoothSlider
 -6.3453604401976
 *** MVC_View Document v1 ***
-12
+13
 0
 240
 30
@@ -2582,7 +2587,7 @@ border
 0
 0
 1
-numberUp
+knobBorder
 0
 0
 0
@@ -2591,6 +2596,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+numberUp
+0
+0
+0
 1
 label
 1
@@ -2612,7 +2622,7 @@ focus
 MVC_SmoothSlider
 -5.2216354452375
 *** MVC_View Document v1 ***
-12
+13
 0
 240
 264
@@ -2653,7 +2663,7 @@ border
 0
 0
 1
-numberUp
+knobBorder
 0
 0
 0
@@ -2662,6 +2672,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+numberUp
+0
+0
+0
 1
 label
 1
@@ -2851,7 +2866,7 @@ focus
 MVC_SmoothSlider
 -5.5262045739233
 *** MVC_View Document v1 ***
-12
+13
 0
 240
 108
@@ -2892,7 +2907,7 @@ border
 0
 0
 1
-numberUp
+knobBorder
 0
 0
 0
@@ -2901,6 +2916,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+numberUp
+0
+0
+0
 1
 label
 1
@@ -3330,4 +3350,8 @@ LNX Score DOC v1.4
 1
 *** END Score DOC ***
 *** END PRSeq DOC ***
+SC URL Bank Doc v1.1
+
+0
+*** END URL Bank Doc ***
 *** END INSTRUMENT DOC ***

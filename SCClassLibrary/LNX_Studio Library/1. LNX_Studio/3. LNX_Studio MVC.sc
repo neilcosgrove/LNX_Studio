@@ -448,7 +448,7 @@
 		this.addTextToDialog("",false,true);
 		this.addTextToDialog("                  LNX_Studio",false,true);
 		this.addTextToDialog("",false,true);
-		this.addTextToDialog("                          "+(version.drop(1)),false,true);
+		this.addTextToDialog("                 "+(version.drop(1))+"alpha",false,true);
 		this.addTextToDialog("",false,true);
 
 		// user dialog input

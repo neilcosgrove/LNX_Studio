@@ -15,7 +15,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 
 	*initClass{
 		Class.initClassTree(LNX_File);
-		isVisiblePref = ("MoogIsVisible".loadPref ? [false])[0].isTrue;
+		isVisiblePref = ("MoogIsVisible".loadPref ? [true])[0].isTrue;
 		moogPresets = "Moog Presets".loadPref ?? { 256.collect{|i| "" } };
 	}
 	

@@ -14,9 +14,9 @@ LNX_Protocols{
 	// these class vars are set: user experience & app performance
 	// max size of a packet send via clumped list
 	
-	classvar clumpPacketSize = 8192; 
+//	classvar clumpPacketSize = 8192; 
 //	classvar clumpPacketSize = 16384; 
-//	classvar clumpPacketSize = 32768;
+	classvar clumpPacketSize = 32768;
 //	classvar clumpPacketSize = 65536;   // ok on LAN
 //	classvar clumpPacketSize = 81920;  // LAN: works but using 65536 for buffer overflow safety
 //	classvar clumpPacketSize = 98304; // LAN: no... buffer overflow

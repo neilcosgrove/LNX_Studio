@@ -78,7 +78,7 @@ LNX_Studio {
 
 	//// class ////////////////////////////////////////////////////
 		
-	classvar	<>versionMajor=1,	<>versionMinor=6,	<version,
+	classvar	<>versionMajor=2,	<>versionMinor=0,	<version,
 			<internetVersion,	<fileLoadVersion=2;
 		
 	classvar	studios,			<instTypes, 
