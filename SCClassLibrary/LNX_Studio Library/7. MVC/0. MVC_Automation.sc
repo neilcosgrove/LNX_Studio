@@ -616,7 +616,7 @@ MVC_Automation {
 		var controlSpec = this.controlSpec;
 		forBy(lastMouseBeat,beat,stepSize,{|i,j|
 			var index = (i-lastMouseBeat)/(beat-lastMouseBeat);
-			gui[\automation].netAddEventMouse_DrawLine(nil,i,
+			this.netAddEventMouse_DrawLine(nil,i,
 				controlSpec.map((((1-index) * lastMouseValue) + ( thisMouseValue * index))),
 				false   // to stop refresh
 			);
