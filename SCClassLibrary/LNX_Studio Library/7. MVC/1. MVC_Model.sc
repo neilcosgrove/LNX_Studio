@@ -326,7 +326,7 @@ MVC_Model {
 	// set the value of model and lazy update. use this to clip frame rate of models gui
 	// auto is used to filter events to the LNX_Automation
 	lazyValue_{|val,auto|
-		if (auto.isNil) {auto=false; "*MVC_Model:lazyValue_ you may habe missed 1 neil".postln };
+		if (auto.isNil) {auto=false; "*MVC_Model:lazyValue_ you may have missed 1 neil".postln };
 		if (constrain &&(controlSpec.notNil)) { val=controlSpec.constrain(val) };
 		if (value!=val) {
 			if (hasMIDIcontrol && auto) {this.autoValue_(val,value)};

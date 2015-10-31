@@ -287,7 +287,8 @@ LNX_Studio {
 			\hostDuplicate, \duplicate, \netSelectedInst, \closeStudio, \netTalk,
 			\netSyncCollaboration, \netAddLoadList, \netOnSoloUpdate, \netMove, \hostPlay,
 			\play, \netPause, \hostStop, \netStop, \hostSetBPM, \setBPM,
-			\netAddInstWithLoadList,\netAllInstsSelectProgram, \netSetModel, \hostJumpTo
+			\netAddInstWithLoadList,\netAllInstsSelectProgram, \netSetModel, \hostJumpTo,
+			\netSetAuto
 		],#[
 			\post, \postMe, \postList, \postAll, \postStuff, \postTime, \postClock,
 			\postSpecies

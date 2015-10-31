@@ -281,12 +281,8 @@
 				
 			// automation playing back
 			models[\autoOn]=[1,\switch, midiControl, 14, "Automation",
-				{|me,val|
-					MVC_Automation.isPlaying_(val.isTrue);
-					
-					if (val.isFalse) {
-						models[\autoRecord].lazyValueAction_(0);
-					};
+				{|me,val,latency,send=true,toggle|
+					this.groupCmdSync(\netSetAuto,val)
 					
 				}].asModel.automationActive_(false);
 			
@@ -304,13 +300,24 @@
 
 	}
 	
+	// group sync a command
+	groupCmdSync{|method...args| api.groupCmdSync(method, *args) }
+	
+	// set auto On/off
+	netSetAuto{|value|
+		value = value.asInt;
+		MVC_Automation.isPlaying_(value.isTrue);
+		if (value.isFalse) { models[\autoRecord].lazyValueAction_(0) };
+		models[\autoOn].lazyValue_(value,false);
+	}
+	
 	// set model from user side
 	setPVP{|model,val,latency,send=true|
 		if (send) {
-			if (#[\peakLevel, \mute, \volume,\quant].includes(model)) {           // only these
-				if (models[\networkMaterVolume].value.isTrue) {           // and allowed in prefs
+			if ((#[\mute, \volume].includes(model))and:
+				{ models[\networkMaterVolume].value.isFalse }) {^this}; // drop
+			if (#[\peakLevel, \mute, \volume,\quant,\autoOn].includes(model)) {  // only these
 					api.sendVP("std_vp_"++model,'netSetModel',model,val);// network
-				}
 			}
 		}
 	}
@@ -318,7 +325,9 @@
 	// set model from the network
 	netSetModel{|model,val|
 		model=model.asSymbol;
-		if (#[\peakLevel, \mute, \volume,\quant].includes(model)) {              // only these
+		if ((#[\mute, \volume].includes(model))and:
+			{ models[\networkMaterVolume].value.isFalse }) {^this}; // drop
+		if (#[\peakLevel, \mute, \volume,\quant,\autoOn].includes(model)) {         // only these
 			if (models[\networkMaterVolume].value.isTrue) {              // and allowed in prefs
 				models[model.asSymbol].lazyValueAction_(val,nil,false); // lazy value
 			};
@@ -547,7 +556,6 @@
 		};
 	}
 
-
 	// move inst to pos (return true or false if moved)
 	move{|id,pos|
 		var moved=insts.move(id,pos);
@@ -699,7 +707,7 @@
 				};
 
 			// latency
-			~w=MVC_SmoothSlider(scrollView, Rect(170,117,150, 16), gui[\sliderTheme])
+			MVC_SmoothSlider(scrollView, Rect(170,117,150, 16), gui[\sliderTheme])
 				.label_("Latency (secs)")
 				.orientation_(\horiz)
 				.labelShadow_(false)
