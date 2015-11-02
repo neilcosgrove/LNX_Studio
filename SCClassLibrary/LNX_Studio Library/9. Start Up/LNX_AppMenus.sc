@@ -329,7 +329,7 @@ if (studio.batchOn) {
 			studio.network.otherUsers.do{|user|
 				var g=user.commonTimePings.flop.reverse;
 				if (g[0].size>0) {
-					g.plot2("Latency & Delta ("++(user.name)++")").specs_(
+					g.plot("Latency & Delta ("++(user.name)++")").specs_(
 						[[0,g[0].last,\lin,0,0,"s"].asSpec,
 						[g[1].copy.sort.first,g[1].copy.sort.last,\lin,0,0,"s"].asSpec]
 					).plotMode_(\points)

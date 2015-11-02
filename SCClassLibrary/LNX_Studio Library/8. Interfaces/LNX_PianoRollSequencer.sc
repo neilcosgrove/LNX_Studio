@@ -17,7 +17,7 @@ LNX_NoteID {
 
 LNX_Note{
 	
-	var <id, <>note, <>start, >dur, <vel, <>enabled=true, <>durAdj;
+	var <>id, <>note, <>start, >dur, <vel, <>enabled=true, <>durAdj;
 	
 	*new{|id,note,start,dur,vel| ^super.newCopyArgs(id,note,start,dur,vel) }
 	
@@ -101,7 +101,7 @@ LNX_Note{
 // i'm also manually clumping velocity updates @350, ideally will need to develop a clumpedVP
 
 LNX_Score{
-
+	
 	var <notes, <notesDict, <adjusted;
 	var <>start=0, <>dur=32;
 	var <gridW=22, <gridH=15, <visibleOriginX=0, <visibleOriginY=0; // this may not be a good idea
@@ -180,6 +180,18 @@ LNX_Score{
 			}
 		}
 	}
+			
+	// only used when syncing collaborations. Host could have different ids so they are all reset
+	// to start from 1001
+	resetAllNoteIDs{
+		var id=1000;
+		notes.do{|note|
+			notesDict[note.id]=nil;
+			id=id+1;
+			note.id_(id);
+			notesDict[id] = note;
+		};
+	}	
 	
 	// the view args for the piano roll are stored here
 	// its easier to store the last view with the score if a bit lazy
@@ -398,10 +410,16 @@ LNX_Score{
 }
 
 // a piano roll sequencer ///////////////////////////////////////////////////////////////
+/*
+
+LNX_PianoRollSequencer.allPianoRolls;
+a.a.sequencer.score.notes
+
+*/
 
 LNX_PianoRollSequencer{
 	
-	classvar <clipboard, >studio;
+	classvar <clipboard, >studio, allPianoRolls;
 	
 	var <id, <score, <api, <noteIDObject;
 	var <>snapToGrid=true, <quantiseStep=1, <bars=16;
@@ -421,8 +439,8 @@ LNX_PianoRollSequencer{
 	var <marker=0;
 	var <>spoModel;
 	
-	spo{^spoModel.value?12}
-	
+	*initClass{ allPianoRolls = [] } // all pRolls kept in allPianoRolls
+
 	*new{|id| ^super.new.init(id) }
 	
 	init{|argID|
@@ -439,6 +457,8 @@ LNX_PianoRollSequencer{
 		recordNotes   = IdentityDictionary[];	
 		notesOff      = IdentityDictionary[];
 		models        = IdentityDictionary[];
+		
+		allPianoRolls = allPianoRolls.add(this);
 		
 		lastVelocity=100/127;
 		scores=[];
@@ -526,7 +546,18 @@ LNX_PianoRollSequencer{
 			}].asModel;
 			
 	}
-
+	
+	// only used when syncing collaborations. Host could have different ids so they are all reset
+	// to start from 1001
+	*resetAllNoteIDs{ allPianoRolls.do(_.resetAllNoteIDs) } // for class
+	
+	// above for instance
+	resetAllNoteIDs{
+		score.resetAllNoteIDs;
+		scores.do(_.resetAllNoteIDs);
+		this.calcNoteRects;
+	}
+	
 	// zoom out so seq fits to window
 	fitToWindow{
 		models[\gridW].multipyValueAction_(0);
@@ -733,6 +764,8 @@ LNX_PianoRollSequencer{
 	
 	// free this object
 	free{
+		allPianoRolls.remove(this);
+		score.free;
 		scores.do(_.free);
 		id = score = api = noteIDObject = snapToGrid = quantiseStep =
 		gui = colors = notesSelected = gridW = gridH = noteRects =
@@ -740,6 +773,8 @@ LNX_PianoRollSequencer{
 	}
 	
 	freeAutomation{} // there is none, but just incase it gets called
+	
+	spo{^spoModel.value?12}
 	
 	// adding deleteing notes ///////////////////////////
 	
