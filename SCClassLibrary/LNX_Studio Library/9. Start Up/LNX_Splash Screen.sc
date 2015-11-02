@@ -43,7 +43,7 @@ LNX_SplashScreen{
 				texts=[
 					"		LNX_Studio"+(studio.version.drop(1)) ,
 					"",
-					"		April 2014",
+					"		Oct 2015",
 					"",
 					"		           LNX_Studio - Digital Audio Workstation",
 					"		                    Live on-line collaborations",

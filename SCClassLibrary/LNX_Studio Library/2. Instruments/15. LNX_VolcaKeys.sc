@@ -548,7 +548,9 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 			.color_(\down,Color(0.6 , 0.562, 0.5) )
 			.color_(\string,Color.white)
 			.resize_(9)
-			.action_{ this.createMIDIInOutModelWindow(window) };
+			.action_{ this.createMIDIInOutModelWindow(window,
+				colors:(border1:Color(0.1221, 0.0297, 0.0297), border2: Color(0.6 , 0.562, 0.5))
+			) };
 			
 		// MIDI Control
  		MVC_FlatButton(window,Rect(327, 4, 43, 19),"Cntrl")

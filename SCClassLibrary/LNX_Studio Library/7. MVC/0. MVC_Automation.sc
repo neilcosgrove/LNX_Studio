@@ -326,6 +326,7 @@ MVC_Automation {
 			if (allEvents[beat].size>0) { studio.mixerGUI[\autoPlay].flash };
 		};
 		
+		// only update gui every 3 beats to save cpu
 		if ((beat%3)==0) {
 			{
 				if (gui.notNil) {
@@ -616,7 +617,7 @@ MVC_Automation {
 		var controlSpec = this.controlSpec;
 		forBy(lastMouseBeat,beat,stepSize,{|i,j|
 			var index = (i-lastMouseBeat)/(beat-lastMouseBeat);
-			gui[\automation].netAddEventMouse_DrawLine(nil,i,
+			this.netAddEventMouse_DrawLine(nil,i,
 				controlSpec.map((((1-index) * lastMouseValue) + ( thisMouseValue * index))),
 				false   // to stop refresh
 			);

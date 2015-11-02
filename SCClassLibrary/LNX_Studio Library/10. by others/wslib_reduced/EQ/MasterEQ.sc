@@ -197,20 +197,20 @@ MasterEQ {
 			});
 		
 		eq[ \pu_filebuttons ][1].action_({
-			var contents;
-				if( File.exists( "eq-prefs.txt" ) )
-				 {	File.use("eq-prefs.txt", "r", { |f| 
-						contents = f.readAllString.interpret;
-						//contents.postln;
-						eq[ \frdb ] = contents[ \current ];
-						eq[ \frpresets ] = contents[ \presets ];
-						eq[ \send_current ].value;
-						eq[ \pumenu_create_items ].value;
-						eq[ \pumenu_check ].value;
-						eq[ \uvw ].refresh;
-						eq[ \tvw_refresh ].value;
-							 	});
-				};
+//			var contents;
+//				if( File.exists( "eq-prefs.txt" ) )
+//				 {	File.use("eq-prefs.txt", "r", { |f| 
+//						contents = f.readAllString.interpret;
+//						//contents.postln;
+//						eq[ \frdb ] = contents[ \current ];
+//						eq[ \frpresets ] = contents[ \presets ];
+//						eq[ \send_current ].value;
+//						eq[ \pumenu_create_items ].value;
+//						eq[ \pumenu_check ].value;
+//						eq[ \uvw ].refresh;
+//						eq[ \tvw_refresh ].value;
+//							 	});
+//				};
 			});	
 		
 		

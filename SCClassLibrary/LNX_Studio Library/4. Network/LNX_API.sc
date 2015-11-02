@@ -16,9 +16,10 @@ LNX_API{
 		
 	*initClass{ Class.initClassTree(LNX_Protocols) }
 		
+	*new{ "You can't create a new API".error; ^nil }
+		
 	// add an object and make it's methods avalible
-	
-	*new{|object, id, primaryInterface, secondaryInterface|
+	*newTemp{|object, id, primaryInterface, secondaryInterface|
 		^super.new.init(object,id,primaryInterface, secondaryInterface) }
 	
 	*newPermanent{|object,id,primaryInterface, secondaryInterface|

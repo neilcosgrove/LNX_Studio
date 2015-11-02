@@ -107,7 +107,7 @@ LNX_InstrumentTemplate {
 			};
 		
 		// the network interface for all instruments 
-		api=LNX_API(this,id,#[
+		api=LNX_API.newTemp(this,id,#[
 			\netMidiChange, \netNewMidiControlAdded, \netName_, \hostAddPreset,
 			\netAddPresetList, \hostSavePreset, \netSavePresetList, \netLoadPreset,
 			\removePreset, \removeAllPresets, \netRenamePreset, \netOnOff, \netSolo,
@@ -687,8 +687,6 @@ LNX_InstrumentTemplate {
 				.addAction_   {      this.guiAddPreset }
 				.removeAction_{|i|   this.guiRemovePreset(i)}
 				.writeAction_ {|i|   this.guiSavePreset(i)}
-				.saveAction_  {      this.saveDialog}
-				.loadAction_  {      this.loadDialog}
 				.clearAction_ {      this.guiRemoveAllPresets}
 				.randomAction_{      this.randomisePreset}
 				.midiAction_  {

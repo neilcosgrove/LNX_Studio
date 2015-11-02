@@ -190,7 +190,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 				{|me,val,latency,send| this.setSynthArgVP(2,val,\amp,val.dbamp,latency,send)}],
 				
 			// 3.q
-			[0.9,[0,0.9708], (\label_:"Q",\numberFunc_:\float2), midiControl, 3, "Filter Q",
+			[0.9,[0,0.9728,-2], (\label_:"Q",\numberFunc_:\float2), midiControl, 3, "Filter Q",
 				{|me,val,latency,send|
 					var amp;
 					this.setPVPModel(3,val,latency,send);
@@ -470,7 +470,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 				}],
 
 			// 46.q
-			[0, [0,0.975], (\label_:"Q",\numberFunc_:\float2), midiControl, 46, "HP Filter Q",
+			[0, [0,0.975,-2], (\label_:"Q",\numberFunc_:\float2), midiControl, 46, "HP Filter Q",
 				{|me,val,latency,send| this.setSynthArgVP(46,val,\qHP,val,latency,send) }],
 				
 			// 47.filter env

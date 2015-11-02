@@ -627,11 +627,9 @@ LNX_Melody : LNX_InstrumentTemplate {
 			.color_(\down,Color(6/11,29/65,42/83)/2)
 			.color_(\string,Color.white)
 			.resize_(9)
-			.action_{ this.createMIDIInOutModelWindow(window,2,3,(
-				background:Color(63/77,59/77,59/77),
-				border2:Color(7/11,42/83,29/65),
-				border1:Color(3*3/77,1/103,0,65/77)
-			))};
+			.action_{ this.createMIDIInOutModelWindow(window,2,3,
+				colors:(border1:Color(0,1/103,9/77,65/77), border2:background1)
+			)};
 			
 		// MIDI Controls
  		MVC_FlatButton(gui[\scrollView],Rect(655, 7, 43, 19),"Cntl")

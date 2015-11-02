@@ -11,9 +11,11 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	var <sequencer, <keyboardView, <noControl, <midiInBuffer, <midiOutBuffer, <seqOutBuffer,
 		<lastProgram;
 
+	// goto updateGUI
+
 	*initClass{
 		Class.initClassTree(LNX_File);
-		isVisiblePref = ("MoogIsVisible".loadPref ? [false])[0].isTrue;
+		isVisiblePref = ("MoogIsVisible".loadPref ? [true])[0].isTrue;
 		moogPresets = "Moog Presets".loadPref ?? { 256.collect{|i| "" } };
 	}
 	
@@ -87,6 +89,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	pipeIn{|pipe|
 		if (instOnSolo.isOff and: {p[13]>0} ) {^this}; // drop if sequencer off
 		if (pipe.historyIncludes(this)) {^this};       // drop to prevent internal feedback loops
+		
 		switch (pipe.kind)
 			{\control} { // control	
 				var index = Sub37.keys.indexOf(pipe.num.asInt);
@@ -98,7 +101,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				if (index.notNil) {
 					models[index+14].lazyValue_(pipe.val, true); // set model, no action
 					p[index+14]=pipe.val;                        // set p[]
-					api.sendOD(\netExtCntIn, index+14, pipe.val);   // network it
+					this.extCntIn(index, pipe.val, pipe.latency);
 				};		
 				^this // and drop 
 			}
@@ -109,9 +112,24 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				// api.groupCmdOD(\extProgIn, pipe.program,false);
 				^this // drop	
 			};
-		midiInBuffer.pipeIn(pipe); // to in Buffer
+		midiInBuffer.pipeIn(pipe); // to in Buffer. (control & progam are dropped above)
 	}
 	
+	// set control
+	extCntIn{|item,value,latency|
+		api.sendVP((id++"_ccvp_"++item).asSymbol,
+			'netExtCntIn',item,value,midi.uidOut,midi.midiOutChannel);
+	}
+	
+	// net version of above
+	netExtCntIn{|item,value,uidOut,midiOutChannel|
+		p[item+14]=value;
+		models[item+14].lazyValue_(value,false);
+		// go on, do a pipe here
+		midi.control(Sub37.keyAt(item) ,value,nil,false,true);
+		// ignore set to true so no items learnt from this
+	}
+
 	// midi coming from in buffer
 	fromInBuffer{|pipe|
 		sequencer.pipeIn(pipe);                 // to the sequencer
@@ -119,7 +137,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		// drop out and Don't send if pipe is external and coming from Sub37 going to Sub37
 		if ((pipe.source==\external) && {midi.outPoint.isSameDeviceAndName(pipe[\endPoint])}) {
 			^this
-		};
+		};	
 		this.toMIDIOutBuffer(pipe);             // to midi out buffer
 	}
 	
@@ -148,11 +166,11 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		{keyboardView.clear}.defer(studio.actualLatency);
 	}
 	
-	// external midi setting controls (these are network methods)
-	netExtCntIn{|index,val|
-		p[index.asInt]=val.asFloat;
-		models[index.asInt].lazyValue_(val.asFloat,false); // false is no auto
-	}
+//	// external midi setting controls (these are network methods)
+//	netExtCntIn{|index,val|
+//		p[index.asInt]=val.asFloat;
+//		models[index.asInt].lazyValue_(val.asFloat,false); // false is no auto
+//	}
 	
 	// external midi setting prog number (these are network methods)
 	extProgIn{|prog,send=false|
@@ -574,11 +592,9 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			.color_(\up,Color(0.6 , 0.562, 0.5))
 			.color_(\down,Color(0.6 , 0.562, 0.5)/2)
 			.color_(\string,Color.white)
-			.action_{ this.createMIDIInOutModelWindow(window,nil,nil,(
-				background:Color(63/77,59/77,59/77),
-				border2:Color(7/11,42/83,29/65),
-				border1:Color(3*3/77,1/103,0,65/77)
-			))};
+			.action_{ this.createMIDIInOutModelWindow(window,nil,nil,
+				(border1:Color(0.1221, 0.0297, 0.0297), border2: Color(0.6 , 0.562, 0.5))
+			)};
 	
 		// MIDI Controls
 	 	MVC_FlatButton(window,Rect(634, 5, 43, 18),"Cntrl")

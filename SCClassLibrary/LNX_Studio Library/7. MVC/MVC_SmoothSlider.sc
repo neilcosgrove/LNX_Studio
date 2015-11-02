@@ -34,7 +34,9 @@ MVC_SmoothSlider : MVC_View {
 			'background'			: Color(0,0,0,29/77),
 			'hilite'				: Color(0,0,0,0.3),
 			'border'				: Color.black,
-			'knobBorder'			: Color.black
+			'knobBorder'			: Color.black,
+			'numberUp'			: Color.white,
+			'numberDown'			: Color.white
 		);
 		canFocus=true;
 		if (w>h) { direction=\horizontal }{ direction=\vertical };

@@ -38,14 +38,21 @@ LNX_POP {
 	}
 	
 	*initMIDI{
+		
+		var pref;
+		
 		// note value of pads left to right, top to bottom
 		padNotes =  #[ 0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,
 			32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
 			64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
 			96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119 ];
 		
-		midi = LNX_MIDIPatch(1,0,0,0);	
-		midi.findByName("pad","pad"); // find launch pad
+		midi = LNX_MIDIPatch(0,0,0,0);	
+		
+		// load preferences or find a midi controller with "pad" in the name
+		pref = "POP Controller".loadPref;
+		if (pref.isNil) { midi.findByName("pad","pad") }{ midi.putLoadList(pref.asInt) };
+		
 		midi.noteOnFunc  = {|src, chan, note, vel ,latency|
 			var prog =padNotes.indexOf(note);
 
@@ -60,6 +67,8 @@ LNX_POP {
 		};
 		midi.programFunc = {|src, chan, prog, latency| "program in pop: ".post; prog.postln };
 	}
+	
+	*saveMIDIPrefs{ midi.getSaveList.savePref("POP Controller") }
 	
 	*new {|inst,api| ^super.new.init(inst,api) } // what api is this? from inst. will this be used?
 	

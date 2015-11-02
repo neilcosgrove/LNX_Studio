@@ -1,8 +1,8 @@
 SC CodeFX Doc v1.4
-Template Version v1.1
+Template Version v1.2
 LNX_CodeFX
 hp GVerb
-18
+19
 0
 0
 1
@@ -15,25 +15,20 @@ hp GVerb
 127
 -2
 -inf
-0
+3
 8
 0
 1
 -10.007043664453
 263
 360
+9
 1
 0
 1
 0
-*** MIDI Control Doc v1.1
-1
-1
+*** MIDI Control Doc v1.2
 0
-36
-0
-0
-127
 0
 *** End MIDI Control Doc ***
 613
@@ -890,7 +885,7 @@ focus
 *** END MVC_View Document ***
 10
 MVC_MyKnob
-0.3
+0.26877343654633
 *** MVC_View Document v1 ***
 9
 0
@@ -1000,14 +995,14 @@ focus
 0
 0
 *** END MVC_View Document ***
-12
+8
 MVC_MyKnob
-0
+0.49537110328674
 *** MVC_View Document v1 ***
 9
 0
 115
-144
+84
 36
 36
 pin
@@ -1056,14 +1051,14 @@ focus
 0
 0
 *** END MVC_View Document ***
-9
+12
 MVC_MyKnob
-0.456
+0
 *** MVC_View Document v1 ***
 9
 0
-165
-84
+115
+144
 36
 36
 pin
@@ -1226,7 +1221,7 @@ focus
 *** END MVC_View Document ***
 0
 MVC_MyKnob
-22.8
+18.100393700787
 *** MVC_View Document v1 ***
 9
 0
@@ -1282,7 +1277,7 @@ focus
 *** END MVC_View Document ***
 14
 MVC_MyKnob
-2724.4102471852
+2008.4019775391
 *** MVC_View Document v1 ***
 9
 0
@@ -1336,13 +1331,13 @@ focus
 0
 0
 *** END MVC_View Document ***
-8
+9
 MVC_MyKnob
-0.69
+0.42521873116493
 *** MVC_View Document v1 ***
 9
 0
-115
+165
 84
 36
 36

@@ -40,14 +40,14 @@ LNX_BufferArray {
 		sampleData  = FloatArray.fill(numFrames*numChannels,0); // causes lates with large samples
 		
 		// fast but causes lates
-//		soundFile.readData(sampleData);
+		soundFile.readData(sampleData);
 		
-		// slow causes less lates
-		soundFile.readByChunks(action:{|data| 
-			//sampleData=data;
-			if (verbose) {path.postln};
-			soundFile.close;
-		}, floatArray:sampleData);	
+//		// slow causes less lates
+//		soundFile.readByChunks(action:{|data| 
+//			//sampleData=data;
+//			if (verbose) {path.postln};
+//			soundFile.close;
+//		}, floatArray:sampleData);	
 		
 		bufnum = server.bufferAllocator.alloc(numChannels); // make sure buffers are adj
 		
@@ -57,17 +57,17 @@ LNX_BufferArray {
 		numChannels.do{|i|
 			buffers = buffers.add(
 
-//				// fast but caauses lates
-//				Buffer.readChannel (server, path,0, -1, [i], {|buf|
-//					done[i] = 0; // when sum of done is zero, all buffers have loaded
-//					if (done.sum==0) {action.value(this)}
-//				}, bufnum+i );
-
-				// slow but causes less lates
-				Buffer.readChannelByChunk (server, path,0, -1, 0, false, [i], bufnum+i , {|buf|
+				// fast but caauses lates
+				Buffer.readChannel (server, path,0, -1, [i], {|buf|
 					done[i] = 0; // when sum of done is zero, all buffers have loaded
 					if (done.sum==0) {action.value(this)}
-				});
+				}, bufnum+i );
+
+//				// slow but causes less lates
+//				Buffer.readChannelByChunk (server, path,0, -1, 0, false, [i], bufnum+i , {|buf|
+//					done[i] = 0; // when sum of done is zero, all buffers have loaded
+//					if (done.sum==0) {action.value(this)}
+//				});
 
 
 			)

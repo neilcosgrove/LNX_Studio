@@ -105,6 +105,8 @@ LNX_NoteOn : LNX_MIDIPipe {
 	
 	multVel{|number| velocity = (velocity*number).clip(0,127) } // scale the velocity
 	
+	value{^note}
+	
 	noteAndVelocity{^[note,velocity]}
 	
 	printOn {|stream| stream << this.class.name << "(" << note << ", " << velocity << ", " <<
@@ -137,6 +139,8 @@ LNX_NoteOff : LNX_MIDIPipe {
 	
 	multVel{|number| velocity = (velocity*number).clip(0,127) }
 	
+	value{^note}
+	
 	noteAndVelocity{^[note,velocity]}
 	
 	printOn {|stream| stream << this.class.name << "(" << note << ", " << velocity << ", " <<
@@ -161,6 +165,8 @@ LNX_Touch : LNX_MIDIPipe {
 		source   = argSource;
 	}
 	
+	value{^pressure}
+	
 	printOn {|stream| stream << this.class.name << "(" << pressure << ", " <<
 		latency << ", " << source.asCompileString << ")" }
 	
@@ -184,6 +190,8 @@ LNX_Control : LNX_MIDIPipe {
 		source   = argSource;
 	}
 	
+	value{^val}
+	
 	printOn {|stream| stream << this.class.name << "(" << num << ", " << val << ", " <<
 		latency << ", " << source.asCompileString << ")" }
 
@@ -205,6 +213,8 @@ LNX_Bend : LNX_MIDIPipe {
 		latency  = argLatency;
 		source   = argSource;
 	}
+	
+	value{^val}
 	
 	printOn {|stream| stream << this.class.name << "(" << val << ", " <<
 		latency << ", " << source.asCompileString << ")" }
@@ -228,13 +238,15 @@ LNX_Program : LNX_MIDIPipe {
 		source   = argSource;
 	}
 	
+	value{^program}
+	
 	printOn {|stream| stream << this.class.name << "(" << program << ", " <<
 		latency << ", " << source.asCompileString << ")" }
 	
 }
 
 
-// same as MIDIEndPoint but device & name are symbols. enables fast test with identiy.
+// same as MIDIEndPoint but device & name are symbols. enables fast testing with identiy.
 
 LNX_MIDIEndPoint {
 	
@@ -619,7 +631,7 @@ LNX_StoreChords {
 	
 	offset{^models[\root].value}
 	
-	apiID_{|id| api = LNX_API(this,id,#[\netAddChord, \netDeleteChord, \netPasteChords,
+	apiID_{|id| api = LNX_API.newTemp(this,id,#[\netAddChord, \netDeleteChord, \netPasteChords,
 			\netDeleteAllChords]) }
 	
 	// which note is been used as a "store this chord" key
@@ -803,7 +815,10 @@ LNX_StoreChords {
 	
 	// net of delete all chords
 	netDeleteAllChords{
-		
+		chords     = []; 					// storage as ints
+		pipes      = []; 					// storage as pipes
+		chordNames = [];
+		this.changed(\chords,chords,chordNames);
 	}
 	
 	// gui copy the chords to the clipboard
@@ -1347,7 +1362,7 @@ LNX_MultiPipeOut{
 		
 	}
 	
-	apiID_{|id| api = LNX_API(this,id,#[\netOnOffID_, \netMIDIOut_]) }
+	apiID_{|id| api = LNX_API.newTemp(this,id,#[\netOnOffID_, \netMIDIOut_]) }
 	
 	model_{|key,model| models[key]=model }
 	
@@ -1362,7 +1377,7 @@ LNX_MultiPipeOut{
 	pipeIn{|pipe|
 		if (models[\rotate].value.isTrue) {
 			// rotate outputs 
-			if ((pipe.isNoteOn) || (pipe.isNoteOff)) {         // (only sends note events)
+			if (pipe.isNote) {         // (only sends note events)
 				var idsOn;
 				var id, note = pipe.note;
 				if (pipe.isNoteOn) { 				         // if this is a note on event

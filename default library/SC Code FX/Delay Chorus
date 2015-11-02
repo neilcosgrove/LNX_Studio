@@ -1,5 +1,5 @@
 SC CodeFX Doc v1.4
-Template Version v1.1
+Template Version v1.2
 LNX_CodeFX
 Delay Chorus
 19
@@ -19,7 +19,7 @@ Delay Chorus
 8
 0
 1
--0.00059908968685475
+-6.5670185109712
 263
 315
 9
@@ -90,7 +90,7 @@ Small
 *** MIDI Control Doc v1.1
 0
 *** End MIDI Control Doc ***
-574
+575
 10
 47
 47
@@ -305,6 +305,7 @@ Small
 32
 70
 98
+76
 40
 123
 124
@@ -847,13 +848,13 @@ focus
 0
 0
 *** END MVC_View Document ***
-9
+8
 MVC_MyKnob
-0.1891796875
+0.73494140625
 *** MVC_View Document v1 ***
 9
 0
-120
+75
 170
 35
 35
@@ -1015,13 +1016,13 @@ focus
 0
 0
 *** END MVC_View Document ***
-8
+9
 MVC_MyKnob
-0.71602734375
+0.12009765625
 *** MVC_View Document v1 ***
 9
 0
-75
+120
 170
 35
 35

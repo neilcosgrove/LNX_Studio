@@ -1,0 +1,2414 @@
+SC GSRhythm Doc v1.5
+Template Version v1.2
+LNX_GSRhythm
+GS Rhythm
+289
+0
+0
+1
+0
+0
+0
+1
+0
+0
+127
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+1
+1
+1
+1
+1
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+1
+1
+1
+1
+1
+1
+1
+0.8
+0.8
+0.8
+0.8
+0.8
+0.8
+0.8
+0.8
+0
+0
+0
+0
+0
+0
+0
+0
+-1
+-1
+-1
+-1
+-1
+-1
+-1
+-1
+-inf
+-inf
+-inf
+-inf
+-inf
+-inf
+-inf
+-inf
+0
+0
+0
+0
+0
+0
+0
+0
+13
+13
+13
+13
+13
+13
+13
+13
+2
+2
+8
+5
+4
+16
+17
+11
+0
+0
+0
+0
+0
+0
+0
+0
+20000
+20000
+20000
+20000
+20000
+20000
+20000
+20000
+0
+0
+0
+0
+0
+0
+0
+0
+0.5
+0.5
+0.5
+0.5
+0.5
+0.5
+0.5
+0.5
+0
+0
+0
+0
+0
+0
+0
+0
+0.5
+0.5
+0.5
+0.5
+0.5
+0.5
+0.5
+0.5
+60
+60
+60
+60
+60
+60
+60
+60
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+-inf
+-inf
+-inf
+-inf
+-inf
+-inf
+-inf
+-inf
+0.5
+0.5
+0.5
+0.5
+0.5
+0.5
+0.5
+0.5
+0
+0.5
+60
+0
+0
+20000
+0
+0.5
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+2
+2
+2
+2
+2
+2
+2
+2
+2
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0.7
+-1
+-inf
+1
+0
+1
+0
+*** MIDI Control Doc v1.1
+0
+*** End MIDI Control Doc ***
+8
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+LNX StepSequencer Doc v1.1
+9
+32
+0
+1
+0.5
+36
+32
+4
+0
+2
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** END OBJECT DOC ***
+SC URL Bank Doc v1.1
+User: 1
+26
+file://my favourate smps/drums, Kicks/909      #00.3.aif
+1
+0
+120
+1
+0
+0
+909      #00.3.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/9kik1backup.aif
+1
+0
+120
+1
+0
+0
+9kik1backup.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/ABkick_03.aif
+1
+0
+120
+1
+0
+0
+ABkick_03.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/ABkick_06.aif
+1
+0
+120
+1
+0
+0
+ABkick_06.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/Untitled #00.aif
+1
+0
+120
+1
+0
+0
+Untitled #00.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/Untitled #06.aif
+1
+0
+120
+1
+0
+0
+Untitled #06.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/april1-kik1.aif
+1
+0
+120
+1
+0
+0
+april1-kik1.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/bassdrum#2.aif
+1
+0
+120
+1
+0
+0
+bassdrum#2.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/ddkik1.aif
+1
+0
+120
+1
+0
+0
+ddkik1.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/december kik-3.aif
+1
+0
+120
+1
+0
+0
+december kik-3.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/distorto smp1.aif
+1
+0
+120
+1
+0
+0
+distorto smp1.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/k1.asd
+1
+0
+120
+1
+0
+0
+k1.asd
+64
+0
+100
+file://my favourate smps/drums, Kicks/k99.asd
+1
+0
+120
+1
+0
+0
+k99.asd
+64
+0
+100
+file://my favourate smps/drums, Kicks/kick good and hard.wav
+1
+0
+120
+1
+0
+0
+kick good and hard.wav
+64
+0
+100
+file://my favourate smps/drums, Kicks/kik 1.aif
+1
+0
+120
+1
+0
+0
+kik 1.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/kik bass.asd
+1
+0
+120
+1
+0
+0
+kik bass.asd
+64
+0
+100
+file://my favourate smps/drums, Kicks/kik easy.aif
+1
+0
+120
+1
+0
+0
+kik easy.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/kik sub.asd
+1
+0
+120
+1
+0
+0
+kik sub.asd
+64
+0
+100
+file://my favourate smps/drums, Kicks/kik*1.asd
+1
+0
+120
+1
+0
+0
+kik*1.asd
+64
+0
+100
+file://my favourate smps/drums, Kicks/kik1.aif
+1
+0
+120
+1
+0
+0
+kik1.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/kik6.2.aif
+1
+0
+120
+1
+0
+0
+kik6.2.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/kikeq1-2.aif
+1
+0
+120
+1
+0
+0
+kikeq1-2.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/lobkik011.aif
+1
+0
+120
+1
+0
+0
+lobkik011.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/lobkik019.aif
+1
+0
+120
+1
+0
+0
+lobkik019.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/qfid smp8.aif
+1
+0
+120
+1
+0
+0
+qfid smp8.aif
+64
+0
+100
+file://my favourate smps/drums, Kicks/stomper kick #31.aif
+1
+0
+120
+1
+0
+0
+stomper kick #31.aif
+64
+0
+100
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 2
+15
+file://my favourate smps/drums, Snares & Rims/909      #02.aif
+1
+0
+120
+1
+0
+0
+909      #02.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/909      #05.aif
+1
+0
+120
+1
+0
+0
+909      #05.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/Untitled #02.aif
+1
+0
+120
+1
+0
+0
+Untitled #02.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/ddsnare5.aif
+1
+0
+120
+1
+0
+0
+ddsnare5.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/fm smp5.aif
+1
+0
+120
+1
+0
+0
+fm smp5.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/iassd1.aif
+1
+0
+120
+1
+0
+0
+iassd1.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/iassd10.aif
+1
+0
+120
+1
+0
+0
+iassd10.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/iassd7.aif
+1
+0
+120
+1
+0
+0
+iassd7.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/lobsd043.aif
+1
+0
+120
+1
+0
+0
+lobsd043.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/qfid smp7.aif
+1
+0
+120
+1
+0
+0
+qfid smp7.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/sd5i.aif
+1
+0
+120
+1
+0
+0
+sd5i.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/sn 02 db speed low.wav
+1
+0
+120
+1
+0
+0
+sn 02 db speed low.wav
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/snare 4.1.aif
+1
+0
+120
+1
+0
+0
+snare 4.1.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/snare punch#2.aif
+1
+0
+120
+1
+0
+0
+snare punch#2.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/snare snapped.aif
+1
+0
+120
+1
+0
+0
+snare snapped.aif
+64
+0
+100
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 3
+15
+file://my favourate smps/drums, Snares & Rims/909      #02.aif
+1
+0
+120
+1
+0
+0
+909      #02.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/909      #05.aif
+1
+0
+120
+1
+0
+0
+909      #05.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/Untitled #02.aif
+1
+0
+120
+1
+0
+0
+Untitled #02.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/ddsnare5.aif
+1
+0
+120
+1
+0
+0
+ddsnare5.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/fm smp5.aif
+1
+0
+120
+1
+0
+0
+fm smp5.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/iassd1.aif
+1
+0
+120
+1
+0
+0
+iassd1.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/iassd10.aif
+1
+0
+120
+1
+0
+0
+iassd10.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/iassd7.aif
+1
+0
+120
+1
+0
+0
+iassd7.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/lobsd043.aif
+1
+0
+120
+1
+0
+0
+lobsd043.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/qfid smp7.aif
+1
+0
+120
+1
+0
+0
+qfid smp7.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/sd5i.aif
+1
+0
+120
+1
+0
+0
+sd5i.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/sn 02 db speed low.wav
+1
+0
+120
+1
+0
+0
+sn 02 db speed low.wav
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/snare 4.1.aif
+1
+0
+120
+1
+0
+0
+snare 4.1.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/snare punch#2.aif
+1
+0
+120
+1
+0
+0
+snare punch#2.aif
+64
+0
+100
+file://my favourate smps/drums, Snares & Rims/snare snapped.aif
+1
+0
+120
+1
+0
+0
+snare snapped.aif
+64
+0
+100
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 4
+6
+file://my favourate smps/drums, Toms/LoConga.aif
+1
+0
+120
+1
+0
+0
+LoConga.aif
+64
+0
+100
+file://my favourate smps/drums, Toms/LoTom.aif
+1
+0
+120
+1
+0
+0
+LoTom.aif
+64
+0
+100
+file://my favourate smps/drums, Toms/MidConga.aif
+1
+0
+120
+1
+0
+0
+MidConga.aif
+64
+0
+100
+file://my favourate smps/drums, Toms/Untitled #22.aif
+1
+0
+120
+1
+0
+0
+Untitled #22.aif
+64
+0
+100
+file://my favourate smps/drums, Toms/Untitled #24.aif
+1
+0
+120
+1
+0
+0
+Untitled #24.aif
+64
+0
+100
+file://my favourate smps/drums, Toms/Untitled #25.aif
+1
+0
+120
+1
+0
+0
+Untitled #25.aif
+64
+0
+100
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 5
+6
+file://my favourate smps/drums, Toms/LoConga.aif
+1
+0
+120
+1
+0
+0
+LoConga.aif
+64
+0
+100
+file://my favourate smps/drums, Toms/LoTom.aif
+1
+0
+120
+1
+0
+0
+LoTom.aif
+64
+0
+100
+file://my favourate smps/drums, Toms/MidConga.aif
+1
+0
+120
+1
+0
+0
+MidConga.aif
+64
+0
+100
+file://my favourate smps/drums, Toms/Untitled #22.aif
+1
+0
+120
+1
+0
+0
+Untitled #22.aif
+64
+0
+100
+file://my favourate smps/drums, Toms/Untitled #24.aif
+1
+0
+120
+1
+0
+0
+Untitled #24.aif
+64
+0
+100
+file://my favourate smps/drums, Toms/Untitled #25.aif
+1
+0
+120
+1
+0
+0
+Untitled #25.aif
+64
+0
+100
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 6
+18
+file://my favourate smps/drums, Hi Hats & Bells/Untitled #17.aif
+1
+0
+120
+1
+0
+0
+Untitled #17.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/Untitled #18.aif
+1
+0
+120
+1
+0
+0
+Untitled #18.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/Untitled #19.aif
+1
+0
+120
+1
+0
+0
+Untitled #19.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/bbhhclo.aif
+1
+0
+120
+1
+0
+0
+bbhhclo.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/bell wobble.aif
+1
+0
+120
+1
+0
+0
+bell wobble.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/botp smp8.aif
+1
+0
+120
+1
+0
+0
+botp smp8.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/cymb light.aif
+1
+0
+120
+1
+0
+0
+cymb light.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/ddhhop2.aif
+1
+0
+120
+1
+0
+0
+ddhhop2.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/frying-tamb#04.aif
+1
+0
+120
+1
+0
+0
+frying-tamb#04.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/hh4.aif
+1
+0
+120
+1
+0
+0
+hh4.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/hhcl1.aif
+1
+0
+120
+1
+0
+0
+hhcl1.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/hhop10mpc.aif
+1
+0
+120
+1
+0
+0
+hhop10mpc.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/new gib smp22.aif
+1
+0
+120
+1
+0
+0
+new gib smp22.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/new gib smp23.aif
+1
+0
+120
+1
+0
+0
+new gib smp23.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/oh 01 smooth.wav
+1
+0
+120
+1
+0
+0
+oh 01 smooth.wav
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/open 1.aif
+1
+0
+120
+1
+0
+0
+open 1.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/upghhcl.aif
+1
+0
+120
+1
+0
+0
+upghhcl.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/upghhop.aif
+1
+0
+120
+1
+0
+0
+upghhop.aif
+64
+0
+100
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 7
+18
+file://my favourate smps/drums, Hi Hats & Bells/Untitled #17.aif
+1
+0
+120
+1
+0
+0
+Untitled #17.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/Untitled #18.aif
+1
+0
+120
+1
+0
+0
+Untitled #18.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/Untitled #19.aif
+1
+0
+120
+1
+0
+0
+Untitled #19.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/bbhhclo.aif
+1
+0
+120
+1
+0
+0
+bbhhclo.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/bell wobble.aif
+1
+0
+120
+1
+0
+0
+bell wobble.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/botp smp8.aif
+1
+0
+120
+1
+0
+0
+botp smp8.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/cymb light.aif
+1
+0
+120
+1
+0
+0
+cymb light.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/ddhhop2.aif
+1
+0
+120
+1
+0
+0
+ddhhop2.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/frying-tamb#04.aif
+1
+0
+120
+1
+0
+0
+frying-tamb#04.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/hh4.aif
+1
+0
+120
+1
+0
+0
+hh4.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/hhcl1.aif
+1
+0
+120
+1
+0
+0
+hhcl1.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/hhop10mpc.aif
+1
+0
+120
+1
+0
+0
+hhop10mpc.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/new gib smp22.aif
+1
+0
+120
+1
+0
+0
+new gib smp22.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/new gib smp23.aif
+1
+0
+120
+1
+0
+0
+new gib smp23.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/oh 01 smooth.wav
+1
+0
+120
+1
+0
+0
+oh 01 smooth.wav
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/open 1.aif
+1
+0
+120
+1
+0
+0
+open 1.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/upghhcl.aif
+1
+0
+120
+1
+0
+0
+upghhcl.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/upghhop.aif
+1
+0
+120
+1
+0
+0
+upghhop.aif
+64
+0
+100
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 8
+18
+file://my favourate smps/drums, Hi Hats & Bells/Untitled #17.aif
+1
+0
+120
+1
+0
+0
+Untitled #17.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/Untitled #18.aif
+1
+0
+120
+1
+0
+0
+Untitled #18.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/Untitled #19.aif
+1
+0
+120
+1
+0
+0
+Untitled #19.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/bbhhclo.aif
+1
+0
+120
+1
+0
+0
+bbhhclo.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/bell wobble.aif
+1
+0
+120
+1
+0
+0
+bell wobble.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/botp smp8.aif
+1
+0
+120
+1
+0
+0
+botp smp8.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/cymb light.aif
+1
+0
+120
+1
+0
+0
+cymb light.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/ddhhop2.aif
+1
+0
+120
+1
+0
+0
+ddhhop2.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/frying-tamb#04.aif
+1
+0
+120
+1
+0
+0
+frying-tamb#04.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/hh4.aif
+1
+0
+120
+1
+0
+0
+hh4.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/hhcl1.aif
+1
+0
+120
+1
+0
+0
+hhcl1.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/hhop10mpc.aif
+1
+0
+120
+1
+0
+0
+hhop10mpc.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/new gib smp22.aif
+1
+0
+120
+1
+0
+0
+new gib smp22.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/new gib smp23.aif
+1
+0
+120
+1
+0
+0
+new gib smp23.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/oh 01 smooth.wav
+1
+0
+120
+1
+0
+0
+oh 01 smooth.wav
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/open 1.aif
+1
+0
+120
+1
+0
+0
+open 1.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/upghhcl.aif
+1
+0
+120
+1
+0
+0
+upghhcl.aif
+64
+0
+100
+file://my favourate smps/drums, Hi Hats & Bells/upghhop.aif
+1
+0
+120
+1
+0
+0
+upghhop.aif
+64
+0
+100
+*** END URL Bank Doc ***
+*** END INSTRUMENT DOC ***

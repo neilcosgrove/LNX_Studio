@@ -1,6 +1,6 @@
    //                                //        //||     //  || //                               .
   // ****************************** //        // ||    //   ||//
- //     LNX_STUDIO Version 1.6     //        //  ||   //    |// 
+ //     LNX_STUDIO Version 2.0     //        //  ||   //    |// 
 // ****************************** //        //   ||  //     //|
 //                               //        //    || //     //||
 //   2015 by neil cosgrove      //======= //     ||//     // ||
@@ -78,7 +78,7 @@ LNX_Studio {
 
 	//// class ////////////////////////////////////////////////////
 		
-	classvar	<>versionMajor=1,	<>versionMinor=6,	<version,
+	classvar	<>versionMajor=2,	<>versionMinor=0,	<version,
 			<internetVersion,	<fileLoadVersion=2;
 		
 	classvar	studios,			<instTypes, 
@@ -90,7 +90,7 @@ LNX_Studio {
 	//// instruments & main studio ///////////////////////////////
 	var	<server,			<songPath	,		<title="LNX_Studio",
 		<insts,			<onSoloGroup,		<>groups,
-		<>groupIDs;
+		<>groupIDs,		<serverBootNo;
 
 	//// groups // to be replaced by groups & groupIDs above;
 	var	<instGroup, 		<fxGroup,			<channelOutGroup,
@@ -227,7 +227,6 @@ LNX_Studio {
 		);
 		
 		studios = [];
-		//macOSisPPC = LNX_AudioDevices.macOSisPPC;      // get audio device info
 		
 	}
 	
@@ -290,7 +289,8 @@ LNX_Studio {
 			\hostDuplicate, \duplicate, \netSelectedInst, \closeStudio, \netTalk,
 			\netSyncCollaboration, \netAddLoadList, \netOnSoloUpdate, \netMove, \hostPlay,
 			\play, \netPause, \hostStop, \netStop, \hostSetBPM, \setBPM,
-			\netAddInstWithLoadList,\netAllInstsSelectProgram, \netSetModel, \hostJumpTo
+			\netAddInstWithLoadList,\netAllInstsSelectProgram, \netSetModel, \hostJumpTo,
+			\netSetAuto
 		],#[
 			\post, \postMe, \postList, \postAll, \postStuff, \postTime, \postClock,
 			\postSpecies
@@ -323,7 +323,9 @@ LNX_Studio {
 	// post initModel
 	
 	initServerPostModels{
-		server.options.blockSize_((2**(5..9))[models[\blockSize].value]);
+		var blockSize = (2**(5..9))[models[\blockSize].value];
+		server.options.blockSize_(blockSize);
+		
 	}
 	
 	// boot the server and run postBootFuncs when done
@@ -332,38 +334,47 @@ LNX_Studio {
 	
 	// send all the instrument UGens to the server, and other misc stuff
 	
-	postBootFuncs{
+	postBootFuncs{	
 		{
-			Server.default_(server);			// set as default server
-			server.sendMsg("error",0);			// turn off error messaging
-			this.latency_(("latency".loadPref ? [latency])[0].asFloat); // set the latency
+			//[serverBootNo, LNX_AudioDevices.bootNo].postln;
 			
-			//fxBuses to use properly later
-		
-			((LNX_AudioDevices.numFXBusChannels/2).asInt.collect{ Bus.audio(server,2) });
+			if (serverBootNo != LNX_AudioDevices.bootNo) {
 			
-			LNX_BufferProxy.serverReboot;		// load bufers
-			this.initUGens;					// send studio SynthDefs (Limiter Out)
-			instTypes.do(_.initUGens(server));   // init all instrument uGens
-			insts.do(_.initUGens(server));		// used by SC Code FX
-			LNX_SampleBank.initUGens(server);	// sample bank for tuning
-			{this.initGroups}.defer(0.1);		// start inst, code, fx & out groups
-			{this.startDSP}.defer(0.2);			// if using internal, wait for it to catch up.
-			{server.volume_(models[\volume].value);}.defer(0.25);
-			{
-				insts.visualOrder
-					.do(_.serverReboot)
-					.do(_.startInstOutDSP)
-					.do(_.startDSP)
-					.do(_.updateDSP);
-			}.defer(0.3); // defer used to help LNX_CodeFX
-			{
-				if (songToLoad.notNil) {
-					api.sendClumpedList(\netSyncSong,songToLoad);
-					this.putLoadList(songToLoad);
-					songToLoad=nil;
-				}
-			}.defer(0.4); // if a song is waiting to load, then load it
+				serverBootNo = LNX_AudioDevices.bootNo;
+				Server.default_(server);			// set as default server
+				server.sendMsg("error",0);			// turn off error messaging
+				this.latency_(("latency".loadPref ? [latency])[0].asFloat); // set the latency
+				
+				//fxBuses to use properly later
+				((LNX_AudioDevices.numFXBusChannels/2).asInt.collect{ Bus.audio(server,2) });
+
+				LNX_BufferProxy.serverReboot;		// load bufers
+				this.initUGens;					// send studio SynthDefs (Limiter Out)
+				instTypes.do(_.initUGens(server));   // init all instrument uGens
+				insts.do(_.initUGens(server));		// used by SC Code FX
+				LNX_SampleBank.initUGens(server);	// sample bank for tuning
+				LNX_Voicer.update_(server);			// update voicer
+				
+				{this.initGroups}.defer(0.1);		// start inst, code, fx & out groups
+				{this.startDSP}.defer(0.3);			// if using internal, wait 4 it 2 catch up
+				{server.volume_(models[\volume].value);}.defer(0.3);
+				{
+					insts.visualOrder
+						.do(_.serverReboot)
+						.do(_.startInstOutDSP)
+						.do(_.startDSP)
+						.do(_.updateDSP);
+				}.defer(0.3); // defer used to help LNX_CodeFX
+				{
+					if (songToLoad.notNil) {
+						api.sendClumpedList(\netSyncSong,songToLoad);
+						this.putLoadList(songToLoad);
+						songToLoad=nil;
+					}
+				}.defer(0.4); // if a song is waiting to load, then load it
+				
+			};
+					
 		}.defer(0.1);
 	}
 	
@@ -432,8 +443,8 @@ LNX_Studio {
 	
 	// start studio Synths
 	
-	startDSP{
-		
+	startDSP{		
+		//"<#>".postln;
 		// add a limiter to each stereo out pair
 		(LNX_AudioDevices.numOutputBusChannels/2).do{|i|
 			Synth.tail(channelOutGroup,"LNX_LimitOut",i*2)
@@ -1522,9 +1533,11 @@ LNX_Studio {
 		var l;
 		l=this.getSaveList;
 		l=[insts.size,LNX_ID.queryNextID]++(insts.visualOrder.collect(_.id))++l;
-		api.sendClumpedList(\netSyncCollaboration,l);
-		// this.netSyncCollaboration(l.copy); // a quick fix
-	}
+		api.sendClumpedList(\netSyncCollaboration,l);	
+		// this.netSyncCollaboration(l.copy); // a quick fix.
+		// what is this a quick fix for?
+		// This breaks ids so why do it?
+ 	}
 	
 	// net of above (new need to preserve the id of objects)
 	

@@ -102,7 +102,7 @@ MVC_StepSequencer {
 	// init the vars
 
 	initVars{
-		api=LNX_API(this,id,#[\netSeq,\netSetItem,\netMove]);  // the API and it's interface
+		api=LNX_API.newTemp(this,id,#[\netSeq,\netSetItem,\netMove]); // the API and it's interface
 		seq = (seqModels[0].value) ! steps;
 		gui=();
 		nameModel="Step Seq".asModel;
