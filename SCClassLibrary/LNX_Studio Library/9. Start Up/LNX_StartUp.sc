@@ -24,11 +24,11 @@ LNX_StartUp {
 			studio = LNX_Studio(Server.internal); // start the studio, use internal server
 
 			// add appropriate menus
-			if (studio.isStandalone) {
-				LNX_AppMenus.addDeveloperMenus(studio); // to remove for release
-				LNX_AppMenus.addReleaseMenus(studio);
-			}{	
+			if (studio.showDev) {
 				LNX_AppMenus.addDeveloperMenus(studio);
+			};
+			if (studio.isStandalone) {
+				LNX_AppMenus.addReleaseMenus(studio);
 			};
 
 			Platform.case(\osx, {

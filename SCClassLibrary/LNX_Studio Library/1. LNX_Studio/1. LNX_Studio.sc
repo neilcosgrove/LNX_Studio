@@ -83,7 +83,7 @@ LNX_Studio {
 		
 	classvar	studios,			<instTypes, 
 			<thisWidth=212, 	<thisHeight,		<defaultHeight=374,
-			<>osx=0,			<visibleTypes,	<instLibraryFileNames, menuGap=0;
+			<>osx=0,			<visibleTypes,	<instLibraryFileNames, menuGap;
 			
 	classvar <>verbose=false;
 		
@@ -106,7 +106,7 @@ LNX_Studio {
 		
 	//// gui stuff
 	var	<gui,			<models,
-		<>frontWindow,	<show1=false, 	<showNone=false,
+		<>frontWindow,	<show1=false, 	<showNone=false, <showDev=true,
 		<visibleTypesGUI,	<libraryGUI,		<alwaysOnTop=false,
 		<mixerWindow,		<mixerGUI;
 		
@@ -140,6 +140,7 @@ LNX_Studio {
 	
 	init {|server|
 		
+		menuGap = 0@0;
 		GUI.qt;                   // use the cocoa gui framework
 		this.initInstance;			 // initialise this instance of the studio
 		this.createInstrumentList;   // create the lists of instruments available
@@ -172,7 +173,7 @@ LNX_Studio {
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
 	// version & standalone mode //
-	
+
 	*isStandalone{^true} // dev is now standalone
 	
 	*versionAtLeast { |maj, min|

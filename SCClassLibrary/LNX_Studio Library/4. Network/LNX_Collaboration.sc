@@ -896,7 +896,7 @@ LNX_Collaboration{
 	
 	// autosize window and gui items to no of users /////////////
 	
-	autoSizeGUI{
+	autoSizeGUI{|top=0|
 		var noLines, h, y = 0;
 		noLines=((users.size/2).ceil);
 		if (noLines>4) {
@@ -915,7 +915,7 @@ LNX_Collaboration{
 		
 	//	gui[\userScrollView].bounds_(gui[\userScrollView].bounds.height_(h));
 			
-		gui[\userScrollView].bounds_( Rect(5,473-h+y,202,h) );
+		gui[\userScrollView].bounds_( Rect(5,473-h+y+top,202,h) );
 			
 			
 		gui[\userView].bounds_(gui[\userView].bounds.height_(noLines*16+5));
