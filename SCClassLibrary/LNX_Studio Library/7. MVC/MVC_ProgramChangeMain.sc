@@ -44,7 +44,7 @@ MVC_ProgramChangeMain : MVC_View {
 							}{
 								Pen.strokeColor_(Color.black);
 							};
-							Pen.strokeRect(Rect(0,y*hh+1,ww,hh));
+							Pen.strokeRect(Rect(0,y*hh,ww,hh));
 	
 							
 						};

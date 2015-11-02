@@ -337,16 +337,6 @@
 // *******************
 // *******************// *******************
 // *******************
-
-
-		mixerGUI[\popProgramsScrollView] = MVC_ScrollView(mixerWindow,Rect(220, row2, 83, 433+menuGap.y))
-			.autoScrolls_(true)
-			.hasVerticalScroller_(true)
-			.autohidesScrollers_(true)
-			.hasBorder_(false)
-			.visible_(false)
-			.color_(\background,Color(0.8,0.8,0.8));
-
 		
 		mixerGUI[\masterTabs] = MVC_TabbedView(mixerWindow,Rect(220, row2, 511+3, 433+menuGap.y),
 			scroll:[true,true,false], offset:(6@(260+menuGap.y)))
@@ -363,6 +353,14 @@
 			.followEdges_(true)
 			.adjustments_([nil, Rect(72,0,-72,0)])
 			.value_(0);
+
+		mixerGUI[\popProgramsScrollView] = MVC_ScrollView(mixerWindow,Rect(220, row2, 83, 433+menuGap.y))
+			.autoScrolls_(true)
+			.hasVerticalScroller_(true)
+			.autohidesScrollers_(true)
+			.hasBorder_(false)
+			.visible_(false)
+			.color_(\background,Color(0.8,0.8,0.8));
 		
 		mixerGUI[\masterTabs].focusActions_([{},{
 			mixerGUI[\popProgramsScrollView].visible_(true);
