@@ -642,7 +642,7 @@
 			
 		
 			mixerGUI[id][\scrollView] = MVC_CompositeView(mixerGUI[\instScrollView],
-										Rect(0+y,0,70,400), hasBorder:false);
+										Rect(0+y,0,72,435), hasBorder:false);
 			
 			sv=mixerGUI[id][\scrollView];
 		
