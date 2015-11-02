@@ -314,22 +314,6 @@
 			
 		MVC_MultiOnOffView(models[\fadeSpeed], mixerWindow,Rect(696+menuGap.x+midSpace,6,19,19),gui[\multiTheme ])
 			.resize_(3);
-					
-					
-		// auto On (play)
-		mixerGUI[\autoPlay] = MVC_OnOffView(models[\autoOn],mixerWindow,Rect(722, 453+menuGap.y, 19, 19))
-			.resize_(3)
-			.color_(\on,Color.white)
-			.color_(\off,Color(46/77,46/79,72/145)/1.5)
-			.strings_(["A"]);
-			
-		// auto record
-		mixerGUI[\autoRec] = MVC_OnOffView(models[\autoRecord],mixerWindow,Rect(722, 430+menuGap.y, 19, 19))
-			.resize_(3)
-			.color_(\on,Color.red)
-			.color_(\off,Color(46/77,46/79,72/145)/1.5)
-			.mode_(\icon)
-			.strings_([\record]);
 			
 		this.createLibraryScrollView;
 
@@ -479,8 +463,21 @@
 		
 		mixerGUI[\everythingInfoText] = MVC_StaticText(mixerGUI[\presetTab], mixerGUI[\textTheme],
 			Rect(115, 190, 174, 43)).string_("Everything");
-						
-		
+					
+		// auto On (play)
+		mixerGUI[\autoPlay] = MVC_OnOffView(models[\autoOn],mixerWindow,Rect(722, 453+menuGap.y, 19, 19))
+			.resize_(3)
+			.color_(\on,Color.white)
+			.color_(\off,Color(46/77,46/79,72/145)/1.5)
+			.strings_(["A"]);
+			
+		// auto record
+		mixerGUI[\autoRec] = MVC_OnOffView(models[\autoRecord],mixerWindow,Rect(722, 430+menuGap.y, 19, 19))
+			.resize_(3)
+			.color_(\on,Color.red)
+			.color_(\off,Color(46/77,46/79,72/145)/1.5)
+			.mode_(\icon)
+			.strings_([\record]);
 	}
 	
 	
