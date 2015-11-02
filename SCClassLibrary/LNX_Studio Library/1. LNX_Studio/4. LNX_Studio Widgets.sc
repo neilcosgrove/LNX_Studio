@@ -654,7 +654,7 @@
 			
 		
 			mixerGUI[id][\scrollView] = MVC_CompositeView(mixerGUI[\instScrollView],
-										Rect(0+y,0,70,400), hasBorder:false);
+										Rect(0+y,0,73,460), hasBorder:false);
 			
 			sv=mixerGUI[id][\scrollView];
 		
@@ -797,13 +797,13 @@
 				.color_(\background, inst.mixerColor);
 							
 			// divider
-			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(71,0,1,435))
+			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(71,0,1,460))
 				.color_(\on,Color(0,0,0,0.3))
 				.color_(\off,Color(0,0,0,0.3));
 
 
 			// divider
-			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(72,0,1,435))
+			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(72,0,1,460))
 				.color_(\on,Color(1,1,1,0.4))
 				.color_(\off,Color(1,1,1,0.4));
 			
