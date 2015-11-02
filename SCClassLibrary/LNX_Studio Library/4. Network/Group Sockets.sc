@@ -147,25 +147,25 @@ LNX_LANGroup {
 			intAddr = myNetAddr.addr;
 		};
 		// fan out a search of addrs(-50,+50) & ports (-10,+10)
-		{
-			// shall i just do all address in last digit ?
-			100.do{|a|
-				a= (a+1).div(2)*(a.odd.if(1,-1)); // [0,1,-1,2,-2..]
-				20.do{|p|
-					var tryAddr;
-					p= (p+1).div(2)*(p.odd.if(1,-1));
-					tryAddr = NetAddr.fromIP(intAddr+a,port+p);
-					// do i also want to check for intAddr equal
-					// and warning 126. is this ok ?  myNetAddr.array[0]==tryAddr.array[0]
-					if (tryAddr!=myNetAddr and: {tryAddr.digit(3)!=0}) {
-						tryAddr.sendBundle(nil, [\m,uid]++[\scan]++
-							(lanAddrs.collect{|addr| [addr.addr,addr.port]}.asList.flat)
-						);
-					};
-				};
-				0.01.wait; // will this help to stop messages going missing ?
-			};
-		}.fork;
+		// {
+		// 	// shall i just do all address in last digit ?
+		// 	100.do{|a|
+		// 		a= (a+1).div(2)*(a.odd.if(1,-1)); // [0,1,-1,2,-2..]
+		// 		20.do{|p|
+		// 			var tryAddr;
+		// 			p= (p+1).div(2)*(p.odd.if(1,-1));
+		// 			tryAddr = NetAddr.fromIP(intAddr+a,port+p);
+		// 			// do i also want to check for intAddr equal
+		// 			// and warning 126. is this ok ?  myNetAddr.array[0]==tryAddr.array[0]
+		// 			if (tryAddr!=myNetAddr and: {tryAddr.digit(3)!=0}) {
+		// 				tryAddr.sendBundle(nil, [\m,uid]++[\scan]++
+		// 					(lanAddrs.collect{|addr| [addr.addr,addr.port]}.asList.flat)
+		// 				);
+		// 			};
+		// 		};
+		// 		0.01.wait; // will this help to stop messages going missing ?
+		// 	};
+		// }.fork;
 	}
 	
 	// add as union of lanAddrs & set

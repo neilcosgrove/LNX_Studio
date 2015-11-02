@@ -260,7 +260,7 @@
 					
 					
 		// auto On (play)
-		mixerGUI[\autoPlay] = MVC_OnOffView(models[\autoOn],mixerWindow,Rect(722-160, 453+menuGap, 19, 19))
+		mixerGUI[\autoPlay] = MVC_OnOffView(models[\autoOn],mixerWindow,Rect(722, 453+menuGap, 19, 19))
 			.resize_(3)
 			.color_(\on,Color.white)
 			.color_(\off,Color(46/77,46/79,72/145)/1.5)
