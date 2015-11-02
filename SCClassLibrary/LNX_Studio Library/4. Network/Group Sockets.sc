@@ -146,7 +146,7 @@ LNX_LANGroup {
 		}{
 			intAddr = myNetAddr.addr;
 		};
-		// fan out a search of addrs(-50,+50) & ports (-10,+10)
+		// fan out a search of addrs(-50,+50) & ports (-3,+3)
 		{
 			// shall i just do all address in last digit ?
 			100.do{|a|

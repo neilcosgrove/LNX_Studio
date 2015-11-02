@@ -1538,6 +1538,8 @@ LNX_Studio {
 		// this.netSyncCollaboration(l.copy); // a quick fix.
 		// what is this a quick fix for?
 		// This breaks ids so why do it?
+		LNX_PianoRollSequencer.resetAllNoteIDs; // make sure all noteID in a collab are the same
+		
  	}
 	
 	// net of above (new need to preserve the id of objects)
@@ -1550,6 +1552,9 @@ LNX_Studio {
 		this.putLoadList(l.drop(noI+2),ids);
 		songPath=nil;
 		LNX_ID.setNextID(newID); // after load because clear resets nextID in comms
+		
+		// make sure all noteID in a collab are the same
+		{ LNX_PianoRollSequencer.resetAllNoteIDs }.defer(this.actualLatency+0.2);
 	}
 	
 	// recieve an entire song, this is called over a network from many places
@@ -1659,6 +1664,8 @@ LNX_Studio {
 						
 					};
 				}.defer(this.actualLatency+0.1);
+				// if you change this defer value update value in netSyncCollaboration
+				
 			};
 			
 		}{

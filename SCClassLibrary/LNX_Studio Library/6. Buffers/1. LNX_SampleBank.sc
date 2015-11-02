@@ -586,18 +586,20 @@ LNX_SampleBank{
 		
 		// recursive add each buffer to reduce load on cpu
 		{	
-			if ((i+1)<n) {
-				{
-					if (freed.not) { 
-						this.recursiveLoadURL(n,i+1,l,version)
-					}{				
-						this.finishedLoading;
-					};
-				}.defer; // add one by one
-			}{
-				this.finishedLoading; // notLoading so can play now
-				selectedSampleNo=0;  // what about loading???
-				this.updateGUI;	 // and update GUI
+			if (freed.not) {
+				if ((i+1)<n) {
+					{
+						if (freed.not) { 
+							this.recursiveLoadURL(n,i+1,l,version)
+						}{				
+							this.finishedLoading;
+						};
+					}.defer; // add one by one
+				}{
+					this.finishedLoading; // notLoading so can play now
+					selectedSampleNo=0;  // what about loading???
+					this.updateGUI;	 // and update GUI
+				};
 			};
 		}.defer( studio.isPlaying.if(0.025,0.005)); // use different rates depending on isPlaying
 			
@@ -683,6 +685,7 @@ LNX_SampleBank{
 		this.removeAllSamples;
 		sampleBanks.remove(this);
 		if (this.isOpen) { window.parent.close };
+		this.finishedLoading;
 		//gui.postln.do(_.free); // this will cause a crash, should find out why at some point
 	}
 	 	

@@ -1,5 +1,8 @@
 
 // Network protocols, various ways of sending messages and commands in a collaboration //
+/*
+	LNX_Protocols.testFilterWindow;
+*/
 
 LNX_Protocols{
 
@@ -381,7 +384,7 @@ LNX_Protocols{
 		
 		this.broadcastCommsStatus;
 		this.startVariableParameterTask;
-		if (testMode) { {this.testFilterWindow}.defer(1) } { testFilter=1 };
+		// if (testMode) { {this.testFilterWindow}.defer(1) } { testFilter=1 };
 
 	}
 	
@@ -792,7 +795,7 @@ LNX_Protocols{
 		//  and wait for the others to register the message before i send it
 		{this.startSending; nil;}.sched(clumpedInterval);
 		
-		if (verbose) {~o=this};
+		//if (verbose) {~o=this};
 		
 	}
 	
@@ -821,7 +824,7 @@ LNX_Protocols{
 		if (verbose) {
 			"nCS: ".post;
 			message.postln;	
-			~n=message;
+			//~n=message;
 		};
 		
 		if (compress.isTrue) {
@@ -863,7 +866,7 @@ LNX_Protocols{
 		if (network.isConnected) {
 			
 			if (verbose) {
-				~i=[id,objectID,method,size,totalSize,toHost,compress];
+				//~i=[id,objectID,method,size,totalSize,toHost,compress];
 				"incoming".postln;
 				[id,objectID,method,size,totalSize,toHost,compress].postln;
 			};
@@ -893,7 +896,7 @@ LNX_Protocols{
 		
 		time=SystemClock.now;
 		
-		if (verbose) {~p=this};
+		//if (verbose) {~p=this};
 		
 	}
 	
@@ -904,7 +907,7 @@ LNX_Protocols{
 		if (verbose) {
 			"rM: ".post;
 			msg.postln;
-			~m=msg;
+			//~m=msg;
 		};
 		
 		message[packetNo]=msg;
@@ -958,25 +961,25 @@ LNX_Protocols{
 	
 	*testFilterWindow{
 		var w;
-		if ((network.isHost)and:{network.studio.isStandalone.not}) {
-			testMode=true;
-			w = MVC_Window("Comms Test Filter",Rect(1075,0,200,70)).create;
-			w.onClose_{
-				testFilter=1;
-				api.sendOD(\testFilter_,1);
-			};
-			MVC_MyKnob(w,Rect(90,20,26,26))
-				.label_("Filter")
-				.action_{|me| var val=me.value;
-					testFilter=val.map(0,1,0.1,1);
-					api.sendOD(\testFilter_,val);
-				}
-				.numberFunc_{|n| (n).asFormatedString(1,2)}
-				.value_(testFilter)
+
+		testMode=true;
+		w = MVC_Window("Comms Test Filter",Rect(1075,0,200,70)).create;
+		w.onClose_{
+			testFilter=1;
+			api.sendOD(\testFilter_,1);
 		};
+		MVC_MyKnob(w,Rect(90,20,26,26))
+			.label_("Filter")
+			.action_{|me| var val=me.value;
+				testFilter=val.map(0,1,0.1,1);
+				api.sendOD(\testFilter_,testFilter);
+			}
+			.numberFunc_{|n| (n).asFormatedString(1,2)}
+			.value_(testFilter)
+	
 	}
 	
-	*testFilter_{|val| testFilter=val }
+	*testFilter_{|val| testFilter=val.clip(0.1,1) }
 	
 }
 
