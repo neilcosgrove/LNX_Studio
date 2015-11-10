@@ -166,7 +166,7 @@ LNX_POP {
 		};
 		quant = studioModels[\quant].value;
 		pad = (beat.div(6)%quant/quant*8).asInt;
-		pad = #[120, 104, 88, 72, 56, 40, 24, 8].at(pad);
+		pad = #[120, 104, 88, 72, 56, 40, 24, 8].wrapAt(pad);
 		if (pad != lastPad) {
 			if (lastPad.notNil) { midi.noteOn(lastPad,0,latency) }; // 0 off
 			midi.noteOn(pad, 48,latency);

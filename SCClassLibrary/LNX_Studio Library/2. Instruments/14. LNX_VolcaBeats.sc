@@ -31,6 +31,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 	isMixerInstrument{^true}
 	mixerColor       {^Color(0.653, 0.612, 0.544)} // colour in mixer
 	hasLevelsOut     {^true}
+	hasMIDIClock     {^true}
 	
 	// mixer models
 	peakModel   {^models[6]}
@@ -104,7 +105,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 	clockPause{ sequencers.do(_.clockPause(studio.actualLatency)) }
 	
 	// clock in for midi out clock methods
-	midiSongPtr {|songPtr,latency| if (p[52].isTrue) { midi.songPtr(songPtr,latency) } } 
+	midiSongPtr {|songPtr,latency| if (p[52].isTrue) { midi.songPtr(songPtr.postln,latency) } } 
 	midiStart   {|latency|         if (p[52].isTrue) { midi.start(latency) } }
 	midiClock   {|latency|         if (p[52].isTrue) { midi.midiClock(latency) } }
 	midiContinue{|latency|         if (p[52].isTrue) { midi.continue(latency) } }
