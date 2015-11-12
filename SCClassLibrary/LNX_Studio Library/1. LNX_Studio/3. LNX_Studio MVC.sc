@@ -45,6 +45,13 @@
 			("networkMasterVolume".loadPref?[true])[0].isTrue.if(1,0), \switch,
 			{|me,val| [val.isTrue].savePref("networkMasterVolume") }].asModel;
 
+
+		// network Controller Keyboard
+		models[\networkCntKeyboard] = [
+			("networkCntKeyboard".loadPref?[true])[0].isTrue.if(1,0), \switch,
+			{|me,val| [val.isTrue].savePref("networkCntKeyboard") }].asModel;
+
+
 		// peak level
 		models[\peakLevel]=[1, \unipolar,  midiControl, 12, "Peak Level",
 				{|me,val,latency,send=true| this.setPVP(\peakLevel,val,nil,send) }].asModel;
@@ -667,7 +674,7 @@
 				.color_(\label,Color.black);
 
 			// internal midi buses
-			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 300, 70, 17))
+			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 363, 70, 17))
 				.items_(["None","1 Bus","2 Buses","3 Buses"
 						 ,"4 Buses","5 Buses","6 Buses","7 Buses","8 Buses"
 						 ,"9 Buses","10 Buses","11 Buses","12 Buses","13 Buses"
@@ -733,12 +740,22 @@
 				.action_{	 midiWin.close };
 
 			// scan for new midi equipment
-			MVC_FlatButton(scrollView,Rect(240 ,362, 70, 20),"Scan MIDI",gui[\buttonTheme])
+			MVC_FlatButton(scrollView,Rect(252 ,362, 70, 20),"Scan MIDI",gui[\buttonTheme])
 				.canFocus_(false)
 				.action_{ LNX_MIDIPatch.refreshPorts };
 
+			// network networkCntKeyboard
+			MVC_OnOffView(models[\networkCntKeyboard],scrollView,Rect(170, 299, 80, 19),
+				"Cnt Keyboard", ( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.label_("Network")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
+				
 			// network master volume changes
-			MVC_OnOffView(models[\networkMaterVolume],scrollView,Rect(170, 328, 70, 19),
+			MVC_OnOffView(models[\networkMaterVolume],scrollView,Rect(170, 328, 80, 19),
 				"Volume", ( \font_		: Font("Helvetica", 11),
 								 \colors_     : (\on : Color.orange+0.25,
 						 					   \off : Color.grey/2)))

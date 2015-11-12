@@ -288,7 +288,7 @@ LNX_Studio {
 			\netSyncCollaboration, \netAddLoadList, \netOnSoloUpdate, \netMove, \hostPlay,
 			\play, \netPause, \hostStop, \netStop, \hostSetBPM, \setBPM,
 			\netAddInstWithLoadList,\netAllInstsSelectProgram, \netSetModel, \hostJumpTo,
-			\netSetAuto
+			\netSetAuto, \netNoteOn, \netNoteOff
 		],#[
 			\post, \postMe, \postList, \postAll, \postStuff, \postTime, \postClock,
 			\postSpecies
@@ -669,13 +669,13 @@ LNX_Studio {
 		midi.noteOnFunc  = {|src, chan, note, vel ,latency|
 			if ((autoMapOn)and:{insts.selectedInst.notNil}
 			   and: {(midi.uidIn)!=(insts.selectedInst.midi.uidIn)}) {
-					insts.selectedInst.noteOn(note, vel, latency);
+				   	this.noteOn(note, vel, latency);
 			};
 		};
 		midi.noteOffFunc = {|src, chan, note, vel ,latency|
 			if ((autoMapOn)and:{insts.selectedInst.notNil}
 			    and:{((midi.uidIn)!=(insts.selectedInst.midi.uidIn))}) {
-					insts.selectedInst.noteOff(note, vel, latency);
+					this.noteOff(note, vel, latency);
 			};
 		};
 		midi.touchFunc = {|src, chan, pressure  ,latency|
@@ -698,6 +698,28 @@ LNX_Studio {
 		};
 	}
 	
+	// noteOn from controller keyboard
+	noteOn{|note, vel, latency|
+		insts.selectedInst.noteOn(note, vel, latency);
+		if (models[\networkCntKeyboard].isTrue) {
+			api.sendOD(\netNoteOn,insts.selectedInst.id, note, vel);
+		};
+	}
+	
+	// net version of above
+	netNoteOn{|id, note, vel| insts[id.asInt].noteOn(note.asInt,vel.asFloat) }
+	
+	// noteOff from controller keyboard
+	noteOff{|note, vel, latency|
+		insts.selectedInst.noteOff(note, vel, latency);
+		if (models[\networkCntKeyboard].isTrue) {
+			api.sendOD(\netNoteOff,insts.selectedInst.id, note, vel);
+		};
+	}
+	
+	// net version of above
+	netNoteOff{|id, note, vel| insts[id.asInt].noteOff(note.asInt,vel.asFloat) }
+		
 	// auto map MIDI in ( to review )
 	
 	autoMap{|num,val|
