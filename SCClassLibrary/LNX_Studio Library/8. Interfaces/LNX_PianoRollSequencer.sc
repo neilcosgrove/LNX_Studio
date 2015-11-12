@@ -191,6 +191,7 @@ LNX_Score{
 			note.id_(id);
 			notesDict[id] = note;
 		};
+		^id
 	}	
 	
 	// the view args for the piano roll are stored here
@@ -553,9 +554,11 @@ LNX_PianoRollSequencer{
 	
 	// above for instance
 	resetAllNoteIDs{
-		score.resetAllNoteIDs;
-		scores.do(_.resetAllNoteIDs);
-		this.calcNoteRects;
+		var maxID = [];
+		maxID = maxID.add(score.resetAllNoteIDs);           // reset and get last id
+		maxID = maxID ++ scores.collect(_.resetAllNoteIDs); // reset and get last id
+		noteIDObject.id_(maxID.sort.last); // find largest id and set next id to be that
+		this.calcNoteRects;                // we need to recalc note rect because ids have changed
 	}
 	
 	// zoom out so seq fits to window
