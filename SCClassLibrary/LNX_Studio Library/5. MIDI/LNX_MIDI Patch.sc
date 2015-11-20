@@ -745,39 +745,39 @@ LNX_MIDIPatch {
 		
 		/////// and warn user //////////////////////////////////////
 		
-		if (((removalsIn.size)>0)||((removalsOut.size)>0)) {
-		
-		 	text="";
-		 	if (removalsIn.size>0) {
-				text=text++"\nMIDI Sources:\n";
-				removalsIn.do({|i| text=text++"     "++midiSourceNames[i]++("\n"); });
-			};			 
-		 	if (removalsOut.size>0) {
-				text=text++"\nMIDI Destinations:\n";
-				removalsOut.do({|i| text=text++"     "++midiDestinationNames[i]++("\n"); });
-			};	
-		 
-	 		win=SCWindow.new("MIDI / Pitch",
-			Rect(200,600, 460, 200), resizable: false);
-			win.view.background = Gradient(Color.ndcBack2,Color.ndcBack3);
-			win.front.alwaysOnTop_(true);
-			
-			SCStaticText.new(win,Rect(20, 10, 460, 42))
-			.string_("                                                         WARNING !\n"
-				++"The following MIDI Device(s) have been removed from the system.")
-			.stringColor_(Color.white);
-				
-			SCTextView.new(win,Rect(50, 60, 350, 87))
-			.hasVerticalScroller_(true)
-			.editable_(false)
-			.string_(text);
-				
-			SCButton.new(win,Rect(373, 158, 60, 25))  
-			.states_([ [ "OK", Color(1.0, 1.0, 1.0, 1.0), Color.ndcDarkButtonBG ]])
-			.action_{win.close}
-			.focus;
-		
-		};
+//		if (((removalsIn.size)>0)||((removalsOut.size)>0)) {
+//		
+//		 	text="";
+//		 	if (removalsIn.size>0) {
+//				text=text++"\nMIDI Sources:\n";
+//				removalsIn.do({|i| text=text++"     "++midiSourceNames[i]++("\n"); });
+//			};			 
+//		 	if (removalsOut.size>0) {
+//				text=text++"\nMIDI Destinations:\n";
+//				removalsOut.do({|i| text=text++"     "++midiDestinationNames[i]++("\n"); });
+//			};	
+//		 
+//	 		win=SCWindow.new("MIDI / Pitch",
+//			Rect(200,600, 460, 200), resizable: false);
+//			win.view.background = Gradient(Color.ndcBack2,Color.ndcBack3);
+//			win.front.alwaysOnTop_(true);
+//			
+//			SCStaticText.new(win,Rect(20, 10, 460, 42))
+//			.string_("                                                         WARNING !\n"
+//				++"The following MIDI Device(s) have been removed from the system.")
+//			.stringColor_(Color.white);
+//				
+//			SCTextView.new(win,Rect(50, 60, 350, 87))
+//			.hasVerticalScroller_(true)
+//			.editable_(false)
+//			.string_(text);
+//				
+//			SCButton.new(win,Rect(373, 158, 60, 25))  
+//			.states_([ [ "OK", Color(1.0, 1.0, 1.0, 1.0), Color.ndcDarkButtonBG ]])
+//			.action_{win.close}
+//			.focus;
+//		
+//		};
 
 		//////// then test all in & outs removed to capture the others //
 	
