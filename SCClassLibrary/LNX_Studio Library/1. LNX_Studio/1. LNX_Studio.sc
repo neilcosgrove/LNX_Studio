@@ -703,9 +703,9 @@ LNX_Studio {
 	
 	// noteOn from controller keyboard
 	noteOn{|note, vel, latency|
-		this.doNoteOn(insts.selectedInst, note.asInt, vel, latency);
+		this.doNoteOn(insts.selectedInst, note.asInt, vel, latency); // do note on event
 		if (models[\networkCntKeyboard].isTrue) {
-			api.sendOD(\netNoteOn,insts.selectedInst.id, note, vel);
+			api.sendOD(\netNoteOn,insts.selectedInst.id, note, vel); // and send over network
 		};
 	}
 	
@@ -723,9 +723,9 @@ LNX_Studio {
 		
 	// noteOff from controller keyboard
 	noteOff{|note, vel, latency|
-		this.doNoteOff(insts.selectedInst, note.asInt, vel, latency);
+		this.doNoteOff(insts.selectedInst, note.asInt, vel, latency); // do note off event
 		if (models[\networkCntKeyboard].isTrue) {
-			api.sendOD(\netNoteOff,insts.selectedInst.id, note, vel);
+			api.sendOD(\netNoteOff,insts.selectedInst.id, note, vel); // and send over network
 		};
 	}
 	
