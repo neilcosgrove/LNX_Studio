@@ -102,7 +102,8 @@ LNX_Studio {
 		midiWin, 			<midiClock, 		noInternalBusesGUI,
 		<autoMapGroup,	autoMapOn=true,	
 		<midiControl,		<controlTitle="Studio + All Instruments",
-		<latency=0.2,		<syncDelay=0,		<midiSyncLatency= -0.022;
+		<latency=0.2,		<syncDelay=0,		<midiSyncLatency= -0.022,
+		<midiCnrtLastNote;
 		
 	//// gui stuff
 	var	<gui,			<models,
@@ -658,6 +659,8 @@ LNX_Studio {
 		midi=LNX_MIDIPatch(0,-1,0,0);
 		midi.putLoadList(ckPref);
 		
+		midiCnrtLastNote = IdentityDictionary[]; // last note played, holds inst
+		
 		// attach functions to the midiIn controller
 		
 		midi.controlFunc = {|src, chan, num,  val , latency| this.autoMap(num,val,latency) };
@@ -700,25 +703,40 @@ LNX_Studio {
 	
 	// noteOn from controller keyboard
 	noteOn{|note, vel, latency|
-		insts.selectedInst.noteOn(note, vel, latency);
+		this.doNoteOn(insts.selectedInst, note.asInt, vel, latency);
 		if (models[\networkCntKeyboard].isTrue) {
 			api.sendOD(\netNoteOn,insts.selectedInst.id, note, vel);
 		};
 	}
 	
 	// net version of above
-	netNoteOn{|id, note, vel| insts[id.asInt].noteOn(note.asInt,vel.asFloat) }
+	netNoteOn{|id, note, vel| this.doNoteOn(insts[id.asInt], note.asInt, vel.asFloat) }
 	
+	// do controller keyboard note On
+	doNoteOn{|inst, note, vel, latency|	
+		if(midiCnrtLastNote[note].notNil) {
+			this.doNoteOff(midiCnrtLastNote[note], note, vel, latency); // finish last note
+		};
+		inst.noteOn(note, vel, latency); // do note on
+		midiCnrtLastNote[note] = inst;   // and store for note off
+	}
+		
 	// noteOff from controller keyboard
 	noteOff{|note, vel, latency|
-		insts.selectedInst.noteOff(note, vel, latency);
+		this.doNoteOff(insts.selectedInst, note.asInt, vel, latency);
 		if (models[\networkCntKeyboard].isTrue) {
 			api.sendOD(\netNoteOff,insts.selectedInst.id, note, vel);
 		};
 	}
 	
 	// net version of above
-	netNoteOff{|id, note, vel| insts[id.asInt].noteOff(note.asInt,vel.asFloat) }
+	netNoteOff{|id, note, vel|  this.doNoteOff(insts[id.asInt], note.asInt, vel.asFloat) }
+	
+	// do controller keyboard note On
+	doNoteOff{|inst, note, vel, latency|	
+		(midiCnrtLastNote[note] ? inst).noteOff(note, vel, latency); // use midiCnrtLastNote 1st
+		midiCnrtLastNote[note] = nil; // and remove from midiCnrtLastNote IdentityDictionary
+	}
 		
 	// auto map MIDI in ( to review )
 	
