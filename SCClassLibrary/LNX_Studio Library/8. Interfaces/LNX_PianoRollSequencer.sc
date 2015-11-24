@@ -45,7 +45,7 @@ LNX_Note{
 	end_{|value| dur = value - start }
 	
 	// the end of the note including adjustments
-	dur{ if (durAdj.notNil) {^durAdj} {^dur} }
+	dur{ ^durAdj ? dur }
 	
 	// set the adjusted end point (usally because we have moved notes over this one)
 	endAdj_{|value| durAdj= value - start }
@@ -471,7 +471,7 @@ LNX_PianoRollSequencer{
 		};
 		
 		// model for the width of 1 beat in pixels (used as horizontal a zoom)
-		models[\gridW] = [gridW,[0,40,\lin,0]].asModel.action_{|me,value|
+		models[\gridW] = [gridW,[0,80,\lin,0]].asModel.action_{|me,value|
 			var lastMidX, vo;
 			// find center y-pos before we zoom
 			if (gui[\scrollView].notNil) {
@@ -491,7 +491,7 @@ LNX_PianoRollSequencer{
 		};
 		
 		// model for the height of 1 note in pixels (used as vertical a zoom)
-		models[\gridH] = [gridH,[2,30,\lin,1]].asModel.action_{|me,value|
+		models[\gridH] = [gridH,[2,60,\lin,1]].asModel.action_{|me,value|
 			var lastMidY, vo;
 			// find center y-pos before we zoom
 			if (gui[\scrollView].notNil) {
