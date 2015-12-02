@@ -6,8 +6,8 @@ LNX_GVerb : LNX_InstrumentTemplate {
 
 	var lastRoom, lastSpread;
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"G Verb"}
@@ -224,7 +224,7 @@ LNX_GVerb : LNX_InstrumentTemplate {
 	}
 		
 	stopDSP{
-		server.sendBundle(nil, [11, node]);
+		if (node.notNil) { server.sendBundle(nil, [11, node]) };
 		synth.free;
 		lastRoom = lastSpread = nil;	
 	}

@@ -7,8 +7,8 @@
 
 	// var myVars;
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new.init(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new.init(server,studio,instNo,bounds,open,id,loadList)
 	// remove this   ^  init when creating your own instruments
 	}
 

@@ -43,8 +43,8 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		};
 	}
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"GS Rhythm"}
@@ -301,7 +301,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	
 	// for your own loading
 	iPutLoadList{|l,noPre,loadVersion,templateLoadVersion|
-		var channels;		
+		var channels;
 		channels=l.popI; // not really used yet 
 		sequencers.do{|s| s.putLoadList(l.popEND("*** END OBJECT DOC ***")) };
 		modSequencers.do{|s| s.putLoadList(l.popEND("*** END OBJECT DOC ***")) };
@@ -853,7 +853,9 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	
 	// will these need latency... prob espically with syncs now!!
 	setFilterArg{|synthArg,i,val,latency|
-		server.sendBundle(latency, [\n_set, filterNodes[i], synthArg, val ] )
+		if (filterNodes.notNil) {
+			server.sendBundle(latency, [\n_set, filterNodes[i], synthArg, val ] )
+		}
 	}
 	
 	
@@ -879,7 +881,9 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		if (filterOn) {
 			filterOffTasks[i].stop; // stop the turn off filter task
 			filterOffTasks[i]=nil;
-			server.sendBundle(latency, [12, filterNodes[i],1]); // unpause filter
+			if (filterNodes.notNil) {
+				server.sendBundle(latency, [12, filterNodes[i],1]); // unpause filter
+			};
 			this.updateFilterArg(\drive,i,latency); 
 			this.updateFilterArg(\filtFreq,i,latency);
 			this.updateFilterArg(\filtRes,i,latency);
@@ -889,12 +893,16 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 			if (timeRemaining.notNil) {
 				filterOffTasks[i]={
 					timeRemaining.wait;  // pause the filter after time remaining is up
-					server.sendBundle(latency, [12, filterNodes[i],0]); // pause filter
+					if (filterNodes.notNil) {
+						server.sendBundle(latency, [12, filterNodes[i],0]); // pause filter
+					};
 					filterOffTasks[i]=nil;
 				}.fork(AppClock); 
 					
 			}{
-				server.sendBundle(latency, [12, filterNodes[i],0]); // else pause filter now
+				if (filterNodes.notNil) {
+					server.sendBundle(latency, [12, filterNodes[i],0]); // else pause filter now
+				};
 			}
 		}
 	}

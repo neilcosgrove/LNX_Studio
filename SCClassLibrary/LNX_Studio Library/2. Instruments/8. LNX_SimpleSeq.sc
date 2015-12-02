@@ -15,8 +15,8 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 	
 	var	<midiSet;
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 	
 	*studioName {^"Step Sequencer"}

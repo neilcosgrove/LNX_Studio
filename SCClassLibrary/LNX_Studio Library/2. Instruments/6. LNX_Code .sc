@@ -27,7 +27,38 @@ LNX_Code : LNX_InstrumentTemplate {
 	var pollResponder;
 	var <userBank, <webBrowser;
 
-   	// anything thats needed before the models are made
+	*initClass {
+		guiTypes=#[\MVC_MyKnob, \MVC_MyKnob3, \MVC_SmoothSlider, \MVC_Slider, \MVC_FlatSlider,
+		           \MVC_OnOffView, \MVC_OnOffRoundedView, \MVC_NoteView, \MVC_PinSeqView,
+		           \MVC_NumberBox, \MVC_NumberCircle];
+		           
+		guiTypesNames=#["Knob", "Dial", "Smooth Slider", "Slider", "Flat Slider",
+					"OnOff Switch", "OnOff Rounded", "MIDI Note", "Circle Switch",
+					"Number Box", "Number Circle" ];
+	}
+
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
+	}
+	
+	// an immutable list of methods available to the network
+	interface{^#[\netEditString, \netSetUserModel, \netEvaluate, \netColorSystem,
+	             \netBoundsUser, \netColorUser,    \netBoundsSystem, \netChangeGUIType ]}
+
+	*studioName {^"SC Code"}
+	*sortOrder{^0}
+	isInstrument{^true}
+	canBeSequenced{^true}
+	isMixerInstrument{^true}
+	hasLevelsOut{^true}
+
+	header { 
+		// define your document header details
+		instrumentHeaderType="SC Code Doc";
+		version="v1.5";		
+	}
+	
+	// anything thats needed before the models are made
 	initPreModel{
 		
 		// user content !!!!!!!		
@@ -51,37 +82,6 @@ LNX_Code : LNX_InstrumentTemplate {
 		// the webBrowsers used to search for new sounds!
 		webBrowser = LNX_WebBrowser(server,userBank);
 		
-	}
-
-	*initClass {
-		guiTypes=#[\MVC_MyKnob, \MVC_MyKnob3, \MVC_SmoothSlider, \MVC_Slider, \MVC_FlatSlider,
-		           \MVC_OnOffView, \MVC_OnOffRoundedView, \MVC_NoteView, \MVC_PinSeqView,
-		           \MVC_NumberBox, \MVC_NumberCircle];
-		           
-		guiTypesNames=#["Knob", "Dial", "Smooth Slider", "Slider", "Flat Slider",
-					"OnOff Switch", "OnOff Rounded", "MIDI Note", "Circle Switch",
-					"Number Box", "Number Circle" ];
-	}
-
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
-	}
-	
-	// an immutable list of methods available to the network
-	interface{^#[\netEditString, \netSetUserModel, \netEvaluate, \netColorSystem,
-	             \netBoundsUser, \netColorUser,    \netBoundsSystem, \netChangeGUIType ]}
-
-	*studioName {^"SC Code"}
-	*sortOrder{^0}
-	isInstrument{^true}
-	canBeSequenced{^true}
-	isMixerInstrument{^true}
-	hasLevelsOut{^true}
-
-	header { 
-		// define your document header details
-		instrumentHeaderType="SC Code Doc";
-		version="v1.5";		
 	}
 
 	// the models
@@ -726,10 +726,10 @@ LNX_Code : LNX_InstrumentTemplate {
 		userPresets={ IdentityDictionary[] } ! noPre;
 		
 		if (loadVersion>=1.4) {
-			userPresetSizes = l.popNI(noPre); // pop the sizes
+			userPresetSizes = l.popNI(noPre);        // pop the sizes
 			userPresetSizes.do{|size,i|
 				size.do{
-					var symbol = l.pop.asSymbol; // get the key value pair
+					var symbol = l.pop.asSymbol;    // get the key value pair
 					var value  = l.popF;
 					userPresets[i][symbol] = value; // and put in user preset dict
 				};
@@ -737,26 +737,14 @@ LNX_Code : LNX_InstrumentTemplate {
 		};
 		
 		// the samples
-		if (loadVersion>=1.5) {
-			userBank.putLoadListURL( l.popEND("*** END URL Bank Doc ***") );
-		};
+		if (loadVersion>=1.5) { userBank.putLoadListURL( l.popEND("*** END URL Bank Doc ***") ) };
 		
-	}
-	
-	// anything that needs doing after a load
-	iPostLoad{
+		 // evaluate code	
+		this.guiEvaluate(false);
 		
-		
-		
-		this.guiEvaluate(false); // evaluate code 1st
-		
-		
-		{
-		
-		userBank.adjustViews; // wierd alignment bug in sampleBank fixed by this
-		
+		// wierd alignment bug in sampleBank fixed by this
+		userBank.adjustViews;
 		if (userBank.size>0) { userBank.allInterfacesSelect(0) };
-		
 		
 		// put in system views
 		loadingSystemViews.pairsDo{|indices,list|
@@ -772,11 +760,11 @@ LNX_Code : LNX_InstrumentTemplate {
 					.boundsAction_(oldView.boundsAction)
 					.mouseDownAction_(oldView.mouseDownAction)
 					.colorAction_(oldView.colorAction)
-					.putLoadList(loadList); // put in the load data
+					.putLoadList(loadList);                        // put in the load data
 			
-			newView.create;                  // now make it
-			systemViews[indices]=newView;    // store it
-			oldView.remove.removeModel.free; // and get rid of the old one
+			if (gui[\userGUIScrollView].isOpen) { newView.create }; // now make it
+			systemViews[indices]=newView;                           // store it
+			oldView.remove.removeModel.free;                        // and get rid of the old one
 			
 		};
 		
@@ -797,12 +785,12 @@ LNX_Code : LNX_InstrumentTemplate {
 					.boundsAction_(oldView.boundsAction)
 					.mouseDownAction_(oldView.mouseDownAction)
 					.colorAction_(oldView.colorAction)
-					.putLoadList(loadList); // put in the load data
+					.putLoadList(loadList);                        // put in the load data
 
-			newView.create;                   // now make it
-			userViews[indices]=newView;       // store it
-			newView.valueAction_(modelValue,nil,false,false); // update the value
-			oldView.remove.removeModel.free;  // and get rid of the old one
+			if (gui[\userGUIScrollView].isOpen) { newView.create }; // now make it
+			userViews[indices]=newView;                             // store it
+			newView.valueAction_(modelValue,nil,false,false);       // update the value
+			oldView.remove.removeModel.free;                        // and get rid of the old one
 		};
 		
 		loadingSystemViews.clear;
@@ -813,8 +801,6 @@ LNX_Code : LNX_InstrumentTemplate {
 		if (lastTemplateLoadVersion<1.2) {
 			this.setAsPeakLevel; // part of myHack
 		};
-		
-		}.defer(0.05); // this defer looks annoying, need to rethink, maybe .newFrom(list)
 		
 	}
 	

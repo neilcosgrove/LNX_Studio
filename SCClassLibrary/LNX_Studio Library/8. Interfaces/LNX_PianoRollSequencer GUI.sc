@@ -769,21 +769,47 @@
 		(SCView.currentDrag.isArray)and:{SCView.currentDrag[0].isString}
 	}
 	
+	/*
+	f = SimpleMIDIFile.read("/Users/neilcosgrove/Desktop/xmas/wonderful_christmas_time.mid");
+	f.tempoMap
+	f = SimpleMIDIFile.read("/Users/neilcosgrove/Desktop/xmas/chords.mid");
+	f.usedTracks.collect{|t| t.asString ++"."+  f.trackName(t).stripRTF };
+	
+	*/
+
 	.receiveDragHandler_{
 		var file;
+		// is the 1st item a string?
 		if ((SCView.currentDrag.isArray)and:{SCView.currentDrag[0].isString}) {
+			// try opening path as a midi file
 			{file = SimpleMIDIFile.read( SCView.currentDrag[0] ) }.try;
 			if (file.notNil) {
-				var tempoAdjust=12;
-				if (file.tempoMap[0].notNil) { tempoAdjust= file.tempoMap[0][1]/2 };
-				file.asNoteDicts.collect{|note|
-					[note[\note],
-					note[\absTime]/tempoAdjust,
-					note[\dur]/tempoAdjust,
-					note[\velo]/127]
-				}.do{|note|
-					this.addNote(*note);
-				}
+				
+				// make a window
+				var win=MVC_Window("Import track")
+					.setInnerExtent(200,320)
+					.color_(\background, Color.grey(0.2))
+					.alwaysOnTop_(true)
+					.create;
+				// and show which tracks we can import
+				MVC_ListView2(win,Rect(10,10,180,300))
+					.items_(file.usedTracks.collect{|t|
+						t.asString ++"."+  (file.trackName(t)?"").stripRTF })
+					.actions_(\upDoubleClickAction,{|me|
+						var tempoAdjust=24;
+										
+						//if (file.tempoMap[0].notNil) { tempoAdjust= file.tempoMap[0][1]/2 };
+						
+						file.asNoteDicts(track:(file.usedTracks[me.value])).collect{|note|
+							[note[\note],
+							note[\absTime]/tempoAdjust,
+							note[\dur]/tempoAdjust,
+							note[\velo]/127]
+						}.do{|note|
+							this.addNote(*note);
+						};			
+						win.close;
+					})
 			};	
 		}
 	};

@@ -7,8 +7,8 @@ LNX_Controllers : LNX_InstrumentTemplate {
 	
 	var launchPadNotes;
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Keyboard & Controls"}

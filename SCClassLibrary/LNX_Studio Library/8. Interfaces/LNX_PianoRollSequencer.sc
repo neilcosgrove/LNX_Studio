@@ -465,7 +465,7 @@ LNX_PianoRollSequencer{
 		scores=[];
 
 		// the duration of the score
-		models[\dur] = [initialSize,[1,1024*2,\lin,1]].asModel.action_{|me,value|
+		models[\dur] = [initialSize,[1,8192,\lin,1]].asModel.action_{|me,value|
 			this.dur_(value);		
 			api.sendVP(\dur,\netDur_,value);
 		};

@@ -136,46 +136,52 @@ MVC_MIDIKeyboard {
 			.mouseDownAction_({|me, x, y, mod|
 				chosenkey = this.findNote(x, y);
 				trackKey = chosenkey;
-				if (stopGUIUpdate.not) {
-					if (useSelect) {
-						chosenkey.selectColor_(keyboardColor);
-					}{
-						chosenkey.color = keyboardColor;
+				if (chosenkey.notNil) {
+					if (stopGUIUpdate.not) {
+						if (useSelect) {
+							chosenkey.selectColor_(keyboardColor);
+						}{
+							chosenkey.color = keyboardColor;
+						};
 					};
-				};
-				this.outDownAction(chosenkey.note);
-				if (stopGUIUpdate.not) {this.refresh};
+					this.outDownAction(chosenkey.note);
+					if (stopGUIUpdate.not) {this.refresh};
+				}
 			})
 			.mouseMoveAction_({|me, x, y, mod|
 				y=y.clip(0,bounds.height);
 				x=x.clip(1,bounds.width);
 				chosenkey = this.findNote(x, y);
-				if(trackKey.note != chosenkey.note, {
-					if (useSelect) {
-						if (stopGUIUpdate.not) {trackKey.selectColor_(nil)};
-						trackKey = chosenkey;
-						if (stopGUIUpdate.not) {chosenkey.selectColor_(keyboardColor)};
-					}{
-						if (stopGUIUpdate.not) {trackKey.color = trackKey.scalecolor};
-						trackKey = chosenkey;
-						if (stopGUIUpdate.not) {chosenkey.color = keyboardColor};
-					};
-					this.outTrackAction(chosenkey.note);
-					if (stopGUIUpdate.not) {this.refresh};
-				});
+				if (chosenkey.notNil) {
+					if(trackKey.note != chosenkey.note, {
+						if (useSelect) {
+							if (stopGUIUpdate.not) {trackKey.selectColor_(nil)};
+							trackKey = chosenkey;
+							if (stopGUIUpdate.not) {chosenkey.selectColor_(keyboardColor)};
+						}{
+							if (stopGUIUpdate.not) {trackKey.color = trackKey.scalecolor};
+							trackKey = chosenkey;
+							if (stopGUIUpdate.not) {chosenkey.color = keyboardColor};
+						};
+						this.outTrackAction(chosenkey.note);
+						if (stopGUIUpdate.not) {this.refresh};
+					});
+				};
 			})
 			.mouseUpAction_({|me, x, y, mod|
 				chosenkey = this.findNote(x, y);
 				trackKey = chosenkey;
-				if (stopGUIUpdate.not) {
-					if (useSelect) {
-						chosenkey.selectColor_(nil);
-					}{
-						chosenkey.color = chosenkey.scalecolor; // was:  type
+				if (chosenkey.notNil) {
+					if (stopGUIUpdate.not) {
+						if (useSelect) {
+							chosenkey.selectColor_(nil);
+						}{
+							chosenkey.color = chosenkey.scalecolor; // was:  type
+						};
 					};
-				};
-				this.outUpAction(chosenkey.note);
-				if (stopGUIUpdate.not) {this.refresh};
+					this.outUpAction(chosenkey.note);
+					if (stopGUIUpdate.not) {this.refresh};
+				}
 			})
 			.drawFunc_({
 				

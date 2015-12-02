@@ -61,26 +61,7 @@ LNX_InstrumentTemplate {
 	////////////////////////////////////////
 	//                                    //
 	//// init stuff ////////////////////////
-		
-	// use the new midi pipes and not the old style midi functions
-	useMIDIPipes{
-		midi.pipeFunc_{|pipe| this.pipeIn(pipe) };
-		midi.noteOnFunc  = nil;
-		midi.noteOffFunc = nil;
-		midi.controlFunc = nil;
-		midi.bendFunc    = nil;
-		midi.touchFunc   = nil;
-		midi.programFunc = nil;
-	}
-	
-	popOnOff_{|value,latency|	
-		if (this.isFX.not) { // make a better test for things that can be turned on/off
-			this.onOffModel.lazyValueAction_(value,latency,false,false);
-		};
-	}
-		
-	createPOPWidgets{|window,gui|  presetsOfPresets.createWidgets(window,gui) } 
-		
+			
 	// init the class
 	*initClass {
 		Class.initClassTree(LNX_OnSoloGroup);
@@ -92,12 +73,14 @@ LNX_InstrumentTemplate {
 	*initServer{|server| }
 
 	// initialise all services
-	init {|argServer, argStudio, argInstNo, argBounds, new, argID|
+	init {|argServer, argStudio, argInstNo, argBounds, new, argID, loadList|
 		studio=argStudio;
 		bounds=argBounds;
 		server=argServer;
 		id=argID;
 		network=studio.network;
+		
+		if (loadList.size==0) { loadList=nil };
 			
 		// this is needed early on
 		instNoModel=(argInstNo?0).asModel
@@ -123,15 +106,21 @@ LNX_InstrumentTemplate {
 		this.iInitMIDI;			// start midi
 		this.createWindow(bounds);	// create window (this doesn't open it)
 		this.createWidgets;		// create the widgets for it
-		this.deferOpenWindow;		// now open window after a defer to help stop lates
 		this.initGroups;			// start groups
+		studio.insts.addInst(this,id);		// add to instruments
+		studio.createMixerInstWidgets(this);	// make the mixer widgets
+		
+		if (loadList.notNil) { this.putLoadList(loadList,updateDSP:false)};
+		
 		this.startInstOutDSP;		// start the instrument out group if it has one
 		this.startDSP;			// start any dsp
 		this.updateDSP;			// update that dsp
 		this.iPostInit;			// anything that needs doing after init
+		this.deferOpenWindow;		// now open window after a defer to help stop lates
 		if (new) { this.iPostNew };	// anything that needs doing after new creation
-	}	
 
+	}
+	
 	// initialise all variables here	
 	initVars{
 		
@@ -177,8 +166,6 @@ LNX_InstrumentTemplate {
 		presetsOfPresets = LNX_POP(this,api);
 	}
 	
-	netSetPOP{|index,value| presetsOfPresets.netSetPOP(index.asInt,value.asInt) }
-	
 	// groups
 	initGroups{
 		lfoGroup         = studio.lfoGroup;
@@ -214,7 +201,9 @@ LNX_InstrumentTemplate {
 	instGroupChannel{ ^LNX_AudioDevices.instGroupChannel(id) }
 	
 	instOutChannel_{|channel,latency|
-		server.sendBundle(latency, [\n_set, instOutSynth.nodeID, \outChannel, channel]);
+		if (instOutSynth.notNil) {
+			server.sendBundle(latency, [\n_set, instOutSynth.nodeID, \outChannel, channel]);
+		};
 	}
 	
 	
@@ -287,6 +276,17 @@ LNX_InstrumentTemplate {
 		this.program(prog,latency);
 	}
 	
+	// use the new midi pipes and not the old style midi functions
+	useMIDIPipes{
+		midi.pipeFunc_{|pipe| this.pipeIn(pipe) };
+		midi.noteOnFunc  = nil;
+		midi.noteOffFunc = nil;
+		midi.controlFunc = nil;
+		midi.bendFunc    = nil;
+		midi.touchFunc   = nil;
+		midi.programFunc = nil;
+	}
+		
 	///////////////////////////////////////////////////
 	//                                               //
 	////  name and instrument numbers /////////////////
@@ -674,7 +674,19 @@ LNX_InstrumentTemplate {
 		}
 	}
 	
+	// turn on and off via pop (presets of presets)
+	popOnOff_{|value,latency|	
+		if (this.isFX.not) { // make a better test for things that can be turned on/off
+			this.onOffModel.lazyValueAction_(value,latency,false,false);
+		};
+	}
 	
+	// create gui widgets for pop (presets of presets)
+	createPOPWidgets{|window,gui|  presetsOfPresets.createWidgets(window,gui) } 
+	
+	// net set pop value
+	netSetPOP{|index,value| presetsOfPresets.netSetPOP(index.asInt,value.asInt) }
+
 	///////
 	
 	attachActionsToPresetGUI{
@@ -716,23 +728,7 @@ LNX_InstrumentTemplate {
 	////////////////////////////////////////////////////////////////////////////////////////
 
 	////////////// save ////////////////////
-	
-	// save instrument using the dialog
-	// (shall i just have ability to save directy as a studio preset ??)
-	// other wise i'll have to many different file types
-	// i'll leave this in but unused if needed by myself or others later
-	saveDialog{
-		CocoaDialog.savePanel({ arg path;	
-			var f,g,saveList;
-			saveList=this.getSaveList;
-			f = File(path,"w");
-				saveList.do({|i|
-					f.write(i.asString++"\n");
-				});
-			f.close;
-		});	
-	}
-	
+		
 	// generate the save list containing all the info to recreate this instrument
 	// the putLoadList method must read the info in the same order
 	getSaveList{
@@ -782,113 +778,102 @@ LNX_InstrumentTemplate {
 	}
 	
 	////////////// load ///////////////////
-	
-	// load dialog for this inst, to be left and usused
-	loadDialog{
-		CocoaDialog.getPaths({ arg path;	
-			var g,l,i;
-			path=path@0;			
-			g = File(path,"r");
-			l=[g.getLine];
-			if (l[0].documentType==instrumentHeaderType) {
-				loadedAction={studio.dialog1("Studio v1.0"); studio.dialog2("Nov 08 - l n x");
-				};
-				i = g.getLine;
-				while ( { (i.notNil)&&(i!="*** END INSTRUMENT DOC ***")  }, { 
-					l=l.add(i); 
-					i = g.getLine;
-				});
-				this.putLoadList(l);
-			};
-			g.close;
-		},allowsMultiple:false);
-	}
-	
+		
 	// put all that info back into this instrument.
 	// this doesn't create a new instrument
 	// Studio creates the instrument 1st, this just does the loading
-	putLoadList{|l|
+	putLoadList{|l,updateDSP=true|
 		
 		var n,noP,noPre,tempP, header, loadVersion, templateLoadVersion, midiLoadVersion;
 		
 		var midiContolList;
-				
+		
 		l=l.reverse; // reverse the list so we can pop things off in order
 		
 		header=l.popS;
+		
 		if ((header.documentType)==instrumentHeaderType) {
 		
-			isLoading=true;
-			loadVersion=header.version;
-			templateLoadVersion=l.popS.version;
+			isLoading = true;
 			
-			lastTemplateLoadVersion=templateLoadVersion;
+			loadVersion = header.version;
+			templateLoadVersion = l.popS.version;
 			
-			l.pop; // ingore object type, this is used in studio presets
+			lastTemplateLoadVersion = templateLoadVersion;
+		
+			
+			l.pop; // ingore object type, was used for loading inst presets
+		
 		
 			this.name_(l.popS,false); // false = don't send over network
+		
 			
-			noP=l.popI;	// pop number of elements in p
-			noPre=l.popI;	// pop number of presets
+			noP   = l.popI;	// pop number of elements in p
+			noPre = l.popI;	// pop number of presets
 
-			this.clear;
+
+			// am i ever going to need this?
+			this.clear; // clear presets, midi controls and call .iClear
+
 	
-			tempP=this.preLoadP(l.popNF(noP),loadVersion); // pop and adjust in preLoadP if needed
+			// pop & adjust in preLoadP if needed, used to change p in LNX_BumNote2:preLoadP only
+			tempP = this.preLoadP(l.popNF(noP),loadVersion);
 			
-			tempP=(tempP++defaults[(tempP.size)..(defaults.size)])[0..(defaults.size-1)];
-					// extend older versions with deault P and clip any extra
-			presetMemory=0!noPre;
+			
+			// extend older versions with deault P and clip any extra
+			tempP = (tempP++defaults[(tempP.size)..(defaults.size)])[0..(defaults.size-1)];
+					
+			
+			// now put in the presets	
+			presetMemory = 0!noPre;
 			noPre.do({|i|
 				var temp;
-				temp=l.popNF(noP);
-				temp=(temp++defaults[(temp.size)..(defaults.size)])[0..(defaults.size-1)];
-					// extend older versions with deault P and clip any extra
-				presetMemory[i]=temp;
+				temp = l.popNF(noP);
+				temp = (temp++defaults[(temp.size)..(defaults.size)])[0..(defaults.size-1)];
+				
+				// extend older versions with deault P and clip any extra
+				presetMemory[i] = temp;
 			});
-			presetNames=l.popNS(noPre);
+			presetNames = l.popNS(noPre);
 
+			// put in midi
 			midi.putLoadList(l.popNI(4));
 			
-			midiLoadVersion=l.pop.version;
-			midiContolList=l.popEND("*** End MIDI Control Doc ***");
+			// and midi controls but do later...
+			midiLoadVersion = l.pop.version;
+			midiContolList = l.popEND("*** End MIDI Control Doc ***");
 			
-			l=this.iPutLoadList(l,noPre,loadVersion,templateLoadVersion);
-						
+			l = this.iPutLoadList(l,noPre,loadVersion,templateLoadVersion);
+								
 			this.onOffModel.valueAction_(tempP[1],nil,false,false);
 			this.soloModel.valueAction_(tempP[0],nil,false,false);
-						
-			this.recursiveLoad(0,l,loadVersion); // recursiveLoad all other instruments
 			
 			this.updateGUI(tempP); // before p=tempP
 			
 			// update preset gui
-			
 			if (presetView.notNil) {this.updatePresetNames; presetView.refresh};
 			
-			p=tempP; // this might not be needed now, but is safe
+			p = tempP; // this might not be needed now, but is safe
 			
 			this.iPostLoad(noPre,loadVersion,templateLoadVersion);
-			this.updateDSP;
 			
+			if (updateDSP) {this.updateDSP};  // will this ever happen now? i don't know
+			
+			// now we add midi controls
 			midiControl.putLoadList(midiContolList,midiLoadVersion); // connect at end
 			
-			if (lastTemplateLoadVersion<1.2) {
-				this.setAsPeakLevel(false); // part of myHack and peak level
-			};
+			// if old use vol as peak
+			if (lastTemplateLoadVersion<1.2) { this.setAsPeakLevel(false) }; 
+			
+			// finish		
+			isLoading=false;
+			loadedAction.value(this);
+			
 		};
 	}
 	
-	preLoadP{|l| ^l} // used to change p in Bum2
+	preLoadP{|l,loadVersion| ^l} // used to change p in LNX_BumNote2:preLoadP
 	
-	// recursive load should used to load any buffers one at a time.
-	// this is needed because the server can miss some out if its doing too much
-	// also this spreads out the cpu load on the server 
-	recursiveLoad{|i,l,loadVersion|
-		 studio.dialog1("finished inst"+i,Color.white);
-		 isLoading=false;
-		 loadedAction.value(this);
-		 loadedAction=nil;
-	}
 	
 	// update the gui during loading (this needs to be change to protect against window closure)
 	// and networking
@@ -899,7 +884,7 @@ LNX_InstrumentTemplate {
 	
 	updateGUI{|tempP|
 		tempP.do{|v,j| if (p[j]!=v) { models[j].lazyValueAction_(v,send:false) } };
-		this.iUpdateGUI(tempP);
+		this.iUpdateGUI(tempP);	
 	}
 	
 	// anything that needs doing after the entire song has been loaded and id's assigned to insts
@@ -1164,7 +1149,7 @@ LNX_InstrumentTemplate {
 	setSynthArg{|index,value,synthArg,argValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		server.sendBundle(latency,[\n_set, node, synthArg, argValue]);
+		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
 		if ((network.isConnected)and:{send}) {
 			api.send(\netSynthArg,index,value,synthArg,argValue);
 		}
@@ -1175,7 +1160,7 @@ LNX_InstrumentTemplate {
 	setSynthArgGD{|index,value,synthArg,argValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		server.sendBundle(latency,[\n_set, node, synthArg, argValue]);
+		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
 		if ((network.isConnected)and:{send}) {
 			api.sendGD(\netSynthArg,index,value,synthArg,argValue);
 		};
@@ -1186,7 +1171,7 @@ LNX_InstrumentTemplate {
 	setSynthArgOD{|index,value,synthArg,argValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		server.sendBundle(latency,[\n_set, node, synthArg, argValue]);
+		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
 		if ((network.isConnected)and:{send}) {
 			api.sendOD(\netSynthArg,index,value,synthArg,argValue);
 		};
@@ -1209,7 +1194,7 @@ LNX_InstrumentTemplate {
 	setSynthArgVP{|index,value,synthArg,argValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		server.sendBundle(latency,[\n_set, node, synthArg, argValue]);
+		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
 		if ((network.isConnected)and:{send}) {
 			api.sendVP((id+""++index).asSymbol,\netSynthArg,index,value,synthArg,argValue);
 		};
@@ -1220,7 +1205,7 @@ LNX_InstrumentTemplate {
 	netSynthArg{|index,value,synthArg,argValue|
 		if (p[index]!=value) {
 			p[index]=value;
-			server.sendBundle(nil,[\n_set, node, synthArg, argValue]);
+			if (node.notNil) { server.sendBundle(nil,[\n_set, node, synthArg, argValue]) };
 			models[index].lazyValue_(value,false);
 		};
 	}
@@ -1231,7 +1216,7 @@ LNX_InstrumentTemplate {
 	setSynthArgGUI{|index,value,synthArg,argValue,guiIndex,guiValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		server.sendBundle(latency,[\n_set, node, synthArg, argValue]);
+		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
 		if (send) {
 			api.send(\netSynthArgGUI,index,value,synthArg,argValue,guiIndex,guiValue);
 		}
@@ -1242,7 +1227,7 @@ LNX_InstrumentTemplate {
 	setSynthArgGUIGD{|index,value,synthArg,argValue,guiIndex,guiValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		server.sendBundle(latency,[\n_set, node, synthArg, argValue]);
+		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
 		if (send) {
 			api.sendGD(\netSynthArgGUI,index,value,synthArg,argValue,guiIndex,guiValue);
 		}
@@ -1253,7 +1238,7 @@ LNX_InstrumentTemplate {
 	setSynthArgGUIOD{|index,value,synthArg,argValue,guiIndex,guiValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		server.sendBundle(latency,[\n_set, node, synthArg, argValue]);
+		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
 		if (send) {
 			api.sendOD(\netSynthArgGUI,index,value,synthArg,argValue,guiIndex,guiValue);
 		}
@@ -1277,7 +1262,7 @@ LNX_InstrumentTemplate {
 	setSynthArgGUIVP{|index,value,synthArg,argValue,guiIndex,guiValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		server.sendBundle(latency,[\n_set, node, synthArg, argValue]);
+		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
 		if (send) {
 			api.sendVP(id+"_ssvp_"++index,
 				\netSynthArgGUI,index,value,synthArg,argValue,guiIndex,guiValue);
@@ -1289,7 +1274,7 @@ LNX_InstrumentTemplate {
 	netSynthArgGUI{|index,value,synthArg,argValue,guiIndex,guiValue|
 		if (p[index]!=value) {
 			p[index]=value;
-			server.sendBundle(nil,[\n_set, node, synthArg, argValue]);
+			if (node.notNil) { server.sendBundle(nil,[\n_set, node, synthArg, argValue]) };
 			models[guiIndex].lazyValue_(guiValue,false);
 		}
 	}

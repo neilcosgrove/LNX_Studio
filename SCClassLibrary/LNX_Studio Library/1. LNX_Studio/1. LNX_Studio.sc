@@ -793,20 +793,24 @@ LNX_Studio {
 			// what i should do as host
 			if (userID==network.thisUser.id) {
 				// for me as host or just me
-				this.thisAddInst(class,id,1,true, autoAdd, autoBeat);
+				
+				this.thisAddInst(class,id,1,true, autoAdd, autoBeat,loadList);
+				
 				if (network.isConnected) {  // this test is needed for simpleSeq
 					if (network.isListening.not) { onSoloGroup.userInstOn_('lnx_song',id,0) };
 					// turn off in song cause the others won't here it
 				};
 			}{
 				// from someone else to the host
-				this.netAddInst(class,id,userID,userIsListening,0, autoAdd, autoBeat);
+				this.netAddInst(class,id,userID,userIsListening,0, autoAdd, autoBeat,loadList);
 			};	
+			
+			
 			
 			// put the load list if there is one (this only happens with duplicate i believe)
 			{
 				if (loadList.size>0) {
-					insts[id].putLoadList(loadList);
+					// insts[id].putLoadList(loadList);
 					insts[id].postSongLoad; // i might change this to help melodyMaker
 				};
 						
@@ -818,14 +822,16 @@ LNX_Studio {
 				
 			}.defer(0.05);
 			
+			
+			
 		};
 	}
 	
 	// this is also called from duplicate
 	
-	thisAddInst{|class,id,onOff,new, autoAdd, autoBeat|
+	thisAddInst{|class,id,onOff,new, autoAdd, autoBeat,loadList|
 		this.addInst(class, open:new.isTrue, id:id, onOff:onOff,
-						autoAdd:autoAdd, autoBeat:autoBeat); // add the instrument
+					autoAdd:autoAdd, autoBeat:autoBeat, loadList:loadList); // add the instrument
 		if (show1) { insts.do({|inst| if (inst.id!=id) {inst.closeWindow} } )};
 		this.selectInst(id);
 	}
@@ -842,7 +848,10 @@ LNX_Studio {
 		var class,id,userID,userIsListening,new,loadList,bus, autoAdd, autoBeat;
 		#class,id,userID,userIsListening,new,bus, autoAdd, autoBeat...loadList = list;
 
-		this.netAddInst(class,id,userID,userIsListening,new, autoAdd, autoBeat);
+
+
+
+		this.netAddInst(class,id,userID,userIsListening,new, autoAdd, autoBeat,loadList);
 		
 		{
 			if (loadList.size>0) {
@@ -856,11 +865,13 @@ LNX_Studio {
 			if (userID==network.thisUser.id) { this.selectInst(id) };
 			
 		}.defer(0.05);
+		
+		
 	}
 	
 	// net version of thisAddInst (this always comes from the host)
 	
-	netAddInst{|class,id,userID,userIsListening,new, autoAdd, autoBeat|
+	netAddInst{|class,id,userID,userIsListening,new, autoAdd, autoBeat,loadList|
 		var previousFrontWindow, previousInst, onOff;
 		
 		if ((isLoading.not)and:{server.serverRunning}) {
@@ -872,7 +883,7 @@ LNX_Studio {
 				if ((userIsListening==0)or:{network.isListening.not}) { onOff=0 }
 			};
 			this.addInst(class, open:new.isTrue, id:id, onOff:onOff,
-							autoAdd:autoAdd, autoBeat:autoBeat); // add the instrument
+							autoAdd:autoAdd, autoBeat:autoBeat,loadList:loadList); // add the instrument
 			// update the onSolo for userID isListening
 			if (userID==network.thisUser.id) {
 				if (network.isListening.not) {onSoloGroup.userInstOn_('lnx_song',id,0) }
@@ -900,21 +911,32 @@ LNX_Studio {
 	
 	// add an instrument
 		
-	addInst{|type,bounds,open=true,id,onOff=1, autoAdd=false, autoBeat|
+	addInst{|type,bounds,open=true,id,onOff=1, autoAdd=false, autoBeat, loadList|
 		var i,inst;
+		
+		
 		if (type.isNumber) { type=visibleTypes[type] };  // convert index to class
 		if (type.species==Symbol) { type=type.asClass };
 		i=insts.size;
 		if (i<1) {this.updateOSX};                       // update the studio window offset
 												  //work out bounds
 		bounds=bounds ? Rect((i*25)+thisWidth+osx+3,i*23+50,type.thisWidth,type.thisHeight);
-		inst=type.new(server, this, i, bounds, open,id); // make the instrument
 		
-		insts.addInst(inst,id); 	                     // add to instruments
-		this.createMixerInstWidgets(inst);			  // make the mixer widgets
+		
+		
+		// this is the only place a new inst is created
+		
+		inst=type.new(server, this, i, bounds, open,id, loadList); // make the instrument
+		
+		
+		
+		// insts.addInst(inst,id); 	                     // add to instruments
+		
+		// this.createMixerInstWidgets(inst);			  // make the mixer widgets
 		
 		this.refreshOnOffEnabled;					  // update solo gui enabled/not enabled
-		//inst.studioLatency_(this.actualLatency);         // update latency
+		
+		//inst.studioLatency_(this.actualLatency);         // update latency (old don't use)
 		
 		// do onSolo stuff
 		if (onOff==0) {
@@ -1602,11 +1624,12 @@ LNX_Studio {
 	// put the list into the studio as the new song. must read back in same order as getSaveList
 	
 	putLoadList{|l,ids|
-		var noInst, instType, header, newAudioDevices, loadVersion, subVersion, midiLoadVersion;
+		var noInst, instType, header, loadVersion, subVersion, midiLoadVersion;
 		if (insts.size<1) {this.updateOSX}; // update the studio window offset
 		l=l.reverse;
 		header=l.popS;	
 		loadVersion=header.version;
+		
 		if (this.versionAtLeast(loadVersion.asInt,loadVersion.frac.asString.drop(2).asInt)) {
 						
 			if (((header.documentType)=="SC Studio Doc")&&(isLoading.not)) {
@@ -1636,7 +1659,7 @@ LNX_Studio {
 						this.dialog1("Finished loading.",Color.white);
 						{
 							this.dialog1("Studio"+version);
-							this.dialog2("January 2013 - l n x");
+							this.dialog2("January 2015 - l n x");
 							isLoading=false;
 																			// maybe move this here?
 							// insts.do(_.postSongLoad); // after all insts added. 
@@ -1646,15 +1669,10 @@ LNX_Studio {
 						}.defer(1);
 								
 					};
-					// this is not used anymore
-					if (loadVersion>1.1) {
-						newAudioDevices=[l.popS,l.popS];
-					}{
-						newAudioDevices=l.popS.dup;	
-					};
-					if (newAudioDevices[0]=="nil") {newAudioDevices[0]=nil};
-					if (newAudioDevices[1]=="nil") {newAudioDevices[1]=nil};
+					
 					// this is where i used to change audio device if needed
+					if (loadVersion>1.1) { l.popS; l.popS }{ l.popS };
+				
 					if (loadVersion>1.0) {
 						extClock=(l.popS=="true").if(true,false);
 						models[\extClock].value_(extClock.binaryValue);
@@ -1729,27 +1747,25 @@ LNX_Studio {
 		};
 		
 		if (loadVersion==1.0) {
-			this.addInst(instType,Rect(l.popI+osx,l.popI+osx,100,100),false,id:id);
+			this.addInst(instType,Rect(l.popI+osx,l.popI+osx,100,100),
+				false,id:id,loadList:(l.popEND("*** END INSTRUMENT DOC ***"))
+			);
 		}{
-			this.addInst(instType,Rect.fromArray(l.popNI(4)).moveBy(osx,0),false,id:id);
+			this.addInst(instType,Rect.fromArray(l.popNI(4)).moveBy(osx,0),
+				false,id:id,loadList:(l.popEND("*** END INSTRUMENT DOC ***"))
+			);
 			// changed;
 		};
 			
+	
+			
 		if (i<(noInst - 1)) {
-			this.dialog1("Done: inst"+i,Color.white);
-			insts.visualOrder[i].loadedAction_{
 			this.recursiveLoad(i+1,l,noInst,loadVersion,ids);
-			};
 		}{
-			insts.visualOrder[i].loadedAction_{
-				//isLoading=false;
-				this.dialog1("Done: inst"+i,Color.white);
-				loadedAction.value(this);
-				loadedAction=nil;
-			};
+			loadedAction.value(this);
+			loadedAction=nil;
 		};
 		
-		insts.visualOrder[i].putLoadList(l.popEND("*** END INSTRUMENT DOC ***"));
 	}
 	
 	//// add studio user dialog ////
