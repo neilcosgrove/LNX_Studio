@@ -5,8 +5,8 @@
 
 	// GUI ////////////////////////////////////////////////////////////////////////////////
 	
-	*thisWidth  {^769+10}
-	*thisHeight {^520+8}
+	*thisWidth  {^779}
+	*thisHeight {^528}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color(0,1/103,9/77,65/77),false)}
 	
@@ -15,13 +15,10 @@
 			window.setInnerExtent(thisWidth,thisHeight);
 		}{
 			window.setInnerExtent(thisWidth-486,thisHeight-298-8);
-			
 			if (window.isClosed) {
-			
 				gui[\compositeView].bounds_(
-					Rect(11,11,this.thisWidth-22-486,this.thisHeight-22-298-8));
+					Rect(11,11,this.thisWidth-508,this.thisHeight-328));
 			};
-			
 		};
 	}
 
@@ -145,9 +142,9 @@
 		// sequencers
 		sequencers.do{|s,i|
 			
-			s.createButtonWidgets(sv , Rect(28+6+30,20+(i*26)-5, 652, 250));
+			s.createButtonWidgets(sv , Rect(64,15+(i*26), 652, 250));
 			
-			MVC_FlatButton(sv ,Rect(4+3, 30+(i*26)-5 , 20, 20),"search")
+			MVC_FlatButton(sv ,Rect(7, 25+(i*26) , 20, 20),"search")
 				.color_(\up,background/3 )
 				.color_(\down,background/3 )
 				.color_(\string,Color.white)
@@ -156,7 +153,7 @@
 				.attachedDown_(s.nameWidget)
 				.action_{ webBrowsers[i].open };
 
-			MVC_FlatButton(sv ,Rect(4+3+30-5, 30+(i*26)-5 , 20, 20),"sine")
+			MVC_FlatButton(sv ,Rect(32, 25+(i*26), 20, 20),"sine")
 				.color_(\up,background/3 )
 				.color_(\down,background/3 )
 				.color_(\string,Color.white)

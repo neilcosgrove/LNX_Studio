@@ -1709,6 +1709,8 @@ LNX_Studio {
 						
 						insts.do(_.postSongLoad); // after all insts added. 
 						
+						insts.orderEffects; // fix: some effects start in the wrong order
+						
 						if (header.subVersion>=2) {
 							LNX_POP.putLoadList(l.popEND("***EOD of POP Doc***"));
 						};
