@@ -30,7 +30,7 @@ q.samples
 LNX_SampleBank{
 
 	classvar	>network, <sampleBanks, <masterMeta, <masterMetaKeys;
-	classvar >updateFuncs, >selectSampleFuncs, >clipboard, >studio;
+	classvar >updateFuncs, >clipboard, >studio;
 	classvar <waitingToEmptyTrash = false;
 	
 	var <api, <id;
@@ -40,7 +40,7 @@ LNX_SampleBank{
 	    <>title="",	<isLoading=false;
 	
 	var <window, <guiList, <selectedSampleNo=0, <lastSynth,
-	    <task, <lastModel, follow, iModel;
+	    <task, <lastModel, follow, iModel, >selectSampleFuncs;
 	
 	var <>window2,  <zeroBuffer, <>speakerIcon,
 	    <>selectedAction, <>itemAction, <>loadedAction, <>selectMeFunc;
@@ -49,7 +49,7 @@ LNX_SampleBank{
 	*initClass {
 		sampleBanks=Set[];
 		updateFuncs=Set[];       // update sample func for each gui (loading)
-		selectSampleFuncs=Set[]; // select sample func for each gui
+		
 		
 		// do not add to this metadata without changing the saveList
 		masterMeta = (
@@ -259,6 +259,7 @@ LNX_SampleBank{
 		metaModels  = [];
 		otherModels = [];
 		guiList     = [];
+		selectSampleFuncs=Set[]; // select sample func for each gui
 	}
 
 	////////////// load ///////////////////
@@ -448,7 +449,7 @@ LNX_SampleBank{
 				}; // play when finished downloading
 				{
 					selectMeFunc.value(i);
-					// used only is scCode at mo
+					// used only in scCode at mo
 					if (window2.notNil) {
 						selectSampleFuncs.do{|func| func.value(selectedSampleNo) }
 					};		
@@ -456,7 +457,7 @@ LNX_SampleBank{
 			};
 			{
 				this.selectSample(i,false,false);
-				// used only is scCode at mo
+				// used only in scCode at mo
 				if (window2.notNil) {
 					selectSampleFuncs.do{|func| func.value(selectedSampleNo) }
 				};	
