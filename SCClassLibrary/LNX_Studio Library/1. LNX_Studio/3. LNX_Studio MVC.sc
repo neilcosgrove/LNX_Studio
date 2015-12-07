@@ -289,8 +289,11 @@
 			// automation playing back
 			models[\autoOn]=[1,\switch, midiControl, 14, "Automation",
 				{|me,val,latency,send=true,toggle|
-					this.groupCmdSync(\netSetAuto,val)
-					
+					if (network.isConnected) {
+						this.groupCmdSync(\netSetAuto,val)
+					}{
+						this.netSetAuto(val);
+					};
 				}].asModel.automationActive_(false);
 			
 			// automation recording
@@ -314,7 +317,7 @@
 	netSetAuto{|value|
 		value = value.asInt;
 		MVC_Automation.isPlaying_(value.isTrue);
-		if (value.isFalse) { models[\autoRecord].lazyValueAction_(0) };
+		if (value.isFalse) { models[\autoRecord].lazyValueAction_(0)};
 		models[\autoOn].lazyValue_(value,false);
 	}
 	
