@@ -696,7 +696,7 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 				// but breaks model symmetry when not in group listening mode
 				
 				
-				if ((p[2].isTrue)or: {((instOnSolo.isOn) and: {sP[y][0].isTrue})}) {
+				if (((p[2].isTrue)or: {instOnSolo.isOn}) and: {sP[y][0].isTrue}) {
 						
 					if (sP[y][7].isTrue) {
 						// control
