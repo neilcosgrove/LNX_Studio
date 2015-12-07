@@ -888,7 +888,7 @@ LNX_Code : LNX_InstrumentTemplate {
 	
 	// code //////////////////////////////////////////////////////////////////////
 	
-	iPostNew{
+	noPostList{
 		this.guiEvaluate(false);
 		{
 			sequencer.resizeToWindow;
