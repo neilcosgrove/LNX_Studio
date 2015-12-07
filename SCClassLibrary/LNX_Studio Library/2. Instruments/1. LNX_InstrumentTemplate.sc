@@ -110,7 +110,7 @@ LNX_InstrumentTemplate {
 		studio.insts.addInst(this,id);		// add to instruments
 		studio.createMixerInstWidgets(this);	// make the mixer widgets
 		
-		if (loadList.notNil) { this.putLoadList(loadList,updateDSP:false)};
+		if (loadList.notNil) { this.putLoadList(loadList,updateDSP:false)} {this.noPostList};
 		
 		this.startInstOutDSP;		// start the instrument out group if it has one
 		this.startDSP;			// start any dsp
@@ -120,6 +120,8 @@ LNX_InstrumentTemplate {
 		if (new) { this.iPostNew };	// anything that needs doing after new creation
 
 	}
+	
+	noPostList{}
 	
 	// initialise all variables here	
 	initVars{

@@ -349,6 +349,7 @@ LNX_POP {
 		resets[i]=0;
 	}
 	
+	
 	// highlight a row as a program is selected
 	highlight{|now,last|
 		if (instGUI[(\pop++last).asSymbol].notNil) {instGUI[(\pop++last).asSymbol].highlight_(1)};
@@ -405,6 +406,8 @@ LNX_POP {
 		presetsOfPresets[index]=value + (inst.canTurnOnOff.if(0,2));
 		{instGUI[(\pop++index).asSymbol].value_(value,false)}.defer;
 	}
+	
+	guiSetPOP{|index,value| api.groupCmdOD(\netSetPOP,index,value); } 
 	
 	// free the instruments pop menu widgets
 	freePOPWidget{|i|

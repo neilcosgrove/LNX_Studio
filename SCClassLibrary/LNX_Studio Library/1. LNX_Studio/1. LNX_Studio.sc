@@ -641,6 +641,31 @@ LNX_Studio {
 	
 	guiAllInstsAddPreset{ insts.do(_.guiAddPreset) }
 	
+	// preset add for all insts and then add to next free pop
+	
+	guiAllToPop{
+		// find next free pop
+		var popFreeAt = insts.collect(_.presetsOfPresets).collect(_.presetsOfPresets)
+			.asList.flop.collect{|i| i.collect{|i| i==2}.includes(false).not }.indexOf(true);
+		
+		if (popFreeAt.isNil) { LNX_Pop.more }; // add more pops
+		
+		// find next free pop
+		popFreeAt = insts.collect(_.presetsOfPresets).collect(_.presetsOfPresets)
+			.asList.flop.collect{|i| i.collect{|i| i==2}.includes(false).not }.indexOf(true);
+
+		if (popFreeAt.isNil) { ^this };	// if still no free space then drop
+		insts.do(_.guiAddPreset);		// add presets to all
+		
+		// now add them to pop
+		insts.do{|inst| inst.presetsOfPresets.guiSetPOP(popFreeAt,inst.presetMemory.size 
+			+ inst.canTurnOnOff.if(2,0)
+		) };
+
+	}
+	
+	
+	
 	guiAllInstsSelectProgram{|prog,latency|
 		insts.do{|i| i.midiSelectProgram(prog,latency) };
 		api.sendOD('netAllInstsSelectProgram',prog);
