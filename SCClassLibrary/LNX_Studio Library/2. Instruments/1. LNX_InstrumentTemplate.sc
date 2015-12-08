@@ -110,7 +110,7 @@ LNX_InstrumentTemplate {
 		studio.insts.addInst(this,id);		// add to instruments
 		studio.createMixerInstWidgets(this);	// make the mixer widgets
 		
-		if (loadList.notNil) { this.putLoadList(loadList,updateDSP:false)} {this.noPostList};
+		if (loadList.notNil) { this.putLoadList(loadList,updateDSP:false)} {this.noPutList};
 		
 		this.startInstOutDSP;		// start the instrument out group if it has one
 		this.startDSP;			// start any dsp
@@ -121,7 +121,7 @@ LNX_InstrumentTemplate {
 
 	}
 	
-	noPostList{}
+	noPutList{} // used in LNX_CodeFX to do guiEvaluate on new instrument
 	
 	// initialise all variables here	
 	initVars{

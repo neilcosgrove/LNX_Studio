@@ -606,7 +606,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 	
 	// code //////////////////////////////////////////////////////////////////////
 
-	noPostList{
+	noPutList{
 		this.guiEvaluate(false);
 		// fixes a small bug in this scrollView when opened
 		// window created after 0.01 secs (see deferOpenWindow)

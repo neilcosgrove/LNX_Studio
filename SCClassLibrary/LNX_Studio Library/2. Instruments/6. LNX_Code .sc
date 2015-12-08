@@ -888,7 +888,7 @@ LNX_Code : LNX_InstrumentTemplate {
 	
 	// code //////////////////////////////////////////////////////////////////////
 	
-	noPostList{
+	noPutList{
 		this.guiEvaluate(false);
 		{
 			sequencer.resizeToWindow;
