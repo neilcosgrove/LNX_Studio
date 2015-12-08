@@ -310,6 +310,7 @@ LNX_POP {
 	*more{
 		this.noPOP_(noPOP+16);
 		gui[\window2].view.visibleOrigin_(0@((21+4)*noPOP));
+		gui[\window].view.visibleOrigin_(0@((21+4)*noPOP));
 	}
 	
 	// give me less
@@ -445,6 +446,7 @@ LNX_POP {
 				listOfPofP.do{|pop|
 					pop.adjustSize;
 					(noPOP..(old-1)).do{|i| pop.freePOPWidget(i) };
+					pop.presetsOfPresets = pop.presetsOfPresets[0..(noPOP-1)];
 				};
 				(noPOP..(old-1)).do{|i| this.freeResetWidget(i) };
 			};

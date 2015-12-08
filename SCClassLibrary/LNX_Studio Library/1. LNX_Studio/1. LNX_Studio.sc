@@ -641,30 +641,36 @@ LNX_Studio {
 	
 	guiAllInstsAddPreset{ insts.do(_.guiAddPreset) }
 	
-	// preset add for all insts and then add to next free pop
+	// add a preset to all insts and then add it to the next free POP
 	
 	guiAllToPop{
-		// find next free pop
+		// find next free pop index
 		var popFreeAt = insts.collect(_.presetsOfPresets).collect(_.presetsOfPresets)
 			.asList.flop.collect{|i| i.collect{|i| i==2}.includes(false).not }.indexOf(true);
 		
-		if (popFreeAt.isNil) { LNX_Pop.more }; // add more pops
+		if (popFreeAt.isNil) { LNX_POP.more }; // add more pops
 		
-		// find next free pop
+		// find next free pop index
 		popFreeAt = insts.collect(_.presetsOfPresets).collect(_.presetsOfPresets)
 			.asList.flop.collect{|i| i.collect{|i| i==2}.includes(false).not }.indexOf(true);
 
-		if (popFreeAt.isNil) { ^this };	// if still no free space then drop
-		insts.do(_.guiAddPreset);		// add presets to all
-		
-		// now add them to pop
-		insts.do{|inst| inst.presetsOfPresets.guiSetPOP(popFreeAt,inst.presetMemory.size 
-			+ inst.canTurnOnOff.if(2,0)
-		) };
-
+		if (popFreeAt.isNil) { ^this };		// if still no free space then drop
+		insts.do(_.guiAddPreset);			// add presets to all
+			
+		insts.do{|inst| 					// now add them to pop
+			if (inst.canTurnOnOff) { 		// is it an instrument i can turn on & off?
+				if (inst.isOn) {
+					// add the preset we just made + 2
+					inst.presetsOfPresets.guiSetPOP(popFreeAt, inst.presetMemory.size + 2)
+				}{
+					inst.presetsOfPresets.guiSetPOP(popFreeAt, 0); // else mute it
+				};
+			}{
+				// add the preset we just made + 2
+				inst.presetsOfPresets.guiSetPOP(popFreeAt, inst.presetMemory.size)
+			};
+		};
 	}
-	
-	
 	
 	guiAllInstsSelectProgram{|prog,latency|
 		insts.do{|i| i.midiSelectProgram(prog,latency) };
