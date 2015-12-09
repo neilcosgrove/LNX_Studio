@@ -867,19 +867,15 @@ MVC_Automation {
 					// if is same
 					gui[\automation].guiRemoveRangeMouse(lastMouseBeat,lastMouseBeat); 
 					if ((models[\penMode]==1)||(models[\penMode]==3)) {
-						lastMouseX = x;
-						
+						lastMouseX = x;			
 						lastY = ((h-y+4)/h).clip(0,1);
-						
 						lastMouseValue = controlSpec.map(lastY);
-						
-														
 						if (models[\penMode]==3) {
 							lastMouseValue=models[\aValue].value;
+							if (gui[\automation].model.isProgramModel) {
+								lastMouseValue=lastMouseValue-1
+							};
 						};
-							
-						
-						
 						gui[\automation].addEventMouse(lastMouseBeat,lastMouseValue);
 					}{
 						gui[\graph].refresh;
@@ -909,9 +905,11 @@ MVC_Automation {
 						if (models[\penMode]==3) {
 							stepSize=0;
 							thisMouseValue=models[\aValue].value;
+							if (gui[\automation].model.isProgramModel) {
+								thisMouseValue=thisMouseValue-1
+							};
 						};
-								
-								
+										
 						if ( ((x-lastMouseX)==0) or: {thisMouseValue==lastMouseValue}
 							or: {stepSize==0} or:{ models[\quant]>0 }) {
 							// add single event
@@ -1011,7 +1009,6 @@ MVC_Automation {
 							Pen.fillRect(Rect(x,1,w1,h-1));
 						};
 					};
-					
 					
 					if (low.asInt.odd) {
 						Pen.fillColor_(Color(1,1,1,0.3))
