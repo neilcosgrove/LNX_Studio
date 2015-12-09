@@ -182,8 +182,8 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 			var out;
 			out = In.ar(inputChannels, 2)*inAmp;
 			
-			out = LPF.ar(out,lowFreq.lag(0.2));
-			out = HPF.ar(out,hiFreq.lag(0.2));
+			out = LPF.ar(out,lowFreq.clip(20,20000).lag(0.2));
+			out = HPF.ar(out,hiFreq.clip(20,20000).lag(0.2));
 			
 			out = FreeVerb2.ar(out[0],out[1],mix,room,damp);
 			out = out * outAmp;
