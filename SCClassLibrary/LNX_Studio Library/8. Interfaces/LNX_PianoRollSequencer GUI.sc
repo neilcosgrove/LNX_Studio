@@ -781,7 +781,9 @@
 
 	.receiveDragHandler_{
 		var file;
+		// is the 1st item a string?
 		if ((View.currentDrag.isArray)and:{View.currentDrag[0].isString}) {
+			// try opening path as a midi file
 			{file = SimpleMIDIFile.read( View.currentDrag[0] ) }.try;
 			if (file.notNil) {
 				

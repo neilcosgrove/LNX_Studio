@@ -229,7 +229,6 @@ MVC_ListView2 : MVC_View {
 		
 		// @TODO: new Qt "key" codes
 		view.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
-
 			var index;
 			//[me, char, modifiers, unicode].postln;
 

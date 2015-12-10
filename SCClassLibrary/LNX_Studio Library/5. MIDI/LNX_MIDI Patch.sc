@@ -744,7 +744,7 @@ LNX_MIDIPatch {
 		//["remove:",removalsOut,newDestinations].postln;
 		
 		/////// and warn user //////////////////////////////////////
-
+		
 //		if (((removalsIn.size)>0)||((removalsOut.size)>0)) {
 //		
 //		 	text="";

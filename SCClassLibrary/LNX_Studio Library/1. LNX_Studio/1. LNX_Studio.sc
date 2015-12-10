@@ -83,7 +83,7 @@ LNX_Studio {
 		
 	classvar	studios,			<instTypes, 
 			<thisWidth=212, 	<thisHeight,		<defaultHeight=374,
-			<>osx=0,			<visibleTypes,	<instLibraryFileNames;
+			<>osx=0,			<visibleTypes,	<instLibraryFileNames, menuGap;
 			
 	classvar <>verbose=false;
 		
@@ -107,7 +107,7 @@ LNX_Studio {
 		
 	//// gui stuff
 	var	<gui,			<models,
-		<>frontWindow,	<show1=false, 	<showNone=false,
+		<>frontWindow,	<show1=false, 	<showNone=false, <showDev=true,
 		<visibleTypesGUI,	<libraryGUI,		<alwaysOnTop=false,
 		<mixerWindow,		<mixerGUI;
 		
@@ -141,7 +141,8 @@ LNX_Studio {
 	
 	init {|server|
 		
-		GUI.cocoa;                   // use the cocoa gui framework
+		menuGap = 0@0;
+		GUI.qt;                   // use the cocoa gui framework
 		this.initInstance;			 // initialise this instance of the studio
 		this.createInstrumentList;   // create the lists of instruments available
 		this.initLibrary;            // make all the files & folders for the inst library
@@ -156,24 +157,24 @@ LNX_Studio {
 		this.bootServer;			 // and now boot it
 				
 		this.createMixerWindow;      // the main lnx window
+		this.createNetworkWidgets;   // and the network widgets
 		this.createMixerWidgets;     // add the mixer widgets
 		this.createLibraryWidgets;   // add the library widgets
-		this.createNetworkWidgets;   // and the network widgets
 		this.autoSizeGUI;			 // autosize to number of users. (to add widgets & remove)
 		mixerWindow.create;          // now make the window
 		
-		this.libraryGUIBugFix;       // a bug fix
-		LNX_SplashScreen.init(this); // start splash screen
+		// this.libraryGUIBugFix;       // a bug fix
+		// LNX_SplashScreen.init(this); // start splash screen
 		CmdPeriod.add(this);		 // add this object to CmdPeriod
-		
-		this.startClockOff;          // and start off_clock for client side lfos
+	
+		//	 this.startClockOff;          // and start off_clock for client side lfos
 		
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
 	// version & standalone mode //
-	
+
 	*isStandalone{^true} // dev is now standalone
 	
 	*versionAtLeast { |maj, min|
@@ -208,21 +209,24 @@ LNX_Studio {
 		Class.initClassTree(LNX_File);
 		Class.initClassTree(LNX_AudioDevices);
 		Class.initClassTree(LNX_MIDIPatch);
-		("curl http://lnxstudio.sourceforge.net/lnx_version.scd > \""++
-			String.scDir+/+"lnx_version\"").unixCmd; // get the latest version number online
-		{
-			internetVersion = (String.scDir+/+"lnx_version").loadList;
-			
-			if (internetVersion.notNil) {
-				if (internetVersion.size>0) {
-					internetVersion = internetVersion[0].asFloat;
-					if (internetVersion>version.drop(1).asFloat) {
-						studios[0].addTextToDialog( "New LNX_Studio available on sourceforge v"
-							++(internetVersion.asString),true,true);
-					};
-				}
-			};	
-		}.defer(2);
+		// get the latest version number online
+		Platform.getURL(
+			"http://lnxstudio.sourceforge.net/lnx_version.scd",
+			Platform.lnxResourceDir+/+"lnx_version",
+			{|status|
+				internetVersion = (Platform.lnxResourceDir+/+"lnx_version").loadList;
+				
+				if (internetVersion.notNil) {
+					if (internetVersion.size>0) {
+						internetVersion = internetVersion[0].asFloat;
+						if (internetVersion>version.drop(1).asFloat) {
+							studios[0].addTextToDialog( "New LNX_Studio available on sourceforge v"
+								++(internetVersion.asString),true,true);
+						};
+					}
+				};	
+			}
+		);
 		
 		studios = [];
 		
@@ -263,7 +267,6 @@ LNX_Studio {
 		absTime     = 2.5/bpm;
 		extTiming   = [];
 		MVC_StepSequencer.studio_(this);      // not great, why am i doing this? To get absTime
-		HelpBrowser.studio_(this);            // for loading the demo song via HelpBrowser
 		LNX_SampleBank.studio_(this);         // to find out if playing to change download speed
 		LNX_PianoRollSequencer.studio_(this); // for pianoroll guiJumpTo call
 		MVC_Model.studio_(this);              // is playing 
@@ -328,7 +331,7 @@ LNX_Studio {
 	}
 	
 	// boot the server and run postBootFuncs when done
-	
+
 	bootServer{ LNX_AudioDevices.bootServer(server) }
 	
 	// send all the instrument UGens to the server, and other misc stuff
@@ -805,10 +808,10 @@ LNX_Studio {
 	
 	hostAddInst{|list|
 		var id, userID, class, userIsListening, loadList, name, autoAdd, autoBeat, bus;
-		
+
 		#userID, class, userIsListening, name, autoAdd, autoBeat...loadList = list;
 			
-		// i need to change so it doesn't matter if audio server is running
+		// // i need to change so it doesn't matter if audio server is running
 		if ((isLoading.not)and:{server.serverRunning}) {
 			
 			id=LNX_ID.nextID; // get the id for me and everyone else
@@ -834,7 +837,7 @@ LNX_Studio {
 			}{
 				// from someone else to the host
 				this.netAddInst(class,id,userID,userIsListening,0, autoAdd, autoBeat,loadList);
-			};	
+			};
 			
 			
 			
@@ -1285,7 +1288,7 @@ LNX_Studio {
 	///////////////  info  /////////////////////////
 		
 	openHelp{
-		if ( (frontWindow.isKindOf(SCWindow))
+		if ( (frontWindow.isKindOf(Window))
 			or: {frontWindow.isNil}
 			or: {frontWindow.helpAction.value}) {
 				"LNX_Studio Help".help
@@ -1381,7 +1384,7 @@ LNX_Studio {
 		if (tasks[\saveInterval].isPlaying) {
 			tasks[\saveInterval].stop;
 		}{
-			CocoaDialog.savePanel({|path| 
+			Dialog.savePanel({|path| 
 				tasks[\saveInterval]=Task({|a,b,c|
 					loop {
 						if (this.isPlaying) {
@@ -1405,7 +1408,7 @@ LNX_Studio {
 		if (this.isStandalone && LNX_Mode.isSafe) {
 			this.safeModeSaveDialog
 		}{
-			CocoaDialog.savePanel({|path| this.save(path)})
+			Dialog.savePanel({|path| this.save(path)})
 		}
 	}
 
@@ -1495,35 +1498,38 @@ LNX_Studio {
 				};
 				g.close;
 			};
-		}
-	}
+		
+}	}
 	
 	// load user dialog
 	
 	loadDialog{
 		if (this.canLoadSong) {
-			CocoaDialog.getPaths({ arg paths;
+			Dialog.openPanel({ arg paths;
 				var i=(-1);
 				if (paths.size>1) {
 					if (gui[\songsMenu].notNil) {
 						gui[\songsMenu].remove;
 						gui[\songsMenu]=nil
 					};
-					gui[\songsMenu]=SCMenuGroup.new(nil, "Songs",9);
-					SCMenuItem.new(gui[\songsMenu],  "Previous song").setShortCut("1")
-						.action_{i=i-1; this.loadPath(paths.wrapAt(i))};
-					SCMenuItem.new(gui[\songsMenu],  "Next song").setShortCut("2")
-						.action_{i=i+1; this.loadPath(paths.wrapAt(i))};
-					SCMenuSeparator(gui[\songsMenu]); // add a separator
-					
-					paths.do{|path,j|
-						SCMenuItem.new(gui[\songsMenu],  path.basename)
-							.action_{ i=j; this.loadPath(path) };
-					};		
+
+					Platform.case(\osx, {
+						gui[\songsMenu]=SCMenuGroup.new(nil, "Songs",9);
+						SCMenuItem.new(gui[\songsMenu],  "Previous song").setShortCut("1")
+							.action_{i=i-1; this.loadPath(paths.wrapAt(i))};
+						SCMenuItem.new(gui[\songsMenu],  "Next song").setShortCut("2")
+							.action_{i=i+1; this.loadPath(paths.wrapAt(i))};
+						SCMenuSeparator(gui[\songsMenu]); // add a separator
+						
+						paths.do{|path,j|
+							SCMenuItem.new(gui[\songsMenu],  path.basename)
+								.action_{ i=j; this.loadPath(path) };
+						};
+					});	
 				}{
 					this.loadPath(paths@0);
 				}	
-			});
+			}, multipleSelection: true);
 		}
 	}
 	
@@ -1532,7 +1538,7 @@ LNX_Studio {
 	loadDemoSong{
 		if (this.canLoadSong) {
 			"loading demo".postln;
-			this.loadPath(String.scDir+/+"demo song",false);
+			this.loadPath(Platform.lnxResourceDir+/+"demo song",false);
 		};
 	}
 	
@@ -1805,7 +1811,7 @@ LNX_Studio {
 
 	addDialog{
 		if ((server.serverRunning) and: {isLoading.not} and: {network.isConnecting.not}) {
-			CocoaDialog.getPaths({ arg path;
+			Dialog.openPanel({ arg path;
 				var g,l,i;
 				path=path@0;	
 				g = File(path,"r");
@@ -2019,6 +2025,49 @@ LNX_Studio {
 	soloDelete{|id,v|
 		insts[id].solo_(v);
 		this.refreshOnOffEnabled;
+	}
+
+	quit {
+		var gui = (),
+		colors = (
+			background: 		Color(59/77,59/77,59/77),
+			border2: 			Color(6/11,42/83,29/65),
+			border1: 			Color(3/77,1/103,0,65/77),
+			menuBackground:	Color(1,1,0.9)
+		) ++ (colors?());
+		
+		gui[\window] = MVC_ModalWindow(mixerWindow.view, (250-60)@(150-18), colors);
+		gui[\scrollView] = gui[\window].scrollView;
+		
+		MVC_StaticText( gui[\scrollView], Rect(10,23-18,190,18))
+			.shadow_(false)
+			.color_(\string,Color.black)
+			.font_(Font("Helvetica-Bold", 13))
+			.string_("Quit LNX_Studio?");
+		
+		MVC_StaticText( gui[\scrollView], Rect(10,30,190,18*2))
+			.shadow_(false)
+			.color_(\string,Color.black)
+			.font_(Font("Helvetica", 11))
+			.string_("Any unsaved information\n will be lost");
+		
+		// Ok
+		MVC_OnOffView(gui[\scrollView],Rect(105-52, 78, 50, 20),"Ok")
+			.rounded_(true)  
+			.color_(\on,Color(1,1,1,0.5))
+			.color_(\off,Color(1,1,1,0.5))
+			.action_{
+				gui[\window].close;
+				CmdPeriod.run;
+				{ 0.exit }.defer(0.2);
+		};
+		
+		// Cancel
+		MVC_OnOffView(gui[\scrollView],Rect(105, 78, 50, 20),"Cancel")
+			.rounded_(true)  
+			.color_(\on,Color(1,1,1,0.5))
+			.color_(\off,Color(1,1,1,0.5))
+			.action_{	 gui[\window].close };
 	}
 			
 }
