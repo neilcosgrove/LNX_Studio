@@ -399,15 +399,15 @@ MVC_StaticText : MVC_View {
 		
 		// @TODO: new Qt "key" codes
 		view.keyDownAction_{|me,char,mod,uni,keycode,key|
-			//keycode.postln;
+			keycode.postln;
 			// help fixes double press bug by see if cmd is pressed
-			if (mod.isCmd) {
+			if (mod.isXCmd) {
 				noKeyPresses=noKeyPresses+1;
-				case {keycode==123} { // left	
+				case {key.isLeft} { // left	
 					cursor = 0;
 					if (editing.not) {this.startEditing};
 					this.refresh;
-				} {keycode==124} { // right
+				} {key.isRight} { // right
 					cursor = string.size;
 					if (editing.not) {this.startEditing};
 					this.refresh;
@@ -416,19 +416,27 @@ MVC_StaticText : MVC_View {
 			
 			if (noKeyPresses.odd) { // stops double press bug
 				keyDownAction.value(me,char,mod,uni,keycode);
-				if (mod.isCmd) { // apple cmd key
-					if (keycode==8) { // cmd copy	
+				if (mod.isXCmd) { // XPlatform cmd key
+					if (key.isAlphaKey('C')) { // cmd copy	
 						case {cursor.isNil} {
-							("echo"+string+"| pbcopy").unixCmd
-						} {cursor.isNumber} {									("echo"+string+"| pbcopy").unixCmd
+							Platform.case(
+								\osx, { ("echo"+string+"| pbcopy").unixCmd },
+								\linux, { ("echo"+string+"| xclip -i").unixCmd },
+								\windows, { "copy not supported yet on windows".postln; });
+						} {cursor.isNumber} {
+
 						} {cursor.isCollection} {	
 							
 						};
 					}; 
 					
 					if (editing) {
-						case {keycode==9} { // cmd paste
-							var clipboard = "pbpaste".unixCmdGetStdOut;
+						case {key.isAlphaKey('V')} { // cmd paste
+							var clipboard = Platform.case(
+								\osx, { "pbpaste".unixCmdGetStdOut },
+								\linux, { "xclip -o".unixCmdGetStdOut },
+								\windows, { "paste not supported yet on windows".postln; });
+							clipboard.postln;
 							clipboard = clipboard.select{|char| 
 								(char.isAlphaNum)||(char.isPunct)||(char==($\ ))
 							};
