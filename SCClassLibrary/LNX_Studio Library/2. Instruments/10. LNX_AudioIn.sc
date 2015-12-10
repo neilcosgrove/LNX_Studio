@@ -3,8 +3,8 @@
 
 LNX_AudioIn : LNX_InstrumentTemplate {
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Audio In"}
@@ -39,22 +39,22 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			[0, \switch, (\strings_:"S"), midiControl, 0, "Solo",
 				{|me,val,latency,send,toggle|
 					this.solo(val,latency,send,toggle);
-					server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
 				},
 				\action2_ -> {|me|
 					this.soloAlt(me.value);
-					server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 				 }],
 			
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
 				{|me,val,latency,send,toggle|
 					this.onOff(val,latency,send,toggle);
-					server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
 				},
 				\action2_ -> {|me|	
 					this.onOffAlt(me.value);
-					server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 				}],
 					
 			// 2.master amp
@@ -135,7 +135,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 
 	iSyncDelayChanged{ this.setDelay }
 
-	setDelay{ server.sendBundle(nil,[\n_set, node, \delay, this.delayTime]) }
+	setDelay{ if (node.notNil) {server.sendBundle(nil,[\n_set, node, \delay, this.delayTime])} }
 
 	// GUI
 	
@@ -256,7 +256,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 		
 	stopDSP{ synth.free }
 	
-	updateOnSolo{  server.sendBundle(nil,[\n_set, node, \on, this.isOn])  }
+	updateOnSolo{  if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])}  }
 	
 	updateDSP{|oldP,latency|
 		var in  = LNX_AudioDevices.firstInputBus+(p[3]*2);

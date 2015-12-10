@@ -1,8 +1,8 @@
 
 LNX_FreeVerb : LNX_InstrumentTemplate {
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Free Verb"}
@@ -42,7 +42,11 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 			0.5, // 5.damp
 			1,  // 6.out
 			
-			0,0,0, // 7-9. knob controls
+			
+			0, // 7. hi pass
+			20000, // 8. low pass
+			
+			0, // 9. knob controls
 			
 			// 10. in channels
 			[0,[0,LNX_AudioDevices.defaultFXBusChannels/2-1,\linear,1],
@@ -64,11 +68,15 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 			
 		];
 					
-		["IN","mix","room","damp","OUT"].do{|text,i|
-			template[i+2] = [ template[i+2], \unipolar, midiControl, i+2, text,
-				(\label_:text,\numberFunc_:\float2),
+		["IN","mix","room","damp","OUT","hi pass","low pass"].do{|text,i|
+			template[i+2] = [ template[i+2],
+				[\unipolar,\unipolar,\unipolar,\unipolar,\unipolar,\freq,\freq][i]
+				, midiControl, i+2, text,
+				(\label_:text,
+					\numberFunc_:[\float2,\float2,\float2,\float2,\float2,\freq,\freq][i]
+				),
 				{|me,val,latency,send| this.setSynthArgVP(i+2,val,
-							[\inAmp,\mix,\room,\damp,\outAmp][i],val,latency,send)}]
+					[\inAmp,\mix,\room,\damp,\outAmp,\hiFreq,\lowFreq][i],val,latency,send)}]
 		};
 	
 		#models,defaults=template.generateAllModels;
@@ -83,8 +91,8 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 	// return the volume model
 	volumeModel{^models[6] }
 	
-	*thisWidth  {^220+22}
-	*thisHeight {^95+26+22}
+	*thisWidth  {^242}
+	*thisHeight {^200}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
 
@@ -106,7 +114,7 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 										\string	: Color.white));
 										
 		gui[\knobTheme]=( \labelShadow_	: false,
-						\numberWidth_	: (-20), 
+						\numberWidth_	: (-15), 
 						\numberFont_	: Font("Helvetica",10),
 						\colors_		: (	\on		: Color(0.644, 1, 0.983),
 										\label	: Color.black,
@@ -127,14 +135,18 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 		// 11.out
 		gui[\out]=MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(138,7,70,17),gui[\menuTheme]);
 		
-//		// knob com view
-//		gui[\ksv] = MVC_CompositeView(gui[\scrollView], Rect(3,30,thisWidth-28,62),true)
-//			.color_(\background,Color(0.478,0.525,0.613));
-		
 		// knobs
-		5.do{|i| gui[i]=
+		5.do{|i| gui[i+2]=
 			MVC_MyKnob3(models[i+2],gui[\scrollView],Rect(10+(i*40),48,30,30), gui[\knobTheme])
 		};
+
+		// knobs
+		2.do{|i| gui[i+7]=
+			MVC_MyKnob3(models[i+7],gui[\scrollView],Rect(50+(i*80),108,30,30), gui[\knobTheme])
+				.numberWidth_(10)
+		};
+		
+		gui[7].zeroValue_(20000); // hi pass
 		
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],
@@ -163,11 +175,17 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 				mix=1,
 				room=0.5,
 				damp=0.5,
-				outAmp=1
+				outAmp=1,
+				hiFreq=20,
+				lowFreq=20000
 			|
 			var out;
 			out = In.ar(inputChannels, 2)*inAmp;
-			out = FreeVerb2.ar(out[0],out[1],1,mix,room,damp);
+			
+			out = LPF.ar(out,lowFreq.clip(20,20000).lag(0.2));
+			out = HPF.ar(out,hiFreq.clip(20,20000).lag(0.2));
+			
+			out = FreeVerb2.ar(out[0],out[1],mix,room,damp);
 			out = out * outAmp;
 			Out.ar(outputChannels,out);
 		}).send(s);
@@ -188,11 +206,13 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 		var in  = LNX_AudioDevices.firstFXBus+(p[10]*2);
 		
 		server.sendBundle(latency,
-			["/n_set", node, \inAmp ,p[2]],
-			["/n_set", node, \mix   ,p[3]],
-			["/n_set", node, \room  ,p[4]],
-			["/n_set", node, \damp  ,p[5]],
-			["/n_set", node, \outAmp,p[6]],
+			["/n_set", node, \inAmp  ,p[2]],
+			["/n_set", node, \mix    ,p[3]],
+			["/n_set", node, \room   ,p[4]],
+			["/n_set", node, \damp   ,p[5]],
+			["/n_set", node, \outAmp ,p[6]],
+			["/n_set", node, \hiFreq ,p[7]],
+			["/n_set", node, \lowFreq,p[8]],
 			["/n_set", node, \inputChannels,in],
 			["/n_set", node, \outputChannels,out]
 		);

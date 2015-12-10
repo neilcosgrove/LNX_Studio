@@ -325,7 +325,8 @@ MVC_ScrollView {
 	isOpen { ^this.notClosed }
 	
 	bounds { if (view.notClosed) {^view.bounds} {^rect} }
-	visibleOrigin { if (view.notClosed) {^visibleOrigin=view.visibleOrigin} { visibleOrigin=0@0 } }
+	visibleOrigin { if (view.notClosed)
+		{^visibleOrigin=view.visibleOrigin} { ^visibleOrigin=0@0 } }
 	
 	focus { if (this.isOpen) {view.focus} }
 	

@@ -37,8 +37,8 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 					"Number Box", "Number Circle" ];
 	}
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 	
 	// an immutable list of methods available to the network
@@ -189,12 +189,24 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 			[thisWidth,{|me,val,latency,send,toggle|
 				this.setPVPModel(16,val,latency,send);
 				window.setInnerExtentSuppressResizeAction(p[16],p[17]);
+				if (window.isClosed) {
+					gui[\scrollView].bounds_(Rect(11,11,p[16]-22,p[17]-23));
+					gui[\userGUIScrollView].bounds_(Rect(14,50,p[16]-28,p[17]-90));
+
+				};
 			}],
 			
 			// 17. height
 			[thisHeight, {|me,val,latency,send,toggle|
 				this.setPVPModel(17,val,latency,send);
 				window.setInnerExtentSuppressResizeAction(p[16],p[17]);
+				if (window.isClosed) {
+					gui[\scrollView].bounds_(Rect(11,11,p[16]-22,p[17]-23));
+					gui[\userGUIScrollView].bounds_(Rect(14,50,p[16]-28,p[17]-90));
+					presetView.bounds_(Rect(54,p[17]-46,62+93,18));
+					gui[\midi].bounds_(Rect(6,p[17]-47,43,19));
+					gui[\edit].bounds_(Rect(215,p[17]-46,21,18));
+				};
 			}],
 				
 			// 18.font size
@@ -421,7 +433,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 	// for loading from disk
 	iPutLoadList{|l,noPre,loadVersion|
 		var chars, asciiArray, systemListSize, userListSize, userPresetSizes, presetDict;
-		
+
 		chars=l.popI; 							// number of chars in code
 		asciiArray=l.popNI(chars); 					// the code as ascii list
 		codeModel.string_(asciiArray.asciiToString);	// put into the code model
@@ -446,22 +458,18 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		userPresets={ IdentityDictionary[] } ! noPre;
 		
 		if (loadVersion>=1.4) {
-			userPresetSizes = l.popNI(noPre); // pop the sizes
+			userPresetSizes = l.popNI(noPre);         // pop the sizes
 			userPresetSizes.do{|size,i|
 				size.do{
-					var symbol = l.pop.asSymbol; // get the key value pair
+					var symbol = l.pop.asSymbol;    // get the key value pair
 					var value  = l.popF;
 					userPresets[i][symbol] = value; // and put in user preset dict
 				};
 			};
 		};
 		
-	}
-	
-	// anything that needs doing after a load
-	iPostLoad{
-		this.guiEvaluate(false); // evaluate code 1st
-		{
+		// evaluate code
+		this.guiEvaluate(false); 
 		
 		// put in system views
 		loadingSystemViews.pairsDo{|indices,list|
@@ -477,11 +485,10 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 					.boundsAction_(oldView.boundsAction)
 					.mouseDownAction_(oldView.mouseDownAction)
 					.colorAction_(oldView.colorAction)
-					.putLoadList(loadList); // put in the load data
-
-			newView.create;                  // now make it
-			systemViews[indices]=newView;    // store it
-			oldView.remove.removeModel.free; // and get rid of the old one
+					.putLoadList(loadList);                      // put in the load data
+			if (gui[\userGUIScrollView].isOpen) {newView.create}; // now make it
+			systemViews[indices]=newView;                         // store it
+			oldView.remove.removeModel.free;                      // and get rid of the old one
 			
 		};
 		
@@ -501,12 +508,12 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 					.boundsAction_(oldView.boundsAction)
 					.mouseDownAction_(oldView.mouseDownAction)
 					.colorAction_(oldView.colorAction)
-					.putLoadList(loadList); // put in the load data
+					.putLoadList(loadList);                        // put in the load data
 
-			newView.create;                   // now make it
-			userViews[indices]=newView;       // store it
-			newView.valueAction_(modelValue,nil,false,false); // update the value
-			oldView.remove.removeModel.free;  // and get rid of the old one
+			if (gui[\userGUIScrollView].isOpen) { newView.create }; // now make it
+			userViews[indices]=newView;                             // store it
+			newView.valueAction_(modelValue,nil,false,false);       // update the value
+			oldView.remove.removeModel.free;                        // and get rid of the old one
 		};
 		
 		loadingSystemViews.clear;
@@ -516,8 +523,6 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		
 		this.setAsPeakLevel; // part of myHack
 		
-		}.defer(0.05); // this defer looks annoying, need to rethink, maybe .newFrom(list)
-
 	}
 	
 	iFreeAutomation{ userModels.do(_.freeAutomation) }
@@ -550,7 +555,9 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 	
 	// called from the models to update synth arguments
 	updateSynthArg{|synthArg,val,latency|
-		server.sendBundle(latency,["/n_set",node,synthArg,val]);
+		if (node.notNil) {
+			server.sendBundle(latency,["/n_set",node,synthArg,val]);
+		};
 	}
 	
 	// ** user ** //
@@ -597,15 +604,13 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		}.defer;		
 	}
 	
-	
 	// code //////////////////////////////////////////////////////////////////////
-	
-	iPostNew{
+
+	noPutList{
 		this.guiEvaluate(false);
-		{
-			gui[\userGUIScrollView].refresh; // fixes a small bug in this scrollView when opened
-		}.defer(0.02);
-			// window created after 0.01 secs (see deferOpenWindow)
+		// fixes a small bug in this scrollView when opened
+		// window created after 0.01 secs (see deferOpenWindow)
+		{ gui[\userGUIScrollView].refresh }.defer(0.02);
 	}
 	
 	// we can divide the next two methods up better, but wait for TO DO list
@@ -676,61 +681,68 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 	}
 	
 	// start with an empty synthDef
-	*initUGens{|server|
-		SynthDef("LNX_empty", {}).send(server);		
-	} 
+	*initUGens{|server| } 
 	
 	// add if already made
-	initUGens{|server|
-		if (synthDef.notNil) {
-			synthDef.send(server);
-		}
-	}
+	initUGens{|server| }
 	
-	// after a restart
+/*
+0 add the new node to the the head of the group specified by the add target ID.
+1 add the new node to the the tail of the group specified by the add target ID.
+2 add the new node just before the node specified by the add target ID.
+3 add the new node just after the node specified by the add target ID.
+4 the new node replaces the node specified by the add target ID. The target node is freed.
+*/
+	
+	// send synthDef, create new, replace old, correct args
 	startDSP{
-		if (synth.notNil && valid) {
-			synth = Synth.tail(fxGroup,synthDef.name,(this.getSystemMsg)++(this.getUserMsg)  );
-			node  = synth.nodeID;
-			
+		var previousNode = node;  // keep old node
+		node = server.nextNodeID; // and get a new one
+		
+		// send def and then create a Synth object. Message stylie
+		if (previousNode.isNil) {
+			// a new one
+			synthDef.send(server, ([\s_new, synthDef.name, node, 1,  fxGroup.nodeID]++
+											(this.getSystemMsg) ++ (this.getUserMsg))
+			);	
 		}{
-			synth = Synth.tail(fxGroup,"LNX_empty");
-			node  = synth.nodeID;
+			// or replace the old one
+			synthDef.send(server, ([\s_new, synthDef.name, node, 4,  previousNode]++
+											(this.getSystemMsg) ++ (this.getUserMsg))
+			);
 		};
+		
+		// and just make a synth for ordering effects in LNX_Instruments:orderEffects
+		synth = Synth.basicNew(synthDef.name, server, node);
+		
 	}
 	
 	stopDSP{
-		server.sendBundle(nil, [11, node]);	
-		synth.free;
+		if (node.notNil) {server.sendBundle(nil, [11, node]) };
+		node = nil;
+		synth = nil;
 	}
 	
-	// is this called ? will use for scalar / initial rate
+	// load & preset changes
+	updateDSP{
+		// updated by models. Will this always be the case?
+	}
+	
+	// when is this called ? will use for scalar / initial rate
 	replaceDSP{|latency|
-		var previousNode;
-			
-		previousNode = node;
-		node = server.nextNodeID;
+		var previousNode = node;  // keep old node
+		node = server.nextNodeID; // and get a new one
 		
 		// send the new synth to the server
 		server.sendBundle(latency, ([\s_new, synthDef.name, node, 4,  previousNode]
 			++ (this.getSystemMsg) ++ (this.getUserMsg)));
-				
+			
+		synth = Synth.basicNew(synthDef.name, server, node);
+							
 	}
-	
-	// store, set and send def
-	setNewDef{|def|
-		var oldSynth;
-		synthDef = def;
-		oldSynth = synth;
-		node = server.nextNodeID;
-		synth = Synth.basicNew(synthDef.name,server,node);
-		synthDef.send(server,
-			synth.addReplaceMsg(oldSynth,(this.getSystemMsg)++(this.getUserMsg) )
-		);
-	}
-	
+		
 	// dissect the synth def into appropriate parts
-	dissectSynthDef{|synthDef|
+	dissectSynthDef{|def|
 		var controlNames, metaData, names, indices, defaultValues, types;
 		var missingArgs, failed=false;
 		
@@ -741,11 +753,11 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		user          = IdentityDictionary[];
 		userList      = IdentityDictionary[];
 		
-		controlNames  = synthDef.allControlNames;
+		controlNames  = def.allControlNames;
 		names         = controlNames.collect(_.name);
 		indices       = controlNames.collect(_.index);
 		defaultValues = controlNames.collect(_.defaultValue);
-		metaData      = synthDef.metadata[\specs];
+		metaData      = def.metadata[\specs];
 		
 		// test for compulsory arguments before proceeding
 		missingArgs=[];
@@ -759,7 +771,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 			failed=true;
 		};
 		
-		if (failed) {^nil}; // drop out if failed
+		if (failed) {^nil}; // drop if failed
 		
 		valid = true; // <-- be moved here (also for instrument)
 		
@@ -833,11 +845,11 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		};
 		
 		// buildModels could fail so do 1st before setNewDef
-		this.buildModels(synthDef);    // join system to models
-		this.setNewDef(synthDef);      // store and send
+		this.buildModels(def); // join system to models
+		synthDef = def         // and store
 				
 	}
-	
+		
 	// build the models and gui views
 	// METHOD will do 1 of 3 things
 	//	1. delete removed controls
@@ -967,13 +979,13 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 			// ** ADD AN ACTION 
 			model.action_{|me,val,latency,send,toggle|
 				var synthDefControl = me.synthDefControl;
-				
-				// no point setting a scalar
-				
-				if (synthDefControl.rate!=\scalar) {	
-					server.sendBundle(latency,["/n_set",node,synthDefControl.index,val]);
-				}{
-					this.replaceDSP(latency); 	
+				if (node.notNil) {
+					// no point setting a scalar
+					if (synthDefControl.rate!=\scalar) {
+						server.sendBundle(latency,["/n_set",node,synthDefControl.index,val]);
+					}{
+						this.replaceDSP(latency); // use replace instead	
+					};
 				};
 				this.setUserModel(synthDefControl.index,val,latency,send,toggle);
 			};

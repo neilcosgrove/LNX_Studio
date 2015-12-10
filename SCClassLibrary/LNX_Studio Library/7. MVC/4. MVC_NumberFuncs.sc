@@ -73,6 +73,7 @@ MVC_NumberFunc{
 			'float1Sign'	: {|n| (n>0).if("+","")++(n.asFormatedString(1,1)) },
 			'float2Sign'	: {|n| (n>0).if("+","")++(n.asFormatedString(1,2)) },
 			'float3Sign'	: {|n| (n>0).if("+","")++(n.asFormatedString(1,3)) },
+			'intPlus1'  	: {|n| n.asInt+1 },
 			
 			'stretch'		: {|n| if (n==1) {"x inf"}{"x"++
 								((1/(n.map(0,1,2,0))).asFormatedString(1,2)[0..3])}},

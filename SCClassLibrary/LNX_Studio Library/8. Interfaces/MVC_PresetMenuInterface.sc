@@ -61,7 +61,7 @@ MVC_PresetMenuInterface{
 		//guiItems=nil!7;
 	
 		// view
-		gui[\view]=MVC_CompositeView(window, Rect(xy.x,xy.y,94+width-1,18), false)
+		gui[\view]=MVC_CompositeView(window, Rect(xy.x,xy.y,93+width,18), false)
 			.color_(\background,background/2.8);
 			
 		if (resize.notNil) { gui[\view].resize_(resize) };

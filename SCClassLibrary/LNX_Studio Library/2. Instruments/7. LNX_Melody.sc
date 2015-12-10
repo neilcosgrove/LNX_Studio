@@ -6,8 +6,8 @@ LNX_Melody : LNX_InstrumentTemplate {
 	var <musicMod, <storeChordsMod, <sequencer, <chordQuantiserMod, <arpeggiatorMod;
 	var <midiBuffer1, <midiBuffer2, <midiBuffer3, <midiBuffer4, <midiBuffer5, <midiBuffer6;
 	var <lastKeyboardNote, <arpegSequencer, <multiPipeOut;	
-	*new {arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new {arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Melody Maker"}

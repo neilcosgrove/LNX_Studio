@@ -8,8 +8,8 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	*initClass{ Class.initClassTree(LNX_VolcaBeats) }
 	*isVisible{ ^true }
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName      {^"External Instrument"}
@@ -137,22 +137,30 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			[0, \switch, (\strings_:"S"), midiControl, 0, "Solo",
 				{|me,val,latency,send,toggle|
 					this.solo(val,latency,send,toggle);
-					server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {
+						server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
+					};
 				},
 				\action2_ -> {|me|
 					this.soloAlt(me.value);
-					server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {
+						server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+					}
 				 }],
 			
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
 				{|me,val,latency,send,toggle|
 					this.onOff(val,latency,send,toggle);
-					server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {
+						server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
+					};
 				},
 				\action2_ -> {|me|	
 					this.onOffAlt(me.value);
-					server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {
+						server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+					};
 				}],
 					
 			// 2.master amp
@@ -268,7 +276,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	
 	delayTime{^(this.mySyncDelay.clip(0,inf))+(p[10].clip(0,inf))  }
 	iSyncDelayChanged{ this.setDelay }
-	setDelay{ server.sendBundle(nil,[\n_set, node, \delay, this.delayTime]) }
+	setDelay{ if (node.notNil) {server.sendBundle(nil,[\n_set, node, \delay, this.delayTime])} }
 	
 	// clock in //////////////////////////////
 	
@@ -609,16 +617,16 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 		switch (p[11].asInt)
 			{0} {
 				// "Audio In"
-				server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+				if (node.notNil) { server.sendBundle(nil,[\n_set, node, \on, this.isOn]) };
 			}
 			{1} {
 				// "Sequencer"
-				server.sendBundle(nil,[\n_set, node, \on, true]);
+				if (node.notNil) { server.sendBundle(nil,[\n_set, node, \on, true]) };
 				if (this.isOff) {this.stopAllNotes};
 			}
 			{2} {
 				// "Both"
-				server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+				if (node.notNil) { server.sendBundle(nil,[\n_set, node, \on, this.isOn]) };
 				if (this.isOff) {this.stopAllNotes};
 			};		
 	}

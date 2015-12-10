@@ -151,7 +151,7 @@ MVC_NumberBox : MVC_View {
 			};
 		}
 		.mouseUpAction_{|me, x, y, modifiers, buttonNumber, clickCount|
-			if (mouseWorks.not) {
+			if (mouseWorks) {
 				me.stringColor_(colors[\string]);
 				mouseUpAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 			}

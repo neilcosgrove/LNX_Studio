@@ -83,7 +83,7 @@ LNX_Studio {
 		
 	classvar	studios,			<instTypes, 
 			<thisWidth=212, 	<thisHeight,		<defaultHeight=374,
-			<>osx=0,			<visibleTypes,	<instLibraryFileNames, menuGap;
+			<>osx=0,			<visibleTypes,	<instLibraryFileNames;
 			
 	classvar <>verbose=false;
 		
@@ -102,11 +102,12 @@ LNX_Studio {
 		midiWin, 			<midiClock, 		noInternalBusesGUI,
 		<autoMapGroup,	autoMapOn=true,	
 		<midiControl,		<controlTitle="Studio + All Instruments",
-		<latency=0.2,		<syncDelay=0,		<midiSyncLatency= -0.022;
+		<latency=0.2,		<syncDelay=0,		<midiSyncLatency= -0.022,
+		<midiCnrtLastNote;
 		
 	//// gui stuff
 	var	<gui,			<models,
-		<>frontWindow,	<show1=false, 	<showNone=false, <showDev=true,
+		<>frontWindow,	<show1=false, 	<showNone=false,
 		<visibleTypesGUI,	<libraryGUI,		<alwaysOnTop=false,
 		<mixerWindow,		<mixerGUI;
 		
@@ -140,8 +141,7 @@ LNX_Studio {
 	
 	init {|server|
 		
-		menuGap = 0@0;
-		GUI.qt;                   // use the cocoa gui framework
+		GUI.cocoa;                   // use the cocoa gui framework
 		this.initInstance;			 // initialise this instance of the studio
 		this.createInstrumentList;   // create the lists of instruments available
 		this.initLibrary;            // make all the files & folders for the inst library
@@ -156,24 +156,24 @@ LNX_Studio {
 		this.bootServer;			 // and now boot it
 				
 		this.createMixerWindow;      // the main lnx window
-		this.createNetworkWidgets;   // and the network widgets
 		this.createMixerWidgets;     // add the mixer widgets
 		this.createLibraryWidgets;   // add the library widgets
+		this.createNetworkWidgets;   // and the network widgets
 		this.autoSizeGUI;			 // autosize to number of users. (to add widgets & remove)
 		mixerWindow.create;          // now make the window
 		
-		// this.libraryGUIBugFix;       // a bug fix
-		// LNX_SplashScreen.init(this); // start splash screen
+		this.libraryGUIBugFix;       // a bug fix
+		LNX_SplashScreen.init(this); // start splash screen
 		CmdPeriod.add(this);		 // add this object to CmdPeriod
-	
-		//	 this.startClockOff;          // and start off_clock for client side lfos
+		
+		this.startClockOff;          // and start off_clock for client side lfos
 		
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
 	// version & standalone mode //
-
+	
 	*isStandalone{^true} // dev is now standalone
 	
 	*versionAtLeast { |maj, min|
@@ -208,24 +208,21 @@ LNX_Studio {
 		Class.initClassTree(LNX_File);
 		Class.initClassTree(LNX_AudioDevices);
 		Class.initClassTree(LNX_MIDIPatch);
-		// get the latest version number online
-		Platform.getURL(
-			"http://lnxstudio.sourceforge.net/lnx_version.scd",
-			Platform.lnxResourceDir+/+"lnx_version",
-			{|status|
-				internetVersion = (Platform.lnxResourceDir+/+"lnx_version").loadList;
-				
-				if (internetVersion.notNil) {
-					if (internetVersion.size>0) {
-						internetVersion = internetVersion[0].asFloat;
-						if (internetVersion>version.drop(1).asFloat) {
-							studios[0].addTextToDialog( "New LNX_Studio available on sourceforge v"
-								++(internetVersion.asString),true,true);
-						};
-					}
-				};	
-			}
-		);
+		("curl http://lnxstudio.sourceforge.net/lnx_version.scd > \""++
+			String.scDir+/+"lnx_version\"").unixCmd; // get the latest version number online
+		{
+			internetVersion = (String.scDir+/+"lnx_version").loadList;
+			
+			if (internetVersion.notNil) {
+				if (internetVersion.size>0) {
+					internetVersion = internetVersion[0].asFloat;
+					if (internetVersion>version.drop(1).asFloat) {
+						studios[0].addTextToDialog( "New LNX_Studio available on sourceforge v"
+							++(internetVersion.asString),true,true);
+					};
+				}
+			};	
+		}.defer(2);
 		
 		studios = [];
 		
@@ -266,6 +263,7 @@ LNX_Studio {
 		absTime     = 2.5/bpm;
 		extTiming   = [];
 		MVC_StepSequencer.studio_(this);      // not great, why am i doing this? To get absTime
+		HelpBrowser.studio_(this);            // for loading the demo song via HelpBrowser
 		LNX_SampleBank.studio_(this);         // to find out if playing to change download speed
 		LNX_PianoRollSequencer.studio_(this); // for pianoroll guiJumpTo call
 		MVC_Model.studio_(this);              // is playing 
@@ -291,7 +289,7 @@ LNX_Studio {
 			\netSyncCollaboration, \netAddLoadList, \netOnSoloUpdate, \netMove, \hostPlay,
 			\play, \netPause, \hostStop, \netStop, \hostSetBPM, \setBPM,
 			\netAddInstWithLoadList,\netAllInstsSelectProgram, \netSetModel, \hostJumpTo,
-			\netSetAuto
+			\netSetAuto, \netNoteOn, \netNoteOff
 		],#[
 			\post, \postMe, \postList, \postAll, \postStuff, \postTime, \postClock,
 			\postSpecies
@@ -330,7 +328,7 @@ LNX_Studio {
 	}
 	
 	// boot the server and run postBootFuncs when done
-
+	
 	bootServer{ LNX_AudioDevices.bootServer(server) }
 	
 	// send all the instrument UGens to the server, and other misc stuff
@@ -643,6 +641,37 @@ LNX_Studio {
 	
 	guiAllInstsAddPreset{ insts.do(_.guiAddPreset) }
 	
+	// add a preset to all insts and then add it to the next free POP
+	
+	guiAllToPop{
+		// find next free pop index
+		var popFreeAt = insts.collect(_.presetsOfPresets).collect(_.presetsOfPresets)
+			.asList.flop.collect{|i| i.collect{|i| i==2}.includes(false).not }.indexOf(true);
+		
+		if (popFreeAt.isNil) { LNX_POP.more }; // add more pops
+		
+		// find next free pop index
+		popFreeAt = insts.collect(_.presetsOfPresets).collect(_.presetsOfPresets)
+			.asList.flop.collect{|i| i.collect{|i| i==2}.includes(false).not }.indexOf(true);
+
+		if (popFreeAt.isNil) { ^this };		// if still no free space then drop
+		insts.do(_.guiAddPreset);			// add presets to all
+			
+		insts.do{|inst| 					// now add them to pop
+			if (inst.canTurnOnOff) { 		// is it an instrument i can turn on & off?
+				if (inst.isOn) {
+					// add the preset we just made + 2
+					inst.presetsOfPresets.guiSetPOP(popFreeAt, inst.presetMemory.size + 2)
+				}{
+					inst.presetsOfPresets.guiSetPOP(popFreeAt, 0); // else mute it
+				};
+			}{
+				// add the preset we just made + 2
+				inst.presetsOfPresets.guiSetPOP(popFreeAt, inst.presetMemory.size)
+			};
+		};
+	}
+	
 	guiAllInstsSelectProgram{|prog,latency|
 		insts.do{|i| i.midiSelectProgram(prog,latency) };
 		api.sendOD('netAllInstsSelectProgram',prog);
@@ -661,6 +690,8 @@ LNX_Studio {
 		midi=LNX_MIDIPatch(0,-1,0,0);
 		midi.putLoadList(ckPref);
 		
+		midiCnrtLastNote = IdentityDictionary[]; // last note played, holds inst
+		
 		// attach functions to the midiIn controller
 		
 		midi.controlFunc = {|src, chan, num,  val , latency| this.autoMap(num,val,latency) };
@@ -672,13 +703,13 @@ LNX_Studio {
 		midi.noteOnFunc  = {|src, chan, note, vel ,latency|
 			if ((autoMapOn)and:{insts.selectedInst.notNil}
 			   and: {(midi.uidIn)!=(insts.selectedInst.midi.uidIn)}) {
-					insts.selectedInst.noteOn(note, vel, latency);
+				   	this.noteOn(note, vel, latency);
 			};
 		};
 		midi.noteOffFunc = {|src, chan, note, vel ,latency|
 			if ((autoMapOn)and:{insts.selectedInst.notNil}
 			    and:{((midi.uidIn)!=(insts.selectedInst.midi.uidIn))}) {
-					insts.selectedInst.noteOff(note, vel, latency);
+					this.noteOff(note, vel, latency);
 			};
 		};
 		midi.touchFunc = {|src, chan, pressure  ,latency|
@@ -701,6 +732,43 @@ LNX_Studio {
 		};
 	}
 	
+	// noteOn from controller keyboard
+	noteOn{|note, vel, latency|
+		this.doNoteOn(insts.selectedInst, note.asInt, vel, latency); // do note on event
+		if (models[\networkCntKeyboard].isTrue) {
+			api.sendOD(\netNoteOn,insts.selectedInst.id, note, vel); // and send over network
+		};
+	}
+	
+	// net version of above
+	netNoteOn{|id, note, vel| this.doNoteOn(insts[id.asInt], note.asInt, vel.asFloat) }
+	
+	// do controller keyboard note On
+	doNoteOn{|inst, note, vel, latency|	
+		if(midiCnrtLastNote[note].notNil) {
+			this.doNoteOff(midiCnrtLastNote[note], note, vel, latency); // finish last note
+		};
+		inst.noteOn(note, vel, latency); // do note on
+		midiCnrtLastNote[note] = inst;   // and store for note off
+	}
+		
+	// noteOff from controller keyboard
+	noteOff{|note, vel, latency|
+		this.doNoteOff(insts.selectedInst, note.asInt, vel, latency); // do note off event
+		if (models[\networkCntKeyboard].isTrue) {
+			api.sendOD(\netNoteOff,insts.selectedInst.id, note, vel); // and send over network
+		};
+	}
+	
+	// net version of above
+	netNoteOff{|id, note, vel|  this.doNoteOff(insts[id.asInt], note.asInt, vel.asFloat) }
+	
+	// do controller keyboard note On
+	doNoteOff{|inst, note, vel, latency|	
+		(midiCnrtLastNote[note] ? inst).noteOff(note, vel, latency); // use midiCnrtLastNote 1st
+		midiCnrtLastNote[note] = nil; // and remove from midiCnrtLastNote IdentityDictionary
+	}
+		
 	// auto map MIDI in ( to review )
 	
 	autoMap{|num,val|
@@ -737,10 +805,10 @@ LNX_Studio {
 	
 	hostAddInst{|list|
 		var id, userID, class, userIsListening, loadList, name, autoAdd, autoBeat, bus;
-
+		
 		#userID, class, userIsListening, name, autoAdd, autoBeat...loadList = list;
 			
-		// // i need to change so it doesn't matter if audio server is running
+		// i need to change so it doesn't matter if audio server is running
 		if ((isLoading.not)and:{server.serverRunning}) {
 			
 			id=LNX_ID.nextID; // get the id for me and everyone else
@@ -756,20 +824,24 @@ LNX_Studio {
 			// what i should do as host
 			if (userID==network.thisUser.id) {
 				// for me as host or just me
-				this.thisAddInst(class,id,1,true, autoAdd, autoBeat);
+				
+				this.thisAddInst(class,id,1,true, autoAdd, autoBeat,loadList);
+				
 				if (network.isConnected) {  // this test is needed for simpleSeq
 					if (network.isListening.not) { onSoloGroup.userInstOn_('lnx_song',id,0) };
 					// turn off in song cause the others won't here it
 				};
 			}{
 				// from someone else to the host
-				this.netAddInst(class,id,userID,userIsListening,0, autoAdd, autoBeat);
-			};
+				this.netAddInst(class,id,userID,userIsListening,0, autoAdd, autoBeat,loadList);
+			};	
+			
+			
 			
 			// put the load list if there is one (this only happens with duplicate i believe)
 			{
 				if (loadList.size>0) {
-					insts[id].putLoadList(loadList);
+					// insts[id].putLoadList(loadList);
 					insts[id].postSongLoad; // i might change this to help melodyMaker
 				};
 						
@@ -781,14 +853,16 @@ LNX_Studio {
 				
 			}.defer(0.05);
 			
+			
+			
 		};
 	}
 	
 	// this is also called from duplicate
 	
-	thisAddInst{|class,id,onOff,new, autoAdd, autoBeat|
+	thisAddInst{|class,id,onOff,new, autoAdd, autoBeat,loadList|
 		this.addInst(class, open:new.isTrue, id:id, onOff:onOff,
-						autoAdd:autoAdd, autoBeat:autoBeat); // add the instrument
+					autoAdd:autoAdd, autoBeat:autoBeat, loadList:loadList); // add the instrument
 		if (show1) { insts.do({|inst| if (inst.id!=id) {inst.closeWindow} } )};
 		this.selectInst(id);
 	}
@@ -805,7 +879,10 @@ LNX_Studio {
 		var class,id,userID,userIsListening,new,loadList,bus, autoAdd, autoBeat;
 		#class,id,userID,userIsListening,new,bus, autoAdd, autoBeat...loadList = list;
 
-		this.netAddInst(class,id,userID,userIsListening,new, autoAdd, autoBeat);
+
+
+
+		this.netAddInst(class,id,userID,userIsListening,new, autoAdd, autoBeat,loadList);
 		
 		{
 			if (loadList.size>0) {
@@ -819,11 +896,13 @@ LNX_Studio {
 			if (userID==network.thisUser.id) { this.selectInst(id) };
 			
 		}.defer(0.05);
+		
+		
 	}
 	
 	// net version of thisAddInst (this always comes from the host)
 	
-	netAddInst{|class,id,userID,userIsListening,new, autoAdd, autoBeat|
+	netAddInst{|class,id,userID,userIsListening,new, autoAdd, autoBeat,loadList|
 		var previousFrontWindow, previousInst, onOff;
 		
 		if ((isLoading.not)and:{server.serverRunning}) {
@@ -835,7 +914,7 @@ LNX_Studio {
 				if ((userIsListening==0)or:{network.isListening.not}) { onOff=0 }
 			};
 			this.addInst(class, open:new.isTrue, id:id, onOff:onOff,
-							autoAdd:autoAdd, autoBeat:autoBeat); // add the instrument
+							autoAdd:autoAdd, autoBeat:autoBeat,loadList:loadList); // add the instrument
 			// update the onSolo for userID isListening
 			if (userID==network.thisUser.id) {
 				if (network.isListening.not) {onSoloGroup.userInstOn_('lnx_song',id,0) }
@@ -863,21 +942,32 @@ LNX_Studio {
 	
 	// add an instrument
 		
-	addInst{|type,bounds,open=true,id,onOff=1, autoAdd=false, autoBeat|
+	addInst{|type,bounds,open=true,id,onOff=1, autoAdd=false, autoBeat, loadList|
 		var i,inst;
+		
+		
 		if (type.isNumber) { type=visibleTypes[type] };  // convert index to class
 		if (type.species==Symbol) { type=type.asClass };
 		i=insts.size;
 		if (i<1) {this.updateOSX};                       // update the studio window offset
 												  //work out bounds
 		bounds=bounds ? Rect((i*25)+thisWidth+osx+3,i*23+50,type.thisWidth,type.thisHeight);
-		inst=type.new(server, this, i, bounds, open,id); // make the instrument
 		
-		insts.addInst(inst,id); 	                     // add to instruments
-		this.createMixerInstWidgets(inst);			  // make the mixer widgets
+		
+		
+		// this is the only place a new inst is created
+		
+		inst=type.new(server, this, i, bounds, open,id, loadList); // make the instrument
+		
+		
+		
+		// insts.addInst(inst,id); 	                     // add to instruments
+		
+		// this.createMixerInstWidgets(inst);			  // make the mixer widgets
 		
 		this.refreshOnOffEnabled;					  // update solo gui enabled/not enabled
-		//inst.studioLatency_(this.actualLatency);         // update latency
+		
+		//inst.studioLatency_(this.actualLatency);         // update latency (old don't use)
 		
 		// do onSolo stuff
 		if (onOff==0) {
@@ -1195,7 +1285,7 @@ LNX_Studio {
 	///////////////  info  /////////////////////////
 		
 	openHelp{
-		if ( (frontWindow.isKindOf(Window))
+		if ( (frontWindow.isKindOf(SCWindow))
 			or: {frontWindow.isNil}
 			or: {frontWindow.helpAction.value}) {
 				"LNX_Studio Help".help
@@ -1291,7 +1381,7 @@ LNX_Studio {
 		if (tasks[\saveInterval].isPlaying) {
 			tasks[\saveInterval].stop;
 		}{
-			Dialog.savePanel({|path| 
+			CocoaDialog.savePanel({|path| 
 				tasks[\saveInterval]=Task({|a,b,c|
 					loop {
 						if (this.isPlaying) {
@@ -1315,7 +1405,7 @@ LNX_Studio {
 		if (this.isStandalone && LNX_Mode.isSafe) {
 			this.safeModeSaveDialog
 		}{
-			Dialog.savePanel({|path| this.save(path)})
+			CocoaDialog.savePanel({|path| this.save(path)})
 		}
 	}
 
@@ -1405,38 +1495,35 @@ LNX_Studio {
 				};
 				g.close;
 			};
-		
-}	}
+		}
+	}
 	
 	// load user dialog
 	
 	loadDialog{
 		if (this.canLoadSong) {
-			Dialog.openPanel({ arg paths;
+			CocoaDialog.getPaths({ arg paths;
 				var i=(-1);
 				if (paths.size>1) {
 					if (gui[\songsMenu].notNil) {
 						gui[\songsMenu].remove;
 						gui[\songsMenu]=nil
 					};
-
-					Platform.case(\osx, {
-						gui[\songsMenu]=SCMenuGroup.new(nil, "Songs",9);
-						SCMenuItem.new(gui[\songsMenu],  "Previous song").setShortCut("1")
-							.action_{i=i-1; this.loadPath(paths.wrapAt(i))};
-						SCMenuItem.new(gui[\songsMenu],  "Next song").setShortCut("2")
-							.action_{i=i+1; this.loadPath(paths.wrapAt(i))};
-						SCMenuSeparator(gui[\songsMenu]); // add a separator
-						
-						paths.do{|path,j|
-							SCMenuItem.new(gui[\songsMenu],  path.basename)
-								.action_{ i=j; this.loadPath(path) };
-						};
-					});	
+					gui[\songsMenu]=SCMenuGroup.new(nil, "Songs",9);
+					SCMenuItem.new(gui[\songsMenu],  "Previous song").setShortCut("1")
+						.action_{i=i-1; this.loadPath(paths.wrapAt(i))};
+					SCMenuItem.new(gui[\songsMenu],  "Next song").setShortCut("2")
+						.action_{i=i+1; this.loadPath(paths.wrapAt(i))};
+					SCMenuSeparator(gui[\songsMenu]); // add a separator
+					
+					paths.do{|path,j|
+						SCMenuItem.new(gui[\songsMenu],  path.basename)
+							.action_{ i=j; this.loadPath(path) };
+					};		
 				}{
 					this.loadPath(paths@0);
 				}	
-			}, multipleSelection: true);
+			});
 		}
 	}
 	
@@ -1445,7 +1532,7 @@ LNX_Studio {
 	loadDemoSong{
 		if (this.canLoadSong) {
 			"loading demo".postln;
-			this.loadPath(Platform.lnxResourceDir+/+"demo song",false);
+			this.loadPath(String.scDir+/+"demo song",false);
 		};
 	}
 	
@@ -1568,11 +1655,12 @@ LNX_Studio {
 	// put the list into the studio as the new song. must read back in same order as getSaveList
 	
 	putLoadList{|l,ids|
-		var noInst, instType, header, newAudioDevices, loadVersion, subVersion, midiLoadVersion;
+		var noInst, instType, header, loadVersion, subVersion, midiLoadVersion;
 		if (insts.size<1) {this.updateOSX}; // update the studio window offset
 		l=l.reverse;
 		header=l.popS;	
 		loadVersion=header.version;
+		
 		if (this.versionAtLeast(loadVersion.asInt,loadVersion.frac.asString.drop(2).asInt)) {
 						
 			if (((header.documentType)=="SC Studio Doc")&&(isLoading.not)) {
@@ -1602,7 +1690,7 @@ LNX_Studio {
 						this.dialog1("Finished loading.",Color.white);
 						{
 							this.dialog1("Studio"+version);
-							this.dialog2("January 2013 - l n x");
+							this.dialog2("January 2015 - l n x");
 							isLoading=false;
 																			// maybe move this here?
 							// insts.do(_.postSongLoad); // after all insts added. 
@@ -1612,15 +1700,10 @@ LNX_Studio {
 						}.defer(1);
 								
 					};
-					// this is not used anymore
-					if (loadVersion>1.1) {
-						newAudioDevices=[l.popS,l.popS];
-					}{
-						newAudioDevices=l.popS.dup;	
-					};
-					if (newAudioDevices[0]=="nil") {newAudioDevices[0]=nil};
-					if (newAudioDevices[1]=="nil") {newAudioDevices[1]=nil};
+					
 					// this is where i used to change audio device if needed
+					if (loadVersion>1.1) { l.popS; l.popS }{ l.popS };
+				
 					if (loadVersion>1.0) {
 						extClock=(l.popS=="true").if(true,false);
 						models[\extClock].value_(extClock.binaryValue);
@@ -1656,6 +1739,8 @@ LNX_Studio {
 						this.recursiveLoad(0,l,noInst,loadVersion,ids);
 						
 						insts.do(_.postSongLoad); // after all insts added. 
+						
+						insts.orderEffects; // fix: some effects start in the wrong order
 						
 						if (header.subVersion>=2) {
 							LNX_POP.putLoadList(l.popEND("***EOD of POP Doc***"));
@@ -1695,34 +1780,32 @@ LNX_Studio {
 		};
 		
 		if (loadVersion==1.0) {
-			this.addInst(instType,Rect(l.popI+osx,l.popI+osx,100,100),false,id:id);
+			this.addInst(instType,Rect(l.popI+osx,l.popI+osx,100,100),
+				false,id:id,loadList:(l.popEND("*** END INSTRUMENT DOC ***"))
+			);
 		}{
-			this.addInst(instType,Rect.fromArray(l.popNI(4)).moveBy(osx,0),false,id:id);
+			this.addInst(instType,Rect.fromArray(l.popNI(4)).moveBy(osx,0),
+				false,id:id,loadList:(l.popEND("*** END INSTRUMENT DOC ***"))
+			);
 			// changed;
 		};
 			
+	
+			
 		if (i<(noInst - 1)) {
-			this.dialog1("Done: inst"+i,Color.white);
-			insts.visualOrder[i].loadedAction_{
 			this.recursiveLoad(i+1,l,noInst,loadVersion,ids);
-			};
 		}{
-			insts.visualOrder[i].loadedAction_{
-				//isLoading=false;
-				this.dialog1("Done: inst"+i,Color.white);
-				loadedAction.value(this);
-				loadedAction=nil;
-			};
+			loadedAction.value(this);
+			loadedAction=nil;
 		};
 		
-		insts.visualOrder[i].putLoadList(l.popEND("*** END INSTRUMENT DOC ***"));
 	}
 	
 	//// add studio user dialog ////
 
 	addDialog{
 		if ((server.serverRunning) and: {isLoading.not} and: {network.isConnecting.not}) {
-			Dialog.openPanel({ arg path;
+			CocoaDialog.getPaths({ arg path;
 				var g,l,i;
 				path=path@0;	
 				g = File(path,"r");
@@ -1936,49 +2019,6 @@ LNX_Studio {
 	soloDelete{|id,v|
 		insts[id].solo_(v);
 		this.refreshOnOffEnabled;
-	}
-
-	quit {
-		var gui = (),
-		colors = (
-			background: 		Color(59/77,59/77,59/77),
-			border2: 			Color(6/11,42/83,29/65),
-			border1: 			Color(3/77,1/103,0,65/77),
-			menuBackground:	Color(1,1,0.9)
-		) ++ (colors?());
-		
-		gui[\window] = MVC_ModalWindow(mixerWindow.view, (250-60)@(150-18), colors);
-		gui[\scrollView] = gui[\window].scrollView;
-		
-		MVC_StaticText( gui[\scrollView], Rect(10,23-18,190,18))
-			.shadow_(false)
-			.color_(\string,Color.black)
-			.font_(Font("Helvetica-Bold", 13))
-			.string_("Quit LNX_Studio?");
-		
-		MVC_StaticText( gui[\scrollView], Rect(10,30,190,18*2))
-			.shadow_(false)
-			.color_(\string,Color.black)
-			.font_(Font("Helvetica", 11))
-			.string_("Any unsaved information\n will be lost");
-		
-		// Ok
-		MVC_OnOffView(gui[\scrollView],Rect(105-52, 78, 50, 20),"Ok")
-			.rounded_(true)  
-			.color_(\on,Color(1,1,1,0.5))
-			.color_(\off,Color(1,1,1,0.5))
-			.action_{
-				gui[\window].close;
-				CmdPeriod.run;
-				{ 0.exit }.defer(0.2);
-		};
-		
-		// Cancel
-		MVC_OnOffView(gui[\scrollView],Rect(105, 78, 50, 20),"Cancel")
-			.rounded_(true)  
-			.color_(\on,Color(1,1,1,0.5))
-			.color_(\off,Color(1,1,1,0.5))
-			.action_{	 gui[\window].close };
 	}
 			
 }

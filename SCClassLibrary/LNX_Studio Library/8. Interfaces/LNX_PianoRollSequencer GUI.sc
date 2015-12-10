@@ -69,9 +69,10 @@
 		if (gui.notNil) { gui[\notesPosAndMouse].refresh };
 	}
 	
-	createDetachableWindow{
+	// gui call to enter fullscreen mode
+	guiFullScreen{
 		
-		var bounds,colors;
+		var bounds, colors, vo, sx, sy, lw, lh;
 		
 		colors = gui[\colors];
 		bounds = Rect(5,10,gui[\bounds].width,gui[\bounds].height);
@@ -82,22 +83,57 @@
 			bounds.width+10,bounds.height+20).color_(\background,
 			Color(59/77,59/77,59/77))
 			.userCanClose_(true)
-			.onClose_{
-				gui=gui2.copy;
-				gui2=nil;
-				this.refresh;
+			.onClose_{				
+				this.exitFullScreenResize;
+				//this.refresh;
 			}
-			.create.fullScreen;
+			.create.fullScreen;	
 			
 		this.createWidgets(gui[\window2],bounds,colors, menuOld:true);
 		this.refresh;
-		{
-		models[\gridW].multipyValueAction_(1/1.4);
-		}.defer(0.1);
+
+		// set grid size & orgin so it matches
+		{		
+			sx = (gui[\window2].bounds.width)/(gui2[\window].bounds.width);  // scaleX by
+			sy = (gui[\window2].bounds.height)/(gui2[\window].bounds.height); // scaleY by
+			vo = gui2[\scrollView].visibleOrigin;      // get the visible Origin
+			lw = models[\gridW].value;                 // store last width
+			lh = models[\gridH].value;                 // store last height
+			models[\gridW].multipyValueAction_(sx);    // now scale the grid width
+			models[\gridH].multipyValueAction_(sy);    // and scale the grid height
+			sx = models[\gridW].value / lw;            // new scaleX incase grid width constrained
+			sy = models[\gridH].value / lh;            // new scaleX incase grid width constrained
+			gui[\scrollView].visibleOrigin_( (vo.x * sx) @ (vo.y * sy) ); // now set new origin
+		}.defer(0.1); // defer because gui[\window2].fullScreen doesn't update bounds immediately 
 
 	}
+		
+	// on exit fullscreen resize back into orginal scrollview 
+	exitFullScreenResize{	
+		var vo, sx, sy, lw, lh, guiSwap;
 
+		guiSwap = gui;
+		gui = gui2;
+		gui2 = guiSwap;
+		
+		sx = (gui[\window].bounds.width)/(gui2[\window2].bounds.width);  // scaleX by
+		sy = (gui[\window].bounds.height)/(gui2[\window2].bounds.height); // scaleY by
+		vo = gui2[\scrollView].visibleOrigin;      // get the visible Origin
+		lw = models[\gridW].value;                 // store last width
+		lh = models[\gridH].value;                 // store last height
+		models[\gridW].multipyValueAction_(sx);    // now scale the grid width
+		models[\gridH].multipyValueAction_(sy);    // and scale the grid height
+		sx = models[\gridW].value / lw;            // new scaleX incase grid width constrained
+		sy = models[\gridH].value / lh;            // new scaleX incase grid width constrained
+		gui[\scrollView].visibleOrigin_( (vo.x * sx) @ (vo.y * sy) ); // now set new origin
+		
+		gui2 = nil;
+		
+	}
 	
+	// gui call to exit full screen. uses onClose to call exitFullScreenResize method
+	guiExitFullScreen{ gui[\window2].close }
+
 	// the gui widgets
 	createWidgets{|window, bounds, argColors, velocityOffset=0, menuOld=false|
 		
@@ -185,7 +221,7 @@
 			if (menuOld) {
 					
 				gui[\speed]=MVC_PopUpMenu(models[\speed], window,
-					Rect(bounds.right-160+5+6+1-45-5-4, bounds.top-6+1, 39, 15))
+					Rect(bounds.right-202, bounds.top-5, 39, 15))
 					.font_(Font("Helvetica", 10))
 					.color_(\background,colors[\boxes])
 					.color_(\string,Color.white)
@@ -209,9 +245,9 @@
 							{ 10} {this.fitToWindow }
 							{ 11} {
 								if (gui2.isNil) {
-									this.createDetachableWindow;
+									this.guiFullScreen;
 								}{
-									gui[\window2].close;
+									this.guiExitFullScreen;
 								};
 							};
 						me.value_(0);
@@ -220,7 +256,7 @@
 				
 				
 				gui[\speed]=MVC_PopUpMenu3(models[\speed], window,
-					Rect(bounds.right-160+5+6+1-45-5-4, bounds.top-6+1, 39, 15))
+					Rect(bounds.right-202, bounds.top-5, 39, 15))
 					.font_(Font("Helvetica", 10))
 					.color_(\background,colors[\boxes])
 					.color_(\string,Color.white)
@@ -247,9 +283,9 @@
 							{ 8} {this.fitToWindow }
 							{ 9} {
 								if (gui2.isNil) {
-									this.createDetachableWindow;
+									this.guiFullScreen;
 								}{
-									gui[\window2].close;
+									this.guiExitFullScreen;
 								};
 							};
 					};
@@ -735,21 +771,45 @@
 		(View.currentDrag.isArray)and:{View.currentDrag[0].isString}
 	}
 	
+	/*
+	f = SimpleMIDIFile.read("/Users/neilcosgrove/Desktop/xmas/wonderful_christmas_time.mid");
+	f.tempoMap
+	f = SimpleMIDIFile.read("/Users/neilcosgrove/Desktop/xmas/chords.mid");
+	f.usedTracks.collect{|t| t.asString ++"."+  f.trackName(t).stripRTF };
+	
+	*/
+
 	.receiveDragHandler_{
 		var file;
 		if ((View.currentDrag.isArray)and:{View.currentDrag[0].isString}) {
 			{file = SimpleMIDIFile.read( View.currentDrag[0] ) }.try;
 			if (file.notNil) {
-				var tempoAdjust=12;
-				if (file.tempoMap[0].notNil) { tempoAdjust= file.tempoMap[0][1]/2 };
-				file.asNoteDicts.collect{|note|
-					[note[\note],
-					note[\absTime]/tempoAdjust,
-					note[\dur]/tempoAdjust,
-					note[\velo]/127]
-				}.do{|note|
-					this.addNote(*note);
-				}
+				
+				// make a window
+				var win=MVC_Window("Import track")
+					.setInnerExtent(200,320)
+					.color_(\background, Color.grey(0.2))
+					.alwaysOnTop_(true)
+					.create;
+				// and show which tracks we can import
+				MVC_ListView2(win,Rect(10,10,180,300))
+					.items_(file.usedTracks.collect{|t|
+						t.asString ++"."+  (file.trackName(t)?"").stripRTF })
+					.actions_(\upDoubleClickAction,{|me|
+						var tempoAdjust=24;
+										
+						//if (file.tempoMap[0].notNil) { tempoAdjust= file.tempoMap[0][1]/2 };
+						
+						file.asNoteDicts(track:(file.usedTracks[me.value])).collect{|note|
+							[note[\note],
+							note[\absTime]/tempoAdjust,
+							note[\dur]/tempoAdjust,
+							note[\velo]/127]
+						}.do{|note|
+							this.addNote(*note);
+						};			
+						win.close;
+					})
 			};	
 		}
 	};

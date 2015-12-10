@@ -51,7 +51,7 @@
 		
 		
 		gui[\scrollView] = MVC_RoundedComView(window,
-									Rect(11,11,thisWidth-22,thisHeight-22-1))
+									Rect(11,11,thisWidth-22,thisHeight-23))
 			.color_(\background,Color(59/77,59/77,59/77))
 			.color_(\border, Color(6/11,42/83,29/65))
 			.resize_(5);
@@ -196,7 +196,7 @@
 		// code tab //////////////////
 		
 		// edit
-		gui[\edit]=MVC_FlatButton(gui[\scrollView],Rect(215, thisHeight-46, 19+2, 18),"+")
+		gui[\edit]=MVC_FlatButton(gui[\scrollView],Rect(215, thisHeight-46, 21, 18),"+")
 			.mode_(\icon)
 			.rounded_(true)
 			.resize_(7)
