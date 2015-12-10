@@ -1050,13 +1050,6 @@ gives min, max, averages and total
 	isDown { ^(this == 0x01000015 or: {this == 65364}) }
 	isSpace { ^this == 0x20 }
 	isArrow { ^(this.isLeft or: { this.isUp or: { this.isRight or: { this.isDown } } } ) }
-	isXCmd {
-		if (this.isCmd) { ^true };
-		Platform.case(\osx, {}, {
-			^this.isCtrl;
-		});
-		^false;
-	}
 	
 }
 
