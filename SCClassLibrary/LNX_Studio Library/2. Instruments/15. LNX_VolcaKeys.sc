@@ -8,8 +8,8 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 	*initClass{ Class.initClassTree(LNX_VolcaBeats) }
 	*isVisible{ ^LNX_VolcaBeats.isVisible }
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName      {^"Volca Keys"}
@@ -342,7 +342,7 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 	
 	delayTime{^(this.mySyncDelay.clip(0,inf))+(p[10].clip(0,inf))  }
 	iSyncDelayChanged{ this.setDelay }
-	setDelay{ server.sendBundle(nil,[\n_set, node, \delay, this.delayTime]) }
+	setDelay{ if (node.notNil) {server.sendBundle(nil,[\n_set, node, \delay, this.delayTime])} }
 	
 	
 	// clock in //////////////////////////////
@@ -731,16 +731,16 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 		switch (p[27].asInt)
 			{0} {
 				// "Audio In"
-				server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+				if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 			}
 			{1} {
 				// "Sequencer"
-				server.sendBundle(nil,[\n_set, node, \on, true]);
+				if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, true])};
 				if (this.isOff) {this.stopAllNotes};
 			}
 			{2} {
 				// "Both"
-				server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+				if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 				if (this.isOff) {this.stopAllNotes};
 			};		
 	}

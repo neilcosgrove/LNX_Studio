@@ -45,7 +45,7 @@ LNX_Note{
 	end_{|value| dur = value - start }
 	
 	// the end of the note including adjustments
-	dur{ if (durAdj.notNil) {^durAdj} {^dur} }
+	dur{ ^durAdj ? dur }
 	
 	// set the adjusted end point (usally because we have moved notes over this one)
 	endAdj_{|value| durAdj= value - start }
@@ -191,6 +191,7 @@ LNX_Score{
 			note.id_(id);
 			notesDict[id] = note;
 		};
+		^id
 	}	
 	
 	// the view args for the piano roll are stored here
@@ -464,13 +465,13 @@ LNX_PianoRollSequencer{
 		scores=[];
 
 		// the duration of the score
-		models[\dur] = [initialSize,[1,1024*2,\lin,1]].asModel.action_{|me,value|
+		models[\dur] = [initialSize,[1,8192,\lin,1]].asModel.action_{|me,value|
 			this.dur_(value);		
 			api.sendVP(\dur,\netDur_,value);
 		};
 		
 		// model for the width of 1 beat in pixels (used as horizontal a zoom)
-		models[\gridW] = [gridW,[0,40,\lin,0]].asModel.action_{|me,value|
+		models[\gridW] = [gridW,[0,80,\lin,0]].asModel.action_{|me,value|
 			var lastMidX, vo;
 			// find center y-pos before we zoom
 			if (gui[\scrollView].notNil) {
@@ -490,7 +491,7 @@ LNX_PianoRollSequencer{
 		};
 		
 		// model for the height of 1 note in pixels (used as vertical a zoom)
-		models[\gridH] = [gridH,[2,30,\lin,1]].asModel.action_{|me,value|
+		models[\gridH] = [gridH,[2,60,\lin,1]].asModel.action_{|me,value|
 			var lastMidY, vo;
 			// find center y-pos before we zoom
 			if (gui[\scrollView].notNil) {
@@ -553,9 +554,11 @@ LNX_PianoRollSequencer{
 	
 	// above for instance
 	resetAllNoteIDs{
-		score.resetAllNoteIDs;
-		scores.do(_.resetAllNoteIDs);
-		this.calcNoteRects;
+		var maxID = [];
+		maxID = maxID.add(score.resetAllNoteIDs);           // reset and get last id
+		maxID = maxID ++ scores.collect(_.resetAllNoteIDs); // reset and get last id
+		noteIDObject.id_(maxID.sort.last); // find largest id and set next id to be that
+		this.calcNoteRects;                // we need to recalc note rect because ids have changed
 	}
 	
 	// zoom out so seq fits to window

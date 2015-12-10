@@ -90,6 +90,13 @@ Colour : Color {}
 		};
 		^assoc.sort(func)
 	}
+	
+	removeAll{|item|
+		this.keysDo{|key|		
+			if (this.at(key)==item) { this.put(key,nil) };
+		};
+		
+	}
 }
 
 // safety

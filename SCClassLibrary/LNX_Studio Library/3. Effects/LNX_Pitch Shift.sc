@@ -3,8 +3,8 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 
 	var lastSize;
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Pitch Shift"}
@@ -203,7 +203,7 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 	}
 		
 	stopDSP{
-		server.sendBundle(nil, [11, node]);
+		if (node.notNil) {server.sendBundle(nil, [11, node]) };
 		synth.free;
 		lastSize=nil;
 	}

@@ -15,8 +15,8 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 	
 	var	<midiSet;
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 	
 	*studioName {^"Step Sequencer"}
@@ -696,7 +696,7 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 				// but breaks model symmetry when not in group listening mode
 				
 				
-				if ((p[2].isTrue)or: {((instOnSolo.isOn) and: {sP[y][0].isTrue})}) {
+				if (((p[2].isTrue)or: {instOnSolo.isOn}) and: {sP[y][0].isTrue}) {
 						
 					if (sP[y][7].isTrue) {
 						// control

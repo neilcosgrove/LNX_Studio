@@ -81,6 +81,10 @@ LNX_AppMenus {
 		SCMenuItem.new(tools,  "Add preset to all instruments")
 			.setShortCut("p")
 			.action_{studio.guiAllInstsAddPreset};
+			
+		SCMenuItem.new(tools,  "Add all to POP")
+			.setShortCut("p")
+			.action_{studio.guiAllToPop};
 		
 		SCMenuSeparator.new(tools);
 		

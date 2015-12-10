@@ -22,8 +22,8 @@ LNX_BumNote : LNX_InstrumentTemplate {
 	
 	var	<spModels, <spMVCViews,  <posModels;
 		
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Bum Note"}

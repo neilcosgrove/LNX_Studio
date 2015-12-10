@@ -4,8 +4,8 @@
 
 LNX_ExternalFX : LNX_InstrumentTemplate {
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"External FX"}
@@ -267,7 +267,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 	}
 		
 	stopDSP{
-		server.sendBundle(nil, [11, node]);
+		if (node.notNil) {server.sendBundle(nil, [11, node])};
 		synth.free;	
 	}
 	

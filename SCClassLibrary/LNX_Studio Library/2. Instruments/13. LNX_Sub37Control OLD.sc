@@ -33,8 +33,8 @@ LNX_Sub37Control : LNX_InstrumentTemplate {
 
 	var <noControl, keyboardView, lastKeyboardNote;
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName  {^"Moog Sub37"}

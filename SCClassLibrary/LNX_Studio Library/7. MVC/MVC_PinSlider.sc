@@ -87,8 +87,8 @@ MVC_PinSlider : MVC_FlatSlider {
 						colors[\background].set;
 					}{
 						if (enabled)
-							{ colors[\hilite].set }
-							{ colors[\hilite].alpha_(0.5).set };
+							{ colors[\hilite].alpha_(1).set }
+							{ (colors[\hilite].alpha_(0.5)*0.5).set };
 					};
 					
 					Pen.width_(width-3);

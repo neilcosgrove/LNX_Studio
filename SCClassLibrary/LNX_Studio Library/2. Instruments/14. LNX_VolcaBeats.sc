@@ -17,8 +17,8 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 
 	*isVisible{^isVisiblePref}
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	// an immutable list of methods available to the network
@@ -31,6 +31,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 	isMixerInstrument{^true}
 	mixerColor       {^Color(0.653, 0.612, 0.544)} // colour in mixer
 	hasLevelsOut     {^true}
+	hasMIDIClock     {^true}
 	
 	// mixer models
 	peakModel   {^models[6]}
@@ -104,7 +105,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 	clockPause{ sequencers.do(_.clockPause(studio.actualLatency)) }
 	
 	// clock in for midi out clock methods
-	midiSongPtr {|songPtr,latency| if (p[52].isTrue) { midi.songPtr(songPtr,latency) } } 
+	midiSongPtr {|songPtr,latency| if (p[52].isTrue) { midi.songPtr(songPtr.postln,latency) } } 
 	midiStart   {|latency|         if (p[52].isTrue) { midi.start(latency) } }
 	midiClock   {|latency|         if (p[52].isTrue) { midi.midiClock(latency) } }
 	midiContinue{|latency|         if (p[52].isTrue) { midi.continue(latency) } }
@@ -121,22 +122,22 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 			[0, \switch, (\strings_:"S"), midiControl, 0, "Solo",
 				{|me,val,latency,send,toggle|
 					this.solo(val,latency,send,toggle);
-					server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
 				},
 				\action2_ -> {|me|
 					this.soloAlt(me.value);
-					server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 				 }],
 			
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
 				{|me,val,latency,send,toggle|
 					this.onOff(val,latency,send,toggle);
-					server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
 				},
 				\action2_ -> {|me|	
 					this.onOffAlt(me.value);
-					server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 				}],
 					
 			// 2.master amp
@@ -379,7 +380,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 
 	iSyncDelayChanged{ this.setDelay }
 
-	setDelay{ server.sendBundle(nil,[\n_set, node, \delay, this.delayTime]) }
+	setDelay{ if (node.notNil) {server.sendBundle(nil,[\n_set, node, \delay, this.delayTime])} }
 		
 	// disk i/o ///////////////////////////////
 		
@@ -892,16 +893,16 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 		switch (p[51].asInt)
 			{0} {
 				// "Audio In"
-				server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+				if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 			}
 			{1} {
 				// "Sequencer"
-				server.sendBundle(nil,[\n_set, node, \on, true]);
+				if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, true])};
 				if (this.isOff) {this.stopAllNotes};
 			}
 			{2} {
 				// "Both"
-				server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+				if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 				if (this.isOff) {this.stopAllNotes};
 			};		
 	}

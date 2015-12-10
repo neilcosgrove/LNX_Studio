@@ -89,7 +89,7 @@ LNX_POP {
 		resets       = 0 ! maxPOP;
 		
 		// 16. program number (current) - auto works on this, needs a midi control
-		studioModels[\program] =	[-1, [-1,noPOP,\lin,1,1], midiControl, 16, "Program",
+		studioModels[\program] =	[-1, [-1,noPOP-1,\lin,1,1], midiControl, 16, "Program",
 			{|me,value,latency,send,toggle,jumpTo,offset|
 				var padProg;
 				this.modelSetProgram(value, false, latency, jumpTo, offset);
@@ -102,7 +102,7 @@ LNX_POP {
 			.isProgramModel_(true);	
 				
 		// program number (to become)
-		studioModels[\toBecome] = [-1, [-1,noPOP,\lin,1,1],
+		studioModels[\toBecome] = [-1, [-1,noPOP-1,\lin,1,1],
 			{|me,value,latency,send| this.guiToBecome(value) }].asModel;
 						
 		// 17.quant on steps
@@ -169,7 +169,7 @@ LNX_POP {
 		};
 		quant = studioModels[\quant].value;
 		pad = (beat.div(6)%quant/quant*8).asInt;
-		pad = #[120, 104, 88, 72, 56, 40, 24, 8].at(pad);
+		pad = #[120, 104, 88, 72, 56, 40, 24, 8].wrapAt(pad);
 		if (pad != lastPad) {
 			if (lastPad.notNil) { midi.noteOn(lastPad,0,latency) }; // 0 off
 			midi.noteOn(pad, 48, latency);
@@ -265,7 +265,8 @@ LNX_POP {
 			gui[\program].actualProgram_(value);
 			listOfPofP.do{|pop| pop.highlight(value,lastProgram) };
 			lastProgram = value;
-		};
+		}
+		.numberFunc_(\intPlus1);
 
 		// plainSquare to cover top of resets
  		MVC_PlainSquare(gui[\window],Rect(50, 68, 22, 1))
@@ -313,6 +314,7 @@ LNX_POP {
 	*more{
 		this.noPOP_(noPOP+16);
 		gui[\window2].view.visibleOrigin_(0@((21+4)*noPOP));
+		gui[\window].view.visibleOrigin_(0@((21+4)*noPOP));
 	}
 	
 	// give me less
@@ -351,6 +353,7 @@ LNX_POP {
 		gui[(\popReset++i).asSymbol]=nil;
 		resets[i]=0;
 	}
+	
 	
 	// highlight a row as a program is selected
 	highlight{|now,last|
@@ -409,6 +412,8 @@ LNX_POP {
 		{instGUI[(\pop++index).asSymbol].value_(value,false)}.defer;
 	}
 	
+	guiSetPOP{|index,value| api.groupCmdOD(\netSetPOP,index,value); } 
+	
 	// free the instruments pop menu widgets
 	freePOPWidget{|i|
 		instGUI[(\pop++i).asSymbol].free;
@@ -428,8 +433,8 @@ LNX_POP {
 			gui[\plainSquare].bounds_(Rect(10, (noPOP+4.5)*21+4, 1, 1));
 			gui[\plainSquare2].bounds_(Rect(10, (noPOP+4.5)*21, 1, 1));
 			gui[\program].noPOP_(noPOP);
-			studioModels[\program].controlSpec_( [-1,noPOP,\lin,1,1]);
-			studioModels[\toBecome].controlSpec_( [-1,noPOP,\lin,1,1]);
+			studioModels[\program].controlSpec_( [-1,noPOP-1,\lin,1,1]);
+			studioModels[\toBecome].controlSpec_( [-1,noPOP-1,\lin,1,1]);
 			
 			if (noPOP>old) {
 				// add
@@ -445,6 +450,7 @@ LNX_POP {
 				listOfPofP.do{|pop|
 					pop.adjustSize;
 					(noPOP..(old-1)).do{|i| pop.freePOPWidget(i) };
+					pop.presetsOfPresets = pop.presetsOfPresets[0..(noPOP-1)];
 				};
 				(noPOP..(old-1)).do{|i| this.freeResetWidget(i) };
 			};

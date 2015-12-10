@@ -155,6 +155,13 @@ a.a.touch(0);
 		};
 	}
 	
+	// used for noteOff in sequencers
+	// efficiency issue: this is called 3 times in alt_solo over a network
+	stopNotesIfNeeded{
+		if ((instOnSolo.isOff)and:{this.alwaysOn.not}) {this.stopAllNotes};
+		this.updateOnSolo;
+	}
+	
 	// also called by onOff & solo buttons & alwaysOn model
 	stopAllNotes{
 		//"san".postln;

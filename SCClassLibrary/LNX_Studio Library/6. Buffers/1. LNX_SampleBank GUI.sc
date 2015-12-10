@@ -433,7 +433,7 @@
 	allInterfacesSelect{|i,send=false|
 		this.selectSample(i,send);
 		this.updateSelectedSample(i);
-		selectSampleFuncs.do{|func| func.value(i) };	
+		selectSampleFuncs.do{|func| func.value(i) };	// this is a problem
 	}
 	
 	
