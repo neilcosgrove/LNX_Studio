@@ -334,7 +334,7 @@ LNX_Code : LNX_InstrumentTemplate {
 	}
 	
 	// midi clock in (this is at MIDIClock rate)
-	clockIn3 {|beat,absTime,latency| sequencer.clockIn3(beat,absTime,latency) }
+	clockIn3 {|beat,absTime,latency,absBeat| sequencer.clockIn3(beat,absTime,latency,absBeat) }
 	
 	bpmChange{|latency|
 		if (systemIndices[\bpm].notNil) {

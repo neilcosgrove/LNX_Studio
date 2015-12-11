@@ -74,7 +74,8 @@
 					
 					// mainly piano rolls here (uses instBeat which does change on presets)
 					// the absTime/3 is bad here
-					insts.clockPriority.do(_.clockIn3(instBeat,absTime/3,this.actualLatency));
+					insts.clockPriority
+						.do(_.clockIn3(instBeat,absTime/3,this.actualLatency,beat));
 			
 					// & mainly step sequencers here
 					if ((instBeat%3)==0) {

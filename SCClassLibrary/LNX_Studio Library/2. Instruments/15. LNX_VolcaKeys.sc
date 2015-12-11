@@ -348,7 +348,7 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 	// clock in //////////////////////////////
 	
 	// clock in for pRoll sequencer
-	clockIn3{|beat,absTime,latency| sequencer.do(_.clockIn3(beat,absTime,latency)) }
+	clockIn3{|beat,absTime,latency,absBeat| sequencer.do(_.clockIn3(beat,absTime,latency,absBeat))}
 	
 	// reset sequencers posViews
 	clockStop {

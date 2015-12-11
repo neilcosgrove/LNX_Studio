@@ -984,35 +984,105 @@ LNX_PianoRollSequencer{
 		this.useAdjustments;
 	}
 		
+
 	// MIDI clock in /////////////////////////////////////////////
-	
-	// clock in 3 is faster than the normal instrument clockIn, which results in fast tempo updates
-	clockIn3   {|beat,argAbsTime,latency|	
+
+//	// clock in 3 is faster than the normal instrument clockIn, which results in fast tempo updates
+//	clockIn3{|beat,argAbsTime,latency,beatAbs|	
+//		var now,then,i,endIndex, speed=score.speed;
+//		
+//		//[beat,argAbsTime,latency,beat.species,argAbsTime.species,latency.species].postln;
+//		
+//		// NB: F is Fast, S is Slow
+//		isPlaying=true;
+//		absTime=argAbsTime;  // F is time of 1/3  of normal beat
+//		// for recording
+//		lastBeat = beat;     //  F beat x3 = 1 normal beat
+//		lastTime = SystemClock.now;
+//		lastLatency = latency;
+//		// the current beat wrapped to score duration
+//		beat = beat % (score.dur*3*speed);  // F
+//		// now and the next beat
+//		now = beat/3;       // S
+//		then = (beat+1)/3;  // S
+//		
+//		[beatAbs,notesOff].postln;
+//		
+//		// stop any notes as needed 1st
+//		if (notesOff[beatAbs.asInt].notNil) {
+//			beatAbs.post; "-".post;
+//			notesOff.post;
+//			notesOff[beatAbs.asInt].do{|l|
+//				{this.seqNoteOff(l[1],latency); nil;}.sched(l[0]*absTime*3)
+//			};
+//			notesOff[beatAbs]=nil;	
+//		};
+//		
+//		// go through the score
+//		score.notes.do{|note|
+//			var pitch = note.note;
+//			// if the note starts between now and the next midi tick
+//					
+//			// this if statement doesn't capture all start events at different speeds & durs
+//			if (((note.start*speed)>=now)&&((note.start*speed)<then)) {
+//				var end = note.end;
+//				var dur = note.dur;
+//				var vel = note.vel;
+//				
+//				{
+//					if (note.enabled) {
+//						
+//						this.seqNoteOn(pitch,vel,latency); // play it
+//						
+//						// clip end to shortest time allowed
+//						if ((end*speed)<then) {
+//							{this.seqNoteOff(pitch,latency); nil;}.sched(dur*3*speed*absTime*3)
+//						}{						
+//							
+//							endIndex = (dur*3*speed + beatAbs).asInt ;
+//							
+//							
+//							[now,then,endIndex].postln;
+//						
+//							// this will add to nil
+//							notesOff[endIndex]=notesOff[endIndex].add(
+//								[(dur*3*speed).frac,pitch]);
+//						};
+//					};
+//					nil;
+//				}.sched( ((note.start*3*speed)-beat)*(absTime*3)*0.99999);
+//				//sched it to the correct time
+//			}
+//		};
+//		// update the gui pos
+//		
+//		{this.pos_(now/speed)}.defer(latency);
+//		
+//	}
+//	
+
+	clockIn3{|beat,argAbsTime,latency|	
 		var now,then,i,endIndex, speed=score.speed;
 		
-		
-		//[beat,argAbsTime,latency,beat.species,argAbsTime.species,latency.species].postln;
-		
 		// NB: F is Fast, S is Slow
-		isPlaying=true;
-		absTime=argAbsTime;  // F is time of 1/3  of normal beat
-		// for recording
-		lastBeat = beat;     //  F beat x3 = 1 normal beat
-		lastTime = SystemClock.now;
-		lastLatency = latency;
-		// the current beat wrapped to score duration
-		beat = beat % (score.dur*3*speed);  // F
-		// now and the next beat
-		now = beat/3;       // S
-		then = (beat+1)/3;  // S
 		
-		// stop any notes as needed 1st
+		isPlaying   = true;
+		absTime     = argAbsTime;  // F is time of 1/3  of normal beat
+		lastBeat    = beat;     //  F beat x3 = 1 normal beat, for recording
+		lastTime    = SystemClock.now;
+		lastLatency = latency;
+		beat        = beat % (score.dur*3*speed); // F the current beat wrapped to score duration
+		now         = beat/3;       // S now and the next beat
+		then        = (beat+1)/3;  // S
+		
+		// stop any notes as needed 1st, these have been scheduled to be released here
 		if (notesOff[beat].notNil) {
 			notesOff[beat].do{|l|
-				{this.seqNoteOff(l[1],latency); nil;}.sched(l[0]*absTime*3)
+				{ this.seqNoteOff(l[1],latency); nil; }.sched(l[0]*absTime*3)
 			};
 			notesOff[beat]=nil;	
 		};
+		
 		// go through the score
 		score.notes.do{|note|
 			var pitch = note.note;	
@@ -1034,8 +1104,10 @@ LNX_PianoRollSequencer{
 								[(note.end*3*speed).frac,pitch]);
 						};
 					};
+					
 					nil;
-				}.sched( ((note.start*3*speed)-beat)*(absTime*3)*0.99999);
+					
+				}.sched( ((note.start*3*speed)-beat)*(absTime*3)*0.99999 );
 				//sched it to the correct time
 			}
 		};
@@ -1044,7 +1116,9 @@ LNX_PianoRollSequencer{
 		{this.pos_(now/speed)}.defer(latency);
 		
 	}
-	
+
+
+
 	releaseAll{ notesOff=IdentityDictionary[] } // no actual release, done via buffer
 	
 	seqNoteOn{|note,velocity,latency|

@@ -296,7 +296,7 @@ MVC_Automation {
 	}
 
 	// clock 3 in form LNX_Studio
-	*clockIn3{|beat,absTime,latency|
+	*clockIn3{|beat,absTime,latency,absBeat|
 		
 		this.updateBeatRef(beat,absTime); // update beat ref if needed
 		beat     = beat.asInt;            // asInt to make sure identity in a dictionary

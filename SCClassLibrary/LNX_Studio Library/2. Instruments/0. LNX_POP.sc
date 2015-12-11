@@ -144,7 +144,7 @@ LNX_POP {
 	}
 	
 	// program changes are synced to clock events
-	*clockIn3{|beat,masterBeat,absTime,latency|
+	*clockIn3{|beat,masterBeat,absTime,latency,absBeat|
 		var pad, quant;	
 		if (when.notNil) {
 			// flash the gui

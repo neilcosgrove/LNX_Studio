@@ -879,25 +879,12 @@ LNX_Studio {
 		var class,id,userID,userIsListening,new,loadList,bus, autoAdd, autoBeat;
 		#class,id,userID,userIsListening,new,bus, autoAdd, autoBeat...loadList = list;
 
-
-
-
 		this.netAddInst(class,id,userID,userIsListening,new, autoAdd, autoBeat,loadList);
 		
 		{
-			if (loadList.size>0) {
-				insts[id].putLoadList(loadList);
-				// the below line looks like its missing for net i just added and needs testing
-				//insts[id].postSongLoad; // i might change this to help melodyMaker
-			};
-			
 			this.updateFXBusIN(insts[id],bus); // this does not send
-			
 			if (userID==network.thisUser.id) { this.selectInst(id) };
-			
-		}.defer(0.05);
-		
-		
+		}.defer(0.05);	
 	}
 	
 	// net version of thisAddInst (this always comes from the host)

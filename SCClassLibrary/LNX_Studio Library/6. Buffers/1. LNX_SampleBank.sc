@@ -540,7 +540,12 @@ LNX_SampleBank{
 		
 		if (versionString[..14]=="SC URL Bank Doc") {
 			isLoading=true;
+			
+			
 			if (clear) { this.removeAllSamples }; // carefull with this
+			
+			
+			
 			this.title_(l.popS);
 			n=l.popI;
 			if ((n>0)and:{freed.not}) {
