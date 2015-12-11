@@ -18,12 +18,14 @@ LNX_AppMenus {
 		SCMenuItem.new(tools,  "Open...").setShortCut("o").action_({ studio.loadDialog });
 		SCMenuItem.new(tools,  "Network").setShortCut("n").action_({ studio.network.guiConnect });
 		SCMenuItem.new(tools,  "Add preset to all instruments")
-			.setShortCut("p")
 			.action_{studio.guiAllInstsAddPreset};
 			
 		SCMenuItem.new(tools,  "Add all to POP")
+			.action_{studio.guiAllToPOP};
+			
+		SCMenuItem.new(tools,  "Add all to POP (no FX)")
 			.setShortCut("p")
-			.action_{studio.guiAllToPop};
+			.action_{studio.guiAllToPOP(false)};
 		
 		SCMenuSeparator.new(tools);
 		

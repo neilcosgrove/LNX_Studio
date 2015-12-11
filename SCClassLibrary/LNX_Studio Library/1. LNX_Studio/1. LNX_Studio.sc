@@ -289,7 +289,7 @@ LNX_Studio {
 			\netSyncCollaboration, \netAddLoadList, \netOnSoloUpdate, \netMove, \hostPlay,
 			\play, \netPause, \hostStop, \netStop, \hostSetBPM, \setBPM,
 			\netAddInstWithLoadList,\netAllInstsSelectProgram, \netSetModel, \hostJumpTo,
-			\netSetAuto, \netNoteOn, \netNoteOff
+			\netSetAuto, \netNoteOn, \netNoteOff, \netAllToPOP
 		],#[
 			\post, \postMe, \postList, \postAll, \postStuff, \postTime, \postClock,
 			\postSpecies
@@ -643,31 +643,46 @@ LNX_Studio {
 	
 	// add a preset to all insts and then add it to the next free POP
 	
-	guiAllToPop{
+	// gui call for add all to POP
+	guiAllToPOP{|includeFX=true|
+		api.hostCmdClumpedList(\netAllToPOP,
+			[includeFX.asInt] ++ insts.visualOrder.collect{|i| (i.canTurnOnOff) && (i.isOn)}.asInt
+		)
+	}
+	
+	// net call of add all to POP
+	netAllToPOP{|onOffList|
+		var includeFX;
 		// find next free pop index
 		var popFreeAt = insts.collect(_.presetsOfPresets).collect(_.presetsOfPresets)
 			.asList.flop.collect{|i| i.collect{|i| i==2}.includes(false).not }.indexOf(true);
 		
-		if (popFreeAt.isNil) { LNX_POP.more }; // add more pops
+		if (popFreeAt.isNil) { LNX_POP.more }; // add more pops if needed
 		
 		// find next free pop index
 		popFreeAt = insts.collect(_.presetsOfPresets).collect(_.presetsOfPresets)
 			.asList.flop.collect{|i| i.collect{|i| i==2}.includes(false).not }.indexOf(true);
 
+		includeFX = onOffList[0].isTrue;		// 1st item is includeFX?
+		onOffList = onOffList[1..].asInt;	// and the rest is onOffs
 		if (popFreeAt.isNil) { ^this };		// if still no free space then drop
-		insts.do(_.guiAddPreset);			// add presets to all
-			
-		insts.do{|inst| 					// now add them to pop
+		
+		// add presets to all or  add presets to everything but fxs
+		if (includeFX) { insts.do(_.guiAddPreset) } { insts.notEffect.do(_.guiAddPreset) };
+		
+		insts.visualOrder.do{|inst,n| 		// now add them to pop
 			if (inst.canTurnOnOff) { 		// is it an instrument i can turn on & off?
-				if (inst.isOn) {
+				if (onOffList[n].isTrue) {
 					// add the preset we just made + 2
 					inst.presetsOfPresets.guiSetPOP(popFreeAt, inst.presetMemory.size + 2)
 				}{
 					inst.presetsOfPresets.guiSetPOP(popFreeAt, 0); // else mute it
 				};
 			}{
-				// add the preset we just made + 2
-				inst.presetsOfPresets.guiSetPOP(popFreeAt, inst.presetMemory.size)
+				// add the preset we just made
+				if (includeFX) {
+					inst.presetsOfPresets.guiSetPOP(popFreeAt, inst.presetMemory.size)
+				}
 			};
 		};
 	}
