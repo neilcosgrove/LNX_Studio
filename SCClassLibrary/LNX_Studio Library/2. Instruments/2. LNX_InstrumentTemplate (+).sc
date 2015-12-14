@@ -191,6 +191,7 @@
 	bend 	{|bend     , latency|}		// bend
 	touch	{|pressure , latency|}		// pressure
 	program	{|program  , latency|}      // and program (the selectProgram method is called 1st
+	sysex	{|data     , latency|}
 	midiInternal{|command,arg1,arg2| }   // internal comms via midi (not used yet)
 
 	// midi in to midi clock out methods

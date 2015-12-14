@@ -748,21 +748,21 @@
 				.action_{ LNX_MIDIPatch.refreshPorts };
 
 			// network networkCntKeyboard
-			MVC_OnOffView(models[\networkCntKeyboard],scrollView,Rect(170, 299, 80, 19),
-				"Cnt Keyboard", ( \font_		: Font("Helvetica", 11),
+			MVC_OnOffView(models[\networkCntKeyboard],scrollView,Rect(170, 299, 70, 19),
+				"Network", ( \font_		: Font("Helvetica", 11),
 								 \colors_     : (\on : Color.orange+0.25,
 						 					   \off : Color.grey/2)))
-				.label_("Network")
+				.label_("Controller Keyboard")
 				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black);
 				
 			// network master volume changes
-			MVC_OnOffView(models[\networkMaterVolume],scrollView,Rect(170, 328, 80, 19),
-				"Volume", ( \font_		: Font("Helvetica", 11),
+			MVC_OnOffView(models[\networkMaterVolume],scrollView,Rect(170, 328, 70, 19),
+				"Network", ( \font_		: Font("Helvetica", 11),
 								 \colors_     : (\on : Color.orange+0.25,
 						 					   \off : Color.grey/2)))
-				.label_("Network")
+				.label_("Master Volume & Mute")
 				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black);

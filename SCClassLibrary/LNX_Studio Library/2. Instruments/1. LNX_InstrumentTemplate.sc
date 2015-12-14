@@ -235,6 +235,7 @@ LNX_InstrumentTemplate {
 		midi.touchFunc   = {|src, chan, pressure  ,latency| this.touch  (pressure ,  latency)};
 		midi.programFunc = {|src, chan, prog      ,latency|
 											      this.midiSelectProgram(prog ,latency)};
+		midi.sysexFunc   = {|src, data, latency|            this.sysex(data, latency) };
 		midi.internalFunc= {|...msg| this.internal(*msg); this.midiInternal(*msg) };
 		midi.action      = {|me| api.sendClumpedList(\netMidiChange,me.getSaveList) };
 		midiControl=LNX_MIDIControl(this); // for midi controls only

@@ -32,6 +32,7 @@ LNX_MIDIPatch {
 			<>controlFunc, 	<>bendFunc, 
 			<>touchFunc,		<>programFunc,
 			<>sysrtFunc,		<>internalFunc,
+			<>sysexFunc,
 			
 			<>pipeFunc,  // to replace all off the above funcs... when i get round to it
 			
@@ -299,6 +300,16 @@ LNX_MIDIPatch {
 						patch.sysrtFunc.value(src, chan, val); // send with no latency parameter
 					}
 				});
+			};
+			
+			MIDIIn.sysex = {arg src, data;
+				//[src,data].postln;
+				patches.do({|patch|
+					if ( patch.uidIn==src ) {
+						patch.sysexFunc.value(src, data); // send with no latency parameter
+					}
+				});
+			
 			};
 			
 			if (verbose) { 					

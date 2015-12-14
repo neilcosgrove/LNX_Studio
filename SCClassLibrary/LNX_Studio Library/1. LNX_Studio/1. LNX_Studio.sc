@@ -718,7 +718,7 @@ LNX_Studio {
 		midi.noteOnFunc  = {|src, chan, note, vel ,latency|
 			if ((autoMapOn)and:{insts.selectedInst.notNil}
 			   and: {(midi.uidIn)!=(insts.selectedInst.midi.uidIn)}) {
-				   	this.noteOn(note, vel, latency);
+				this.noteOn(note, vel, latency);
 			};
 		};
 		midi.noteOffFunc = {|src, chan, note, vel ,latency|
@@ -763,7 +763,7 @@ LNX_Studio {
 		if(midiCnrtLastNote[note].notNil) {
 			this.doNoteOff(midiCnrtLastNote[note], note, vel, latency); // finish last note
 		};
-		inst.noteOn(note, vel, latency); // do note on
+		inst.pipeIn( LNX_NoteOn(note,vel,latency,\controllerKeyboard) ); // do note on
 		midiCnrtLastNote[note] = inst;   // and store for note off
 	}
 		
@@ -780,7 +780,9 @@ LNX_Studio {
 	
 	// do controller keyboard note On
 	doNoteOff{|inst, note, vel, latency|	
-		(midiCnrtLastNote[note] ? inst).noteOff(note, vel, latency); // use midiCnrtLastNote 1st
+		(midiCnrtLastNote[note] ? inst).pipeIn(
+			LNX_NoteOff(note,vel,latency,\controllerKeyboard) ); // do note on
+		// use midiCnrtLastNote 1st
 		midiCnrtLastNote[note] = nil; // and remove from midiCnrtLastNote IdentityDictionary
 	}
 		
