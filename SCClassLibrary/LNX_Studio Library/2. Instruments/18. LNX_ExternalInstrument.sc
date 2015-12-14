@@ -64,6 +64,21 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 		midiOutBuffer = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.toMIDIPipeOut(pipe) };
 		midiInBuffer  = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromInBuffer(pipe)  };
 		seqOutBuffer  = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromSequencerBuffer(pipe) };
+		
+		
+	}
+
+
+	sysex{|data, latency|
+		var index = ((data[10]*16)+data[11]).asInt;
+		var value = ((data[12]*16)+data[13])/2;
+
+
+		[index,value].postln;
+
+		models[(index+14)].lazyValue_(value, true); // set model, no action
+		p[index+14]=value;                        // set p[]
+		//api.sendOD(\netExtCntIn, index+14, value);// network it		
 	}
 
 	// midi pipe in. This is the future
@@ -75,7 +90,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				var index = pipe.num.asInt;			
 				models[index+14].lazyValue_(pipe.val, true); // set model, no action
 				p[index+14]=pipe.val;                        // set p[]
-				api.sendOD(\netExtCntIn, index+14, pipe.val);   // network it
+				api.sendOD(\netExtCntIn, index+14, pipe.val);// network it
 			}
 			{\program} { // program
 				this.program(pipe.program,pipe.latency);
@@ -281,7 +296,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	// clock in //////////////////////////////
 	
 	// clock in for pRoll sequencer
-	clockIn3{|beat,absTime,latency| sequencer.do(_.clockIn3(beat,absTime,latency)) }
+	clockIn3{|beat,absTime,latency,absBeat| sequencer.do(_.clockIn3(beat,absTime,latency,absBeat))}
 	
 	// reset sequencers posViews
 	clockStop {

@@ -180,7 +180,8 @@ a.a.touch(0);
 	}
 	
 	// midi clock in (this is at MIDIClock rate)
-	clockIn3 {|beat,absTime,latency| sequencer.clockIn3(beat,absTime,studio.actualLatency) }
+	clockIn3 {|beat,absTime,latency,absBeat|
+		 sequencer.clockIn3(beat,absTime,studio.actualLatency,absBeat) }
 	
 	// reset sequencers posViews
 	clockStop {

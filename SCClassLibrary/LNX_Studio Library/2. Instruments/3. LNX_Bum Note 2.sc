@@ -1728,7 +1728,7 @@ a.a.updateOut;
 	}	
 	
 	// midi clock in (this is at MIDIClock rate)
-	clockIn3 {|beat,absTime,latency| pianoRoll.clockIn3(beat,absTime,latency) }
+	clockIn3 {|beat,absTime,latency,absBeat| pianoRoll.clockIn3(beat,absTime,latency,absBeat) }
 	
 	// this clock is playing when a song is not playing, used in lfos 
 	clockOff{|beat,latency|

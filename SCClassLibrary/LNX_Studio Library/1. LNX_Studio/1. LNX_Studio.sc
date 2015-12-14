@@ -292,7 +292,7 @@ LNX_Studio {
 			\netSyncCollaboration, \netAddLoadList, \netOnSoloUpdate, \netMove, \hostPlay,
 			\play, \netPause, \hostStop, \netStop, \hostSetBPM, \setBPM,
 			\netAddInstWithLoadList,\netAllInstsSelectProgram, \netSetModel, \hostJumpTo,
-			\netSetAuto, \netNoteOn, \netNoteOff
+			\netSetAuto, \netNoteOn, \netNoteOff, \netAllToPOP
 		],#[
 			\post, \postMe, \postList, \postAll, \postStuff, \postTime, \postClock,
 			\postSpecies
@@ -646,31 +646,46 @@ LNX_Studio {
 	
 	// add a preset to all insts and then add it to the next free POP
 	
-	guiAllToPop{
+	// gui call for add all to POP
+	guiAllToPOP{|includeFX=true|
+		api.hostCmdClumpedList(\netAllToPOP,
+			[includeFX.asInt] ++ insts.visualOrder.collect{|i| (i.canTurnOnOff) && (i.isOn)}.asInt
+		)
+	}
+	
+	// net call of add all to POP
+	netAllToPOP{|onOffList|
+		var includeFX;
 		// find next free pop index
 		var popFreeAt = insts.collect(_.presetsOfPresets).collect(_.presetsOfPresets)
 			.asList.flop.collect{|i| i.collect{|i| i==2}.includes(false).not }.indexOf(true);
 		
-		if (popFreeAt.isNil) { LNX_POP.more }; // add more pops
+		if (popFreeAt.isNil) { LNX_POP.more }; // add more pops if needed
 		
 		// find next free pop index
 		popFreeAt = insts.collect(_.presetsOfPresets).collect(_.presetsOfPresets)
 			.asList.flop.collect{|i| i.collect{|i| i==2}.includes(false).not }.indexOf(true);
 
+		includeFX = onOffList[0].isTrue;		// 1st item is includeFX?
+		onOffList = onOffList[1..].asInt;	// and the rest is onOffs
 		if (popFreeAt.isNil) { ^this };		// if still no free space then drop
-		insts.do(_.guiAddPreset);			// add presets to all
-			
-		insts.do{|inst| 					// now add them to pop
+		
+		// add presets to all or  add presets to everything but fxs
+		if (includeFX) { insts.do(_.guiAddPreset) } { insts.notEffect.do(_.guiAddPreset) };
+		
+		insts.visualOrder.do{|inst,n| 		// now add them to pop
 			if (inst.canTurnOnOff) { 		// is it an instrument i can turn on & off?
-				if (inst.isOn) {
+				if (onOffList[n].isTrue) {
 					// add the preset we just made + 2
 					inst.presetsOfPresets.guiSetPOP(popFreeAt, inst.presetMemory.size + 2)
 				}{
 					inst.presetsOfPresets.guiSetPOP(popFreeAt, 0); // else mute it
 				};
 			}{
-				// add the preset we just made + 2
-				inst.presetsOfPresets.guiSetPOP(popFreeAt, inst.presetMemory.size)
+				// add the preset we just made
+				if (includeFX) {
+					inst.presetsOfPresets.guiSetPOP(popFreeAt, inst.presetMemory.size)
+				}
 			};
 		};
 	}
@@ -706,7 +721,7 @@ LNX_Studio {
 		midi.noteOnFunc  = {|src, chan, note, vel ,latency|
 			if ((autoMapOn)and:{insts.selectedInst.notNil}
 			   and: {(midi.uidIn)!=(insts.selectedInst.midi.uidIn)}) {
-				   	this.noteOn(note, vel, latency);
+				this.noteOn(note, vel, latency);
 			};
 		};
 		midi.noteOffFunc = {|src, chan, note, vel ,latency|
@@ -751,7 +766,7 @@ LNX_Studio {
 		if(midiCnrtLastNote[note].notNil) {
 			this.doNoteOff(midiCnrtLastNote[note], note, vel, latency); // finish last note
 		};
-		inst.noteOn(note, vel, latency); // do note on
+		inst.pipeIn( LNX_NoteOn(note,vel,latency,\controllerKeyboard) ); // do note on
 		midiCnrtLastNote[note] = inst;   // and store for note off
 	}
 		
@@ -768,7 +783,9 @@ LNX_Studio {
 	
 	// do controller keyboard note On
 	doNoteOff{|inst, note, vel, latency|	
-		(midiCnrtLastNote[note] ? inst).noteOff(note, vel, latency); // use midiCnrtLastNote 1st
+		(midiCnrtLastNote[note] ? inst).pipeIn(
+			LNX_NoteOff(note,vel,latency,\controllerKeyboard) ); // do note on
+		// use midiCnrtLastNote 1st
 		midiCnrtLastNote[note] = nil; // and remove from midiCnrtLastNote IdentityDictionary
 	}
 		
@@ -882,25 +899,12 @@ LNX_Studio {
 		var class,id,userID,userIsListening,new,loadList,bus, autoAdd, autoBeat;
 		#class,id,userID,userIsListening,new,bus, autoAdd, autoBeat...loadList = list;
 
-
-
-
 		this.netAddInst(class,id,userID,userIsListening,new, autoAdd, autoBeat,loadList);
 		
 		{
-			if (loadList.size>0) {
-				insts[id].putLoadList(loadList);
-				// the below line looks like its missing for net i just added and needs testing
-				//insts[id].postSongLoad; // i might change this to help melodyMaker
-			};
-			
 			this.updateFXBusIN(insts[id],bus); // this does not send
-			
 			if (userID==network.thisUser.id) { this.selectInst(id) };
-			
-		}.defer(0.05);
-		
-		
+		}.defer(0.05);	
 	}
 	
 	// net version of thisAddInst (this always comes from the host)

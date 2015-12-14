@@ -191,6 +191,7 @@
 	bend 	{|bend     , latency|}		// bend
 	touch	{|pressure , latency|}		// pressure
 	program	{|program  , latency|}      // and program (the selectProgram method is called 1st
+	sysex	{|data     , latency|}
 	midiInternal{|command,arg1,arg2| }   // internal comms via midi (not used yet)
 
 	// midi in to midi clock out methods
@@ -234,7 +235,7 @@
 	/// clock in ////////////////////////////////////////
 	
 	clockIn{|beat|} //clockIn is the clock pulse, with the current song pointer in beats
-	clockIn3{|beat,absTime,latency|} // same as clcokIn but with x3 the resolution
+	clockIn3{|beat,absTime,latency,absBeat|} // same as clcokIn but with x3 the resolution
 	clockOff{|beat,latency|} // this clock is playing when a song is not playing, used in lfos 
 	clockPlay{|latency| }		//play and stop are called from both the internal and extrnal clock
 	clockStop{|latency| }
