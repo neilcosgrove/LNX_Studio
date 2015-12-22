@@ -21,7 +21,7 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 	
 	*studioName {^"Step Sequencer"}
 	isMIDI{^true}
-	*sortOrder{^2}
+	*sortOrder{^1.99}
 	isInstrument{^true}
 	onColor{^Color(0.5,0.7,1)} 
 	clockPriority{^3}

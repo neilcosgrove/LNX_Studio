@@ -1428,8 +1428,11 @@ LNX_InstrumentTemplate {
 		
 	}
 	
-	createMIDIInOutModelWindow{|window,low,high,colors|
+	createMIDIInOutModelWindow{|window,low,high,colors, midi2|
 		var gui = ();
+		var midi2Offset = midi2.isNil.if(0,25);
+		
+		
 		colors = (
 			background: 		Color(59/77,59/77,59/77),
 			border2: 			Color(6/11,42/83,29/65),
@@ -1437,7 +1440,7 @@ LNX_InstrumentTemplate {
 			menuBackground:	Color(1,1,0.9)
 		) ++ (colors?());
 		
-		gui[\window] = MVC_ModalWindow(window.view, (315)@(120-18), colors);
+		gui[\window] = MVC_ModalWindow(window.view, (315)@(120-18+midi2Offset), colors);
 		gui[\scrollView] = gui[\window].scrollView;
 		
 		// midi out
@@ -1449,7 +1452,7 @@ LNX_InstrumentTemplate {
 			.string_("MIDI Output");	
 				
 		midi.createOutMVUA (gui[\scrollView], (85)@(5), false, background:colors[\menuBackground]);
-		midi.createOutMVUB (gui[\scrollView], (235)@(5), false, background:colors[\menuBackground]);
+		midi.createOutMVUB (gui[\scrollView], (235)@(5),false, background:colors[\menuBackground]);
 		
 		
 		// midi in
@@ -1484,12 +1487,37 @@ LNX_InstrumentTemplate {
 		};
 		
 		// Ok
-		MVC_OnOffView(gui[\scrollView],Rect(235, 55, 50, 20),"Ok")
+		MVC_OnOffView(gui[\scrollView],Rect(235, 55+midi2Offset, 50, 20),"Ok")
 			.rounded_(true)  
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
 			.action_{	 gui[\window].close };
-		
+			
+			
+		if (midi2.notNil) {
+					
+//			MVC_StaticText( gui[\scrollView], Rect(2,55,110,18))
+//				.shadow_(false)
+//				.color_(\string,Color.black)
+//				.font_(Font("Helvetica-Bold", 13))
+//				.string_("System Out");	
+			
+			MVC_StaticText( gui[\scrollView], Rect(2,55,110,18))
+				.shadow_(false)
+				.color_(\string,Color.black)
+				.font_(Font("Helvetica-Bold", 13))
+				.string_("System In");	
+				
+//			midi2.createOutMVUA (gui[\scrollView], (85)@(55),
+//				false, background:colors[\menuBackground]);
+//			midi2.createOutMVUB (gui[\scrollView], (235)@(55),
+//				false, background: colors[\menuBackground]);
+				
+			midi2.createInMVUA (gui[\scrollView], (85)@(55), false,colors[\menuBackground]);
+			midi2.createInMVUB (gui[\scrollView], (235)@(55), false,colors[\menuBackground]);
+						
+		};
+			
 	}	
 	
 	

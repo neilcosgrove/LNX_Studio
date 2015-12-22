@@ -58,6 +58,8 @@ MVC_View {
 	
 	var <>locked = false, <>numberOffset = 0;
 	
+	var <beginDragAction, <canReceiveDragHandler, <receiveDragHandler;
+	
 	// you can supply a MVC_Model, MVC_TabView, a SCWindow, a MVC_Window, a MVU_ScrollView, a Rect
 	// or a themeMethod Dict in any order
 	
@@ -189,28 +191,64 @@ MVC_View {
 	
 	// override this if needed + also add for label (there are refs that need to be removed here)
 	dragControls{
+			
 		// what i send
-		view.beginDragAction_{|me|
-			var val;
-			if (numberFunc.isNil) {
-				val=value.asString
-			}{
-				val=numberFunc.value(value).asString;
+		if (beginDragAction.notNil) {
+			view.beginDragAction_(beginDragAction); 
+		}{
+			view.beginDragAction_{|me|
+				var val;
+				if (numberFunc.isNil) {
+					val=value.asString
+				}{
+					val=numberFunc.value(value).asString;
+				};
+				if ((controlSpec.notNil) && (showUnits)) { val=val+(controlSpec.units) };
+				// +units
+				me.dragLabel_(val); // the drag label
+				value.asFloat;
 			};
-			if ((controlSpec.notNil) && (showUnits)) { val=val+(controlSpec.units) }; // +units
-			me.dragLabel_(val); // the drag label
-			value.asFloat;
 		};
+		
 		// what can i recieve
-		view.canReceiveDragHandler_{ SCView.currentDrag.isNumber };
-		// what i get passed
-		view.receiveDragHandler_{
-			this.valueAction_(SCView.currentDrag, send:true);
-			this.refreshValue;	
+		if (canReceiveDragHandler.notNil) {
+			view.canReceiveDragHandler_(canReceiveDragHandler);
+		}{
+			view.canReceiveDragHandler_{ SCView.currentDrag.isNumber };
 		};
+		
+		// what i get passed
+		if (receiveDragHandler.notNil) {
+			view.receiveDragHandler_(receiveDragHandler);
+		}{		
+			view.receiveDragHandler_{
+				this.valueAction_(SCView.currentDrag, send:true);
+				this.refreshValue;	
+			};
+		};
+				
 		// just add begin to number box
 		if (numberGUI.notNil) { numberGUI.beginDragAction_(view.beginDragAction) };
 		labelGUI.do{|labelView| labelView.beginDragAction_(view.beginDragAction) };
+	}
+	
+	// what i send
+	beginDragAction_{|func|
+		beginDragAction=func;
+		if (view.notClosed) { view.beginDragAction_(func) }
+	}
+	
+	
+	// what can i recieve
+	canReceiveDragHandler_{|func|
+		canReceiveDragHandler=func;
+		if (view.notClosed) { view.canReceiveDragHandler_(func) }
+	}
+	
+	// what i get passed
+	receiveDragHandler_{|func|
+		receiveDragHandler=func;
+		if (view.notClosed) { view.receiveDragHandler_(func) }
 	}
 	
 	// override to do anything after creation

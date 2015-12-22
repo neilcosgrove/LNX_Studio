@@ -510,6 +510,28 @@ LNX_MIDIPatch {
 			outs[midiOut].programLatency(midiOutChannel, val, latency );
 		};
 	}
+	
+	// packet needs to be a Int8Array
+	// no latency in sysex, shall i delay it myself
+	sysex {|packet,latency|
+		if ((uidOut>0)and:{uidOut<=noInternalBuses}) {
+	 		patches.do({|patch|
+				if ( (patch.uidIn==uidOut) and:{(patch===this).not} and:
+					{(patch.midiInChannel==midiOutChannel) or: {patch.midiInChannel==(-1)}} ) {
+						patch.sysex.value(packet, latency);
+				}
+			}); 		
+	 	}{
+		 	if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
+		 	{
+				outs[midiOut].sysex(packet);
+				nil;
+		 	}.sched(latency);
+		};
+		
+	}
+	
+	
 
 	// special internal messages only lnx understands (comms via midi) used in LNX_Controllers
 	internal{|...msg|	
@@ -1308,6 +1330,7 @@ NoMIDI {
 	*bend     {}
 	*touch    {}
 	*program  {}
+	*sysex    {}
 	*songPtr  {}
 	*start    {}
 	*stop     {}

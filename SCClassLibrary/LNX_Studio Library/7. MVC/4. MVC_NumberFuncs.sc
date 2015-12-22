@@ -135,6 +135,17 @@ MVC_NumberFunc{
 			
 			's&h'	: {|n| if (n>0) {n.asInt} {"Off"} },
 			
+			
+			'jp1': {|n| #["Sine","Tri","Saw","Squ","RND","Noise"][n]},
+			'jp2': {|n| #["VCO-2","1+2","VCO-1"][n]},
+			'jp3': {|n| #["Env-1","Man","LFO"][n]},
+			'jp4': {|n| #["64","32","16","8","4","2"][n]},
+			'jp5': {|n| #["Sine","Tri","Saw","Pulse","Squ","Noise"][n]},
+			'jp6': {|n| #["Sine","Saw","Pulse","Low Sine","Low Saw","Low Pulse"][n]},
+			'jp7': {|n| #["-24db","-12db"][n]},
+			'jp8': {|n| #["1","2"][n]},
+			'jp9': {|n| #["-ive","+ive"][n]},
+			'jp10': {|n| #["Off","Env-1","Env-2","1+2"][n]},
 		)
 	}
 	
