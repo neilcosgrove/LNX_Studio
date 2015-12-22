@@ -261,6 +261,7 @@
 							codeModel.string_(string);
 							this.editString(string);
 							this.guiEvaluate;
+							this.startDSP;
 						};
 						
 					// auto build button

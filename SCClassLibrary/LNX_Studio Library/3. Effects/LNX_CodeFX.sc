@@ -221,12 +221,18 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		this.initCode;
 
 		codeModel.actions_(\enterAction, {|me|
-			if (p[14]==0) {this.guiEvaluate}; // test becasue string action will auto-build
+			if (p[14]==0) {
+				this.guiEvaluate;
+				this.startDSP;
+			}; // test becasue string action will auto-build
 		});
 		
 		codeModel.actions_(\stringAction,{|me|
 			this.editString(me.string);
-			if (p[14]==1) {this.guiEvaluate};
+			if (p[14]==1) {
+				this.guiEvaluate;
+				this.startDSP;
+			};
 		});
 
 		errorModel = "".asModel;
