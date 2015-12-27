@@ -1,6 +1,6 @@
 // ********************************************************************************************** //
 // Control your RolandJP08(s) with this. BOOM!                                                    //
-//                                                                                                //
+// use JP-08 in Chain mode [MANUAL] + [9] = [1] (OFF) [2] (ON)                                    //
 // ********************************************************************************************** //
 
 LNX_RolandJP08 : LNX_InstrumentTemplate {
@@ -117,12 +117,13 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		var index, key, value;
 		
 		// exceptions
-		if (data.size!=16)  {^this};            // packet size exception
-		if (data[1]!=65)    {^this};            // Roland SYSEX number
-		if (data[6]!=28)    {^this};            // JP-08 product code
-		if (data[8]!=3)     {^this};            // unsure, maybe set value command?
-		if (data[0]!=(-16)) {^this};            // first byte
-		if (data[15]!=(-9)) {^this};            // last byte
+		if (data.size!=16)    {^this};          // packet size exception
+		if (data[1]!=65)      {^this};          // Roland SYSEX number
+		if (data[6]!=28)      {^this};          // JP-08 product code
+		if (data[2]!=16)      {^this};          // not this device, should stop feedback
+		if (data[8]!=3)       {^this};          // unsure, maybe set value command?
+		if (data[0]!=(-16))   {^this};          // first byte
+		if (data[15]!=(-9))   {^this};          // last byte
 
 		key   = (data[10]*25) + data[11];       // key to metadata in RolandJP08 dictionary
 		value = (data[12]*16) + data[13];       // 8 bit value (0-255)
@@ -130,9 +131,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 
 		if (index.isNil)    {^this};            // key not found
 
-		data[2]; // this is device id, i may change or do some testing on this
-
-		// feedback exception
+		// feedback exception, not needed if we different device IDs
 		if (sysex2Time[index].notNil and: { SystemClock.now < sysex2Time[index] })
 			{ ^this }                          // exception
 			{ sysex2Time[index] = nil };       // else clear time
@@ -147,9 +146,8 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 	// sysex out to the JP08 physical MIDI In port, not the USB MIDI port
 	// to prevent feedback ouput chokes input for 1 second
 	midiControlOut{|index,value,latency|
-		var deviceID = 16;
 		var key      = RolandJP08.keyAt(index.asInt);
-		var data     = Int8Array[ -16, 65, deviceID, 0, 0, 0, 28, 18, 3, 0, key.div(25), key%25,
+		var data     = Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, key.div(25), key%25,
 											value.div(16), value.asInt%16, 0, -9 ];
 											
 		data[14] = RolandJP08.checkSum(data[8..13]); // put in Roland checksum
@@ -200,7 +198,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		if (rolandPresetDict[i].notNil) {
 			rolandPresetDict[i].drop(1).pairsDo{|key,value|  // drop 1st item which is name
 				var index = RolandJP08.indexOfKey(key);     // index of model
-				models[(index+17)].lazyValue_(value, true); // set model, no action
+				models[(index+17)].lazyValue_(value, false); // set model, no action
 				p[index+17]=value;                          // set p[]
 			};
 		};
@@ -391,10 +389,13 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			// 14. midi clock out
 			[0, \switch, midiControl, 14, "MIDI Clock",
 					(strings_:["MIDI Clock"]),
-					{|me,val,latency,send| this.setPVP(14,val,latency,send) }],
+					{|me,val,latency,send|
+						this.setPVP(14,val,latency,send);
+						if (val.isFalse) { midi.stop(latency) };
+					}],
 					
 			// 15. use controls in presets
-			[0, \switch, midiControl, 15, "Controls Preset",
+			[1, \switch, midiControl, 15, "Controls Preset",
 					(strings_:["Controls"]),
 					{|me,val,latency,send|	
 						this.setPVP(15,val,latency,send);
@@ -426,7 +427,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		#models,defaults=template.generateAllModels;
 
 		// list all parameters you want exluded from a preset change
-		presetExclusion=[0,1]++((1..RolandJP08.size)+16);
+		presetExclusion=[0,1];
 		randomExclusion=[0,1,10];
 		autoExclusion=[12];
 
@@ -514,29 +515,24 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 
 	//  this is overriden to force program changes & exclusions by put p[15 & 16] 1st
 	loadPreset{|i,latency|
-		var presetToLoad, oldP;
-		presetToLoad=presetMemory[i].copy;
+		var oldP;
+		var presetToLoad=  presetMemory[i].copy;
 		
-		// 89.use controls
-		models[15].lazyValueAction_(presetToLoad[15],latency,false);
-		
-		// 16.use program
-		models[16].lazyValueAction_(presetToLoad[16],latency,false);
-		
-		// exclude these parameters
-		presetExclusion.do{|i| presetToLoad[i]=p[i]};
+		models[15].lazyValueAction_(presetToLoad[15],latency,false); // 89.use controls
+		models[16].lazyValueAction_(presetToLoad[16],latency,false); // 16.use program
+		presetExclusion.do{|i| presetToLoad[i]=p[i]};                // exclude these parameters
 		
 		// check send program  1st and then send
 		if (models[16].isTrue) {
 			models[12].doLazyValueAction_(presetToLoad[12],latency,false);
 		};
-					
+				
 		if (p[15].isTrue) {
 			// update models
 			presetToLoad.do({|v,j|	
 				if (#[15,16,12].includes(j).not) {
 					if (p[j]!=v) {
-						models[j].lazyValueAction_(v,latency,false)
+						models[j].lazyValueAction_(v,(latency?0)+0.075,false)
 					}
 				};
 			});
@@ -591,7 +587,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	// GUI
 	
 	*thisWidth  {^952}
-	*thisHeight {^435}
+	*thisHeight {^435+25}
 	
 	createWindow{|bounds|	
 		this.createTemplateWindow(bounds,Color(0.1221, 0.0297, 0.0297));
@@ -601,16 +597,13 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 
 	createWidgets{
 
-		gui[\scrollTheme]=( \background	: Color(0.25, 0.25, 0.25),
-				 \border		: Color.orange);
+		gui[\scrollTheme]=( \background	: Color(0.25, 0.25, 0.25), \border : Color.orange);
 
 		gui[\plainTheme]=( colors_: (\on	: Color.black, \off : Color.black));
 
 		gui[\plainTheme2]=( colors_: (\on : Color.orange, \off : Color.orange));
 		
-		gui[\scaleTheme]=( colors_: (\background : Color.clear, \marks : Color.white),
-			marks_:7);	
-		
+		gui[\scaleTheme]=( colors_: (\background : Color.clear, \marks : Color.white), marks_:7);		
 		gui[\onOffTheme1]=( \font_		: Font("Helvetica-Bold", 12),
 						 \rounded_	: true,
 						 \colors_     : (\on : Color(20/77,1,20/77), \off: Color(0.4,0.4,0.4)));
@@ -633,8 +626,8 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		gui[\menuTheme2]=( \font_		: Font("Arial", 10),
 						\labelShadow_	: false,
 						\colors_      : (\background: Color.orange*0.75,
-										\label:Color.black,
-										\string:Color.black,
+									   \label:Color.black,
+									   \string:Color.black,
 									   \focus:Color.clear));
 									   
 		gui[\theme2]=(	\orientation_  : \horiz,
@@ -701,17 +694,14 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			.color_(\down,Color.orange*0.75/2)
 			.color_(\string,Color.white)
 			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
-							
-		
-				 	
+									 	
 		// 4.output channels
 		MVC_PopUpMenu3(models[4],window    ,Rect(864,5,70,16),gui[\menuTheme2  ]);
 		
 		// 7.send channels
 		MVC_PopUpMenu3(models[7],window    ,Rect(783,5,70,16),gui[\menuTheme2]);
 			
-		// tabs /////// 		
-		
+		// tabs /////// 	
 		gui[\masterTabs]=MVC_TabbedView(window, Rect(0,12, 952, 433), offset:((20)@0))
 			.labels_(["Synth","Piano Roll","Prg"])
 			.font_(Font("Helvetica", 11))
@@ -720,13 +710,10 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			.labelColors_(  Color.orange!3)
 			.backgrounds_(  Color.clear!3)
 			.tabCurve_(8)
-		//	.tabWidth_([63,63])
 			.tabHeight_(15)
 			.followEdges_(true)
 			.value_(0);
 		
-		// control tab
-	
 		gui[\synthTab] = gui[\masterTabs].mvcTab(0);
 		gui[\pRollTab] = gui[\masterTabs].mvcTab(1);
 		gui[\preTab] = gui[\masterTabs].mvcTab(2);
@@ -762,7 +749,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 							Rect(11,6,thisWidth-22,thisHeight-148), gui[\scrollTheme]);
 							
 		// piano roll	
-		sequencer.createWidgets(gui[\pScrollView],Rect(5,9,920,273),
+		sequencer.createWidgets(gui[\pScrollView],Rect(5,9,920,298),
 				(\selectRect: Color.white,
 				 \background: Color(0.5, 0.5, 0.5)*0.7,
 				 \velocityBG: Color(3/77,1/103,0,65/77),
@@ -801,7 +788,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		MVC_PlainSquare(gui[\scrollView], Rect(700,127,3,116), gui[\plainTheme2]);
 			
 		// logo					
-		MVC_Text(gui[\scrollView],Rect(1, 246, 176, 30))
+		MVC_Text(gui[\scrollView],Rect(22, 246, 176, 30))
 			.align_(\center)
 			.shadow_(false)
 			.penShadow_(true)
@@ -852,17 +839,20 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 				
 		};
 		
-		// 14. midi clock out
-		MVC_OnOffView(models[14], gui[\scrollView], Rect(189, 252, 73, 19),gui[\onOffTheme4]);
 
-		// 15. use controls in presets
-		MVC_OnOffView(models[15], gui[\scrollView], Rect(270, 252, 63, 19),gui[\onOffTheme4]);
 		
 		// 16. use program in presets
-		MVC_OnOffView(models[16], gui[\scrollView], Rect(342, 252, 63, 19),gui[\onOffTheme4]);
+		MVC_OnOffView(models[16], gui[\scrollView], Rect(717, 253, 63, 19),gui[\onOffTheme4]);
+			
+		// 15. use controls in presets
+		MVC_OnOffView(models[15], gui[\scrollView], Rect(785, 253, 63, 19),gui[\onOffTheme4]);
+		
+		// 14. midi clock out
+		MVC_OnOffView(models[14], gui[\scrollView], Rect(854, 253, 73, 19),gui[\onOffTheme4]);
+
 		
 		// program
-		MVC_NumberBox(models[12],gui[\scrollView],Rect(493, 253, 28, 19))
+		MVC_NumberBox(models[12],gui[\scrollView],Rect(66, 278, 28, 19))
 				.labelFont_(Font("AvenirNext-Bold",12))
 				.orientation_(\horiz)
 				.label_("Program")
@@ -872,8 +862,8 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 				.numberWidth_(-24);
 		
 		// program name text
-		gui[\programName] = MVC_Text(gui[\scrollView],Rect(526, 248,178,26))
-			.font_(Font("AvenirNext-Bold",16))
+		gui[\programName] = MVC_Text(gui[\scrollView],Rect(104, 273,132,26))
+			.font_(Font("AvenirNext-Bold",14))
 			.align_(\left)
 			.shadow_(false)
 			.penShadow_(true)
@@ -886,7 +876,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		};
 					
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(gui[\scrollView],735@252,97,
+		presetView=MVC_PresetMenuInterface(gui[\scrollView],715@278,117,
 				Color.orange/1.6,
 				Color.orange/3,
 				Color.orange/1.5,
@@ -896,7 +886,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		this.attachActionsToPresetGUI;	
 
 		// the keyboard, fix bug so we don't need this scrollView
-		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(12, 330, 925, 93))
+		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(12, 330+25, 925, 93))
 			.hasHorizontalScroller_(false)
 			.hasVerticalScroller_(false);
 			
@@ -909,7 +899,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		
 		// program names in a 8 x 8 grid	
 		rolandPresets.do{|string,i|
-			gui[i]=MVC_Text(gui[\preTab], Rect( 40+((i%8)*113), 30+(i.div(8)*16*2), 105, 13*2) )
+			gui[i]=MVC_Text(gui[\preTab], Rect( 40+((i%8)*113), 30+(i.div(8)*34), 105, 30) )
 				.string_(string)
 				.canEdit_(false)
 				.enterStopsEditing_(true)
@@ -951,7 +941,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 				.color_(\string,Color(59/77,59/77,59/77)*1.4)
 				.color_(\background,Color(0.14,0.12,0.11,0.25)*0.4)
 				.font_(Font.new("STXihei", 11));	
-			gui[2000+i]=MVC_Text(gui[\preTab], Rect( 15, 30+(i*16*2), 20, 14*2) )
+			gui[2000+i]=MVC_Text(gui[\preTab], Rect( 15, 30+(i*34), 20, 30) )
 				.align_(\right)
 				.string_((i+1).asString)
 				.color_(\string,Color(59/77,59/77,59/77)*1.4)
@@ -1108,6 +1098,16 @@ RolandJP08 {
 	129:["ENV2 SUSTAIN    "	,\slider, Rect(895,163,20,89), [0,255,\linear,1],\int, "S"],
 	131:["ENV2 RELEASE    "	,\slider, Rect(945,163,20,89), [0,255,\linear,1],\int, "R"],
 	133:["ENV2 KEY FOLLOW "	,\slider, Rect(989,187,27,40), [0,3,\linear,1],  \jp10, "Key"],
+	// other
+	402:["DELAY LEVEL     ",\knob, Rect(279,294,23,23), [0,15,\linear,1],\int, "Delay Level"],
+	404:["DELAY TIME      ",\knob, Rect(279+75,294,23,23), [0,15,\linear,1],\int, "Delay Time"],
+	406:["DELAY FEEDBACK  ",\knob, Rect(279+(75*2),294,23,23), [0,15,\linear,1],\int, "Delay FB"],
+	425:["PORTA SW        ",\slider, Rect(279+(75*3),294,23,23), [0,1,\linear,1],\switch, "Porta"],
+	427:["PORTA TIME      ",\knob, Rect(279+(75*4),294,23,23), [0,255,\linear,1],\int, "Porta Time"],
+	431:["ASSIGN MODE     ",\slider, Rect(279+(75*5),294,23,23), [0,3,\linear,1],\jp11, "Mode"],
+	433:["BEND RANGE      ",\knob, Rect(279+(75*6),294,23,23), [0,15,\linear,1],\int, "Bend Range"],
+	
+	
 		);		
 		keys = metadata.keys.asArray.sort;		
 	}

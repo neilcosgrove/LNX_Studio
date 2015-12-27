@@ -62,7 +62,13 @@ LNX_AppMenus {
 		SCMenuItem.new(tools,  "Restore Library Defaults").action_{studio.restoreLibraryDefaults};
 		SCMenuItem.new(tools,  "Check For Library Updates").action_{studio.checkForLibraryUpdates};
 		SCMenuItem.new(tools,  "Open Library in Finder").action_{
-			("open" + (LNX_File.prefDir++"Library").quote ).systemCmd};	
+			("open" + (LNX_File.prefDir++"Library").quote ).systemCmd};
+			
+		SCMenuSeparator.new(tools);
+		SCMenuItem.new(tools, "Quit LNX_Studio").setShortCut("q").action_{
+			studio.server.quit;
+			1.exit
+		};	
 	}
 
 	// application menus for the developer mode

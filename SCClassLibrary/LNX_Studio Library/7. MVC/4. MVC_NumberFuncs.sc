@@ -146,6 +146,7 @@ MVC_NumberFunc{
 			'jp8': {|n| #["1","2"][n]},
 			'jp9': {|n| #["-ive","+ive"][n]},
 			'jp10': {|n| #["Off","Env-1","Env-2","1+2"][n]},
+			'jp11': {|n| #["Poly","?","Mono","Unison"][n]},
 		)
 	}
 	
