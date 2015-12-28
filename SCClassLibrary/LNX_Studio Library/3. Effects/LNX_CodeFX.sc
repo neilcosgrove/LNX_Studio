@@ -221,12 +221,16 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		this.initCode;
 
 		codeModel.actions_(\enterAction, {|me|
-			if (p[14]==0) {this.guiEvaluate}; // test becasue string action will auto-build
+			if (p[14]==0) {
+				if (this.guiEvaluate) { this.startDSP };
+			}; // test becasue string action will auto-build
 		});
 		
 		codeModel.actions_(\stringAction,{|me|
 			this.editString(me.string);
-			if (p[14]==1) {this.guiEvaluate};
+			if (p[14]==1) {
+				if (this.guiEvaluate) { this.startDSP };
+			};
 		});
 
 		errorModel = "".asModel;
@@ -638,14 +642,17 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 				def.name_(sythDefID.asString+(def.name));	
 				if (def.metadata.isNil) { def.metadata=() };
 				if (def.metadata[\specs].isNil) { def.metadata[\specs]=() };	
-				this.dissectSynthDef(def);
+				pass = this.dissectSynthDef(def);
 				if (send) { api.sendOD(\netEvaluate) };
 			}{
 				this.warnNotSynthDef(def);
+				pass = false;
 			}
 		}{
 			this.warnKeyword(pass);
-		}
+		};
+		
+		^pass; // return pass flag to know if a new SynthDef neeeds to be sent to the server
 	}
 	
 	// net evaluate
@@ -671,7 +678,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 				def.name_(sythDefID.asString+(def.name));
 				if (def.metadata.isNil) { def.metadata=() };
 				if (def.metadata[\specs].isNil) { def.metadata[\specs]=() };
-				this.dissectSynthDef(def);
+				if (this.dissectSynthDef(def)) { this.startDSP };
 			}{
 				this.warnNotSynthDef(def);
 			}
@@ -771,7 +778,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 			failed=true;
 		};
 		
-		if (failed) {^nil}; // drop if failed
+		if (failed) {^false}; // drop if failed
 		
 		valid = true; // <-- be moved here (also for instrument)
 		
@@ -847,6 +854,8 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		// buildModels could fail so do 1st before setNewDef
 		this.buildModels(def); // join system to models
 		synthDef = def         // and store
+		
+		^true; // succesful return
 				
 	}
 		

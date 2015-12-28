@@ -283,13 +283,13 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				}],		
 						
 			// 11. bank
-			[0,[0,16,\lin,1], midiControl, 11, "Bank",{|me,value,latency,send,toggle|
+			[0,[0,15,\lin,1], midiControl, 11, "Bank",{|me,value,latency,send,toggle|
 				this.setODModel(11,value,latency,send); // network must come 1st
 				this.setMoogProgram(latency);
 			}],
 			
 			// 12. preset
-			[0,[0,16,\lin,1], midiControl, 12, "Preset",{|me,value,latency,send,toggle|
+			[0,[0,15,\lin,1], midiControl, 12, "Preset",{|me,value,latency,send,toggle|
 				this.setODModel(12,value,latency,send); // network must come 1st
 				this.setMoogProgram(latency);
 			}],	

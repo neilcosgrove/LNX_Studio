@@ -260,7 +260,7 @@
 							var string = gui[\codeWindowText].string;
 							codeModel.string_(string);
 							this.editString(string);
-							this.guiEvaluate;
+							if (this.guiEvaluate) { this.startDSP };
 						};
 						
 					// auto build button

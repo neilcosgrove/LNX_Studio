@@ -638,7 +638,7 @@
 
 			midiWin = MVC_ModalWindow(
 				(mixerWindow.isVisible).if(mixerWindow.view,window.view),
-				(420)@(415));
+				(420)@(449));
 			scrollView = midiWin.scrollView.view;
 
 
@@ -677,7 +677,7 @@
 				.color_(\label,Color.black);
 
 			// internal midi buses
-			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 363, 70, 17))
+			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 357, 70, 17))
 				.items_(["None","1 Bus","2 Buses","3 Buses"
 						 ,"4 Buses","5 Buses","6 Buses","7 Buses","8 Buses"
 						 ,"9 Buses","10 Buses","11 Buses","12 Buses","13 Buses"
@@ -736,16 +736,7 @@
 				  \colors_     : (\background : Color.ndcMenuBG, \label : Color.black ))
 			);
 			
-			// Ok
-			MVC_FlatButton(scrollView,Rect(332, 362, 50, 20),"Ok",gui[\buttonTheme])
-				.canFocus_(true)
-				.color_(\up,Color.white)
-				.action_{	 midiWin.close };
 
-			// scan for new midi equipment
-			MVC_FlatButton(scrollView,Rect(252 ,362, 70, 20),"Scan MIDI",gui[\buttonTheme])
-				.canFocus_(false)
-				.action_{ LNX_MIDIPatch.refreshPorts };
 
 			// network networkCntKeyboard
 			MVC_OnOffView(models[\networkCntKeyboard],scrollView,Rect(170, 299, 70, 19),
@@ -797,6 +788,22 @@
 					this.recreateLibraryGUI;
 				};
 						 					   
+				
+			// roland is visible
+			MVC_OnOffView(scrollView,Rect(311, 357, 72, 19), "JP-08",
+								( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.value_(LNX_RolandJP08.isVisiblePref.asInt)
+				.label_("Roland")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					LNX_RolandJP08.isVisiblePref_(me.value.isTrue).saveIsVisiblePref;
+					this.recreateLibraryGUI;
+				};
+				
 			// midi sync latency
 			MVC_SmoothSlider(scrollView, Rect(170, 139,150, 16),gui[\sliderTheme])
 				.numberFunc_(\float3Sign)
@@ -811,6 +818,18 @@
 					LNX_MIDIPatch.midiSyncLatency_(midiSyncLatency);
 					[midiSyncLatency].savePref("MIDI Sync Latency");
 				};
+				
+			// scan for new midi equipment
+			MVC_FlatButton(scrollView,Rect(252 ,396, 70, 20),"Scan MIDI",gui[\buttonTheme])
+				.canFocus_(false)
+				.action_{ LNX_MIDIPatch.refreshPorts };
+				
+				
+			// Ok
+			MVC_FlatButton(scrollView,Rect(332, 396, 50, 20),"Ok",gui[\buttonTheme])
+				.canFocus_(true)
+				.color_(\up,Color.white)
+				.action_{	 midiWin.close };
 						 					   
 		}{
 			midiWin.front;
