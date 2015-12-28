@@ -851,7 +851,7 @@ LNX_InstrumentTemplate {
 			this.onOffModel.valueAction_(tempP[1],nil,false,false);
 			this.soloModel.valueAction_(tempP[0],nil,false,false);
 			
-			this.updateGUI(tempP); // before p=tempP
+			this.updateGUI(tempP); // before p=tempP, this calls the models with lazyValueAction
 			
 			// update preset gui
 			if (presetView.notNil) {this.updatePresetNames; presetView.refresh};

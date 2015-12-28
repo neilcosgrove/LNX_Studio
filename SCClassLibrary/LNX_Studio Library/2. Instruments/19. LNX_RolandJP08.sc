@@ -10,6 +10,8 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 	var <sequencer, <keyboardView, <noControl, <midiInBuffer, <midiOutBuffer, <seqOutBuffer;
 	var <lastProgram, <midi2, <sysex2Time;
 
+	// init & info ///////////////////////////////////////////////////////
+
 	*initClass{
 		Class.initClassTree(LNX_File);
 		// load in all the preferences
@@ -80,215 +82,8 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 			.recordFocusAction_{ keyboardView.focus };
 	}
 	
-	// MIDI patching ///////////////////////////////////////////////////////
+	// the models ///////////////////////////////////////////////////////
 	
-	// any post midiInit stuff
-	iInitMIDI{
-		//midi.findByName("Moog Sub 37","Moog Sub 37");
-		this.useMIDIPipes;
-		midiOutBuffer = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.toMIDIPipeOut(pipe) };
-		midiInBuffer  = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromInBuffer(pipe)  };
-		seqOutBuffer  = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromSequencerBuffer(pipe) };
-		midi2.sysexFunc = {|src, data, latency| this.sysex2(data, latency) };
-	}
-	
-	midiSelectProgram{} // this needs to be disabled for everything
-		
-	// midi pipe in. This is the future
-	pipeIn{|pipe|
-		// exceptions
-		if (instOnSolo.isOff and: {p[13]>0} ) {^this}; // drop if sequencer off
-		if (pipe.historyIncludes(this))       {^this}; // drop to prevent internal feedback loops
-		
-		switch (pipe.kind)
-			{\control} {  // if control	
-				^this    // drop 
-			}
-			{\program} { // if program
-				api.groupCmdOD(\extProgIn, pipe.program+1,false); // network prog change
-				^this   // & drop	
-			};
-		midiInBuffer.pipeIn(pipe); // to in Buffer. (control & progam are dropped above)
-	}
-	
-	// sysex in from the JP08 physical MIDI Out port, not the USB MIDI port
-	// to prevent feedback ouput chokes input for 1 second
-	sysex2{|data, latency|
-		var index, key, value;
-		
-		// exceptions
-		if (data.size!=16)    {^this};          // packet size exception
-		if (data[1]!=65)      {^this};          // Roland SYSEX number
-		if (data[6]!=28)      {^this};          // JP-08 product code
-		if (data[2]!=16)      {^this};          // not this device, should stop feedback
-		if (data[8]!=3)       {^this};          // unsure, maybe set value command?
-		if (data[0]!=(-16))   {^this};          // first byte
-		if (data[15]!=(-9))   {^this};          // last byte
-
-		key   = (data[10]*25) + data[11];       // key to metadata in RolandJP08 dictionary
-		value = (data[12]*16) + data[13];       // 8 bit value (0-255)
-		index = RolandJP08.indexOfKey(key);     // index of model
-
-		if (index.isNil)    {^this};            // key not found
-
-		// feedback exception, not needed if we different device IDs
-		if (sysex2Time[index].notNil and: { SystemClock.now < sysex2Time[index] })
-			{ ^this }                          // exception
-			{ sysex2Time[index] = nil };       // else clear time
-
-		models[(index+17)].lazyValue_(value, true); // set model, no action
-		p[index+17]=value;                          // set p[]
-		
-		api.sendVP(\ccvp++index, \netExtCntIn, index+17, value);  // network it
-		
-	}
-	
-	// sysex out to the JP08 physical MIDI In port, not the USB MIDI port
-	// to prevent feedback ouput chokes input for 1 second
-	midiControlOut{|index,value,latency|
-		var key      = RolandJP08.keyAt(index.asInt);
-		var data     = Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, key.div(25), key%25,
-											value.div(16), value.asInt%16, 0, -9 ];
-											
-		data[14] = RolandJP08.checkSum(data[8..13]); // put in Roland checksum
-		midi.sysex(data,latency);                    // midi control out
-		
-		// to prevent feedback, when can i start listening again?
-		sysex2Time[index] = SystemClock.now + (latency?0) + (studio.midiSyncLatency) + 1;
-	}
-	
-/*
-[F0, 41 (Roland SYSEX number), 10 (device ID), 00 (modelID),00,00,1CÊ(Product code for the JP-08), 12, 03, 00, address MSB, address LSB, value MSB, value LSB, checksum, F7]
-
-checksum for byte @ index 14 is...
-RolandJP08.checkSum(Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ][8..13]);
-Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
-*/
-
-	// drag and drop a Roland PATCH.PRM file into the preset
-	dropFile{|i,path|
-		var file,loadList;
-		
-		// file type / name exceptions
-		if (path.keep(-4)!=".PRM")      { "Not a .PRM file".postln;  ^this};
-		if (path.contains("PATCH").not) { "Not a PATCH file".postln; ^this};
-		
-		// make a flat list contains pairs of keys & values
-		file = path.loadList;
-		loadList = [file.last[11..].drop(-2)]  ++ file.drop(-1).collect{|s|
-			[ RolandJP08.keyOfName(s[0..15]),s[16..].interpret ]
-		}.reject{|i| i[0].isNil}.flat;
-			
-		rolandPresetDict[i] = loadList; // store this list in the rolandPresetDict
-
-		// update the name in the gui, index in gui starts at zero
-		rolandPresets[i-1]=loadList.first;
-		gui[i-1].string_(loadList.first);
-		rolandPresets.savePref("Roland Presets"); // & save
-		
-		// and save rolandPresetDict. I know I have 2 pref files, this may change
-		rolandPresetDict.collect{|value,key| ([key] ++ value).asCompileString }.asList
-			.savePref("Roland Preset Dict");
-
-	}
-	
-	// update gui to a preset from the preference dict	
-	loadRolandPresetDict{|i|
-		i=i.asInt;
-		if (rolandPresetDict[i].notNil) {
-			rolandPresetDict[i].drop(1).pairsDo{|key,value|  // drop 1st item which is name
-				var index = RolandJP08.indexOfKey(key);     // index of model
-				models[(index+17)].lazyValue_(value, false); // set model, no action
-				p[index+17]=value;                          // set p[]
-			};
-		};
-	}
-	
-	
-	
-	// set control
-	extCntIn{|item,value,latency|
-		api.sendVP((id++"_ccvp_"++item).asSymbol,
-			'netExtCntIn',item,value,midi.uidOut,midi.midiOutChannel);
-	}
-	
-	// net version of above
-	netExtCntIn{|item,value,uidOut,midiOutChannel|
-		p[item+14]=value;
-		models[item+17].lazyValue_(value,false);
-		// go on, do a pipe here
-		midi.control(RolandJP08.keyAt(item) ,value,nil,false,true);
-		// ignore set to true so no items learnt from this
-	}
-
-	// midi coming from in buffer
-	fromInBuffer{|pipe|
-		sequencer.pipeIn(pipe);                 // to the sequencer
-		keyboardView.pipeIn(pipe,Color.orange); // to the gui keyboard
-		// drop out and Don't send if pipe is external
-		// and coming from RolandJP08 going to RolandJP08
-		if ((pipe.source==\external) && {midi.outPoint.isSameDeviceAndName(pipe[\endPoint])}) {
-			^this
-		};	
-		this.toMIDIOutBuffer(pipe);             // to midi out buffer
-	}
-	
-	// output from the sequencer buffer
-	fromSequencerBuffer{|pipe|
-		keyboardView.pipeIn(pipe,Color.orange); // to the gui keyboard
-		this.toMIDIOutBuffer(pipe);             // and to the out buffer
-	}
-	
-	// to the output buffer
-	toMIDIOutBuffer{|pipe|
-		if (instOnSolo.isOff and: {p[13]>0} ) {^this}; // drop if sequencer off
-		midiOutBuffer.pipeIn(pipe);                    // to midi out buffer
-	}
-	
-	// and finally to the midi out
-	toMIDIPipeOut{|pipe|
-		midi.pipeIn(pipe.addToHistory(this));          // add this to its history
-	}
-
-	// release all played notes, uses midi Buffer
-	stopAllNotes{ 
-		midiInBuffer.releaseAll;
-		seqOutBuffer.releaseAll;
-		midiOutBuffer.releaseAll;
-		{keyboardView.clear}.defer(studio.actualLatency);
-	}
-	
-	// external midi setting prog number (these are network methods)
-	extProgIn{|prog,send=false|
-		prog = models[12].controlSpec.constrain(prog).asInt; // use spec to constrain
-		p[12] = prog;                                        // external
-		models[12].lazyValue_(p[12],false);                  // false is no auto
-		this.updatePresetGUI;
-		if (send.isTrue) { this.setRolandProgram };
-		
-		this.loadRolandPresetDict(prog);
-	}
-	
-	// gui stuff for the preset tab.
-	updatePresetGUI{
-		var prog=	p[12].asInt-1;
-		{
-			if (lastProgram.notNil) {	
-				gui[lastProgram].color_(\background,Color(0.14,0.12,0.11)*0.4);
-				gui[1000+(lastProgram%8)].color_(\background,Color(0.14,0.12,0.11,0.25)*0.4);
-				gui[2000+(lastProgram.div(8))].color_(\background,
-					Color(0.14,0.12,0.11,0.25)*0.4);
-			};
-			gui[prog].color_(\background,Color(0.5,0.5,0.5,0.5));
-			gui[1000+(prog%8)].color_(\background,Color(0.14,0.12,0.11)*0.4);
-			gui[2000+(prog.div(8))].color_(\background,Color(0.14,0.12,0.11)*0.4);
-			lastProgram = prog;
-		}.defer;
-	}
-	
-	///////////////////////////////////////////////////////
-
-	// the models
 	initModel {
 		
 		var template=[
@@ -431,6 +226,210 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		randomExclusion=[0,1,10];
 		autoExclusion=[12];
 
+	}
+		
+	// MIDI patching ///////////////////////////////////////////////////////
+	
+	// any post midiInit stuff
+	iInitMIDI{
+		midi.findByName("Boutique","Boutique");
+		this.useMIDIPipes;
+		midiOutBuffer = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.toMIDIPipeOut(pipe) };
+		midiInBuffer  = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromInBuffer(pipe)  };
+		seqOutBuffer  = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromSequencerBuffer(pipe) };
+		midi2.sysexFunc = {|src, data, latency| this.sysex2(data, latency) };
+	}
+	
+	midiSelectProgram{} // this needs to be disabled for everything
+		
+	// midi pipe in. This is the future
+	pipeIn{|pipe|
+		// exceptions
+		if (instOnSolo.isOff and: {p[13]>0} ) {^this}; // drop if sequencer off
+		if (pipe.historyIncludes(this))       {^this}; // drop to prevent internal feedback loops
+		
+		switch (pipe.kind)
+			{\control} {  // if control	
+				^this    // drop 
+			}
+			{\program} { // if program
+				api.groupCmdOD(\extProgIn, pipe.program+1,false); // network prog change
+				^this   // & drop	
+			};
+		midiInBuffer.pipeIn(pipe); // to in Buffer. (control & progam are dropped above)
+	}
+	
+	// sysex in from the JP08 physical MIDI Out port, not the USB MIDI port
+	// to prevent feedback ouput chokes input for 1 second
+	sysex2{|data, latency|
+		var index, key, value;
+		
+		// exceptions
+		if (data.size!=16)    {^this};          // packet size exception
+		if (data[1]!=65)      {^this};          // Roland SYSEX number
+		if (data[6]!=28)      {^this};          // JP-08 product code
+		if (data[2]!=16)      {^this};          // not this device, should stop feedback
+		if (data[8]!=3)       {^this};          // unsure, maybe set value command?
+		if (data[0]!=(-16))   {^this};          // first byte
+		if (data[15]!=(-9))   {^this};          // last byte
+
+		key   = (data[10]*25) + data[11];       // key to metadata in RolandJP08 dictionary
+		value = (data[12]*16) + data[13];       // 8 bit value (0-255)
+		index = RolandJP08.indexOfKey(key);     // index of model
+
+		if (index.isNil)    {^this};            // key not found
+
+		// feedback exception, not needed if we different device IDs
+		if (sysex2Time[index].notNil and: { SystemClock.now < sysex2Time[index] })
+			{ ^this }                          // exception
+			{ sysex2Time[index] = nil };       // else clear time
+
+		models[(index+17)].lazyValue_(value, true); // set model, no action
+		p[index+17]=value;                          // set p[]
+		
+		api.sendVP(\ccvp++index, \netExtCntIn, index+17, value);  // network it
+		
+	}
+	
+	// sysex out to the JP08 physical MIDI In port, not the USB MIDI port
+	// to prevent feedback ouput chokes input for 1 second
+	midiControlOut{|index,value,latency|
+		var key      = RolandJP08.keyAt(index.asInt);
+		var data     = Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, key.div(25), key%25,
+											value.div(16), value.asInt%16, 0, -9 ];
+											
+		data[14] = RolandJP08.checkSum(data[8..13]); // put in Roland checksum
+		midi.sysex(data,latency);                    // midi control out
+		
+		// to prevent feedback, when can i start listening again?
+		sysex2Time[index] = SystemClock.now + (latency?0) + (studio.midiSyncLatency) + 1;
+	}
+	
+/*
+[F0, 41 (Roland SYSEX number), 10 (device ID), 00 (modelID),00,00,1CÊ(Product code for the JP-08), 12, 03, 00, address MSB, address LSB, value MSB, value LSB, checksum, F7]
+
+checksum for byte @ index 14 is...
+RolandJP08.checkSum(Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ][8..13]);
+Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
+*/
+
+	// drag and drop a Roland PATCH.PRM file into the preset
+	dropFile{|i,path|
+		var file,loadList;
+		
+		// file type / name exceptions
+		if (path.keep(-4)!=".PRM")      { "Not a .PRM file".postln;  ^this};
+		if (path.contains("PATCH").not) { "Not a PATCH file".postln; ^this};
+		
+		// make a flat list contains pairs of keys & values
+		file = path.loadList;
+		loadList = [file.last[11..].drop(-2)]  ++ file.drop(-1).collect{|s|
+			[ RolandJP08.keyOfName(s[0..15]),s[16..].interpret ]
+		}.reject{|i| i[0].isNil}.flat;
+			
+		rolandPresetDict[i] = loadList; // store this list in the rolandPresetDict
+
+		// update the name in the gui, index in gui starts at zero
+		rolandPresets[i-1]=loadList.first;
+		gui[i-1].string_(loadList.first);
+		rolandPresets.savePref("Roland Presets"); // & save
+		
+		// and save rolandPresetDict. I know I have 2 pref files, this may change
+		rolandPresetDict.collect{|value,key| ([key] ++ value).asCompileString }.asList
+			.savePref("Roland Preset Dict");
+
+	}
+	
+	// update gui to a preset from the preference dict	
+	loadRolandPresetDict{|i|
+		i=i.asInt;
+		if (rolandPresetDict[i].notNil) {
+			rolandPresetDict[i].drop(1).pairsDo{|key,value|  // drop 1st item which is name
+				var index = RolandJP08.indexOfKey(key);     // index of model
+				models[(index+17)].lazyValue_(value, false); // set model, no action
+				p[index+17]=value;                          // set p[]
+			};
+		};
+	}
+	
+	// set control
+	extCntIn{|item,value,latency|
+		api.sendVP((id++"_ccvp_"++item).asSymbol,
+			'netExtCntIn',item,value,midi.uidOut,midi.midiOutChannel);
+	}
+	
+	// net version of above
+	netExtCntIn{|item,value,uidOut,midiOutChannel|
+		p[item+14]=value;
+		models[item+17].lazyValue_(value,false);
+		// go on, do a pipe here
+		midi.control(RolandJP08.keyAt(item) ,value,nil,false,true);
+		// ignore set to true so no items learnt from this
+	}
+
+	// midi coming from in buffer
+	fromInBuffer{|pipe|
+		sequencer.pipeIn(pipe);                 // to the sequencer
+		keyboardView.pipeIn(pipe,Color.orange); // to the gui keyboard
+		// drop out and Don't send if pipe is external
+		// and coming from RolandJP08 going to RolandJP08
+		if ((pipe.source==\external) && {midi.outPoint.isSameDeviceAndName(pipe[\endPoint])}) {
+			^this
+		};	
+		this.toMIDIOutBuffer(pipe);             // to midi out buffer
+	}
+	
+	// output from the sequencer buffer
+	fromSequencerBuffer{|pipe|
+		keyboardView.pipeIn(pipe,Color.orange); // to the gui keyboard
+		this.toMIDIOutBuffer(pipe);             // and to the out buffer
+	}
+	
+	// to the output buffer
+	toMIDIOutBuffer{|pipe|
+		if (instOnSolo.isOff and: {p[13]>0} ) {^this}; // drop if sequencer off
+		midiOutBuffer.pipeIn(pipe);                    // to midi out buffer
+	}
+	
+	// and finally to the midi out
+	toMIDIPipeOut{|pipe|
+		midi.pipeIn(pipe.addToHistory(this));          // add this to its history
+	}
+
+	// release all played notes, uses midi Buffer
+	stopAllNotes{ 
+		midiInBuffer.releaseAll;
+		seqOutBuffer.releaseAll;
+		midiOutBuffer.releaseAll;
+		{keyboardView.clear}.defer(studio.actualLatency);
+	}
+	
+	// external midi setting prog number (these are network methods)
+	extProgIn{|prog,send=false|
+		prog = models[12].controlSpec.constrain(prog).asInt; // use spec to constrain
+		p[12] = prog;                                        // external
+		models[12].lazyValue_(p[12],false);                  // false is no auto
+		this.updatePresetGUI;
+		if (send.isTrue) { this.setRolandProgram };
+		
+		this.loadRolandPresetDict(prog);
+	}
+	
+	// gui stuff for the preset tab.
+	updatePresetGUI{
+		var prog=	p[12].asInt-1;
+		{
+			if (lastProgram.notNil) {	
+				gui[lastProgram].color_(\background,Color(0.14,0.12,0.11)*0.4);
+				gui[1000+(lastProgram%8)].color_(\background,Color(0.14,0.12,0.11,0.25)*0.4);
+				gui[2000+(lastProgram.div(8))].color_(\background,
+					Color(0.14,0.12,0.11,0.25)*0.4);
+			};
+			gui[prog].color_(\background,Color(0.5,0.5,0.5,0.5));
+			gui[1000+(prog%8)].color_(\background,Color(0.14,0.12,0.11)*0.4);
+			gui[2000+(prog.div(8))].color_(\background,Color(0.14,0.12,0.11)*0.4);
+			lastProgram = prog;
+		}.defer;
 	}
 
 	// sync stuff ///////////////////////////
@@ -839,8 +838,6 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 				
 		};
 		
-
-		
 		// 16. use program in presets
 		MVC_OnOffView(models[16], gui[\scrollView], Rect(717, 253, 63, 19),gui[\onOffTheme4]);
 			
@@ -849,7 +846,6 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		
 		// 14. midi clock out
 		MVC_OnOffView(models[14], gui[\scrollView], Rect(854, 253, 73, 19),gui[\onOffTheme4]);
-
 		
 		// program
 		MVC_NumberBox(models[12],gui[\scrollView],Rect(66, 278, 28, 19))
