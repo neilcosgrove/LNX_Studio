@@ -746,6 +746,14 @@ gives min, max, averages and total
 		});
 		^false
 	}
+
+	includesString{|string|
+		string=string.asSymbol;
+		this.size.do({|i|
+			if ((this.at(i).isString)and:{this.at(i).asSymbol==string}) {^true}
+		});
+		^false
+	}
 	
 	indexOfString{|string|
 		string=string.asSymbol;

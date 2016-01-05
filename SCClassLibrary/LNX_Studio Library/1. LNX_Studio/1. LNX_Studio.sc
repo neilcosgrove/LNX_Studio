@@ -335,7 +335,6 @@ LNX_Studio {
 	
 	postBootFuncs{	
 		{
-			//[serverBootNo, LNX_AudioDevices.bootNo].postln;
 			
 			if (serverBootNo != LNX_AudioDevices.bootNo) {
 			
