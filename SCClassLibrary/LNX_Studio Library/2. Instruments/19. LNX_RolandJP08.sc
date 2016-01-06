@@ -510,7 +510,42 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	// clear the sequencer
 	clearSequencer{ sequencer.clear }
 
-	// sub 37 stuff ////////////////////////*****************************************************
+	// roland jp08 stuff ///////////////////////***************************************************
+
+
+	/*
+		in LNX_MIDIPatch:program can i put...
+		if (latency.notNil) { latency = latency + midiSyncLatency };
+	*/
+
+	preLoadP{|tempP|
+
+		models[16].doLazyValueAction_(tempP[16],nil,false);
+
+		// check send program  1st and then send
+		if (models[16].isTrue) {
+			models[12].doLazyValueAction_(tempP[12],nil,false);
+		};
+		
+		^tempP
+	}
+	
+	// override insts template to stop select program / preset when loading 
+	// add 0.075 to latency to allow control to update
+	// and this should really be called update models
+	updateGUI{|tempP|
+		tempP.do({|v,j|
+			if (p[j]!=v) { 
+				if (j==12) { 
+					// dont do any actions on p== 12
+					models[j].lazyValue_(v,false);
+				}{
+					models[j].lazyValueAction_(v,0.2,send:false); // extra here as well
+				}
+			}
+		});
+		this.iUpdateGUI(tempP);
+	}
 
 	//  this is overriden to force program changes & exclusions by put p[15 & 16] 1st
 	loadPreset{|i,latency|
@@ -531,6 +566,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			presetToLoad.do({|v,j|	
 				if (#[15,16,12].includes(j).not) {
 					if (p[j]!=v) {
+						// above updateGUI only works after 0.2 so why 0.075 here?
 						models[j].lazyValueAction_(v,(latency?0)+0.075,false)
 					}
 				};
@@ -567,21 +603,6 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		this.midiControlOut(item.asInt,value);
 	}
 	
-	// override insts template to stop select program / preset when loading 
-	updateGUI{|tempP|
-		tempP.do({|v,j|
-			if (p[j]!=v) { 
-				if (j==12) { 
-					// dont do any actions on p== 12
-					models[j].lazyValue_(v,false);
-				}{
-					models[j].lazyValueAction_(v,send:false)
-				}
-			}
-		});
-		this.iUpdateGUI(tempP);
-	}
-
 	//////////////////////////*****************************************************
 	// GUI
 	

@@ -788,7 +788,6 @@ LNX_InstrumentTemplate {
 	putLoadList{|l,updateDSP=true|
 		
 		var n,noP,noPre,tempP, header, loadVersion, templateLoadVersion, midiLoadVersion;
-		
 		var midiContolList;
 		
 		l=l.reverse; // reverse the list so we can pop things off in order
@@ -797,36 +796,27 @@ LNX_InstrumentTemplate {
 		
 		if ((header.documentType)==instrumentHeaderType) {
 		
-			isLoading = true;
-			
-			loadVersion = header.version;
-			templateLoadVersion = l.popS.version;
-			
+			isLoading               = true;
+			loadVersion             = header.version;
+			templateLoadVersion     = l.popS.version;
 			lastTemplateLoadVersion = templateLoadVersion;
-		
 			
-			l.pop; // ingore object type, was used for loading inst presets
-		
+			l.pop; // ingore object type, was used for loading inst presets but not any more
 		
 			this.name_(l.popS,false); // false = don't send over network
-		
-			
+					
 			noP   = l.popI;	// pop number of elements in p
 			noPre = l.popI;	// pop number of presets
-
 
 			// am i ever going to need this?
 			this.clear; // clear presets, midi controls and call .iClear
 
-	
 			// pop & adjust in preLoadP if needed, used to change p in LNX_BumNote2:preLoadP only
 			tempP = this.preLoadP(l.popNF(noP),loadVersion);
-			
 			
 			// extend older versions with deault P and clip any extra
 			tempP = (tempP++defaults[(tempP.size)..(defaults.size)])[0..(defaults.size-1)];
 					
-			
 			// now put in the presets	
 			presetMemory = 0!noPre;
 			noPre.do({|i|
@@ -876,7 +866,6 @@ LNX_InstrumentTemplate {
 	}
 	
 	preLoadP{|l,loadVersion| ^l} // used to change p in LNX_BumNote2:preLoadP
-	
 	
 	// update the gui during loading (this needs to be change to protect against window closure)
 	// and networking
