@@ -360,7 +360,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	
 	// net version of above
 	netExtCntIn{|item,value,uidOut,midiOutChannel|
-		p[item+14]=value;
+		p[item+17]=value;
 		models[item+17].lazyValue_(value,false);
 		// go on, do a pipe here
 		midi.control(RolandJP08.keyAt(item) ,value,nil,false,true);
