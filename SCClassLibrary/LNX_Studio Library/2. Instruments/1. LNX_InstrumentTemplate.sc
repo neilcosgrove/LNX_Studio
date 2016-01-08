@@ -386,6 +386,8 @@ LNX_InstrumentTemplate {
 	// free up this instrument/child
 	free{
 		
+		this.iFree;
+		
 		studio.midiCnrtLastNote.removeAll(this); // not the best place but the easiest to do
 		
 		presetsOfPresets.free;
@@ -394,7 +396,9 @@ LNX_InstrumentTemplate {
 	 	midi.free;
 	 	midiControl.free;
 	 	instOnSolo.free;
-	 	this.iFree;
+	 	
+	 	//this.iFree;
+		
 		this.freeWindow;
 		gui.do{|i| if (i.isKindOf(Collection)) { i.do(_.free) } { i.free } };
 		nameModel.free;

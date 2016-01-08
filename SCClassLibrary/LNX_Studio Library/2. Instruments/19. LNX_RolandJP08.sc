@@ -397,7 +397,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	}
 
 	// release all played notes, uses midi Buffer
-	stopAllNotes{ 
+	stopAllNotes{
 		midiInBuffer.releaseAll;
 		seqOutBuffer.releaseAll;
 		midiOutBuffer.releaseAll;
@@ -478,6 +478,9 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	
 	// free this
 	iFree{
+		midiInBuffer.releaseAll;
+		seqOutBuffer.releaseAll;
+		midiOutBuffer.releaseAll;
 		sequencer.do(_.free);
 		midi2.free;
 		midiInBuffer.free;

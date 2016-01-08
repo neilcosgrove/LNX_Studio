@@ -300,6 +300,8 @@ MVC_StepSequencer {
 	free{
 		this.freeAutomation;
 		gui.do(_.free);
+		api.free;
+		api = midiControl = action  = nil;
 	}
 	
 	getSaveList{
