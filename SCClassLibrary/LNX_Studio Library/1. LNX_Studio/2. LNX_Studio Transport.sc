@@ -87,7 +87,7 @@
 						insts.clockPriority.do(_.clockIn(b,this.actualLatency));
 					};
 					
-					if ((beat%6)==0) { this.refreshGuiBeat(beat.div(3)/2) };
+					if ((beat%6)==0) { this.refreshGuiBeat};
 					
 					// midi clock out
 					if (firstLoop) {
@@ -196,7 +196,7 @@
 				insts.midiClock.do{|inst| inst.midiStop(0) };
 			}{		
 				instBeat = beat = 0;	
-				this.refreshGuiBeat(0);
+				this.refreshGuiBeat;
 				MVC_Automation.reset;
 				MVC_Automation.clockStop(beat,this.actualLatency);
 				insts.clockPriority.do{|inst| inst.clockStop(this.actualLatency) };
@@ -228,17 +228,11 @@
 	
 	// used at start collaboration
 	stopNow{
-		isPlaying=false;
+		this.stop.stop.resetTime;
 		extClock=false;
-		extIsPlaying=false;
-		models[\play].value_(0);
-		insts.clockPriority.do{|inst| inst.clockPause(this.actualLatency) };
-//		midiClock.stop(this.actualLatency);
-		midiClock.stop(0);
-		
+		extIsPlaying=false;	
 	}
 	
-			
 	// jump to song pos
 	guiJumpTo{|val| 
 		if (isPlaying) {
@@ -282,9 +276,13 @@
 	}
 	
 	// refresh mixer gui of beat
-	refreshGuiBeat{|beat|
-		{mixerGUI[\beat].string_( (beat.div(MVC_Automation.barLength)+1)
-			++"."++((beat%(MVC_Automation.barLength))+1))}.defer
+	refreshGuiBeat{
+		{
+			var b = (beat.div(3)/2).asInt;
+			mixerGUI[\beat].string_( (b.div(MVC_Automation.barLength)+1)
+			++"."++((b%(MVC_Automation.barLength))+1))
+			
+		}.defer
 	}
 	
 	///////////////////////////
@@ -323,7 +321,7 @@
 						insts.clockPriority.do(_.clockIn3(
 												instBeat,absTime/3,this.actualLatency));
 												
-						if ((extBeat%6)==0) { this.refreshGuiBeat(extBeat.div(3)/2) };
+						if ((extBeat%6)==0) { this.refreshGuiBeat };
 												
 						instBeat = instBeat +1;
 						extBeat  = extBeat  +1;

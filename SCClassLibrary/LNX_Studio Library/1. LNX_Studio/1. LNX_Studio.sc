@@ -1232,6 +1232,7 @@ LNX_Studio {
 	// close studio, i.e. delete all instruments and start again
 	
 	closeStudio{
+		this.stop.stop.resetTime;
 		this.clear;
 		this.title_("");
 		songPath=nil;
