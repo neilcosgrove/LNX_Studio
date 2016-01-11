@@ -174,7 +174,10 @@ LNX_POP {
 		}
 	}
 	
-	*clockStop{} // not using this for now
+	*clockStop{
+		when = nil; 
+		studioModels[\toBecome].valueAction_(-1,nil,false);
+	} // not using this for now
 
 	// the model now sets the program
 	*modelSetProgram{|value,updateGUI=true,latency,jumpTo,offset=0|

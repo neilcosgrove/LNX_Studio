@@ -153,6 +153,7 @@
 		if (extClock.not) {
 			isPlaying=false;
 			MVC_Automation.clearRef;
+			LNX_POP.clockStop;
 			insts.clockPriority.do{|inst| inst.clockPause(this.actualLatency) };
 			//midiClock.stop(this.actualLatency);
 			midiClock.stop(0);
@@ -182,38 +183,37 @@
 	stop{
 		//if (extClock.not) {  // we can stop external clocks now
 			
-			jumpTo=nil;
-			
-			MVC_Automation.clearRef;
-			
-			this.stopTime;
-			
-			if (isPlaying) {
-				isPlaying=false;
-				insts.clockPriority.do{|inst| inst.clockPause(this.actualLatency) };
-				//midiClock.stop(this.actualLatency);
-				midiClock.stop(0);
-				insts.midiClock.do{|inst| inst.midiStop(0) };
-			}{		
-				instBeat = beat = 0;	
-				this.refreshGuiBeat;
-				MVC_Automation.reset;
-				MVC_Automation.clockStop(beat,this.actualLatency);
-				insts.clockPriority.do{|inst| inst.clockStop(this.actualLatency) };
+		jumpTo=nil;
+		MVC_Automation.clearRef;
+		LNX_POP.clockStop;	
+		this.stopTime;
+		
+		if (isPlaying) {
+			isPlaying=false;
+			insts.clockPriority.do{|inst| inst.clockPause(this.actualLatency) };
+			//midiClock.stop(this.actualLatency);
+			midiClock.stop(0);
+			insts.midiClock.do{|inst| inst.midiStop(0) };
+		}{		
+			instBeat = beat = 0;	
+			this.refreshGuiBeat;
+			MVC_Automation.reset;
+			MVC_Automation.clockStop(beat,this.actualLatency);
+			insts.clockPriority.do{|inst| inst.clockStop(this.actualLatency) };
 //				midiClock.stop(this.actualLatency);
 //				midiClock.songPtr(0,this.actualLatency);
-				midiClock.stop(0);
-				midiClock.songPtr(0,0);
-				insts.midiClock.do{|inst|
-					inst.midiStop(0);
-					inst.midiSongPtr(0,0);
-				};
-				this.resetTime;
+			midiClock.stop(0);
+			midiClock.songPtr(0,0);
+			insts.midiClock.do{|inst|
+				inst.midiStop(0);
+				inst.midiSongPtr(0,0);
 			};
-			models[\play].lazyValue_(0,false);
-			models[\autoRecord].lazyValueAction_(0);
-			
-			if (hackOn) { {myHack[\stopFunc].value( this, myHack[\netAddr]) }.try };
+			this.resetTime;
+		};
+		models[\play].lazyValue_(0,false);
+		models[\autoRecord].lazyValueAction_(0);
+		
+		if (hackOn) { {myHack[\stopFunc].value( this, myHack[\netAddr]) }.try };
 			
 		//};
 			
