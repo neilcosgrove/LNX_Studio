@@ -333,7 +333,7 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 
 		// list all parameters you want exluded from a preset change, rand or automation
 		presetExclusion=(0..1)++(11..26);
-		randomExclusion=(0..1);
+		randomExclusion=(0..1)++10;
 		autoExclusion=[];
 
 	}

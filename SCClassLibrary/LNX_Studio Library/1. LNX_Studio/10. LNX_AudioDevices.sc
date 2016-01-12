@@ -47,6 +47,18 @@ LNX_AudioDevices {
 		gui = IdentityDictionary[];
 		devices = "AudioDevices".loadPref ? ["nil","nil"];  // load preferences
 		# defaultOutput, defaultInput = devices;
+		
+		Platform.case(
+			\osx, {
+				if (ServerOptions.prListDevices(0,1).containsString(defaultOutput).not) {
+					defaultOutput = nil;
+				};
+
+				if (ServerOptions.prListDevices(1,0).containsString(defaultInput).not) {
+					defaultInput = nil;
+				};	
+		});	
+		
 		numFXBusChannels = defaultFXBusChannels;
 		numAudioBusChannels = defaultAudioBusChannels;
 		this.updateDeviceList;
@@ -78,9 +90,10 @@ LNX_AudioDevices {
 		if ((outDevice!=out) or:{inDevice!=in}) {
 			this.outDevice_(out);
 			this.inDevice_(in);
-			this.updateMenuLists;
 			if (save) {this.savePref};
 		};
+		this.updateMenuLists;
+		
 	}
 	
 	// set the output device
@@ -226,7 +239,7 @@ LNX_AudioDevices {
 	
 	}
 	
-	// this needs to move to LNX_AudioDevices !!!!!!!!!!!!!!!!!!
+	// 
 	*changeAudioDevices{|server,devices,postBootFunc|
 		var exists;
 		devices=devices?[nil,nil];
@@ -264,14 +277,8 @@ LNX_AudioDevices {
 		server.options.numInputBusChannels_(numInputBusChannels);
 		server.options.numAudioBusChannels_(numAudioBusChannels);
 		
-		
 		this.prBoot(server);
 		
-//		server.boot;
-//		server.waitForBoot({
-//			postBootFunc.value;
-//		});
-	
 	}
 
 	*post {

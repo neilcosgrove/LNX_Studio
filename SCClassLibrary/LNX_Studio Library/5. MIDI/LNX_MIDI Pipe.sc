@@ -372,6 +372,8 @@ LNX_MIDIBuffer{
 		};
 	}
 	
+	free{ notesOn = midiPipeOutFunc = models = nil }
+	
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1195,6 +1197,8 @@ LNX_Arpeggiator{
 		};
 			
 	}
+	
+	free{ notesOn = midiPipeOutFunc = sortedNotes = models = nil }
 	
 	releaseAll{ } // notes have already been sched for NoteOff
 	

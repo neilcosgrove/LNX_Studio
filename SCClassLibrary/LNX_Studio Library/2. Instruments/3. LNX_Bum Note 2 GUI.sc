@@ -431,12 +431,22 @@
 			.color_(\border, border )
 			.width_(6);
 		
+		
+		
+		// 75. SyncOnLfoA	- lfoSyncOnA
+		MVC_OnOffView(models[75],gui[\lfoView ],Rect(6, 3, 20, 20),gui[\onOffTheme1]);
+	
+		
+		
 		// 57. lfo wave	
-		MVC_PopUpMenu3(models[57],gui[\lfoView  ],Rect(11,5,80,16),gui[\menuTheme2]);
+		MVC_PopUpMenu3(models[57],gui[\lfoView  ],Rect(31,5,67,16),gui[\menuTheme2]);
 		// 6.lfo freq
-		MVC_MyKnob3(models[ 6],gui[\lfoView   ],Rect(11,40,26,26),gui[\knob1Theme ]);
+		gui[\lfoKnobA] =
+			MVC_MyKnob3(models[ 6],gui[\lfoView   ],Rect(11,40,26,26),gui[\knob1Theme ]);
+			
+			
 		// the lfo lamp
-		MVC_PipeLampView(lfoModelA, gui[\lfoView   ], Rect(97, 8, 10, 10))
+		MVC_PipeLampView(lfoModelA, gui[\lfoView   ], Rect(105, 8, 10, 10))
 			.color_(\on,Color.red); 
 		// 56. lfo slope
 		MVC_MyKnob3(models[ 56],gui[\lfoView   ],Rect( 52,40,26,26),gui[\knob1Theme ]);
@@ -454,12 +464,22 @@
 			.color_(\border, border )
 			.width_(6);
 		
+		
+		// 77. SyncOnLfoA	- lfoSyncOnA
+		MVC_OnOffView(models[77],gui[\lfoView ],Rect(6, 3, 20, 20),gui[\onOffTheme1]);
+	
+		
 		// 63. lfo wave	
-		MVC_PopUpMenu3(models[63],gui[\lfoView  ],Rect(11,5,80,16),gui[\menuTheme2]);
+		MVC_PopUpMenu3(models[63],gui[\lfoView  ],Rect(31,5,67,16),gui[\menuTheme2]);
+		
 		// 64.lfo freq
-		MVC_MyKnob3(models[64],gui[\lfoView   ],Rect(11,40,26,26),gui[\knob1Theme ]);
+		gui[\lfoKnobB] =
+			MVC_MyKnob3(models[64],gui[\lfoView   ],Rect(11,40,26,26),gui[\knob1Theme ]);
+		
+		
+		
 		// the lfo lamp
-		MVC_PipeLampView(lfoModelB, gui[\lfoView   ],  Rect(97, 8, 10, 10))
+		MVC_PipeLampView(lfoModelB, gui[\lfoView   ],  Rect(105, 8, 10, 10))
 			.color_(\on,Color.red); 
 		// 65. lfo slope
 		MVC_MyKnob3(models[65],gui[\lfoView   ],Rect( 52,40,26,26),gui[\knob1Theme ]);

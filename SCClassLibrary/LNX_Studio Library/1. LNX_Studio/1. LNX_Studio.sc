@@ -338,7 +338,6 @@ LNX_Studio {
 	
 	postBootFuncs{	
 		{
-			//[serverBootNo, LNX_AudioDevices.bootNo].postln;
 			
 			if (serverBootNo != LNX_AudioDevices.bootNo) {
 			
@@ -1236,6 +1235,7 @@ LNX_Studio {
 	// close studio, i.e. delete all instruments and start again
 	
 	closeStudio{
+		this.stop.stop.resetTime;
 		this.clear;
 		this.title_("");
 		songPath=nil;

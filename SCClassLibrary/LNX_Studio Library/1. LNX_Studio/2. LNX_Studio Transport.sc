@@ -87,7 +87,7 @@
 						insts.clockPriority.do(_.clockIn(b,this.actualLatency));
 					};
 					
-					if ((beat%6)==0) { this.refreshGuiBeat(beat.div(3)/2) };
+					if ((beat%6)==0) { this.refreshGuiBeat};
 					
 					// midi clock out
 					if (firstLoop) {
@@ -153,6 +153,7 @@
 		if (extClock.not) {
 			isPlaying=false;
 			MVC_Automation.clearRef;
+			LNX_POP.clockStop;
 			insts.clockPriority.do{|inst| inst.clockPause(this.actualLatency) };
 			//midiClock.stop(this.actualLatency);
 			midiClock.stop(0);
@@ -182,38 +183,37 @@
 	stop{
 		//if (extClock.not) {  // we can stop external clocks now
 			
-			jumpTo=nil;
-			
-			MVC_Automation.clearRef;
-			
-			this.stopTime;
-			
-			if (isPlaying) {
-				isPlaying=false;
-				insts.clockPriority.do{|inst| inst.clockPause(this.actualLatency) };
-				//midiClock.stop(this.actualLatency);
-				midiClock.stop(0);
-				insts.midiClock.do{|inst| inst.midiStop(0) };
-			}{		
-				instBeat = beat = 0;	
-				this.refreshGuiBeat(0);
-				MVC_Automation.reset;
-				MVC_Automation.clockStop(beat,this.actualLatency);
-				insts.clockPriority.do{|inst| inst.clockStop(this.actualLatency) };
+		jumpTo=nil;
+		MVC_Automation.clearRef;
+		LNX_POP.clockStop;	
+		this.stopTime;
+		
+		if (isPlaying) {
+			isPlaying=false;
+			insts.clockPriority.do{|inst| inst.clockPause(this.actualLatency) };
+			//midiClock.stop(this.actualLatency);
+			midiClock.stop(0);
+			insts.midiClock.do{|inst| inst.midiStop(0) };
+		}{		
+			instBeat = beat = 0;	
+			this.refreshGuiBeat;
+			MVC_Automation.reset;
+			MVC_Automation.clockStop(beat,this.actualLatency);
+			insts.clockPriority.do{|inst| inst.clockStop(this.actualLatency) };
 //				midiClock.stop(this.actualLatency);
 //				midiClock.songPtr(0,this.actualLatency);
-				midiClock.stop(0);
-				midiClock.songPtr(0,0);
-				insts.midiClock.do{|inst|
-					inst.midiStop(0);
-					inst.midiSongPtr(0,0);
-				};
-				this.resetTime;
+			midiClock.stop(0);
+			midiClock.songPtr(0,0);
+			insts.midiClock.do{|inst|
+				inst.midiStop(0);
+				inst.midiSongPtr(0,0);
 			};
-			models[\play].lazyValue_(0,false);
-			models[\autoRecord].lazyValueAction_(0);
-			
-			if (hackOn) { {myHack[\stopFunc].value( this, myHack[\netAddr]) }.try };
+			this.resetTime;
+		};
+		models[\play].lazyValue_(0,false);
+		models[\autoRecord].lazyValueAction_(0);
+		
+		if (hackOn) { {myHack[\stopFunc].value( this, myHack[\netAddr]) }.try };
 			
 		//};
 			
@@ -228,17 +228,11 @@
 	
 	// used at start collaboration
 	stopNow{
-		isPlaying=false;
+		this.stop.stop.resetTime;
 		extClock=false;
-		extIsPlaying=false;
-		models[\play].value_(0);
-		insts.clockPriority.do{|inst| inst.clockPause(this.actualLatency) };
-//		midiClock.stop(this.actualLatency);
-		midiClock.stop(0);
-		
+		extIsPlaying=false;	
 	}
 	
-			
 	// jump to song pos
 	guiJumpTo{|val| 
 		if (isPlaying) {
@@ -282,9 +276,13 @@
 	}
 	
 	// refresh mixer gui of beat
-	refreshGuiBeat{|beat|
-		{mixerGUI[\beat].string_( (beat.div(MVC_Automation.barLength)+1)
-			++"."++((beat%(MVC_Automation.barLength))+1))}.defer
+	refreshGuiBeat{
+		{
+			var b = (beat.div(3)/2).asInt;
+			mixerGUI[\beat].string_( (b.div(MVC_Automation.barLength)+1)
+			++"."++((b%(MVC_Automation.barLength))+1))
+			
+		}.defer
 	}
 	
 	///////////////////////////
@@ -323,7 +321,7 @@
 						insts.clockPriority.do(_.clockIn3(
 												instBeat,absTime/3,this.actualLatency));
 												
-						if ((extBeat%6)==0) { this.refreshGuiBeat(extBeat.div(3)/2) };
+						if ((extBeat%6)==0) { this.refreshGuiBeat };
 												
 						instBeat = instBeat +1;
 						extBeat  = extBeat  +1;

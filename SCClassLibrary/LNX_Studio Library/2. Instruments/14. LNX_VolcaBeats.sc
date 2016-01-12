@@ -334,7 +334,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 	
 		// list all parameters you want exluded from a preset change
 		presetExclusion=(0..1)++(11..20);
-		randomExclusion=(0..1);
+		randomExclusion=(0..1)++10;
 		autoExclusion=[];
 
 	}

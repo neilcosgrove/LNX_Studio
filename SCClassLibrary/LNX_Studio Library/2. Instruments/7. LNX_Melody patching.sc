@@ -164,7 +164,6 @@ a.a.touch(0);
 	
 	// also called by onOff & solo buttons & alwaysOn model
 	stopAllNotes{
-		//"san".postln;
 		midiBuffer1.releaseAll;
 		midiBuffer2.releaseAll;
 		midiBuffer3.releaseAll;
@@ -223,6 +222,7 @@ a.a.touch(0);
 	iFreeAutomation{ arpegSequencer.freeAutomation }
 	
 	iFree{
+		arpeggiatorMod.free;
 		arpegSequencer.free;
 		multiPipeOut.free;	
 	}

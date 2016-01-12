@@ -314,7 +314,7 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 		#models,defaults=template.generateAllModels;
 
 		presetExclusion=(0..1)++(11..22);
-		randomExclusion=(0..1);
+		randomExclusion=(0..1)++10;
 		autoExclusion=[];
 
 	}

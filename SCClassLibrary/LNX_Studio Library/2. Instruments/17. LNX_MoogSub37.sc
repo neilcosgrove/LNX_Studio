@@ -341,7 +341,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 
 		// list all parameters you want exluded from a preset change
 		presetExclusion=[0,1]++((1..Sub37.size)+13);
-		randomExclusion=[0,1];
+		randomExclusion=[0,1,10];
 		autoExclusion=[11,12];
 
 	}

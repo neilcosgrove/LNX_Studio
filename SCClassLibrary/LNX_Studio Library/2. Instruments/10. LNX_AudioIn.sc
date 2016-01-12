@@ -126,7 +126,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 
 		// list all parameters you want exluded from a preset change
 		presetExclusion=(0..9);
-		randomExclusion=(0..9);
+		randomExclusion=(0..10);
 		autoExclusion=[];
 
 	}
