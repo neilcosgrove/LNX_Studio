@@ -240,7 +240,10 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			
 			// 12. midi clock out
 			[1, \switch, midiControl, 12, "MIDI Clock", (strings_:["MIDI Clock"]),
-				{|me,val,latency,send| this.setPVP(12,val,latency,send) }],
+				{|me,val,latency,send|
+					this.setPVP(12,val,latency,send);
+					if (val.isFalse) { midi.stop(latency)};
+				}],
 				
 			// 13. use controls in presets
 			[0, \switch, midiControl, 13, "Controls Preset", (strings_:["Controls"]),

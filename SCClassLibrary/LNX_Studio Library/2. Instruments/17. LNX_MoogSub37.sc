@@ -316,7 +316,10 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		// 88. midi clock out
 		template = template.add([1, \switch, midiControl, 88, "MIDI Clock",
 				(strings_:["MIDI Clock"]),
-				{|me,val,latency,send| this.setPVP(88,val,latency,send) }]);
+				{|me,val,latency,send|
+					this.setPVP(88,val,latency,send);
+					if (val.isFalse) { midi.stop(latency) };
+				}]);
 				
 		// 89. use controls in presets
 		template = template.add([0, \switch, midiControl, 89, "Controls Preset",
