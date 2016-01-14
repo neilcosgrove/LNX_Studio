@@ -1748,6 +1748,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 				
 			}{
 				// if MIDI NoteOn > Env gate
+				if (latency.isNumber) { latency=latency-0.02 };
 				if (p[35].isTrue) { this.ampGateOff(latency) };
 			};
 		};
