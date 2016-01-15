@@ -420,10 +420,7 @@ LNX_Score{
 
 // a piano roll sequencer ///////////////////////////////////////////////////////////////
 /*
-
-LNX_PianoRollSequencer.allPianoRolls;
-a.a.sequencer.score.notes
-
+a.a.sequencer.score.notes.postList
 */
 
 LNX_PianoRollSequencer{
@@ -1001,16 +998,16 @@ LNX_PianoRollSequencer{
 
 	clockIn3{|beat,argAbsTime,latency,beatAbs|	
 		
-		var now, then, endIndex, speed=score.speed;
+		var now, then, endIndex, speed = score.speed;
 		
 		isPlaying   = true;
 		absTime     = argAbsTime; 
 		lastBeat    = beat;        
 		lastTime    = SystemClock.now;
 		lastLatency = latency;
-		beat        = beat % (score.dur3*speed); // F the current beat wrapped to score duration
-		now         = beat;       // S now and the next beat
-		then        = beat+1;   // S
+		beat        = beat % (score.dur3*speed); // the current beat wrapped to score duration
+		now         = beat;                      // now
+		then        = beat+1;                    // and the next beat
 		
 		// stop any notes as needed 1st, these have been scheduled to be released here
 		if (notesOff[beatAbs].notNil) {			
@@ -1023,33 +1020,44 @@ LNX_PianoRollSequencer{
 		
 		// go through the score
 		score.notes.do{|note|
-			var pitch = note.note;	
+			
+			var pitch = note.note;
+			var start = note.start3 * speed;
+			
 			// if the note starts between now and the next midi tick
-			if (((note.start3*speed)>=now)&&((note.start3*speed)<then)) {
+			if ((start>=now)&&(start<then)) {
 				{
 					if (note.enabled) {
 						
-						var dur = note.dur3;
-						var end = note.end3;
+						var dur = note.dur3 * speed;
+						var end = note.end3 * speed;
 						
 						this.seqNoteOn(pitch,note.vel,latency); // play it
 						
 						// clip end to shortest time allowed
-						if ((end*speed)<then) {
-							{this.seqNoteOff(pitch,latency); nil;}.sched(
-								(dur*speed)*absTime-0.0001); // slightly early
+						if (end<then) {
+							
+							{
+								this.seqNoteOff(pitch,latency);
+								nil;
+							}.sched( dur * absTime - 0.0001); // slightly early
+							
 						}{
+							
 							// this will add to notesOff in future on beatAbs timeline
 							// work out end time beat
-							endIndex = (dur * speed + beatAbs).asInt;
+							endIndex = (beatAbs + (start.frac) + dur);
 							
 							// add the fractional part to sched when beat happens
-							notesOff[endIndex]=notesOff[endIndex].add(
-								[(end*speed).frac,pitch]);
+							notesOff[endIndex.asInt] = 
+								notesOff[endIndex.asInt].add([end.frac, pitch]);
+												
 						};
 					};
+					
 					nil;
-				}.sched( ((note.start3*speed)-beat)*(absTime)*0.99999); // slightly early
+					
+				}.sched( (start-beat) * absTime * 0.99999); // slightly early
 				//sched it to the correct time
 			}
 		};
