@@ -20,8 +20,8 @@ LNX_StartUp {
 			
 			SCDoc.indexAllDocuments;
 
-			// studio = LNX_Studio(Server.local); 	// start the studio, use local server
-			studio = LNX_Studio(Server.internal); // start the studio, use internal server
+			studio = LNX_Studio(Server.local); 	// start the studio, use local server
+			// studio = LNX_Studio(Server.internal); // start the studio, use internal server
 
 			// add appropriate menus
 			if (studio.showDev) {
