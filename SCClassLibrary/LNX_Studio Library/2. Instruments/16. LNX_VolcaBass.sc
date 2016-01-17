@@ -296,7 +296,10 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			
 			// 24. midi clock out
 			[0, \switch, midiControl, 24, "MIDI Clock", (strings_:["MIDI Clock"]),
-				{|me,val,latency,send| this.setPVP(24,val,latency,send) }],
+				{|me,val,latency,send|
+					this.setPVP(24,val,latency,send);
+					if (val.isFalse) { midi.stop(latency) };
+				}],
 				
 			// 25. use controls in presets
 			[0, \switch, midiControl, 25, "Controls Preset", (strings_:["Controls"]),

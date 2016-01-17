@@ -314,7 +314,10 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 				
 			// 28. midi clock out
 			[0, \switch, midiControl, 28, "MIDI Clock", (strings_:["MIDI Clock"]),
-				{|me,val,latency,send| this.setPVP(28,val,latency,send) }],
+				{|me,val,latency,send|
+					this.setPVP(28,val,latency,send);
+					if (val.isFalse) { midi.stop(latency) };
+				}],
 				
 			// 29. use controls in presets
 			[0, \switch, midiControl, 29, "Controls Preset", (strings_:["Controls"]),
@@ -364,10 +367,10 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 	
 	// clock in for midi out clock methods
 	midiSongPtr{|songPtr,latency| if (p[28].isTrue) { midi.songPtr(songPtr,latency) } } 
-	midiStart{|latency| if (p[28].isTrue) { midi.start(latency) } }
-	midiClock{|latency| if (p[28].isTrue) { midi.midiClock(latency) } }
-	midiContinue{|latency| if (p[28].isTrue) { midi.continue(latency) } }
-	midiStop{|latency| if (p[28].isTrue) { midi.stop(latency) } }
+	midiStart{|latency|           if (p[28].isTrue) { midi.start(latency) } }
+	midiClock{|latency|           if (p[28].isTrue) { midi.midiClock(latency) } }
+	midiContinue{|latency|        if (p[28].isTrue) { midi.continue(latency) } }
+	midiStop{|latency|            if (p[28].isTrue) { midi.stop(latency) } }
 	
 	// disk i/o ///////////////////////////////
 		

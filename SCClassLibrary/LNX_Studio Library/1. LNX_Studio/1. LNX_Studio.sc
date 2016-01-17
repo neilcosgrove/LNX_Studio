@@ -358,7 +358,10 @@ LNX_Studio {
 				
 				{this.initGroups}.defer(0.1);		// start inst, code, fx & out groups
 				{this.startDSP}.defer(0.3);			// if using internal, wait 4 it 2 catch up
-				{server.volume_(models[\volume].value);}.defer(0.3);
+				{
+					server.volume_(models[\volume].value);
+					if (models[\mute].isTrue) { server.mute };
+				}.defer(0.3);
 				{
 					insts.visualOrder
 						.do(_.serverReboot)

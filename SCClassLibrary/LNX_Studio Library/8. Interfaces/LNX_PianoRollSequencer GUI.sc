@@ -341,7 +341,7 @@
 			gui[\dur]=MVC_NumberBox(models[\dur], window, gui[\nBoxTheme],
 				Rect(bounds.right-40, bounds.top-6+1, 39, 16))
 				.label_("=")
-				.resoultion_(10)
+				.resoultion_(80)
 				.resize_(3);
 			
 			// notes can scroll

@@ -19,6 +19,11 @@ LNX_Note{
 	
 	var <>id, <>note, <>start, >dur, <vel, <>enabled=true, <>durAdj;
 	
+	// for inClock3	
+	start3{ ^start*3 }
+	dur3{ ^this.dur*3 }
+	end3{ ^ this.end*3 }
+
 	*new{|id,note,start,dur,vel| ^super.newCopyArgs(id,note,start,dur,vel) }
 	
  	copyToNew{|id| ^LNX_Note(id,note,start,dur,vel) } // make a new note from this one, with new ID
@@ -106,6 +111,9 @@ LNX_Score{
 	var <>start=0, <>dur=32;
 	var <gridW=22, <gridH=15, <visibleOriginX=0, <visibleOriginY=0; // this may not be a good idea
 	var <>quantiseStep=1, <>bars=16, <>speed=1;
+	
+	
+	dur3{^dur*3}
 	
 	*new{|dur=32| ^super.new.init(dur) }
 	
@@ -412,10 +420,7 @@ LNX_Score{
 
 // a piano roll sequencer ///////////////////////////////////////////////////////////////
 /*
-
-LNX_PianoRollSequencer.allPianoRolls;
-a.a.sequencer.score.notes
-
+a.a.sequencer.score.notes.postList
 */
 
 LNX_PianoRollSequencer{
@@ -616,6 +621,8 @@ LNX_PianoRollSequencer{
 	// duration of the current score		
 	dur{^score.dur}
 	
+	dur3{^score.dur3}
+	
 	// net change the speed
 	netSpeed_{|value|
 		score.speed_(#[8,4,2,1,0.5,0.25,0.125][value]);
@@ -678,8 +685,8 @@ LNX_PianoRollSequencer{
 		models[\speed].valueAction_( 6-(log(score.speed*8)/log(2)) );
 			// coverts [8,4,2,1,0.5,0.25,0.125] to (0..6) 
 		{
-		this.viewArgs_(*score.viewArgs); // update view position
-		this.refresh;
+			this.viewArgs_(*score.viewArgs); // update view position
+			this.refresh;
 		}.defer;
 	}
 	
@@ -988,137 +995,77 @@ LNX_PianoRollSequencer{
 
 	// MIDI clock in /////////////////////////////////////////////
 
-//	// clock in 3 is faster than the normal instrument clockIn, which results in fast tempo updates
-//	clockIn3{|beat,argAbsTime,latency,beatAbs|	
-//		var now,then,i,endIndex, speed=score.speed;
-//		
-//		//[beat,argAbsTime,latency,beat.species,argAbsTime.species,latency.species].postln;
-//		
-//		// NB: F is Fast, S is Slow
-//		isPlaying=true;
-//		absTime=argAbsTime;  // F is time of 1/3  of normal beat
-//		// for recording
-//		lastBeat = beat;     //  F beat x3 = 1 normal beat
-//		lastTime = SystemClock.now;
-//		lastLatency = latency;
-//		// the current beat wrapped to score duration
-//		beat = beat % (score.dur*3*speed);  // F
-//		// now and the next beat
-//		now = beat/3;       // S
-//		then = (beat+1)/3;  // S
-//		
-//		[beatAbs,notesOff].postln;
-//		
-//		// stop any notes as needed 1st
-//		if (notesOff[beatAbs.asInt].notNil) {
-//			beatAbs.post; "-".post;
-//			notesOff.post;
-//			notesOff[beatAbs.asInt].do{|l|
-//				{this.seqNoteOff(l[1],latency); nil;}.sched(l[0]*absTime*3)
-//			};
-//			notesOff[beatAbs]=nil;	
-//		};
-//		
-//		// go through the score
-//		score.notes.do{|note|
-//			var pitch = note.note;
-//			// if the note starts between now and the next midi tick
-//					
-//			// this if statement doesn't capture all start events at different speeds & durs
-//			if (((note.start*speed)>=now)&&((note.start*speed)<then)) {
-//				var end = note.end;
-//				var dur = note.dur;
-//				var vel = note.vel;
-//				
-//				{
-//					if (note.enabled) {
-//						
-//						this.seqNoteOn(pitch,vel,latency); // play it
-//						
-//						// clip end to shortest time allowed
-//						if ((end*speed)<then) {
-//							{this.seqNoteOff(pitch,latency); nil;}.sched(dur*3*speed*absTime*3)
-//						}{						
-//							
-//							endIndex = (dur*3*speed + beatAbs).asInt ;
-//							
-//							
-//							[now,then,endIndex].postln;
-//						
-//							// this will add to nil
-//							notesOff[endIndex]=notesOff[endIndex].add(
-//								[(dur*3*speed).frac,pitch]);
-//						};
-//					};
-//					nil;
-//				}.sched( ((note.start*3*speed)-beat)*(absTime*3)*0.99999);
-//				//sched it to the correct time
-//			}
-//		};
-//		// update the gui pos
-//		
-//		{this.pos_(now/speed)}.defer(latency);
-//		
-//	}
-//	
+	// 3rd attempt
 
-	clockIn3{|beat,argAbsTime,latency|	
-		var now,then,i,endIndex, speed=score.speed;
+	clockIn3{|beat,argAbsTime,latency,beatAbs|	
 		
-		// NB: F is Fast, S is Slow
+		var now, then, endIndex, speed = score.speed;
 		
 		isPlaying   = true;
-		absTime     = argAbsTime;  // F is time of 1/3  of normal beat
-		lastBeat    = beat;     //  F beat x3 = 1 normal beat, for recording
+		absTime     = argAbsTime; 
+		lastBeat    = beat;        
 		lastTime    = SystemClock.now;
 		lastLatency = latency;
-		beat        = beat % (score.dur*3*speed); // F the current beat wrapped to score duration
-		now         = beat/3;       // S now and the next beat
-		then        = (beat+1)/3;  // S
+		beat        = beat % (score.dur3*speed); // the current beat wrapped to score duration
+		now         = beat;                      // now
+		then        = beat+1;                    // and the next beat
 		
 		// stop any notes as needed 1st, these have been scheduled to be released here
-		if (notesOff[beat].notNil) {
-			notesOff[beat].do{|l|
-				{ this.seqNoteOff(l[1],latency); nil; }.sched(l[0]*absTime*3)
+		if (notesOff[beatAbs].notNil) {			
+			notesOff[beatAbs.asInt].do{|l|
+				{ this.seqNoteOff(l[1],latency); nil; }.sched(l[0]*absTime-0.0001)
+				// slightly early
 			};
 			notesOff[beat]=nil;	
 		};
 		
 		// go through the score
 		score.notes.do{|note|
-			var pitch = note.note;	
+			
+			var pitch = note.note;
+			var start = note.start3 * speed;
+			
 			// if the note starts between now and the next midi tick
-			if (((note.start*speed)>=now)&&((note.start*speed)<then)) {
+			if ((start>=now)&&(start<then)) {
 				{
 					if (note.enabled) {
+						
+						var dur = note.dur3 * speed;
+						var end = note.end3 * speed;
 						
 						this.seqNoteOn(pitch,note.vel,latency); // play it
 						
 						// clip end to shortest time allowed
-						if ((note.end*speed)<then) {
-							{this.seqNoteOff(pitch,latency); nil;}.sched(
-								(note.dur*3*speed)*(absTime*3))
+						if (end<then) {
+							
+							{
+								this.seqNoteOff(pitch,latency);
+								nil;
+							}.sched( dur * absTime - 0.0001); // slightly early
+							
 						}{
-							endIndex = (note.end*3*speed).asInt%(score.dur*3*speed);
-							// this will add to nil
-							notesOff[endIndex]=notesOff[endIndex].add(
-								[(note.end*3*speed).frac,pitch]);
+							
+							// this will add to notesOff in future on beatAbs timeline
+							// work out end time beat
+							endIndex = (beatAbs + (start.frac) + dur);
+							
+							// add the fractional part to sched when beat happens
+							notesOff[endIndex.asInt] = 
+								notesOff[endIndex.asInt].add([end.frac, pitch]);
+												
 						};
 					};
 					
 					nil;
 					
-				}.sched( ((note.start*3*speed)-beat)*(absTime*3)*0.99999 );
+				}.sched( (start-beat) * absTime * 0.99999); // slightly early
 				//sched it to the correct time
 			}
 		};
-		// update the gui pos
 		
-		{this.pos_(now/speed)}.defer(latency);
+		{this.pos_(now/speed/3)}.defer(latency); // update the gui pos
 		
 	}
-
-
 
 	releaseAll{ notesOff=IdentityDictionary[] } // no actual release, done via buffer
 	
