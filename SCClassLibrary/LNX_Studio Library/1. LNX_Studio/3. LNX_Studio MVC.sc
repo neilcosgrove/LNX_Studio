@@ -676,24 +676,6 @@
 				.labelShadow_(false)
 				.color_(\label,Color.black);
 
-			// internal midi buses
-			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 357, 70, 17))
-				.items_(["None","1 Bus","2 Buses","3 Buses"
-						 ,"4 Buses","5 Buses","6 Buses","7 Buses","8 Buses"
-						 ,"9 Buses","10 Buses","11 Buses","12 Buses","13 Buses"
-						 ,"14 Buses","15 Buses","16 Buses"])
-				.color_(\background,Color.ndcMenuBG)
-				.label_("No. of Internal MIDI Buses")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black)
-				.action_{|me|
-					this.guiNoInternalBuses_(me.value);
-					this.saveMIDIprefs;
-				}
-				.value_(noInternalBuses)
-				.font_(Font("Arial", 10));
-
 			// midi clock
 			midiClock.createInGUIA (scrollView, (170-25)@(168-2), false);
 			midiClock.createOutGUIA (scrollView, (170)@(188), false);
@@ -818,6 +800,40 @@
 					LNX_MIDIPatch.midiSyncLatency_(midiSyncLatency);
 					[midiSyncLatency].savePref("MIDI Sync Latency");
 				};
+				
+				
+			// doubleClickLearn
+			MVC_OnOffView(scrollView,Rect(170, 357, 70, 19), "On",
+								( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.value_(MVC_View.doubleClickLearn.asInt)
+				.label_("Double Click to MIDI Learn")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					MVC_View.doubleClickLearn_(me.value.isTrue);
+				};
+				
+				
+			// internal midi buses
+			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 397, 70, 17))
+				.items_(["None","1 Bus","2 Buses","3 Buses"
+						 ,"4 Buses","5 Buses","6 Buses","7 Buses","8 Buses"
+						 ,"9 Buses","10 Buses","11 Buses","12 Buses","13 Buses"
+						 ,"14 Buses","15 Buses","16 Buses"])
+				.color_(\background,Color.ndcMenuBG)
+				.label_("No. of Internal MIDI Buses")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					this.guiNoInternalBuses_(me.value);
+					this.saveMIDIprefs;
+				}
+				.value_(noInternalBuses)
+				.font_(Font("Arial", 10));
 				
 			// scan for new midi equipment
 			MVC_FlatButton(scrollView,Rect(252 ,396, 70, 20),"Scan MIDI",gui[\buttonTheme])

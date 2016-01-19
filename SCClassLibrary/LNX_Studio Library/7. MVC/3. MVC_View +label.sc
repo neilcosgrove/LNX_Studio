@@ -124,14 +124,13 @@
 						startY=y;
 						view.bounds.postln;
 					}{
-						if (modifiers==262401)	{buttonNumber = 2};
-						if ((labelActivatesMIDI)&&( (clickCount>1)||(buttonNumber>=1)))
-//							and: {modifiers.asBinaryDigits[4]==0}
-//							and: {(buttonNumber>0) || (clickCount.even)})
-							
-						{
-								this.toggleMIDIactive
-						}
+						if (hasMIDIcontrol && labelActivatesMIDI) {
+							var toggle = false;
+							if ((clickCount>1)&&doubleClickLearn){ toggle = true };
+							if (modifiers==262401) { toggle = true  };
+							if (buttonNumber>=1  ) { toggle = true  };
+							if (toggle) { this.toggleMIDIactive };
+						};
 					};
 				}
 				.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
@@ -296,16 +295,21 @@
 			startX=x;
 			startY=y;
 			if (editMode)			{view.bounds.postln };
-			if (y>w)				{buttonNumber = 1.5 }; // numbers
-			if (modifiers==524576)	{buttonNumber = 1.5 };
-			if (modifiers==262401)	{clickCount = 2   };
-			buttonPressed=buttonNumber;
 			if (controlSpec.notNil) {
 				startVal=controlSpec.unmap(value);
 			}{
 				startVal=value;
 			};
-			if (clickCount==2) { this.toggleMIDIactive };
+			if (hasMIDIcontrol && labelActivatesMIDI) {
+				var toggle = false;
+				if ((clickCount>1)&&doubleClickLearn){ toggle = true };
+				if (modifiers==262401) { toggle = true  };
+				if (buttonNumber>=1  ) { toggle = true  };
+				if (toggle) { this.toggleMIDIactive };
+			};
+			if (y>w)				{buttonNumber = 1.5 }; // numbers
+			if (modifiers==524576)	{buttonNumber = 1.5 };
+			buttonPressed=buttonNumber;	
 			numberHeld=true;
 			numberGUI.refresh;
 		}

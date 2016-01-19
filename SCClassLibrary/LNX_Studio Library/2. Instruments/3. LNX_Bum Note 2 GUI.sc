@@ -345,7 +345,7 @@
 		// 53. filter curve
 		MVC_MyKnob3(models[53],gui[\filterViewHP],Rect(105, 79,20,20),gui[\knob2Theme ]);
 		// 54.velocity > filter
-		MVC_MyKnob3(models[54],gui[\filterViewHP],Rect(176, 79, 20, 20),gui[\knob2Theme ]);
+		MVC_MyKnob3(models[54],gui[\filterViewHP],Rect(177, 79, 20, 20),gui[\knob2Theme ]);
 		
 		// 67.filterHP lfo A or B	
 		MVC_OnOffView(models[67],gui[\controlsView  ],Rect(362, 5, 21, 21),gui[\onOffTheme2]);
@@ -405,7 +405,7 @@
 		// 39. filter curve
 		MVC_MyKnob3(models[39],gui[\filterView],Rect(105, 79,20,20),gui[\knob2Theme ]);
 		// 33.velocity > filter
-		MVC_MyKnob3(models[33],gui[\filterView],Rect(176, 79, 20, 20),gui[\knob2Theme ]);
+		MVC_MyKnob3(models[33],gui[\filterView],Rect(177, 79, 20, 20),gui[\knob2Theme ]);
 		
 		// 68.filterLP lfo A or B	
 		MVC_OnOffView(models[68],gui[\controlsView  ],Rect(362, 171, 21, 21),gui[\onOffTheme2]);

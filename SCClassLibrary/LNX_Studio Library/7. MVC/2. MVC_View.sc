@@ -16,10 +16,10 @@
 
 MVC_View {
 
-	classvar	<>editMode=false,		<>grid=1,		
-			<>editResize=true,		<>verbose=false,
-			<>labelActivatesMIDI=true, <>showLabelBackground=false;
-		
+	classvar	<>editMode=false,		<>grid=1,	 		<>labelActivatesMIDI=true;
+	classvar 	<>verbose=false,		<>editResize=true,	<>showLabelBackground=false;
+	classvar <doubleClickLearn;
+	
 	var	<model;
 	
 	var	<parent,		<>window, 	<rect,
@@ -59,6 +59,17 @@ MVC_View {
 	var <>locked = false, <>numberOffset = 0;
 	
 	var <beginDragAction, <canReceiveDragHandler, <receiveDragHandler;
+	
+	
+	*initClass{
+		Class.initClassTree(LNX_File);
+		doubleClickLearn = ("doubleClickLearn".loadPref ? [true])[0].isTrue;
+	}
+	
+	*doubleClickLearn_{|val| 
+		doubleClickLearn = val;
+		[doubleClickLearn].savePref("doubleClickLearn");
+	}
 	
 	// you can supply a MVC_Model, MVC_TabView, a SCWindow, a MVC_Window, a MVU_ScrollView, a Rect
 	// or a themeMethod Dict in any order
