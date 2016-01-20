@@ -109,7 +109,6 @@
 		
 		// the tab view
 		
-			
 		gui[\userGUIScrollView] = MVC_ScrollView(window,
 												Rect(14,50,thisWidth-28,thisHeight-90))
 			.color_(\background,Color(6/11,42/83,29/65))
@@ -154,7 +153,6 @@
 		// 3.output channels
 		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(161,5,70,17),gui[\menuTheme  ]);
 
-		
 		MVC_PlainSquare(gui[\scrollView],Rect(84,5,70,17))
 			.color_(\on,Color(0,0,0,0.2))
 			.color_(\off,Color(0,0,0,0.2));		
@@ -162,7 +160,6 @@
 		// 9. sendOut	
 		gui[\sendOut] =
 			MVC_PopUpMenu3(models[9],gui[\scrollView],Rect(84,5,70,17),gui[\menuTheme  ]);
-
 
 		// 11. in	
 		gui[\in] =
@@ -192,7 +189,6 @@
 			);
 		this.attachActionsToPresetGUI;
 			
-		
 		// code tab //////////////////
 		
 		// edit
@@ -298,7 +294,6 @@
 						false; // don't open studio help
 					};
 						
-					
 					// ugen help button
 					MVC_FlatButton(gui[\codeWindow],Rect(465+38-65-43, 322, 58, 18),"UGens")
 						.rounded_(true)

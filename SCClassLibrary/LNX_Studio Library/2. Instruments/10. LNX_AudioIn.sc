@@ -167,12 +167,8 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 										\label	: Color.black,
 										\numberUp	: Color.black,
 										\numberDown : Color.white));
-										
-		
-								
-		gui[\theme2]=(	//\layout_       : \reversed,
-		
-						\orientation_  : \horiz,
+						
+		gui[\theme2]=(	\orientation_  : \horiz,
 						\resoultion_	 : 3,
 						\visualRound_  : 0.001,
 						\rounded_      : true,
@@ -185,7 +181,6 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 										\string : Color.black,
 										\focus : Color(0,0,0,0)));
 		
-	
 		// widgets
 		
 		gui[\scrollView] = MVC_RoundedComView(window,

@@ -85,8 +85,6 @@ MVC_SmoothSlider : MVC_View {
 			var val;			
 			toggle = false;
 			w = me.view.bounds.width;
-			
-			if (editMode||viewEditMode) { view.bounds.postln};
 				
 			if (modifiers.asBinaryDigits[4]==0) {  // if apple not pressed because of drag
 				mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);

@@ -416,6 +416,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 									   \disabled:Color.black,
 									   \label:Color.white),
 						\labelShadow_ : true,
+						\numberWidth_	: (-20),
 						\numberFont_  : Font("Helvetica",10),
 						\labelFont_	: Font("Helvetica",11)
 						);
@@ -524,7 +525,6 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			.hasHorizontalScroller_(false)
 			.hasVerticalScroller_(false)
 			.autohidesScrollers_(false);
-
 
 		// levels
 		MVC_FlatDisplay(this.peakLeftModel,gui[\controlsTab],Rect(5+630-18, 9, 6, 160));

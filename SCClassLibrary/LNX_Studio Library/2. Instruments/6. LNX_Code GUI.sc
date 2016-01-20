@@ -247,7 +247,6 @@
 		// 3.output channels
 		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(500,7,70,17),gui[\menuTheme  ]);
 
-		
 		MVC_PlainSquare(gui[\scrollView],Rect(420,7,70,17))
 			.color_(\on,Color(0,0,0,0.2))
 			.color_(\off,Color(0,0,0,0.2));		
@@ -280,9 +279,7 @@
 			.width_(4)
 			.color_(\background, Color(6/11,42/83,29/65));
 
-		//samples
-//*****		
-
+		//samples //*****		
 
 		MVC_Icon(gui[\sampleGUIScrollView], Rect(386,210, 18, 18))
 			.icon_(\speaker);
@@ -669,15 +666,6 @@
 						 \boxes:		Color(0.1,0.05,0,0.5)
 						));
 		
-//		MVC_FlatButton(gui[\tabView].mvcTab(1),Rect(400+38-65, 322, 58, 18),"Colorize")
-//			.canFocus_(false)
-//			.color_(\up,Color.cyan/2)
-//			.color_(\down,Color.cyan/3)
-//			.resize_(9)
-//			.action_{ gui[\code].syntaxColorize };
-
-
-
 
 	}
 

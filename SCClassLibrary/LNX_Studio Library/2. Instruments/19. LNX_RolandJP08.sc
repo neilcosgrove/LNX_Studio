@@ -795,7 +795,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			.shadow_(false)
 			.font_(Font("Helvetica-Bold",12))
 			.color_(\string,Color.black)
-			.string_("    HPF     |                                            VCF                                                |             VCA             |                               ENV-1                                  |                                 ENV-2")  ;
+			.string_("    HPF     |                                            VCF                                                |             VCA             |                               ENV-1                                 |                                  ENV-2")  ;
 
 		// screen dividers
 		MVC_PlainSquare(gui[\scrollView], Rect(0,113,930,15),  gui[\plainTheme2]);
@@ -808,7 +808,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		MVC_PlainSquare(gui[\scrollView], Rect(56,127,3,116),  gui[\plainTheme2]);
 		MVC_PlainSquare(gui[\scrollView], Rect(359,127,3,116), gui[\plainTheme2]);
 		MVC_PlainSquare(gui[\scrollView], Rect(466,127,3,116), gui[\plainTheme2]);
-		MVC_PlainSquare(gui[\scrollView], Rect(700,127,3,116), gui[\plainTheme2]);
+		MVC_PlainSquare(gui[\scrollView], Rect(697,127,3,116), gui[\plainTheme2]);
 			
 		// logo					
 		MVC_Text(gui[\scrollView],Rect(22, 246, 176, 30))

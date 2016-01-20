@@ -137,10 +137,6 @@ LNX_Delay : LNX_InstrumentTemplate {
 		// 11.out
 		gui[\out]=MVC_PopUpMenu3(models[11], gui[\scrollView] ,Rect(138,7,70,17),gui[\menuTheme]);
 		
-		// knob com view
-//		gui[\ksv] = MVC_CompositeView(gui[\scrollView], Rect(4,31,thisWidth-30,60),true)
-//			.color_(\background,Color(0.50602409638554, 0.44615384615385, 0.63636363636364));
-//		
 		// knobs
 		5.do{|i| gui[i]=
 			MVC_MyKnob3(models[i+2], gui[\scrollView], Rect(10+(i*40),48,30,30), gui[\knobTheme])

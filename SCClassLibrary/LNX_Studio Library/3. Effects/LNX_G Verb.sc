@@ -142,11 +142,6 @@ LNX_GVerb : LNX_InstrumentTemplate {
 		// 11.out
 		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(138,7,70,17),gui[\menuTheme]);
 	
-//				
-//		// knob com view
-//		gui[\ksv] = MVC_CompositeView(gui[\scrollView], Rect(3,30,thisWidth-28,62+60),true)
-//			.color_(\background,Color(0.478,0.525,0.613));
-//	
 		// knobs
 		10.do{|i|
 			gui[i] = MVC_MyKnob3(

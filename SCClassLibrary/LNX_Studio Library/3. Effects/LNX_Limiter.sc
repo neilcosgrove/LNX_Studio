@@ -125,10 +125,6 @@ LNX_Limiter : LNX_InstrumentTemplate {
 		// 11.out
 		MVC_PopUpMenu3(models[11],gui[\scrollView] ,Rect(138,7,70,17),gui[\menuTheme  ]);
 		
-//		// knob com view
-//		gui[\ksv] = MVC_CompositeView(gui[\scrollView], Rect(3,30,thisWidth-28,62),true)
-//			.color_(\background,Color(0.478,0.525,0.613));
-		
 		// knobs
 		3.do{|i| gui[i]=
 			MVC_MyKnob3(models[i+2],gui[\scrollView],Rect(10+((i+1)*40),48,30,30), gui[\knobTheme])

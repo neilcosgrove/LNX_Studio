@@ -521,9 +521,6 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 	
 		// widgets
-//		
-//		window = MVC_RoundedComView(window,
-//							Rect(11,11,thisWidth-22,thisHeight-22-6-98), gui[\scrollTheme]);
 						
 		// 3. in	
 		MVC_PopUpMenu3(models[3],window,Rect(5,5,70,17), gui[\menuTheme ] );
@@ -578,14 +575,13 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 			.labelColors_(  Color(0.6 , 0.562, 0.5)!2)
 			.backgrounds_(  Color.clear!2)
 			.tabCurve_(8)
-		//	.tabWidth_([63,63])
 			.tabHeight_(15)
 			.followEdges_(true)
 			.value_(0);
 		
 		// control tab
 		
-		gui[\controlsTab] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(0), Rect(4, 4, 670-16, 310-26-15))
+		gui[\controlsTab] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(0), Rect(4,4,654,269))
 			.color_(\border, Color(0.6 , 0.562, 0.5))
 			.color_(\background,Color.grey(0.3))
 			.hasBorder_(false)
@@ -601,7 +597,7 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 			.font_(Font("AvenirNext-Heavy",22))
 			.string_("Volca Keys");
 			
-		gui[\sequencerTab] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(1), Rect(4, 4, 670-16, 310-26-15))
+		gui[\sequencerTab] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(1),Rect(4,4,654,269))
 			.color_(\border, Color(0.6 , 0.562, 0.5))
 			.color_(\background,Color.grey(0.3))
 			.hasBorder_(false)
@@ -611,8 +607,8 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 			.autohidesScrollers_(false);			
 
 		// levels
-		MVC_FlatDisplay(this.peakLeftModel,gui[\controlsTab],Rect(5+630, 11, 6, 160));
-		MVC_FlatDisplay(this.peakRightModel,gui[\controlsTab],Rect(13+630, 11, 6, 160));
+		MVC_FlatDisplay(this.peakLeftModel,gui[\controlsTab],Rect(635, 11, 6, 160));
+		MVC_FlatDisplay(this.peakRightModel,gui[\controlsTab],Rect(643, 11, 6, 160));
 		MVC_Scale(gui[\controlsTab],Rect(11+630, 11, 2, 160));
 
 		// 2. channel volume
@@ -638,7 +634,6 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 
 		// 29. use controls in presets
 		MVC_OnOffView(models[29], gui[\controlsTab], Rect(256, 236, 73, 19),gui[\onOffTheme3]);
-
 
 		// 11. midiControl 5. Portamento
 		MVC_MyKnob3(models[11], gui[\controlsTab], Rect(126, 105, 28, 28),gui[\knobTheme2]);
