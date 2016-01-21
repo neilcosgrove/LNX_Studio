@@ -118,7 +118,7 @@
 				.resize_(resize)
 				.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 					// check apple not pressed because of dra
-					if (editMode) {
+					if (editMode||viewEditMode) {
 						lw=lh=nil;
 						startX=x;
 						startY=y;
@@ -136,7 +136,7 @@
 				.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 					// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl,
 					var val;
-					if (editMode) {
+					if  (editMode||viewEditMode) {
 						this.moveBy(x-startX,y-startY);
 					}
 				}
