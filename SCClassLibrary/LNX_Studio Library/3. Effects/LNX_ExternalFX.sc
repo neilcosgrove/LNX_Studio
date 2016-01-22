@@ -38,7 +38,11 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 	
 		var template = [
 			0, // 0.solo
-			1, // 1.onOff
+			
+			// 1.onOff
+			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
+				
 								
 			// 2. internal input channel
 			[0,[0,LNX_AudioDevices.defaultFXBusChannels/2-1,\linear,1],
@@ -100,12 +104,8 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 					this.setSynthArgVH(9,val,\xChannelSetup,val,latency,send);
 				}],
 				
-			// 10. mute
-			[0,\switch, midiControl,10, "Mute",
-				(\strings_:"Mute"),
-				{|me,val,latency,send|
-					this.setSynthArgVH(10,val,\mute,val,latency,send);
-				}],
+			// 10. empty (was mute)
+			[0],
 				
 			// 11. sendChannels
 			[-1, \audioOut, midiControl, 11, "Send Channel",
@@ -135,8 +135,8 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		// return the volume model
 	volumeModel{^models[13] }
 	
-	*thisWidth  {^215+22+24}
-	*thisHeight {^155+26+22}
+	*thisWidth  {^261}
+	*thisHeight {^203}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
 
@@ -177,7 +177,18 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		// midi control button
 		MVC_FlatButton(gui[\scrollView],Rect(97, 131, 43, 19),"Cntrl", gui[\midiTheme])
 			.action_{ LNX_MIDIControl.editControls(this).front };
-	
+			
+			
+		// 1.onOff
+		MVC_BinaryCircleView(models[1], gui[\scrollView] ,Rect(112, 108, 16, 16))
+			.font_(Font("Helvetica-Bold",12))
+			.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
+				\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));
+		
+//		// 10.mute
+//		MVC_OnOffView(models[10], gui[\scrollView], Rect(110,107,43,19),gui[\onOffTheme]);
+//				
+//	
 		// 2.in
 		MVC_PopUpMenu3(models[2],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);
 		
@@ -209,8 +220,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		// 5. outAmp		
 		MVC_MyKnob3(models[5],gui[\scrollView],Rect(183,48,30,30),gui[\knobTheme]);
 
-		// 10.mute
-		MVC_OnOffView(models[10], gui[\scrollView], Rect(97,107,43,19),gui[\onOffTheme]);
+
 		
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],
@@ -231,13 +241,16 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		if (verbose) { "SynthDef loaded: External FX".postln; };
 	
 		SynthDef("External FX", {
-			|outputChannels=0, inputChannels=4, pan=0, inAmp=1, outAmp=1, mute=0,
+			|outputChannels=0, inputChannels=4, pan=0, inAmp=1, outAmp=1,
 			xOutputChannels=0, xInputChannels=0, channelSetup=0, xChannelSetup=0,
-			sendChannels=4, sendAmp=0|
+			sendChannels=4, sendAmp=0, on=1|
 			
 			var in2Out, out2In, silent, mono;
 		
-			in2Out = In.ar(inputChannels, 2)*(inAmp.dbamp);
+			var in = In.ar(inputChannels, 2)*(inAmp.dbamp);
+			
+			in2Out = SelectX.ar(on.lag,[Silent.ar,in]);
+			
 			
 			silent = Silent.ar;
 
@@ -248,12 +261,15 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 
 			Out.ar(xOutputChannels,in2Out);
 
-			out2In = In.ar(xInputChannels, 2)*Lag.kr(1-mute);
+			out2In = In.ar(xInputChannels, 2);
 
 			out2In = Select.ar(xChannelSetup,[
 				[out2In[0],out2In[1]],(out2In[0]+out2In[1]).dup, out2In[0].dup, out2In[1].dup]);
+				
+				
+			out2In = SelectX.ar(on.lag,[in,out2In]) ;
 
-			Out.ar(outputChannels, out2In * (outAmp.dbamp)); // out
+			Out.ar(outputChannels, out2In * (outAmp.dbamp) ); // out
 			
 			Out.ar(sendChannels, out2In * sendAmp); // and send
 			
@@ -297,7 +313,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		server.sendBundle(latency,
 			[\n_set, node, \channelSetup, p[8]],
 			[\n_set, node, \xChannelSetup, p[9]],
-			[\n_set, node, \mute, p[10]],
+			[\n_set, node, \on, p[1]]
 		);
 	
 	}

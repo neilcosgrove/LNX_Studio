@@ -71,7 +71,13 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 			[0],
 			
 			// 1.onOff
-			[1],
+			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+				{|me,val,latency,send|
+					if (systemIndices[\on].notNil) {
+						this.updateSynthArg(systemIndices[\on],val,latency);
+					};
+				}],
+				
 					
 			// 2.master amp
 			[\db6,midiControl, 2, "Out",
@@ -285,6 +291,10 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 	getSystemMsg{
 		var list=[];
 		
+		// on 
+		if (systemIndices[\on].notNil) {
+			list=list++[systemIndices[\on],p[1]];
+		};		
 		// out
 		if (systemIndices[\out].notNil) {
 			list=list++[systemIndices[\out],LNX_AudioDevices.getOutChannelIndex(p[3])];
@@ -790,7 +800,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		
 		// work out which type the control is. either system, user or userList
 		types = names.collect{|name,i|
-			if ((#[\out, \amp, \bpm, \clock, \i_clock,
+			if ((#[\on, \out, \amp, \bpm, \clock, \i_clock,
 				   \sendOut, \sendAmp, \in, \inAmp, \poll, 
 				].includes(name)
 				and:{defaultValues[i].isNumber})) {

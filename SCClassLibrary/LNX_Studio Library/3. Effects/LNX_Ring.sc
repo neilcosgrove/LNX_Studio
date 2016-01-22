@@ -34,8 +34,11 @@ LNX_Ring : LNX_InstrumentTemplate {
 		
 		var template=[
 			0, // 0.solo
-			1, // 1.onOff
 			
+			// 1.onOff
+			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
+				
 			60,  // 2. freq
 			
 			
@@ -86,7 +89,7 @@ LNX_Ring : LNX_InstrumentTemplate {
 	// return the volume model
 	volumeModel{^models[4] }
 	
-	*thisWidth  {^220+22}
+	*thisWidth  {^262}
 	*thisHeight {^95+26+22}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
@@ -122,25 +125,33 @@ LNX_Ring : LNX_InstrumentTemplate {
 							Rect(11,11,thisWidth-22,thisHeight-22-1), gui[\scrollTheme]);
 	
 		// midi control button
-		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(85, 6, 43, 19),"Cntrl", gui[\midiTheme])
+		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(106, 6, 43, 19),"Cntrl", gui[\midiTheme])
 			.action_{ LNX_MIDIControl.editControls(this).front };
 
 		// 10.in
 		MVC_PopUpMenu3(models[10],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);
 		
 		// 11.out
-		MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(138,7,70,17),gui[\menuTheme]);
+		MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(158,7,70,17),gui[\menuTheme]);
+		
+		// 1.onOff
+		MVC_BinaryCircleView(models[1], gui[\scrollView] ,Rect(83, 7, 16, 16))
+			.strings_(["I","I"])
+			.font_(Font("Helvetica-Bold",12))
+			.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
+				\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));
+		
 		
 		// knobs
 		3.do{|i| gui[i]=
-			MVC_MyKnob3(models[i+2],gui[\scrollView],Rect(40+(i*50),48,30,30), gui[\knobTheme])
+			MVC_MyKnob3(models[i+2],gui[\scrollView],Rect(47+(i*55),48,30,30), gui[\knobTheme])
 		};
 		
 		models[3].dependantsPerform(\zeroValue_,0);
 		
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],
-												17@(gui[\scrollView].bounds.height-23),88,
+												17@(gui[\scrollView].bounds.height-23),108,
 			Color(0.74, 0.74, 0.88)*0.6,
 			Color.black,
 			Color(0.74, 0.74, 0.88),
@@ -162,12 +173,19 @@ LNX_Ring : LNX_InstrumentTemplate {
 				inputChannels=4,
 				freq=60,
 				mix=0,
-				outAmp=1
+				outAmp=1,
+				on=1
 			|
-			var out, ring;
-			out = In.ar(inputChannels, 2);
-			ring = out * SinOsc.ar(freq);
-			out = XFade2.ar(ring,out,mix,outAmp.dbamp);
+			var in, out, ring;
+			
+			in = In.ar(inputChannels, 2);
+			
+			ring = in * SinOsc.ar(freq);
+			
+			out = XFade2.ar(ring,in,mix,outAmp.dbamp);
+			
+			out = SelectX.ar(on.lag,[in,out]);
+			
 			Out.ar(outputChannels,out);
 		}).send(s);
 

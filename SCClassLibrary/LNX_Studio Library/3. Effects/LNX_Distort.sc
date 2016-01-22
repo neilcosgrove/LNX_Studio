@@ -34,7 +34,11 @@ LNX_Distort : LNX_InstrumentTemplate {
 		
 		var template=[
 			0, // 0.solo
-			1, // 1.onOff
+			
+			// 1.onOff
+			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
+				
 				
 			0.1,  // 2. drive
 			0,    // 3. type
@@ -97,7 +101,7 @@ LNX_Distort : LNX_InstrumentTemplate {
 	// return the volume model
 	volumeModel{^models[4] }
 	
-	*thisWidth  {^220+22}
+	*thisWidth  {^262}
 	*thisHeight {^95+26+22}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
@@ -133,22 +137,29 @@ LNX_Distort : LNX_InstrumentTemplate {
 							Rect(11,11,thisWidth-22,thisHeight-22-1), gui[\scrollTheme]);
 							
 		// midi control button
-		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(85, 6, 43, 19),"Cntrl", gui[\midiTheme])
+		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(106, 6, 43, 19),"Cntrl", gui[\midiTheme])
 			.action_{ LNX_MIDIControl.editControls(this).front };
 	
 		// 10.in
 		MVC_PopUpMenu3(models[10],gui[\scrollView] ,Rect(  7,7,70,17),gui[\menuTheme  ]);
 		// 11.out
-		MVC_PopUpMenu3(models[11],gui[\scrollView] ,Rect(138,7,70,17),gui[\menuTheme  ]);
+		MVC_PopUpMenu3(models[11],gui[\scrollView] ,Rect(158,7,70,17),gui[\menuTheme  ]);
+					
+		// 1.onOff
+		MVC_BinaryCircleView(models[1], gui[\scrollView] ,Rect(83, 7, 16, 16))
+			.font_(Font("Helvetica-Bold",12))
+			.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
+				\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));
+		
 		
 		// knobs
 		3.do{|i| gui[i]=
-			MVC_MyKnob3(models[i+2],gui[\scrollView] ,Rect(27+(i*66),48,30,30), gui[\knobTheme])
+			MVC_MyKnob3(models[i+2],gui[\scrollView] ,Rect(27+(i*76),48,30,30), gui[\knobTheme])
 		};
 		
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],
-									17@(gui[\scrollView] .bounds.height-23),88,
+									17@(gui[\scrollView] .bounds.height-23),108,
 			Color(0.74, 0.74, 0.88)*0.6,
 			Color.black,
 			Color(0.74, 0.74, 0.88),
@@ -171,17 +182,23 @@ LNX_Distort : LNX_InstrumentTemplate {
 				pan=0,
 				inAmp=1,
 				type=1,
-				outAmp=1
+				outAmp=1,
+				on=1
 			|
-			var out;
-			out = In.ar(inputChannels, 2)*(((inAmp**2)+0.02)*50);
+			var in,out;
+			
+			in = In.ar(inputChannels, 2);
+			
+			out = in *(((inAmp**2)+0.02)*50);
+	
+			// out = SelectX.ar(on.lag,[Silent.ar,in]);
+
 			out= SelectX.ar(type,[out.tanh,out.softclip,out.distort,out.clip(-1,1),out.fold(-1,1)]);
 			
-//			out= LeakDC.ar(out);
-//			out= SelectX.ar(type,[out.tanh,out.softclip,out.distort,out.clip(-1,inf),out.fold(-1,1)]);
-//			out= LeakDC.ar(out);
+			out = SelectX.ar(on.lag,[in,out]);
 			
 			out = out * ((outAmp**2)*(1-(inAmp/2.6)));
+			
 			Out.ar(outputChannels,out);
 		}).send(s);
 
@@ -202,7 +219,8 @@ LNX_Distort : LNX_InstrumentTemplate {
 			["/n_set", node, \type  ,p[3]],
 			["/n_set", node, \outAmp,p[4]],
 			["/n_set", node, \inputChannels,in],
-			["/n_set", node, \outputChannels,out]
+			["/n_set", node, \outputChannels,out],
+			["/n_set", node, \on    ,p[1]]
 		);
 		
 	}

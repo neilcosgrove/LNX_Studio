@@ -9,13 +9,13 @@
 "
 // A simple FX template
 
-SynthDef(\"LNX_CodeFX\", {|out, amp, in, inAmp, sendOut, sendAmp, poll, filtFreq=1800, q=0.5|
+SynthDef(\"LNX_CodeFX\", {|on, out, amp, in, inAmp, sendOut, sendAmp, poll, filtFreq=1800, q=0.5|
 	
-	var signal = In.ar(in, 2) * inAmp;
+	var signal, signalIn = In.ar(in, 2) * inAmp;
 	
-	signal = DFM1.ar(signal, filtFreq, q);
+	signal = DFM1.ar(signalIn, filtFreq, q);
 	
-	LNX_Out(signal,out,amp,0,sendOut,sendAmp);
+	LNX_FXOut(signal,signalIn,on,out,amp,0,sendOut,sendAmp);
 	
 }, metadata: ( specs: ( filtFreq: \\freq, q: \\unipolar )))
 

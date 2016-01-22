@@ -11,6 +11,8 @@ LNX_Limiter : LNX_InstrumentTemplate {
 	isInstrument{^false}
 	canTurnOnOff{^false}
 	
+	*isVisible{^false} // this instrument is depreciated 
+	
 	mixerColor{^Color(0.77,0.6,1,0.3)} // colour in mixer
 	
 	header { 
@@ -34,7 +36,11 @@ LNX_Limiter : LNX_InstrumentTemplate {
 		
 		var template=[
 			0, // 0.solo
-			1, // 1.onOff
+			
+			// 1.onOff
+			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
+				
 			
 			0.5,  // 2. in
 			0.5,  // 3. limit
@@ -80,7 +86,7 @@ LNX_Limiter : LNX_InstrumentTemplate {
 	// return the volume model
 	volumeModel{^models[4] }
 	
-	*thisWidth  {^220+22}
+	*thisWidth  {^262}
 	*thisHeight {^95+26+22}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }

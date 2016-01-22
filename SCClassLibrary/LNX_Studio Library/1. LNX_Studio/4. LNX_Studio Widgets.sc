@@ -52,7 +52,7 @@
 
 	// create the mixer gui
 	createMixerWindow{
-		var bounds, width=993+3, height=449+30;
+		var bounds, width=996+10, height=449+30;
 		
 		bounds = this.savedWindowBounds ? Rect(osx,0,width,height);
 		
@@ -380,7 +380,7 @@
 			Rect(162, 190, 174, 43)).string_("Instruments");
 			
 		// the fx scroll view
-		mixerGUI[\fxScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(732, 10, 160, 273))
+		mixerGUI[\fxScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(732, 10, 170, 273))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -394,7 +394,7 @@
 			.string_("Effects");	
 		
 		// the midi scroll view	
-		mixerGUI[\midiScrollView] = MVC_RoundedScrollView (mixerWindow, Rect(754, 301, 230, 167))
+		mixerGUI[\midiScrollView] = MVC_RoundedScrollView (mixerWindow, Rect(754, 301, 240, 167))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -409,7 +409,7 @@
 		
 		// the master levels scroll view
 		mixerGUI[\masterLevelsScrollView] = MVC_RoundedScrollView (mixerWindow, 
-												Rect(839+1+68+3, 10, 73, 273))
+												Rect(921, 10, 73, 273))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -844,7 +844,7 @@
 				}.freshAdaptor;
 		
 			// name
-			MVC_Text(sv,inst.nameModel,Rect(38,3,117,17))
+			MVC_Text(sv,inst.nameModel,Rect(38,3,127,17))
 				.hasBorder_(true)
 				.canEdit_(true)
 				.clipChars_(true)
@@ -869,7 +869,7 @@
 				;
 
 			// in
-			MVC_SmoothSlider(sv,inst.inModel,Rect(15,43,55,13))
+			MVC_SmoothSlider(sv,inst.inModel,Rect(15,43,55+5,13))
 				.orientation_(\horiz)
 				.label_("In")
 				.thumbSizeAsRatio_(0.05,0)
@@ -884,10 +884,8 @@
 				.color_(\numberUp,Color.black)
 				.color_(\numberDown,Color.white);
 
-
-
 			// out
-			MVC_SmoothSlider(sv,inst.outModel,Rect(99,43,55,13))
+			MVC_SmoothSlider(sv,inst.outModel,Rect(104,43,60,13))
 				.orientation_(\horiz)
 				.label_("Out")
 				.thumbSizeAsRatio_(0.05,0)
@@ -909,8 +907,19 @@
 				.label_(nil)
 				.color_(\background, inst.mixerColor);
 
+
+			if (inst.onOffModel.notNil) {
+
+			MVC_BinaryCircleView(inst.onOffModel, sv ,Rect(77, 24, 15, 15))
+				.strings_(["I","I"])
+				.font_(Font("Helvetica-Bold",11))
+				.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
+					\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));	
+				
+			};
+
 			// out channel	
-			MVC_PopUpMenu3(inst.outChModel,sv, Rect(89, 23, 66, 16), 
+			MVC_PopUpMenu3(inst.outChModel,sv, Rect(89+10, 23, 66, 16), 
 								mixerGUI[\menuTheme2])
 				.label_(nil)
 				.color_(\background, inst.mixerColor);
