@@ -588,18 +588,15 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 		// 9. channelSetup
 		MVC_PopUpMenu3(models[9],gui[\scrollView],Rect(85,5,75,17), gui[\menuTheme ] );
 		
-		
 		// 51. onSolo turns audioIn, seq or both on/off
 		MVC_PopUpMenu3(models[51], gui[\scrollView] ,Rect(289, 5, 70, 17), gui[\menuTheme] );
 
 		// 52. midi clock out
 		MVC_OnOffView(models[52], gui[\scrollView], Rect(180, 27, 70, 18),gui[\onOffTheme3]);
 
-		
 		// 53. use controls in presets
 		MVC_OnOffView(models[53], gui[\scrollView], Rect(289, 27, 70, 18),gui[\onOffTheme3]);
 
-		
 		// 10. syncDelay
 		MVC_NumberBox(models[10], gui[\scrollView],Rect(196, 5, 40, 18),  gui[\theme2])
 			.labelShadow_(false)
@@ -610,9 +607,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 			.font_(Font("Helvetica",10))
 			.shadow_(false)
 			.color_(\string,Color.white);
-			
-
-		
+					
 		// MIDI Settings
  		MVC_FlatButton(gui[\scrollView],Rect(20, 27, 43, 19),"MIDI")
 			.rounded_(true)
@@ -663,8 +658,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 			.hasHorizontalScroller_(false)
 			.hasVerticalScroller_(false)
 			.autohidesScrollers_(false);
-
-
+			
 		// levels
 		MVC_FlatDisplay(this.peakLeftModel,gui[\scrollView],Rect(370, 44, 6, 110+15))
 			.color_(\background,Color.white.alpha_(0.1));
@@ -672,7 +666,6 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 			.color_(\background,Color.white.alpha_(0.1));
 		MVC_Scale(gui[\scrollView],Rect(6+370, 44, 2, 110+15))
 			.color_(\background,Color.white.alpha_(0.1));
-
 
 		// 2. channel volume
 		MVC_SmoothSlider(gui[\scrollView],models[2],Rect(388, 44, 25, 110+15))
@@ -690,9 +683,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 		// 0. channel solo
 		MVC_OnOffView(models[0], gui[\scrollView], Rect(388, 24, 25, 16),gui[\soloTheme])
 			.rounded_(true);
-
-
-		
+			
 		channels.do{|i|
 
 			gui[i] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(i+1), Rect(4, 4, 654, 269))
@@ -703,7 +694,6 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 				.hasHorizontalScroller_(false)
 				.hasVerticalScroller_(false)
 				.autohidesScrollers_(false);
-			
 			
 			// channel volume
 			MVC_SmoothSlider(gui[\scrollView],models[21+i],Rect(421+(i*25),39+5,20,110+15))
@@ -716,7 +706,6 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 				.color_(\on,Color.orange)
 				.color_(\off,Color.orange/8)
 				.action_{|me| this.bang(i,100/127) };	
-			
 			
 			// 41-50. channel onOff	
 			MVC_OnOffView(models[41+i], gui[\scrollView],
@@ -834,7 +823,6 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 				sequencers.do{|seq| seq.addValueToSP(3,adj)};
 			};
 			
-
 		// composite view for controls
 		gui[\controlView] = MVC_RoundedCompositeView(gui[\scrollView],Rect(15, 35+22, 345, 116))
 			.forceHold_(true)

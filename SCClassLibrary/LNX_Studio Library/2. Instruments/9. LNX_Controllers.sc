@@ -107,7 +107,6 @@ LNX_Controllers : LNX_InstrumentTemplate {
 				.color_(\border2, Color(0,1/103,9/77))
 				.color_(\background, Color(59/77,43/54,9/11)*1.1 );
 	
-	
 		// 19 net 
 		MVC_OnOffView(models[19],gui[\compositeView],Rect(10, 10, 28, 18),gui[\soloTheme  ])
 			.rounded_(true)

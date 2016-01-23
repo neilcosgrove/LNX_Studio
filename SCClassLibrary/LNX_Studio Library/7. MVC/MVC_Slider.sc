@@ -62,7 +62,14 @@ MVC_Slider : MVC_View {
 				startY=y;
 				if (verbose) {view.bounds.postln};
 			}{
-				if (clickCount==2) { this.toggleMIDIactive };
+				var toggle = false;
+	
+				if (hasMIDIcontrol) {
+					if ((clickCount>1)&&doubleClickLearn){ toggle = true };
+					if (modifiers==262401) { toggle = true  };
+					if (buttonNumber>=1  ) { toggle = true  };
+					if (toggle) { this.toggleMIDIactive };
+				};
 			};
 		};
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|

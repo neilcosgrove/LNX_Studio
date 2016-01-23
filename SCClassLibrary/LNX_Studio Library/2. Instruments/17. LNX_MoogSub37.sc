@@ -713,9 +713,8 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			.penShadow_(true)
 			.font_(Font("AvenirNext-Heavy",23))
 			.string_("Moog Sub 37");
-		
-		
-				// levels
+			
+		// levels
 		MVC_FlatDisplay(this.peakLeftModel,gui[\scrollView],Rect(718, 224, 6, 51));
 		MVC_FlatDisplay(this.peakRightModel,gui[\scrollView],Rect(724, 224, 6, 51));
 		//MVC_Scale(gui[\controlsTab],Rect(11+630, 11, 2, 160));
@@ -783,8 +782,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		MVC_ProgramChangeMoog(gui[\scrollView], models[12], Rect(215, 252, 320, 19))
 			.color_(\background,Color(0.2,0.2,0.2))
 			.color_(\on,Color(0.5,0.5,0.5));
-			
-		
+				
 		gui[\programName] = MVC_Text(gui[\scrollView],Rect(540, 258,177,18))
 			.align_(\center)
 			.shadow_(false)
@@ -800,8 +798,6 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			gui[\programName].string_(moogPresets[prog]);
 		};
 				
-
-
 		// the keyboard, fix bug so we don't need this scrollView
 		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(12,310+20,1020,93))
 			.hasHorizontalScroller_(false)
@@ -813,8 +809,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				sequencer.pipeIn(pipe);     // to sequencer
 				this.toMIDIOutBuffer(pipe); // and midi out
 			};
-			
-			
+				
 		moogPresets.do{|string,i|
 			gui[i]=MVC_Text(gui[\preTab], Rect( 40+((i%16)*62), 30+(i.div(16)*16), 60-2, 13) )
 				.string_(string)

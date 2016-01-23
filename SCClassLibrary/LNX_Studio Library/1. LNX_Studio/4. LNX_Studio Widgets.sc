@@ -52,7 +52,7 @@
 
 	// create the mixer gui
 	createMixerWindow{
-		var bounds, width=993+3, height=449+30;
+		var bounds, width=996+10, height=449+30;
 
 		Platform.case(\osx, {}, {
 			height = height + 30; // extra space for menus
@@ -374,7 +374,8 @@
 			Rect(162, 190, 174, 43)).string_("Instruments");
 			
 		// the fx scroll view
-		mixerGUI[\fxScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(732, 7+menuGap.y, 160, 276))
+		// TODO change 276 to 273?
+		mixerGUI[\fxScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(732, 7+menuGap.y, 170, 276))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -388,7 +389,7 @@
 			.string_("Effects");	
 		
 		// the midi scroll view	
-		mixerGUI[\midiScrollView] = MVC_RoundedScrollView (mixerWindow, Rect(754, 301+menuGap.y, 230, 167))
+		mixerGUI[\midiScrollView] = MVC_RoundedScrollView (mixerWindow, Rect(754, 301+menuGap.y, 240, 167))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -402,8 +403,8 @@
 			.string_("MIDI");
 		
 		// the master levels scroll view
-		mixerGUI[\masterLevelsScrollView] = MVC_RoundedScrollView (mixerWindow, 
-												Rect(839+1+68+3, 7+menuGap.y, 73, 276))
+		mixerGUI[\masterLevelsScrollView] = MVC_RoundedScrollView (mixerWindow,
+												Rect(921, 7+menuGap.y, 73, 276))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -812,7 +813,7 @@
 			y = (i*62);
 		
 			mixerGUI[id][\scrollView] = MVC_CompositeView(mixerGUI[\fxScrollView],
-										Rect(0,0+y,160,62), hasBorder:false);
+										Rect(0,0+y,170,62), hasBorder:false);
 			
 			sv=mixerGUI[id][\scrollView];
 
@@ -851,7 +852,7 @@
 				}.freshAdaptor;
 		
 			// name
-			MVC_Text(sv,inst.nameModel,Rect(38,3,117,17))
+			MVC_Text(sv,inst.nameModel,Rect(38,3,127,17))
 				.hasBorder_(true)
 				.canEdit_(true)
 				.clipChars_(true)
@@ -876,7 +877,7 @@
 				;
 
 			// in
-			MVC_SmoothSlider(sv,inst.inModel,Rect(15,43,55,13))
+			MVC_SmoothSlider(sv,inst.inModel,Rect(15,43,55+5,13))
 				.orientation_(\horiz)
 				.label_("In")
 				.thumbSizeAsRatio_(0.05,0)
@@ -891,10 +892,8 @@
 				.color_(\numberUp,Color.black)
 				.color_(\numberDown,Color.white);
 
-
-
 			// out
-			MVC_SmoothSlider(sv,inst.outModel,Rect(99,43,55,13))
+			MVC_SmoothSlider(sv,inst.outModel,Rect(104,43,60,13))
 				.orientation_(\horiz)
 				.label_("Out")
 				.thumbSizeAsRatio_(0.05,0)
@@ -916,20 +915,31 @@
 				.label_(nil)
 				.color_(\background, inst.mixerColor);
 
+
+			if (inst.onOffModel.notNil) {
+
+			MVC_BinaryCircleView(inst.onOffModel, sv ,Rect(77, 24, 15, 15))
+				.strings_(["I","I"])
+				.font_(Font("Helvetica-Bold",11))
+				.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
+					\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));	
+				
+			};
+
 			// out channel	
-			MVC_PopUpMenu3(inst.outChModel,sv, Rect(89, 23, 66, 16), 
+			MVC_PopUpMenu3(inst.outChModel,sv, Rect(89+10, 23, 66, 16), 
 								mixerGUI[\menuTheme2])
 				.label_(nil)
 				.color_(\background, inst.mixerColor);
 	
 			// divider
-			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(0,97-20-18,160,1))
+			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(0,97-20-18,170,1))
 					.color_(\on,Color(0,0,0,0.3))
 					.color_(\off,Color(0,0,0,0.3));
 	
 	
 			// divider
-			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(0,98-20-18,160,1))
+			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(0,98-20-18,170,1))
 					.color_(\on,Color(1,1,1,0.4))
 					.color_(\off,Color(1,1,1,0.4));
 					

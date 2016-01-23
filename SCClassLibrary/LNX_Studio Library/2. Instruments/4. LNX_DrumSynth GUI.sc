@@ -199,14 +199,10 @@
 			Color(0.5,0.55,0.5),Color.black,Color(0.5,0.55,0.5)/1.5);
 		this.attachActionsToPresetGUI;
 		
-	
 		// 132.master send channels
 		MVC_PopUpMenu3(models[132],gui[\compositeView], Rect(561, 156, 70, 18),gui[\menuTheme]);		
-		
-		
 		// 25.output channels
 		MVC_PopUpMenu3(models[25],gui[\compositeView], Rect(637, 156, 70, 18),gui[\menuTheme]);
-	
 	
 		// 2.amp
 		MVC_SmoothSlider(models[2],gui[\masterView], Rect(658, 42, 20, 63),gui[\sliderTheme2])
@@ -220,19 +216,14 @@
 		MVC_MyKnob3(models[130],gui[\masterView],Rect(659,166,20,20),gui[\knob2Theme1])
 			.color_(\on, Color.white);
 			
-
 		// 133.master send
 		MVC_MyKnob3(models[133],gui[\masterView],Rect(659,203,20,20),gui[\knob2Theme1])
 			.color_(\on, Color.white);
-
-			
+		
 		// 117.dur
 		MVC_MyKnob3(models[117],gui[\masterView],Rect(659,128,20,20),gui[\knob2Theme1])
 			.color_(\on,Color.white);
 			
-			
-			
-		
 	// KICK DRUM
 
 		// 4 & 12 bass note

@@ -40,7 +40,11 @@ LNX_GVerb : LNX_InstrumentTemplate {
 	
 		var template = [
 			0, // 0.solo
-			1, // 1.onOff
+			
+			// 1.onOff
+			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
+				
 								
 			// 2. in channels
 			[0,[0,LNX_AudioDevices.defaultFXBusChannels/2-1,\linear,1],
@@ -97,7 +101,7 @@ LNX_GVerb : LNX_InstrumentTemplate {
 		// return the volume model
 	volumeModel{^models[13] }
 	
-	*thisWidth  {^215+22}
+	*thisWidth  {^257}
 	*thisHeight {^155+26+22}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
@@ -133,31 +137,32 @@ LNX_GVerb : LNX_InstrumentTemplate {
 								Rect(11,11,thisWidth-22,thisHeight-22-1),gui[\scrollTheme]);
 	
 		// midi control button
-		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(85, 6, 43, 19),"Cntrl", gui[\midiTheme])
+		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(106, 6, 43, 19),"Cntrl", gui[\midiTheme])
 			.action_{ LNX_MIDIControl.editControls(this).front };
 	
 		// 10.in
 		gui[\in] = MVC_PopUpMenu3(models[2],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);
 		
 		// 11.out
-		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(138,7,70,17),gui[\menuTheme]);
-	
-//				
-//		// knob com view
-//		gui[\ksv] = MVC_CompositeView(gui[\scrollView], Rect(3,30,thisWidth-28,62+60),true)
-//			.color_(\background,Color(0.478,0.525,0.613));
-//	
+		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(158,7,70,17),gui[\menuTheme]);
+		
+		// 1.onOff
+		MVC_BinaryCircleView(models[1], gui[\scrollView] ,Rect(83, 7, 16, 16))
+			.font_(Font("Helvetica-Bold",12))
+			.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
+				\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));
+		
 		// knobs
 		10.do{|i|
 			gui[i] = MVC_MyKnob3(
-					models[i+4],gui[\scrollView],Rect(10+((i%5)*40),48+((i/5).asInt*60),30,30),
+					models[i+4],gui[\scrollView],Rect(10+((i%5)*45),48+((i/5).asInt*60),30,30),
 					gui[\knobTheme]
 				)
 		};
 		
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],
-									17@(gui[\scrollView].bounds.height-23),80,
+									17@(gui[\scrollView].bounds.height-23),100,
 			Color(0.74, 0.74, 0.88)*0.6,
 			Color.black,
 			Color(0.74, 0.74, 0.88),
@@ -187,10 +192,11 @@ LNX_GVerb : LNX_InstrumentTemplate {
 				spread=15,
 				dry=0,
 				early=0.5,
-				taillevel=0.5
+				taillevel=0.5,
+				on=1
 				
 			|
-			var out;
+			var in, out;
 
 			time=(time*4)**2;
 			damp=1-damp;
@@ -199,7 +205,10 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			early=early;
 			taillevel=taillevel;
 			
-			out = In.ar(inputChannels, 2)*inAmp;
+			in = In.ar(inputChannels, 2)*inAmp;
+			
+			out = SelectX.ar(on.lag,[Silent.ar,in]);
+			
 			out = GVerb.ar(out[0]+out[1], 			
 					room,
 					Lag.kr(time,0.5),
@@ -211,6 +220,9 @@ LNX_GVerb : LNX_InstrumentTemplate {
 					taillevel,
 					room+1
 					);
+					
+			out = SelectX.ar(on.lag,[in,out]);
+					
 			out = out * outAmp;
 			Out.ar(outputChannels,out);
 		}).send(s);
@@ -253,6 +265,7 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			server.sendBundle(latency,["/n_set", node, \outAmp    ,p[13]]);
 			server.sendBundle(latency,["/n_set", node, \outputChannels,out]);
 			server.sendBundle(latency,["/n_set", node, \inputChannels,in]);
+			server.sendBundle(latency,["/n_set", node, \on,       p[1]]);
 		}
 	}
 	
@@ -281,7 +294,8 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			\taillevel ,p[12],
 			\outAmp    ,p[13],
 			\outputChannels,out,
-			\inputChannels,in
+			\inputChannels,in,
+			\on        ,p[1]
 		]));
 	
 	}

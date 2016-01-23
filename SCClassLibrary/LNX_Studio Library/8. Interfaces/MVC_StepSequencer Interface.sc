@@ -493,7 +493,7 @@ MVC_StepSequencer {
 	
 	// new pin style
 	
-	createButtonWidgets{|window, bounds, colors, controls=true|
+	createButtonWidgets{|window, bounds, colors, controls=true, showName=true|
 		
 		var seqViews;
 		var l,t,w,h, sw, os, rh, ph; // slider width, offset (left), ruler height, position height
@@ -525,12 +525,16 @@ MVC_StepSequencer {
 										\backgroundDown : Color(0.1,0.1,0.1,0.85),
 										\string : colors[\string],
 										\focus : Color(0,0,0,0)));
+
+		if (showName) {
 		
-		nameWidget = MVC_StaticText(nameModel, window, Rect(l-2-5,t+rh-2,os-8+8+5,sw-1+5+1))
-			.font_(Font("Arial", 12))
-			.color_(\stringDown,Color.black)
-			.shadowDown_(false)
-			.action_{ nameClickAction.value(this) };
+			nameWidget = MVC_StaticText(nameModel, window, Rect(l-2-5,t+rh-2,os-8+8+5,sw-1+5+1))
+				.font_(Font("Arial", 12))
+				.color_(\stringDown,Color.black)
+				.shadowDown_(false)
+				.action_{ nameClickAction.value(this) };
+				
+		};
 		
 		// step sliders
 		steps.do{|x|

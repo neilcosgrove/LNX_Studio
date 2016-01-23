@@ -495,9 +495,6 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 	
 		// widgets
-		
-	//	window = MVC_RoundedComView(window,
-//							Rect(11,11,thisWidth-22,thisHeight-22-6-98), gui[\scrollTheme]);
 						
 		// 3. in	
 		MVC_PopUpMenu3(models[3],window,Rect(5,5,70,17), gui[\menuTheme ] );
@@ -551,14 +548,13 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			.labelColors_(  Color(0.6 , 0.562, 0.5)!2)
 			.backgrounds_(  Color.clear!2)
 			.tabCurve_(8)
-		//	.tabWidth_([63,63])
 			.tabHeight_(15)
 			.followEdges_(true)
 			.value_(0);
 		
 		// control tab
 		
-		gui[\controlsTab] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(0),Rect(4, 4, 654, 269))
+		gui[\controlsTab] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(0),Rect(4,4,654,269))
 			.color_(\border,  Color(0.6 , 0.562, 0.5))
 			.color_(\background, Color.grey(0.3))
 			.hasBorder_(false)
@@ -575,7 +571,7 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			.string_("Volca Bass");
 		
 			
-		gui[\sequencerTab] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(1), Rect(4, 4, 654, 269))
+		gui[\sequencerTab] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(1),Rect(4,4,654,269))
 			.color_(\border,  Color(0.6 , 0.562, 0.5))
 			.color_(\background, Color.grey(0.207))
 			.hasBorder_(false)
@@ -583,7 +579,6 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			.hasHorizontalScroller_(false)
 			.hasVerticalScroller_(false)
 			.autohidesScrollers_(false);
-
 
 		// levels
 		MVC_FlatDisplay(this.peakLeftModel,gui[\controlsTab],Rect(5+630, 11, 6, 160));

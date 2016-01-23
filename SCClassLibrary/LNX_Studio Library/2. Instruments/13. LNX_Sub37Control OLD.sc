@@ -46,7 +46,7 @@ LNX_Sub37Control : LNX_InstrumentTemplate {
 	clockPriority{^2} // sequenced preset changes before any note generation
 	canTurnOnOff {^false} // this may change with audio in
 
-	*isVisible{^false}
+	*isVisible{^false} // this instrument is depreciated 
 
 	header { 
 		instrumentHeaderType="SC Sub37 Doc";

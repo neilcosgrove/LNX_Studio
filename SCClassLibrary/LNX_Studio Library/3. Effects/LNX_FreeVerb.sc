@@ -34,7 +34,11 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 		
 		var template=[
 			0, // 0.solo
-			1, // 1.onOff
+			
+			// 1.onOff
+			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
+				
 		
 			1,   // 2. in
 			1,    // 3.mix
@@ -70,7 +74,7 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 					
 		["IN","mix","room","damp","OUT","hi pass","low pass"].do{|text,i|
 			template[i+2] = [ template[i+2],
-				[\unipolar,\unipolar,\unipolar,\unipolar,\unipolar,\freq,\freq][i]
+				[\unipolar,\unipolar,\unipolar,[1,0],\unipolar,\freq,\freq][i]
 				, midiControl, i+2, text,
 				(\label_:text,
 					\numberFunc_:[\float2,\float2,\float2,\float2,\float2,\freq,\freq][i]
@@ -91,7 +95,7 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 	// return the volume model
 	volumeModel{^models[6] }
 	
-	*thisWidth  {^242}
+	*thisWidth  {^262}
 	*thisHeight {^200}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
@@ -126,23 +130,30 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 							Rect(11,11,thisWidth-22,thisHeight-22-1), gui[\scrollTheme]);
 	
 		// midi control button
-		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(85, 6, 43, 19),"Cntrl", gui[\midiTheme])
+		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(106, 6, 43, 19),"Cntrl", gui[\midiTheme])
 			.action_{ LNX_MIDIControl.editControls(this).front };
 	
 		// 10.in
 		gui[\in]=MVC_PopUpMenu3(models[10],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);
 		
 		// 11.out
-		gui[\out]=MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(138,7,70,17),gui[\menuTheme]);
+		gui[\out]=MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(158,7,70,17),gui[\menuTheme]);
+		
+		// 1.onOff
+		MVC_BinaryCircleView(models[1], gui[\scrollView] ,Rect(83, 7, 16, 16))
+			.font_(Font("Helvetica-Bold",12))
+			.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
+				\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));
+		
 		
 		// knobs
 		5.do{|i| gui[i+2]=
-			MVC_MyKnob3(models[i+2],gui[\scrollView],Rect(10+(i*40),48,30,30), gui[\knobTheme])
+			MVC_MyKnob3(models[i+2],gui[\scrollView],Rect(10+(i*45),48,30,30), gui[\knobTheme])
 		};
 
 		// knobs
 		2.do{|i| gui[i+7]=
-			MVC_MyKnob3(models[i+7],gui[\scrollView],Rect(50+(i*80),108,30,30), gui[\knobTheme])
+			MVC_MyKnob3(models[i+7],gui[\scrollView],Rect(55+(i*90),108,30,30), gui[\knobTheme])
 				.numberWidth_(10)
 		};
 		
@@ -150,7 +161,7 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 		
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],
-											17@(gui[\scrollView].bounds.height-23),88,
+											17@(gui[\scrollView].bounds.height-23),108,
 			Color(0.7, 0.77, 0.88)*0.6,
 			Color.black,
 			Color(0.7, 0.77, 0.88),
@@ -177,15 +188,21 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 				damp=0.5,
 				outAmp=1,
 				hiFreq=20,
-				lowFreq=20000
+				lowFreq=20000,
+				on=1
 			|
-			var out;
-			out = In.ar(inputChannels, 2)*inAmp;
+			var in, out;
+			in = In.ar(inputChannels, 2)*inAmp;
+			
+			out = SelectX.ar(on.lag,[Silent.ar,in]);
 			
 			out = LPF.ar(out,lowFreq.clip(20,20000).lag(0.2));
 			out = HPF.ar(out,hiFreq.clip(20,20000).lag(0.2));
 			
 			out = FreeVerb2.ar(out[0],out[1],mix,room,damp);
+			
+			out = SelectX.ar(on.lag,[in,out]);
+			
 			out = out * outAmp;
 			Out.ar(outputChannels,out);
 		}).send(s);
@@ -214,7 +231,8 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 			["/n_set", node, \hiFreq ,p[7]],
 			["/n_set", node, \lowFreq,p[8]],
 			["/n_set", node, \inputChannels,in],
-			["/n_set", node, \outputChannels,out]
+			["/n_set", node, \outputChannels,out],
+			["/n_set", node, \on     ,p[1]]
 		);
 	}
 	

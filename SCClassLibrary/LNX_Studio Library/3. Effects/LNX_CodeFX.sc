@@ -71,7 +71,13 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 			[0],
 			
 			// 1.onOff
-			[1],
+			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+				{|me,val,latency,send|
+					if (systemIndices[\on].notNil) {
+						this.updateSynthArg(systemIndices[\on],val,latency);
+					};
+				}],
+				
 					
 			// 2.master amp
 			[\db6,midiControl, 2, "Out",
@@ -285,6 +291,10 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 	getSystemMsg{
 		var list=[];
 		
+		// on 
+		if (systemIndices[\on].notNil) {
+			list=list++[systemIndices[\on],p[1]];
+		};		
 		// out
 		if (systemIndices[\out].notNil) {
 			list=list++[systemIndices[\out],LNX_AudioDevices.getOutChannelIndex(p[3])];
@@ -477,14 +487,14 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		
 		// put in system views
 		loadingSystemViews.pairsDo{|indices,list|
-			var class=list[0];	
+			var class=list[0].asSymbol.asClass;	
 			var loadList = list.drop(1);
 			var oldView, newView;
 		
 			oldView = systemViews[indices];	// the old view
 			
 			// make the new view, with the old model and actions
-			newView = class.asSymbol.asClass.new(false,oldView.model,gui[\userGUIScrollView], 
+			newView = class.new(false,oldView.model,gui[\userGUIScrollView], 
 												  Rect(),gui[\userGUI])
 					.boundsAction_(oldView.boundsAction)
 					.mouseDownAction_(oldView.mouseDownAction)
@@ -500,20 +510,22 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		
 		// put in user views	
 		loadingUserViews.pairsDo{|indices,list|
-			var class=list[0];	
+			var class=list[0].asSymbol.asClass;
 			var modelValue = list[1].asFloat;
 			var loadList = list.drop(2);
 			var oldView, newView;
 			
 			// make the new view, with the old model and actions
 			oldView = userViews[indices];
-			newView = class.asSymbol.asClass.new(false,oldView.model,gui[\userGUIScrollView], 
+			newView = class.new(false,oldView.model,gui[\userGUIScrollView], 
 												  Rect(),gui[\userGUI])
 					.boundsAction_(oldView.boundsAction)
 					.mouseDownAction_(oldView.mouseDownAction)
 					.colorAction_(oldView.colorAction)
 					.putLoadList(loadList);                        // put in the load data
-
+			if ((class==MVC_OnOffView) || (class==MVC_OnOffRoundedView)) {
+				newView.showNumberBox_(false);	
+			};
 			if (gui[\userGUIScrollView].isOpen) { newView.create }; // now make it
 			userViews[indices]=newView;                             // store it
 			newView.valueAction_(modelValue,nil,false,false);       // update the value
@@ -788,7 +800,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		
 		// work out which type the control is. either system, user or userList
 		types = names.collect{|name,i|
-			if ((#[\out, \amp, \bpm, \clock, \i_clock,
+			if ((#[\on, \out, \amp, \bpm, \clock, \i_clock,
 				   \sendOut, \sendAmp, \in, \inAmp, \poll, 
 				].includes(name)
 				and:{defaultValues[i].isNumber})) {
@@ -1110,7 +1122,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 	// change the type of gui, called from menu in this (but ColorPicker window)
 	netChangeGUIType{|i,netSelectedIndex,netSelectedType,uid,l,t,w,h|
 		
-		var newView, oldView, selectedCollection, selectedBounds = Rect(l,t,w,h);
+		var newView, oldView, selectedCollection, selectedBounds = Rect(l,t,w,h), class;
 		
 		if (netSelectedType==\system) {
 			netSelectedIndex = netSelectedIndex.asSymbol;
@@ -1124,13 +1136,19 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 			oldView = userViews[netSelectedIndex]
 		};
 
+		class = guiTypes[i].asClass;
+
 		// make the new view
-		newView = guiTypes[i].asClass.new(false,oldView.model,gui[\userGUIScrollView], 
+		newView = class.new(false,oldView.model,gui[\userGUIScrollView], 
 											  selectedBounds,gui[\userGUI])
 				.colors_(oldView.colors)
 				.boundsAction_(oldView.boundsAction)
 				.mouseDownAction_(oldView.mouseDownAction)
 				.colorAction_(oldView.colorAction);
+		
+		if ((class==MVC_OnOffView) || (class==MVC_OnOffRoundedView)) {
+			newView.showNumberBox_(false);	
+		};
 		
 		newView.create;
 		oldView.remove.removeModel.free;

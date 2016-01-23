@@ -36,7 +36,11 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 	
 		var template = [
 			0, // 0.solo
-			1, // 1.onOff
+			
+			// 1.onOff
+			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
+				
 				
 			1,   // 2. in
 			0,    // 3.pitch
@@ -98,8 +102,8 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 	// return the volume model
 	volumeModel{^models[7] }
 	
-	*thisWidth  {^252+22}
-	*thisHeight {^95+26+22}
+	*thisWidth  {^274}
+	*thisHeight {^143}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
 
@@ -134,18 +138,20 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 							Rect(11,11,thisWidth-22,thisHeight-22-1), gui[\scrollTheme]);
 			
 		// midi control button
-		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(105, 6, 43, 19),"Cntrl", gui[\midiTheme])
+		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(117, 6, 43, 19),"Cntrl", gui[\midiTheme])
 			.action_{ LNX_MIDIControl.editControls(this).front };
 	
 		// 10.in
-		MVC_PopUpMenu3(models[10],gui[\scrollView],Rect(27,7,70,17),gui[\menuTheme]);
+		MVC_PopUpMenu3(models[10],gui[\scrollView],Rect(7,7,70,17),gui[\menuTheme]);
 		
 		// 11.out
-		MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(158,7,70,17),gui[\menuTheme]);
+		MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(172,7,70,17),gui[\menuTheme]);
 		
-//		// knob com view
-//		gui[\ksv] = MVC_CompositeView(gui[\scrollView], Rect(3,30,thisWidth-28,62),true)
-//			.color_(\background,Color(0.478,0.525,0.613));
+		// 1.onOff
+		MVC_BinaryCircleView(models[1], gui[\scrollView] ,Rect(89, 7, 16, 16))
+			.font_(Font("Helvetica-Bold",12))
+			.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
+				\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));
 		
 		// knobs
 		6.do{|i| gui[i]=
@@ -183,14 +189,19 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 				mix=1,
 				room=0.5,
 				damp=0.5,
-				outAmp=1
+				outAmp=1,
+				on=1
 			|
-			var out;	
+			var in, out;	
 			
-			out = In.ar(inputChannels, 2)*inAmp;
-			out[0]=PitchShift.ar(out[0], size, pitch, randP, randT);
-			out[1]=PitchShift.ar(out[1], size, pitch, randP, randT);
+			in = In.ar(inputChannels, 2)*inAmp;
+			
+			out=PitchShift.ar(in, size, pitch, randP, randT);
+
+			out = SelectX.ar(on.lag,[in,out]);
+			
 			out = out * outAmp;
+			
 			Out.ar(outputChannels,out);
 		}).send(s);
 
@@ -228,6 +239,7 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 			server.sendBundle(latency,["/n_set", node, \outAmp,p[7]]);
 			server.sendBundle(latency,["/n_set", node, \outputChannels,out]);
 			server.sendBundle(latency,["/n_set", node, \inputChannels,in]);
+			server.sendBundle(latency,["/n_set", node, \on,p[1]]);
 		}
 		
 	}
@@ -252,7 +264,8 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 			\size, lastSize,
 			\outAmp,p[7],
 			\outputChannels,out,
-			\inputChannels,in
+			\inputChannels,in,
+			\on, p[1]
 		]));
 	
 //		synth = Synth.replace(synth.nodeID,"LNX_PitchShift_FX",[

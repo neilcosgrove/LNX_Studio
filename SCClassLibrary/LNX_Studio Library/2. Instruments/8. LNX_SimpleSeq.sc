@@ -253,7 +253,6 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 			.hasBorder_(true)
 			.resize_(5);
 	
-	
 		// 1.on/off
 		MVC_OnOffView(models[1],gui[\scrollView] ,Rect( 10, 6,22,19),gui[\onOffTheme1])
 			.rounded_(true)
@@ -263,14 +262,11 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 		MVC_OnOffView(models[0],gui[\scrollView] ,Rect( 37, 6,20,19),gui[\soloTheme  ])
 			.rounded_(true);
 
-
-	
 		// 1.always on
 		MVC_OnOffView(models[2],gui[\scrollView] ,Rect(65, 6,75,19),gui[\onOffTheme1])
 			.rounded_(true)
 			.permanentStrings_(["Always On"]);
 						
-		
 		defaultChannels.do({|y|
 			
 			var yOffset=y*cH+2;
@@ -389,7 +385,6 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 			.action_{ this.createMIDIInOutModelWindow(window,nil,nil,
 				colors:(border1:Color(0,0,0.2), border2:Color(0.36, 0.24, 0.6))
 			)};
-		
 		
 		// midi control button
 		MVC_FlatButton(gui[\scrollView],Rect(294, 6, 43, 19),"Cntrl",gui[\button])

@@ -98,10 +98,10 @@ MVC_FlatSlider : MVC_View {
 		
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-			var val;
+			var val, toggle = false;
 			if (locked.not) {
 				if (modifiers==524576) { buttonNumber=1  };
-				if (modifiers==262401) { clickCount=2  };
+				
 				buttonPressed=buttonNumber;
 				mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 				if (modifiers.asBinaryDigits[4]==0) {  // if apple not pressed because of drag
@@ -124,8 +124,15 @@ MVC_FlatSlider : MVC_View {
 								}
 							});
 						};
-						if ((clickCount==2)and:{hasMIDIcontrol}) {
-							this.toggleMIDIactive;
+						
+						if (hasMIDIcontrol) {
+							if ((clickCount>1)&&doubleClickLearn){ toggle = true };
+							if (modifiers==262401) { toggle = true  };
+							if (buttonNumber>=1  ) { toggle = true  };
+						};
+								
+						if (toggle) {
+							this.toggleMIDIactive
 						}{
 							if (direction==\vertical) {
 								val=(1-((y-t-3)/(h-6))).clip(0,1);
@@ -135,6 +142,7 @@ MVC_FlatSlider : MVC_View {
 							if (controlSpec.notNil) { val=controlSpec.map(val) };
 							this.viewValueAction_(val,nil,true,false);
 						};
+						
 					};
 				};
 			}
@@ -156,7 +164,9 @@ MVC_FlatSlider : MVC_View {
 					};
 					if (controlSpec.notNil) { thisValue=controlSpec.map(thisValue) };
 					if ((buttonPressed==1)and:{seqItems.notNil}) {
-						seqItems.do({|i,j|	if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) { thisItem=j } });
+						seqItems.do{|i,j|
+							if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) { thisItem=j }
+						};
 						if (x<seqItems[0].l) { thisItem=0 }; // catch the 1st and last
 						if (x>seqItems[seqItems.size-1].l) { thisItem=seqItems.size-1 };
 						if (thisItem.isNil) { thisItem=lastItem };
@@ -171,7 +181,8 @@ MVC_FlatSlider : MVC_View {
 								size.do({|i|
 									val=((i/(size-1))*thisValue)+(1-(i/(size-1))*lastValue);
 									if (seqItems[i+lastItem].value!=val) {
-										seqItems[i+lastItem].viewValueAction_(val,nil,true,false);
+										seqItems[i+lastItem]
+											.viewValueAction_(val,nil,true,false);
 									};
 								});
 							}{
@@ -180,7 +191,8 @@ MVC_FlatSlider : MVC_View {
 								size.do({|i|
 									val=((i/(size-1))*lastValue)+(1-(i/(size-1))*thisValue);
 									if (seqItems[i+thisItem]!=val) {
-										seqItems[i+thisItem].viewValueAction_(val,nil,true,false);
+										seqItems[i+thisItem]
+											.viewValueAction_(val,nil,true,false);
 									};
 								});
 							};
@@ -188,7 +200,9 @@ MVC_FlatSlider : MVC_View {
 						lastItem=thisItem;
 					}{	
 						if (buttonPressed!=2) {
-							if (thisValue!=value) {this.viewValueAction_(thisValue,nil,true,false)};
+							if (thisValue!=value) {
+								this.viewValueAction_(thisValue,nil,true,false)
+							};
 						};
 					};
 				};

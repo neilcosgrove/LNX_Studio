@@ -109,9 +109,8 @@
 		
 		// the tab view
 		
-			
 		gui[\userGUIScrollView] = MVC_ScrollView(window,
-												Rect(14,50,thisWidth-28,thisHeight-90))
+												Rect(14,50+3,thisWidth-28,thisHeight-90))
 			.color_(\background,Color(6/11,42/83,29/65))
 			.resize_(5)
 			.hasBorder_(false)
@@ -154,7 +153,6 @@
 		// 3.output channels
 		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(161,5,70,17),gui[\menuTheme  ]);
 
-		
 		MVC_PlainSquare(gui[\scrollView],Rect(84,5,70,17))
 			.color_(\on,Color(0,0,0,0.2))
 			.color_(\off,Color(0,0,0,0.2));		
@@ -163,15 +161,22 @@
 		gui[\sendOut] =
 			MVC_PopUpMenu3(models[9],gui[\scrollView],Rect(84,5,70,17),gui[\menuTheme  ]);
 
-
 		// 11. in	
 		gui[\in] =
 			MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(7,5,70,17),gui[\menuTheme  ]);
+			
+		// 1.onOff
+		MVC_BinaryCircleView(models[1], gui[\scrollView] ,Rect(4, 24, 16, 16))
+			.strings_(["I","I"])
+			.font_(Font("Helvetica-Bold",12))
+			.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
+				\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));
+		
 
 		///////////
 
 		// MIDI Control
- 		gui[\midi] = MVC_FlatButton(gui[\scrollView],Rect(6, thisHeight-47, 43, 19),"Cntrl")
+ 		gui[\midi] = MVC_FlatButton(gui[\scrollView],Rect(6, thisHeight-47+2, 43, 19),"Cntrl")
 			.rounded_(true)
 			.resize_(7)
 			.shadow_(true)
@@ -182,7 +187,7 @@
 			.action_{  LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front  };
 		
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(gui[\scrollView],(54)@(thisHeight-46),62,
+		presetView=MVC_PresetMenuInterface(gui[\scrollView],(54)@(thisHeight-46+2),62,
 				Color(6/11,42/83,29/65),
 				Color.black,
 				Color(6/11,42/83,29/65),
@@ -192,11 +197,10 @@
 			);
 		this.attachActionsToPresetGUI;
 			
-		
 		// code tab //////////////////
 		
 		// edit
-		gui[\edit]=MVC_FlatButton(gui[\scrollView],Rect(215, thisHeight-46, 21, 18),"+")
+		gui[\edit]=MVC_FlatButton(gui[\scrollView],Rect(215, thisHeight-46+2, 21, 18),"+")
 			.mode_(\icon)
 			.rounded_(true)
 			.resize_(7)
@@ -298,7 +302,6 @@
 						false; // don't open studio help
 					};
 						
-					
 					// ugen help button
 					MVC_FlatButton(gui[\codeWindow],Rect(465+38-65-43, 322, 58, 18),"UGens")
 						.rounded_(true)

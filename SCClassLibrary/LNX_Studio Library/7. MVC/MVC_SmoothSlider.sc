@@ -76,18 +76,16 @@ MVC_SmoothSlider : MVC_View {
 		{ if (view.notNil) { view.view.canFocus_(false) } }.defer(0.1); // fix
 	}
 	
-	addControls{		
+	addControls{	
+		
+		var toggle;
+			
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-			var val;
-			
+			var val;			
+			toggle = false;
 			w = me.view.bounds.width;
-			
-			if (editMode||viewEditMode) { view.bounds.postln};
-			
-			if (modifiers==524576) { buttonNumber=1  };
-			if (modifiers==262401) { clickCount=2  };
-			buttonPressed=buttonNumber;
+				
 			if (modifiers.asBinaryDigits[4]==0) {  // if apple not pressed because of drag
 				mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 				if (editMode||viewEditMode) {
@@ -96,19 +94,26 @@ MVC_SmoothSlider : MVC_View {
 					startY=y;
 					if (verbose) {view.bounds.postln};
 				}{
-					x=x+l;
-					y=y+t-1;
-					evaluateAction=true;
-					if (buttonPressed==1) {
-						seqItems.do({|i,j|	
-							if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) {
-								lastItem=j;  // draw a line !!!
-							}
-						});
+					if (hasMIDIcontrol) {
+						if ((clickCount>1)&&doubleClickLearn){ toggle = true };
+						if (modifiers==262401) { toggle = true  };
+						if (buttonNumber>=1  ) { toggle = true  };
+						if (toggle) { this.toggleMIDIactive };
 					};
-					if ((clickCount==2)and:{hasMIDIcontrol}) {
-						this.toggleMIDIactive;
-					}{
+					
+					if (toggle.not) {
+						if (modifiers==524576) { buttonNumber = 1  };
+						buttonPressed=buttonNumber;	
+						x=x+l;
+						y=y+t-1;
+						evaluateAction=true;
+						if (buttonPressed==1) {
+							seqItems.do({|i,j|	
+								if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) {
+									lastItem=j;  // draw a line !!!
+								}
+							});
+						};
 						if (direction==\vertical) {
 							val=(1-((y-t-3)/(h-6))).clip(0,1);
 						}{
@@ -116,7 +121,6 @@ MVC_SmoothSlider : MVC_View {
 						};
 						if (controlSpec.notNil) { val=controlSpec.map(val) };
 						this.viewValueAction_(val,nil,true,false,buttonPressed);
-						this.refreshValue;
 					};
 				};
 			};
@@ -132,56 +136,60 @@ MVC_SmoothSlider : MVC_View {
 			if (editMode||viewEditMode) {
 				this.moveBy(x-startX,y-startY,buttonPressed)
 			}{
-				x=x+l;
-				y=y+t-1;
-				if (direction==\vertical) {
-					thisValue=(1-((y-t-3)/(h-6))).clip(0,1);
-				}{
-					thisValue=((x-l-3)/(w-6)).clip(0,1);
-				};
-				if (controlSpec.notNil) { thisValue=controlSpec.map(thisValue) };
-				if ((buttonPressed==1)and:{seqItems.notNil}) {
-					seqItems.do({|i,j|	if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) { thisItem=j } });
-					if (x<seqItems[0].l) { thisItem=0 }; // catch the 1st and last
-					if (x>seqItems[seqItems.size-1].l) { thisItem=seqItems.size-1 };
-					if (thisItem.isNil) { thisItem=lastItem };
-					if (thisItem==lastItem) {
-						if (seqItems[thisItem].value!=thisValue) {
-							seqItems[thisItem].viewValueAction_(
-								thisValue,nil,true,false,buttonPressed)
-								.refreshValue;
-						};
-					}{ // draw a line
-						if (thisItem>lastItem) {
-							lastValue=seqItems[lastItem].value;
-							size=thisItem-lastItem+1;
-							size.do({|i|
-								val=((i/(size-1))*thisValue)+(1-(i/(size-1))*lastValue);
-								if (seqItems[i+lastItem].value!=val) {
-									seqItems[i+lastItem].viewValueAction_(
-										val,nil,true,false,buttonPressed)
-										.refreshValue;
-								};
-							});
-						}{
-							lastValue=seqItems[lastItem].value;
-							size=lastItem-thisItem+1;
-							size.do({|i|
-								val=((i/(size-1))*lastValue)+(1-(i/(size-1))*thisValue);
-								if (seqItems[i+thisItem]!=val) {
-									seqItems[i+thisItem].viewValueAction_(
-										val,nil,true,false,buttonPressed)
-										.refreshValue;
-								};
-							});
-						};
+				if (toggle.not) {
+					x=x+l;
+					y=y+t-1;
+					if (direction==\vertical) {
+						thisValue=(1-((y-t-3)/(h-6))).clip(0,1);
+					}{
+						thisValue=((x-l-3)/(w-6)).clip(0,1);
 					};
-					lastItem=thisItem;
-				}{	
-					if (buttonPressed!=2) {
-						if (thisValue!=value) {this.viewValueAction_(
-								thisValue,nil,true,false,buttonPressed)};
-						this.refreshValue;
+					if (controlSpec.notNil) { thisValue=controlSpec.map(thisValue) };
+					if ((buttonPressed==1)and:{seqItems.notNil}) {
+						seqItems.do{|i,j|
+							if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) { thisItem=j }
+						};
+						if (x<seqItems[0].l) { thisItem=0 }; // catch the 1st and last
+						if (x>seqItems[seqItems.size-1].l) { thisItem=seqItems.size-1 };
+						if (thisItem.isNil) { thisItem=lastItem };
+						if (thisItem==lastItem) {
+							if (seqItems[thisItem].value!=thisValue) {
+								seqItems[thisItem].viewValueAction_(
+									thisValue,nil,true,false,buttonPressed)
+									.refreshValue;
+							};
+						}{ // draw a line
+							if (thisItem>lastItem) {
+								lastValue=seqItems[lastItem].value;
+								size=thisItem-lastItem+1;
+								size.do({|i|
+									val=((i/(size-1))*thisValue)+(1-(i/(size-1))*lastValue);
+									if (seqItems[i+lastItem].value!=val) {
+										seqItems[i+lastItem].viewValueAction_(
+											val,nil,true,false,buttonPressed)
+											.refreshValue;
+									};
+								});
+							}{
+								lastValue=seqItems[lastItem].value;
+								size=lastItem-thisItem+1;
+								size.do({|i|
+									val=((i/(size-1))*lastValue)+(1-(i/(size-1))*thisValue);
+									if (seqItems[i+thisItem]!=val) {
+										seqItems[i+thisItem].viewValueAction_(
+											val,nil,true,false,buttonPressed)
+											.refreshValue;
+									};
+								});
+							};
+						};
+						lastItem=thisItem;
+					}{	
+						if (buttonPressed!=2) {
+							if (thisValue!=value) {this.viewValueAction_(
+									thisValue,nil,true,false,buttonPressed)};
+							this.refreshValue;
+						};
 					};
 				};
 			};

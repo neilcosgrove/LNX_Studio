@@ -583,7 +583,7 @@ LNX_Melody : LNX_InstrumentTemplate {
 		
 		// the arpget sequencer
 		arpegSequencer.createButtonWidgets(gui[\rcv7], Rect(-58, 308, 652, 250),
-			controls:false );
+			controls:false, showName:false );
 		
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],(710+30)@(7),85-30,

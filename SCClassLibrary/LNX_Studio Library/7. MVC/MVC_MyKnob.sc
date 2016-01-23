@@ -114,6 +114,8 @@ MVC_MyKnob : MVC_View {
 	
 	addControls{
 	
+		var toggle;
+	
 		// i should do this everywhere in own method
 		view.onClose_{|me|
 			onClose.value(this);
@@ -123,21 +125,24 @@ MVC_MyKnob : MVC_View {
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			
-			//buttonNumber.postln;
+			toggle = false;
 			
 			startX=x;
 			startY=y;
 			mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 			if (editMode||viewEditMode) {lw=lh=nil; if (verbose==verbose) {view.bounds.postln} };
 			
-			if (modifiers==262401)	{clickCount = 2      };
+			if (modifiers==262401)	{clickCount = 2 };
 			
 			if (modifiers==524576)	{
 				buttonNumber = 1.5
-				
-			}{
-			
-				if ((clickCount>1)||(buttonNumber>=1)) { this.toggleMIDIactive };
+			}{			
+				if (hasMIDIcontrol) {
+					if ((clickCount>1)&&doubleClickLearn){ toggle = true };
+					if (modifiers==262401) { toggle = true  };
+					if (buttonNumber>=1  ) { toggle = true  };
+					if (toggle) { this.toggleMIDIactive };
+				};
 			}; 
 			
 			buttonPressed=buttonNumber; // store for move
@@ -157,9 +162,11 @@ MVC_MyKnob : MVC_View {
 			if (editMode||viewEditMode) {
 				this.moveBy(x-startX,y-startY,buttonPressed);
 			}{
-				val=(startVal+((startY-y)/resoultion/200/(buttonPressed*6+1))).clip(0,1);
-				if (controlSpec.notNil) { val=controlSpec.map(val) };
-				if (val!=value) { this.viewValueAction_(val,nil,true,false) };
+				if (toggle.not) {
+					val=(startVal+((startY-y)/resoultion/200/(buttonPressed*6+1))).clip(0,1);
+					if (controlSpec.notNil) { val=controlSpec.map(val) };
+					if (val!=value) { this.viewValueAction_(val,nil,true,false) };
+				};
 			};
 		};
 	

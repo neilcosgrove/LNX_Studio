@@ -230,13 +230,7 @@
 		MVC_RoundBounds(gui[\masterTabs].mvcTab(2),Rect(6, 6, 671, 396))
 			.width_(6)
 			.color_(\background, darkBorder);
-			
-			
-		
-		
-		
-		
-		
+
 		pianoRoll.createWidgets(gui[\pianoView],Rect(7, 12, 660, 380),
 				(\selectRect: Color.white,
 				 \background: Color(42/83,42/83,6.5/11)*0.9,
@@ -249,10 +243,6 @@
 				 \velocity:   Color(0.45,0.7,1),
 				 \velocitySel: Color.white
 				), 0);
-		
-		
-		
-			
 
 		// lines ////////////////////////////////////////////////////////////////////
 				
@@ -292,8 +282,7 @@
 				.penShadow_(true)
 				.font_(Font("AvenirNext-Heavy",16))
 				.string_("Bum Note 2");
-			
-					
+						
 		// the high pass filter ///////////////////////////////////////////////////////////////////
 			
 		MVC_StaticText(gui[\controlsView], Rect(215, 11, 81, 18),gui[\labelTheme])
@@ -345,7 +334,7 @@
 		// 53. filter curve
 		MVC_MyKnob3(models[53],gui[\filterViewHP],Rect(105, 79,20,20),gui[\knob2Theme ]);
 		// 54.velocity > filter
-		MVC_MyKnob3(models[54],gui[\filterViewHP],Rect(176, 79, 20, 20),gui[\knob2Theme ]);
+		MVC_MyKnob3(models[54],gui[\filterViewHP],Rect(177, 79, 20, 20),gui[\knob2Theme ]);
 		
 		// 67.filterHP lfo A or B	
 		MVC_OnOffView(models[67],gui[\controlsView  ],Rect(362, 5, 21, 21),gui[\onOffTheme2]);
@@ -405,7 +394,7 @@
 		// 39. filter curve
 		MVC_MyKnob3(models[39],gui[\filterView],Rect(105, 79,20,20),gui[\knob2Theme ]);
 		// 33.velocity > filter
-		MVC_MyKnob3(models[33],gui[\filterView],Rect(176, 79, 20, 20),gui[\knob2Theme ]);
+		MVC_MyKnob3(models[33],gui[\filterView],Rect(177, 79, 20, 20),gui[\knob2Theme ]);
 		
 		// 68.filterLP lfo A or B	
 		MVC_OnOffView(models[68],gui[\controlsView  ],Rect(362, 171, 21, 21),gui[\onOffTheme2]);
@@ -431,19 +420,14 @@
 			.color_(\border, border )
 			.width_(6);
 		
-		
-		
 		// 75. SyncOnLfoA	- lfoSyncOnA
 		MVC_OnOffView(models[75],gui[\lfoView ],Rect(6, 3, 20, 20),gui[\onOffTheme1]);
 	
-		
-		
 		// 57. lfo wave	
 		MVC_PopUpMenu3(models[57],gui[\lfoView  ],Rect(31,5,67,16),gui[\menuTheme2]);
 		// 6.lfo freq
 		gui[\lfoKnobA] =
 			MVC_MyKnob3(models[ 6],gui[\lfoView   ],Rect(11,40,26,26),gui[\knob1Theme ]);
-			
 			
 		// the lfo lamp
 		MVC_PipeLampView(lfoModelA, gui[\lfoView   ], Rect(105, 8, 10, 10))
@@ -464,19 +448,15 @@
 			.color_(\border, border )
 			.width_(6);
 		
-		
 		// 77. SyncOnLfoA	- lfoSyncOnA
 		MVC_OnOffView(models[77],gui[\lfoView ],Rect(6, 3, 20, 20),gui[\onOffTheme1]);
 	
-		
 		// 63. lfo wave	
 		MVC_PopUpMenu3(models[63],gui[\lfoView  ],Rect(31,5,67,16),gui[\menuTheme2]);
 		
 		// 64.lfo freq
 		gui[\lfoKnobB] =
 			MVC_MyKnob3(models[64],gui[\lfoView   ],Rect(11,40,26,26),gui[\knob1Theme ]);
-		
-		
 		
 		// the lfo lamp
 		MVC_PipeLampView(lfoModelB, gui[\lfoView   ],  Rect(105, 8, 10, 10))
@@ -694,14 +674,10 @@
 		MVC_OnOffView(models[1],gui[\scrollView]     ,Rect( 210,6,19,19),gui[\onOffTheme1])
 			.color_(\on,Color.green);
 		
-		
-		
 		// 11.steps per octave
 		MVC_PopUpMenu3(models[11],gui[\seqView] ,Rect(607, 293, 48, 17), gui[\menuTheme2  ]);
 		// 12.SPO root
 		MVC_NumberBox(models[12],gui[\seqView] ,Rect(618, 345, 26, 17),gui[\boxTheme   ]);
-
-
 
 		// 29.output channels
 		MVC_PopUpMenu3(models[29],gui[\scrollView]    ,Rect(619,6,70,18),gui[\menuTheme2  ]);
