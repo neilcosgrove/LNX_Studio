@@ -112,7 +112,7 @@ LNX_Ring : LNX_InstrumentTemplate {
 										\string	: Color.white));
 										
 		gui[\knobTheme]=( \labelShadow_	: false,
-						\numberWidth_	: (-20), 
+						\numberWidth_	: (0), 
 						\numberFont_	: Font("Helvetica",10),
 						\colors_		: (	\on		: Color(0.875, 0.852, 1),
 										\label	: Color.black,
