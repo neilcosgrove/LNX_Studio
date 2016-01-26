@@ -805,7 +805,7 @@
 			y = (i*62);
 		
 			mixerGUI[id][\scrollView] = MVC_CompositeView(mixerGUI[\fxScrollView],
-										Rect(0,0+y,160,62), hasBorder:false);
+										Rect(0,0+y,170,62), hasBorder:false);
 			
 			sv=mixerGUI[id][\scrollView];
 
@@ -844,7 +844,7 @@
 				}.freshAdaptor;
 		
 			// name
-			MVC_Text(sv,inst.nameModel,Rect(38,3,127,17))
+			MVC_Text(sv,inst.nameModel,Rect(38,3,111,17))
 				.hasBorder_(true)
 				.canEdit_(true)
 				.clipChars_(true)
@@ -910,12 +910,19 @@
 
 			if (inst.onOffModel.notNil) {
 
-			MVC_BinaryCircleView(inst.onOffModel, sv ,Rect(77, 24, 15, 15))
-				.strings_(["I","I"])
-				.font_(Font("Helvetica-Bold",11))
-				.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
-					\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));	
-				
+				MVC_OnOffView(inst.onOffModel, sv ,Rect(148,3,17,17))
+					.permanentStrings_([\record])
+					.mode_(\icon)
+					.insetBy_(0.14)
+					.color_(\border,Color(0,0,0,0.25), forceAdd:true)
+					.color_(\background,Color.clear)
+					.color_(\on, inst.mixerColor)
+					.color_(\off, inst.mixerColor)
+					.color_(\iconBackground,Color(0,0,0), forceAdd:true)
+					.color_(\icon,Color(0.3,1,0.3))
+					.color_(\iconOff,Color(0.5,0.5,0.5))
+					;
+					
 			};
 
 			// out channel	
@@ -925,13 +932,13 @@
 				.color_(\background, inst.mixerColor);
 	
 			// divider
-			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(0,97-20-18,160,1))
+			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(0,59,170,1))
 					.color_(\on,Color(0,0,0,0.3))
 					.color_(\off,Color(0,0,0,0.3));
 	
 	
 			// divider
-			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(0,98-20-18,160,1))
+			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(0,60,170,1))
 					.color_(\on,Color(1,1,1,0.4))
 					.color_(\off,Color(1,1,1,0.4));
 					

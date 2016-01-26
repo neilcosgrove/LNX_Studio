@@ -1,4 +1,6 @@
 
+ // ************* this instrument is depreciated ************ ///
+
 LNX_Limiter : LNX_InstrumentTemplate {
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
