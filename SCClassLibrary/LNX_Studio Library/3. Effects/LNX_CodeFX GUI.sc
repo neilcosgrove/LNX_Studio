@@ -169,7 +169,7 @@
 
 		// 1.onOff				
 		gui[\on] = MVC_OnOffView(models[1],gui[\scrollView] ,
-			Rect(3, thisHeight-45, 22, 19),gui[\onOffTheme1])
+			Rect(151, thisHeight-45, 22, 19),gui[\onOffTheme1])
 			.font_(Font("Helvetica-Bold", 12))
 			.resize_(7)
 			.color_(\on, Color(0.25,1,0.25) )
@@ -178,7 +178,7 @@
 			.permanentStrings_(["On"]);
 
 		// MIDI Control
- 		gui[\midi] = MVC_FlatButton(gui[\scrollView],Rect(28, thisHeight-45, 37, 19),"Cntrl")
+ 		gui[\midi] = MVC_FlatButton(gui[\scrollView],Rect(177, thisHeight-45, 37, 19),"Cntrl")
 			.rounded_(true)
 			.resize_(7)
 			.shadow_(true)
@@ -189,7 +189,7 @@
 			.action_{  LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front  };
 		
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(gui[\scrollView],(69)@(thisHeight-44),52,
+		presetView=MVC_PresetMenuInterface(gui[\scrollView],(3)@(thisHeight-44),52,
 				Color(6/11,42/83,29/65),
 				Color.black,
 				Color(6/11,42/83,29/65),
