@@ -676,15 +676,17 @@ LNX_PianoRollSequencer{
 	
 	// for your own load preset
 	iLoadPreset{|i|
+		var viewArgs;
 		score.free;
 		score = scores[i].deepCopy;
+		viewArgs = score.viewArgs;
 		this.clearGUIEditing;
 		models[\dur].value_(score.dur); // update the dur model
 		
 		models[\speed].valueAction_( 6-(log(score.speed*8)/log(2)) );
 			// coverts [8,4,2,1,0.5,0.25,0.125] to (0..6) 
 		{
-			this.viewArgs_(*score.viewArgs); // update view position
+			this.viewArgs_(*viewArgs); // update view position
 			this.refresh;
 		}.defer;
 	}
@@ -754,18 +756,19 @@ LNX_PianoRollSequencer{
 	
 	// set the view args of this pRoll (includes vert & horz zoom + visable origin)
 	viewArgs_{|w,h,x,y,q,b|
-		gridW=w;
+		w=w.clip((gui[\scrollView].bounds.width)/(score.dur),inf); // clip to current view width
+		h=h.clip((gui[\scrollView].bounds.height)/128,inf);        // clip to current view height
+		gridW=w; 
 		gridH=h;
-		models[\gridW].value_(w);
-		models[\gridH].value_(h);
+		models[\gridW].value_(w); // set grid width model
+		models[\gridH].value_(h); // set grid height model
 		quantiseStep=q;
 		bars=b;
-		models[\quantiseStep].value_(q);
-		models[\bars].value_(b);
-		
+		models[\quantiseStep].value_(q); // set the quant step
+		models[\bars].value_(b);         // set the bar length
 		if (gui[\scrollView].notNil) {
-			this.refreshSeqBounds;
-			gui[\scrollView].visibleOrigin_(x@y);
+			this.refreshSeqBounds;                // update view bounds for new size
+			gui[\scrollView].visibleOrigin_(x@y); // set the visible origin
 		};
 	}
 	
