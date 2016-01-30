@@ -3,10 +3,17 @@
 
 /*(
 w=MVC_Window();
-o=MVC_OnOffView(w,Rect(10,10,30,30));
+MVC_OnOffView(\switch.asModel,w,Rect(10, 10, 19, 19))
+	.resize_(3)
+	.color_(\border,Color.black)
+	.color_(\on,Color.red/2)
+	.color_(\off,Color(46/77,46/79,72/145)/1.5)
+	.color_(\icon,Color.red)
+	.color_(\iconOff,Color.green)
+	.mode_(\icon)
+	.strings_([\record]);
 w.create;
 )
-o.free;
 */
 
 MVC_OnOffView : MVC_View {
@@ -122,8 +129,22 @@ MVC_OnOffView : MVC_View {
 						Pen.fillRect(Rect(0,0,w,h));
 						
 						(col*(flashState*0.5+0.5)).set;
-						Pen.fillRect(Rect(1,1+hAdjust,w- 2,h- 2-hAdjust));
+						
+						
 					
+						// draw border
+						if (colors[\border].notNil) {
+							
+							Pen.fillRect(Rect(0,0+hAdjust,w,h-hAdjust));
+							
+							colors[\border].set;
+							Pen.strokeRect(Rect(0,1,w-1,h-1));
+						}{
+							
+							Pen.fillRect(Rect(1,1+hAdjust,w- 2,h- 2-hAdjust));
+						};
+					
+						
 						if (colors[\innerBorder].notNil) {
 							colors[\innerBorder].set;
 							Pen.strokeRect(Rect(1,2,w-3,h-3));
@@ -187,16 +208,32 @@ MVC_OnOffView : MVC_View {
 						}
 						{mode==='icon'}{
 							
+							Pen.smoothing_(true);
+							
+							if (colors[\iconBackground].notNil) {
+								Pen.fillColor_(colors[\iconBackground]);
+																				if (value>=0.5) {	
+								DrawIcon.symbolArgs((permanentStrings?strings)|@|1,
+									Rect(0,0,w,h).insetBy(insetBy-1.75));
+								}{
+								DrawIcon.symbolArgs((permanentStrings?strings)|@|0,
+									Rect(0,0,w,h).insetBy(insetBy-1.75));
+								};
+								
+							};
+							
 							if ((iconOffColor)and:{value<0.5}) {
 								Pen.fillColor_(colors[\iconOff]);
 							}{
 								Pen.fillColor_(colors[\icon]);
 							};
-							Pen.smoothing_(true);
+							
 							if (value>=0.5) {	
-							DrawIcon.symbolArgs(strings|@|1,Rect(0,0,w,h).insetBy(insetBy));
+							DrawIcon.symbolArgs((permanentStrings?strings)|@|1,
+								Rect(0,0,w,h).insetBy(insetBy));
 							}{
-							DrawIcon.symbolArgs(strings|@|0,Rect(0,0,w,h).insetBy(insetBy));
+							DrawIcon.symbolArgs((permanentStrings?strings)|@|0,
+								Rect(0,0,w,h).insetBy(insetBy));
 							};
 						}
 							

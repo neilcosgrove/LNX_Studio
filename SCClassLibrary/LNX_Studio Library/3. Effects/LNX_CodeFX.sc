@@ -209,9 +209,10 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 				if (window.isClosed) {
 					gui[\scrollView].bounds_(Rect(11,11,p[16]-22,p[17]-23));
 					gui[\userGUIScrollView].bounds_(Rect(14,50,p[16]-28,p[17]-90));
-					presetView.bounds_(Rect(54,p[17]-46,62+93,18));
-					gui[\midi].bounds_(Rect(6,p[17]-47,43,19));
-					gui[\edit].bounds_(Rect(215,p[17]-46,21,18));
+					presetView.bounds_(Rect(3,p[17]-46,155-10,18));
+					gui[\on].bounds_(Rect(151,p[17]-47,22,19));
+					gui[\midi].bounds_(Rect(177,p[17]-47,37,19));
+					gui[\edit].bounds_(Rect(218,p[17]-46,20,18));
 				};
 			}],
 				

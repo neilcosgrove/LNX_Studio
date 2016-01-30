@@ -93,6 +93,8 @@ MVC_SmoothSlider : MVC_View {
 					startX=x;
 					startY=y;
 					if (verbose) {view.bounds.postln};
+					if (modifiers==524576) { buttonNumber = 1  };
+					buttonPressed=buttonNumber;	
 				}{
 					if (hasMIDIcontrol) {
 						if ((clickCount>1)&&doubleClickLearn){ toggle = true };
@@ -134,7 +136,7 @@ MVC_SmoothSlider : MVC_View {
 			w = me.view.bounds.width;
 			
 			if (editMode||viewEditMode) {
-				this.moveBy(x-startX,y-startY,buttonPressed)
+				this.moveBy(x-startX,y-startY,buttonPressed.postln)
 			}{
 				if (toggle.not) {
 					x=x+l;

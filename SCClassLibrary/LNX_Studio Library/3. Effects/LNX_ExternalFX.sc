@@ -177,18 +177,14 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		// midi control button
 		MVC_FlatButton(gui[\scrollView],Rect(97, 131, 43, 19),"Cntrl", gui[\midiTheme])
 			.action_{ LNX_MIDIControl.editControls(this).front };
-			
-			
-		// 1.onOff
-		MVC_BinaryCircleView(models[1], gui[\scrollView] ,Rect(112, 108, 16, 16))
-			.font_(Font("Helvetica-Bold",12))
-			.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
-				\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));
 		
-//		// 10.mute
-//		MVC_OnOffView(models[10], gui[\scrollView], Rect(110,107,43,19),gui[\onOffTheme]);
-//				
-//	
+		// 1.onOff				
+		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(108, 108, 22, 19),gui[\onOffTheme1])
+			.color_(\on, Color(0.25,1,0.25) )
+			.color_(\off, Color(0.4,0.4,0.4) )
+			.rounded_(true)
+			.permanentStrings_(["On"]);
+				
 		// 2.in
 		MVC_PopUpMenu3(models[2],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);
 		

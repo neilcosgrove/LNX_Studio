@@ -641,19 +641,16 @@
 			
 		inst.createPOPWidgets(sv,mixerGUI[id]);
 		
-		//////////////////////	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^				   
-							  
+		//////////////////////	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^				   					  
 		if (inst.isMixerInstrument) {
 			
 			i=insts.mixerInstY(id);
 			y = (i*70);
 			
-		
 			mixerGUI[id][\scrollView] = MVC_CompositeView(mixerGUI[\instScrollView],
 										Rect(0+y,0,73,460), hasBorder:false);
 			
 			sv=mixerGUI[id][\scrollView];
-		
 		
 			// number
 			mixerGUI[id][\instNo] = MVC_StaticText(sv,
@@ -716,9 +713,6 @@
 			// levels
 			MVC_FlatDisplay(inst.peakLeftModel,sv,Rect(8-3, 128, 6, 180));
 			MVC_FlatDisplay(inst.peakRightModel,sv,Rect(15-2, 128, 6, 180));
-			//	.right_(true);
-				
-				
 			MVC_Scale(sv,Rect(11, 128, 2, 180));
 				
 			// volume
@@ -746,7 +740,6 @@
 				.mode_(\icon)
 				.action_{ inst.fadeOut };
 			
-			
 			// pan
 			MVC_MyKnob3(inst.panModel,sv,Rect(25, 314+30, 25, 25),mixerGUI[\knobTheme1])
 				.numberFont_(Font("Helvetica",10))
@@ -754,7 +747,6 @@
 				.label_(nil)
 				.showNumberBox_(true);
 			
-
 			if (inst.sendAmpModel.notNil) {
 
 				// send
@@ -764,13 +756,11 @@
 					.label_(nil)
 					.showNumberBox_(true);	
 					
-					
 				// send channel	
 				MVC_PopUpMenu3(inst.sendChModel,sv, Rect(5, 85, 64, 16),mixerGUI[\menuTheme2])
 					.label_(nil)
 					.color_(\background, inst.mixerColor);
 							
-	
 			};
 	
 			// on/off
@@ -779,13 +769,11 @@
 				.rounded_(true)
 				.canFocus_(false);
 					
-				
 			// solo
 			MVC_OnOffView(inst.soloModel , sv, Rect(42, 353+30, 20, 20),mixerGUI[\soloTheme])
 				.rounded_(true)
 				.canFocus_(false);
 		
-	
 			// out channel	
 			MVC_PopUpMenu3(inst.outChModel,sv, Rect(5, 378+30, 64, 16),
 				mixerGUI[\menuTheme2])
@@ -797,15 +785,12 @@
 				.color_(\on,Color(0,0,0,0.3))
 				.color_(\off,Color(0,0,0,0.3));
 
-
 			// divider
 			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(72,0,1,460))
 				.color_(\on,Color(1,1,1,0.4))
 				.color_(\off,Color(1,1,1,0.4));
 			
-			
 		};
-
 
 		if (inst.isFX) {
 			
@@ -852,7 +837,7 @@
 				}.freshAdaptor;
 		
 			// name
-			MVC_Text(sv,inst.nameModel,Rect(38,3,127,17))
+			MVC_Text(sv,inst.nameModel,Rect(38,3,111,17))
 				.hasBorder_(true)
 				.canEdit_(true)
 				.clipChars_(true)
@@ -877,7 +862,7 @@
 				;
 
 			// in
-			MVC_SmoothSlider(sv,inst.inModel,Rect(15,43,55+5,13))
+			MVC_SmoothSlider(sv,inst.inModel,Rect(15,43,60,13))
 				.orientation_(\horiz)
 				.label_("In")
 				.thumbSizeAsRatio_(0.05,0)
@@ -897,9 +882,7 @@
 				.orientation_(\horiz)
 				.label_("Out")
 				.thumbSizeAsRatio_(0.05,0)
-			//	.numberFunc_(\float1)
 				.labelShadow_(false)
-				
 				.labelFont_(Font("Arial", 9))
 				.showNumberBox_(false)
 				.numberFont_(Font("Helvetica",10))
@@ -909,45 +892,44 @@
 				.color_(\numberUp,Color.black)
 				.color_(\numberDown,Color.white);
 
-
+			if (inst.onOffModel.notNil) {
+				MVC_OnOffView(inst.onOffModel, sv ,Rect(148,3,17,17))
+					.permanentStrings_([\record])
+					.mode_(\icon)
+					.insetBy_(0.14)
+					.color_(\border,Color(0,0,0,0.25), forceAdd:true)
+					.color_(\background,Color.clear)
+					.color_(\on, inst.mixerColor)
+					.color_(\off, inst.mixerColor)
+					.color_(\iconBackground,Color(0,0,0), forceAdd:true)
+					.color_(\icon,Color(0.3,1,0.3))
+					.color_(\iconOff,Color(0.5,0.5,0.5));
+			};
+			
 			// in channel	
-			mixerGUI[id][\in]=MVC_PopUpMenu3(inst.inChModel, sv, Rect(5, 23, 66, 16), 								mixerGUI[\menuTheme2])
+			mixerGUI[id][\in]=MVC_PopUpMenu3(inst.inChModel, sv, Rect(5, 23, 76, 16),
+				mixerGUI[\menuTheme2])
 				.label_(nil)
 				.color_(\background, inst.mixerColor);
 
-
-			if (inst.onOffModel.notNil) {
-
-			MVC_BinaryCircleView(inst.onOffModel, sv ,Rect(77, 24, 15, 15))
-				.strings_(["I","I"])
-				.font_(Font("Helvetica-Bold",11))
-				.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
-					\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));	
-				
-			};
-
 			// out channel	
-			MVC_PopUpMenu3(inst.outChModel,sv, Rect(89+10, 23, 66, 16), 
+			MVC_PopUpMenu3(inst.outChModel,sv, Rect(89, 23, 76, 16), 
 								mixerGUI[\menuTheme2])
 				.label_(nil)
 				.color_(\background, inst.mixerColor);
 	
 			// divider
-			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(0,97-20-18,170,1))
+			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(0,59,170,1))
 					.color_(\on,Color(0,0,0,0.3))
 					.color_(\off,Color(0,0,0,0.3));
 	
-	
 			// divider
-			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(0,98-20-18,170,1))
+			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(0,60,170,1))
 					.color_(\on,Color(1,1,1,0.4))
-					.color_(\off,Color(1,1,1,0.4));
-					
-					
+					.color_(\off,Color(1,1,1,0.4));	
+			
 		};
 		
-		
-	
 		if (inst.isMIDI) {
 			
 			i=insts.midiY(id);
@@ -992,7 +974,7 @@
 					mixerGUI[id][\instNo].string_((value+1).asString)
 				}.freshAdaptor;
 		
-			MVC_Text(sv,inst.nameModel,Rect(38,3,99,17))
+			MVC_Text(sv,inst.nameModel,Rect(38,3,109,17))
 				.hasBorder_(true)
 				.canEdit_(true)
 				.clipChars_(true)
@@ -1021,14 +1003,14 @@
 			if (inst.canTurnOnOff.not) {
 				
 				
-								// MIDI icon
+				// MIDI icon
 				mixerGUI[id][\midi]=MVC_OnOffView(inst.onOffModel,sv,
-											Rect(141,3,20+19,16))
+											Rect(151,3,20+19,16))
 					.permanentStrings_(["MIDI"])
 					.canFocus_(false)
 					.color_(\on, Color(0.2,0.3,0.5))
 					.color_(\off,Color(0.2,0.3,0.5))
-					.font_(Font("Helvetica",11));
+					.font_(Font("Helvetica-Bold",11));
 				
 			}{
 			
@@ -1036,14 +1018,14 @@
 				
 				// on/off
 				mixerGUI[id][\onOff]=MVC_OnOffView(inst.onOffModel, sv,
-									Rect(141,3,20,16),gui[\onOffTheme2])
+									Rect(151,3,20,16),gui[\onOffTheme2])
 						.permanentStrings_(["On"])
 						.canFocus_(false);
 						
 				// always on, hidden at start
 				if (inst.canAlwaysOn) {
-					mixerGUI[id][\alwaysOn]=MVC_OnOffView(1, sv, Rect(140,3,20+19,16),
-							( \font_		: Font("Helvetica", 12),
+					mixerGUI[id][\alwaysOn]=MVC_OnOffView(1, sv, Rect(150,3,20+19,16),
+							( \font_		: Font("Helvetica-Bold", 12),
 							 \colors_     : (\on : inst.onColor,
 							 			  \off : inst.onColor)))
 						.permanentStrings_(["On"])
@@ -1051,7 +1033,7 @@
 						.visible_(false);	
 						
 					// always on
-					MVC_OnOffView(inst.alwaysOnModel, sv, Rect(140+40+5, 3, 40, 16)
+					MVC_OnOffView(inst.alwaysOnModel, sv, Rect(195, 3, 40, 16)
 							,gui[\onOffTheme2])
 						.color_(\on,inst.onColor )
 						.canFocus_(false)
@@ -1064,7 +1046,7 @@
 					
 				// solo
 				mixerGUI[id][\solo]=MVC_OnOffView(inst.soloModel , sv,
-									Rect(165,3,16,16),gui[\soloTheme])
+									Rect(175,3,16,16),gui[\soloTheme])
 						.canFocus_(false);
 				
 				

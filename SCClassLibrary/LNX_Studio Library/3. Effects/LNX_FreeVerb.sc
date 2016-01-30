@@ -36,7 +36,7 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 			0, // 0.solo
 			
 			// 1.onOff
-			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+			[1, \switch, midiControl, 1, "On", (permanentStrings_:["On","Off"]),
 				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
 				
 		
@@ -128,22 +128,23 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 		// widgets
 		gui[\scrollView] = MVC_RoundedComView(window,
 							Rect(11,11,thisWidth-22,thisHeight-22-1), gui[\scrollTheme]);
-	
-		// midi control button
-		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(106, 6, 43, 19),"Cntrl", gui[\midiTheme])
-			.action_{ LNX_MIDIControl.editControls(this).front };
-	
+							
 		// 10.in
 		gui[\in]=MVC_PopUpMenu3(models[10],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);
 		
 		// 11.out
 		gui[\out]=MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(158,7,70,17),gui[\menuTheme]);
 		
-		// 1.onOff
-		MVC_BinaryCircleView(models[1], gui[\scrollView] ,Rect(83, 7, 16, 16))
-			.font_(Font("Helvetica-Bold",12))
-			.colors_((\upOn:Color(0,1,0), \upOff:Color(0.5,0.5,0.5), \stringOn:Color.black,
-				\stringOff:Color.black, \downOn:Color(0,0.5,0), \downOff:Color(0,0.2,0)));
+		// 1.onOff				
+		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(83, 6, 22, 19),gui[\onOffTheme1])
+			.color_(\on, Color(0.25,1,0.25) )
+			.color_(\off, Color(0.4,0.4,0.4) )
+			.rounded_(true)
+			.permanentStrings_(["On"]);
+		
+		// midi control button
+		gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(109, 6, 43, 19),"Cntrl", gui[\midiTheme])
+			.action_{ LNX_MIDIControl.editControls(this).front };
 		
 		
 		// knobs
