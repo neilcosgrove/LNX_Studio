@@ -73,8 +73,18 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 					var i;
 					i=(((val>=0).if(val*2,LNX_AudioDevices.firstFXBus-(val*2)-2)));
 					this.setSynthArgGUIVH(11,val,\outputChannels,i,11,val,latency,send);
-			}]
+			}],
 			
+			// 12. left delay
+			[0, [0,0.2,1], midiControl, 12, "delayL", (\label_:"delayL", numberFunc_:\float2),
+				{|me,val,latency,send| this.setSynthArgVP(12,val,\delayL,val,latency,send)}
+			],
+				
+			// 13. right delay
+			[0, [0,0.2,1], midiControl, 13, "delayR", (\label_:"delayR", numberFunc_:\float2),
+				{|me,val,latency,send| this.setSynthArgVP(13,val,\delayR,val,latency,send)}
+			],
+							
 		];
 					
 		["IN","mix","room","damp","OUT","hi pass","low pass"].do{|text,i|
@@ -159,9 +169,15 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 
 		// knobs
 		2.do{|i| gui[i+7]=
-			MVC_MyKnob3(models[i+7],gui[\scrollView],Rect(55+(i*90),108,30,30), gui[\knobTheme])
-				.numberWidth_(10)
+			MVC_MyKnob3(models[i+7],gui[\scrollView],Rect(15+(i*57),108,30,30), gui[\knobTheme])
+				.numberWidth_(6)
 		};
+		
+		// delay L & R 12 &13
+		MVC_MyKnob3(models[12],gui[\scrollView],Rect(15+(2*57),108,30,30), gui[\knobTheme])
+			.color_(\on,Color(0,1,1));
+		MVC_MyKnob3(models[13],gui[\scrollView],Rect(15+(3*57),108,30,30), gui[\knobTheme])
+			.color_(\on,Color(0,1,1));
 		
 		gui[7].zeroValue_(20000); // hi pass
 		
@@ -195,20 +211,19 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 				outAmp=1,
 				hiFreq=20,
 				lowFreq=20000,
-				on=1
+				on=1,
+				delayL=0,delayR=0
 			|
 			var in, out;
-			in = In.ar(inputChannels, 2)*inAmp;
-			
+			in  = In.ar(inputChannels, 2)*inAmp;
 			out = SelectX.ar(on.lag,[Silent.ar,in]);
 			
 			out = LPF.ar(out,lowFreq.clip(20,20000).lag(0.2));
 			out = HPF.ar(out,hiFreq.clip(20,20000).lag(0.2));
-			
 			out = FreeVerb2.ar(out[0],out[1],mix,room,damp);
+			out = DelayN.ar(out, 0.2, [delayL.lag,delayR.lag]);
 			
 			out = SelectX.ar(on.lag,[in,out]);
-			
 			out = out * outAmp;
 			Out.ar(outputChannels,out);
 		}).send(s);
@@ -238,7 +253,9 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 			["/n_set", node, \lowFreq,p[8]],
 			["/n_set", node, \inputChannels,in],
 			["/n_set", node, \outputChannels,out],
-			["/n_set", node, \on     ,p[1]]
+			["/n_set", node, \on     ,p[1]],
+			["/n_set", node, \delayL ,p[12]],
+			["/n_set", node, \delayR ,p[13]]			
 		);
 	}
 	

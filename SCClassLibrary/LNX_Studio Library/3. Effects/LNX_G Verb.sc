@@ -229,16 +229,11 @@ LNX_GVerb : LNX_InstrumentTemplate {
 				
 			|
 			var in, out;
-
 			time=(time*4)**2;
 			damp=1-damp;
-			dampIn=dampIn;
-			dry=dry;
-			early=early;
-			taillevel=taillevel;
-			
 			in  = In.ar(inputChannels, 2)*inAmp;	
 			out = SelectX.ar(on.lag,[Silent.ar,in]);
+			
 			out = HPF.ar(out,highPass);
 			out = GVerb.ar(out[0]+out[1], 			
 					room,
@@ -252,11 +247,10 @@ LNX_GVerb : LNX_InstrumentTemplate {
 					room+1
 					);
 			out = DelayN.ar(out, 0.2, [delayL.lag,delayR.lag]);
+			
 			out = SelectX.ar(on.lag,[in,out]);
 			out = out * outAmp;
-			
 			Out.ar(outputChannels,out);
-			
 		}).send(s);
 
 	}
