@@ -50,7 +50,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 	*sortOrder{^0.5}
 	isFX{^true}
 	isInstrument{^false}
-	canTurnOnOff{^false}
+	canTurnOnOff{^true}
 	
 	header { 
 		// define your document header details
@@ -76,7 +76,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 			[0],
 			
 			// 1.onOff
-			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
 				{|me,val,latency,send|
 					if (systemIndices[\on].notNil) {
 						this.updateSynthArg(systemIndices[\on],val,latency);

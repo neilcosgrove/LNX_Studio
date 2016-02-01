@@ -45,7 +45,7 @@ LNX_Limiter : LNX_InstrumentTemplate {
 			0, // 0.solo
 			
 			// 1.onOff
-			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
 				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
 				
 			

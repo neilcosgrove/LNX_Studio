@@ -13,7 +13,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 	
 	isFX{^true}
 	isInstrument{^false}
-	canTurnOnOff{^false}
+	canTurnOnOff{^true}
 	
 	mixerColor{^Color(0.3,0.3,0.8,0.2)} // colour in mixer
 	
@@ -45,7 +45,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			0, // 0.solo
 			
 			// 1.onOff
-			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
 				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
 				
 								
@@ -187,8 +187,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(108, 108, 22, 19),gui[\onOffTheme1])
 			.color_(\on, Color(0.25,1,0.25) )
 			.color_(\off, Color(0.4,0.4,0.4) )
-			.rounded_(true)
-			.permanentStrings_(["On"]);
+			.rounded_(true);
 				
 		// 2.in
 		MVC_PopUpMenu3(models[2],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);

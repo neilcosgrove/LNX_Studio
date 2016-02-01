@@ -616,18 +616,27 @@
 			};
 			
 		if (inst.canTurnOnOff) {
-			
-			// on/off
-			MVC_OnOffView(inst.onOffModel, sv, Rect(13,44, 20, 20),mixerGUI[\onOffTheme2])
-				//.permanentStrings_(["On"])
-				.rounded_(true)
-				.canFocus_(false);
-					
 				
-			// solo
-			MVC_OnOffView(inst.soloModel , sv, Rect(41, 44, 20, 20),mixerGUI[\soloTheme])
-				.rounded_(true)
-				.canFocus_(false);
+			if (inst.fxOnOffModel.notNil) {
+				// on/off
+				MVC_OnOffView(inst.fxOnOffModel, sv, Rect(27,44, 20, 20), mixerGUI[\onOffTheme2])
+					.rounded_(true)
+					.canFocus_(false);
+				
+			}{
+			
+				// on/off
+				MVC_OnOffView( inst.onOffModel, sv, Rect(13,44, 20, 20),mixerGUI[\onOffTheme2])
+					//.permanentStrings_(["On"])
+					.rounded_(true)
+					.canFocus_(false);
+						
+					
+				// solo
+				MVC_OnOffView(inst.soloModel , sv, Rect(41, 44, 20, 20),mixerGUI[\soloTheme])
+					.rounded_(true)
+					.canFocus_(false);
+			}
 		
 		};
 			

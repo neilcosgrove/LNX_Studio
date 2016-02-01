@@ -10,7 +10,7 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 	isFX{^true}
 	isInstrument{^false}
 	canTurnOnOff{^true}
-
+	
 	mixerColor{^Color(0.3,1,1,0.3)} // colour in mixer
 
 	header { 
@@ -20,6 +20,7 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 	
 	// fake onOff model
 	onOffModel{^fxFakeOnOffModel }
+	
 	// and the real one
 	fxOnOffModel{^models[1]}
 	
@@ -41,7 +42,7 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 			0, // 0.solo
 			
 			// 1.onOff
-			[1, \switch, midiControl, 1, "On", (permanentStrings_:["On","Off"]),
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
 				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
 				
 		
@@ -154,8 +155,7 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(83, 6, 22, 19),gui[\onOffTheme1])
 			.color_(\on, Color(0.25,1,0.25) )
 			.color_(\off, Color(0.4,0.4,0.4) )
-			.rounded_(true)
-			.permanentStrings_(["On"]);
+			.rounded_(true);
 		
 		// midi control button
 		gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(109, 6, 43, 19),"Cntrl", gui[\midiTheme])

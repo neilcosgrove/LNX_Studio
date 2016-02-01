@@ -88,7 +88,7 @@ LNX_InstrumentTemplate {
 		instNoModel=(argInstNo?0).asModel
 			.action_{|me,val|
 				//update ON/off buttons
-				this.onOffModel.dependantsPerform(\strings_,(val+1).asString);
+				models[1].dependantsPerform(\strings_,(val+1).asString);
 				this.updateWindowName;
 			};
 		

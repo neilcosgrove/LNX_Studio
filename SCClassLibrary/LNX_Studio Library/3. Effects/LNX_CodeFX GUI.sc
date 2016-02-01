@@ -174,8 +174,7 @@
 			.resize_(7)
 			.color_(\on, Color(0.25,1,0.25) )
 			.color_(\off, Color(0.4,0.4,0.4) )
-			.rounded_(true)
-			.permanentStrings_(["On"]);
+			.rounded_(true);
 
 		// MIDI Control
  		gui[\midi] = MVC_FlatButton(gui[\scrollView],Rect(177, thisHeight-45, 37, 19),"Cntrl")
