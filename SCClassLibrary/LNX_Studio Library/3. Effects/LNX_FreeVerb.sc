@@ -9,7 +9,7 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 	*sortOrder{^3}
 	isFX{^true}
 	isInstrument{^false}
-	canTurnOnOff{^false}
+	canTurnOnOff{^true}
 
 	mixerColor{^Color(0.3,1,1,0.3)} // colour in mixer
 

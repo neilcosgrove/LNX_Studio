@@ -687,8 +687,8 @@ LNX_InstrumentTemplate {
 	
 	// turn on and off via pop (presets of presets)
 	popOnOff_{|value,latency|	
-		if (this.isFX.not) { // make a better test for things that can be turned on/off
-			this.onOffModel.lazyValueAction_(value,latency,false,false);
+		if (this.canTurnOnOff) {
+			(this.fxOnOffModel ? this.onOffModel).lazyValueAction_(value,latency,false,false)
 		};
 	}
 	
