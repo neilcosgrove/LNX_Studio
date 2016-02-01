@@ -30,6 +30,11 @@ LNX_GVerb : LNX_InstrumentTemplate {
 	// if you reduce the size of this list it will cause problems when loading older versions.
 	// the only 2 items i'm going for fix are 0.solo & 1.onOff
 	
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
+	
 	inModel{^models[4]}
 	inChModel{^models[2]}
 	outModel{^models[13]}

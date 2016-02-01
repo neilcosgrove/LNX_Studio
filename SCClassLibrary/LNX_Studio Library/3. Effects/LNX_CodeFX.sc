@@ -58,6 +58,11 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		version="v1.4";		
 	}
 
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
+	
 	inModel{^models[15]}
 	inChModel{^models[11]}
 	outModel{^models[2]}
@@ -77,8 +82,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 						this.updateSynthArg(systemIndices[\on],val,latency);
 					};
 				}],
-				
-					
+						
 			// 2.master amp
 			[\db6,midiControl, 2, "Out",
 				(\label_:"Out" , \numberFunc_:'db'),

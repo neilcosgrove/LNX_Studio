@@ -18,6 +18,11 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 		version="v1.1";
 	}
 	
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
+	
 	inModel{^models[2]}
 	inChModel{^models[10]}
 	outModel{^models[6]}

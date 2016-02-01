@@ -27,6 +27,11 @@ LNX_Limiter : LNX_InstrumentTemplate {
 	// will just insert the missing models for you.
 	// if you reduce the size of this list it will cause problems when loading older versions.
 	// the only 2 items i'm going for fix are 0.solo & 1.onOff
+	
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
 
 	inModel{^models[2]}
 	inChModel{^models[10]}

@@ -884,8 +884,8 @@
 				.color_(\numberUp,Color.black)
 				.color_(\numberDown,Color.white);
 
-			if (inst.onOffModel.notNil) {
-				MVC_OnOffView(inst.onOffModel, sv ,Rect(148,3,17,17))
+			if (inst.fxOnOffModel.notNil) {
+				MVC_OnOffView(inst.fxOnOffModel, sv ,Rect(148,3,17,17))
 					.permanentStrings_([\record])
 					.mode_(\icon)
 					.insetBy_(0.14)
@@ -893,6 +893,8 @@
 					.color_(\background,Color.clear)
 					.color_(\on, inst.mixerColor)
 					.color_(\off, inst.mixerColor)
+					.color_(\onDisabled, inst.mixerColor)
+					.color_(\offDisabled, inst.mixerColor)
 					.color_(\iconBackground,Color(0,0,0), forceAdd:true)
 					.color_(\icon,Color(0.3,1,0.3))
 					.color_(\iconOff,Color(0.5,0.5,0.5));

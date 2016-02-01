@@ -12,6 +12,11 @@ LNX_Delay : LNX_InstrumentTemplate {
 	canTurnOnOff{^false}
 	
 	mixerColor{^Color(0.77,0.6,1,0.3)} // colour in mixer
+		
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
 	
 	inModel{^models[2]}
 	inChModel{^models[10]}

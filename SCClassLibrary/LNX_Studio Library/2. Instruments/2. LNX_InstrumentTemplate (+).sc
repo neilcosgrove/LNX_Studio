@@ -71,6 +71,7 @@
 	
 	// onOff model
 	onOffModel{^models[1] }
+	fxOnOffModel{^nil}
 
 	panModel{^nil}
 
