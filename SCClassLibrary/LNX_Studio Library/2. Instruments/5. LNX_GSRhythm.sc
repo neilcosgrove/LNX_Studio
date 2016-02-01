@@ -75,10 +75,12 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 					models[100+i].doValueAction_(13,send:send);
 					models[108+i].doValueAction_(v,send:send);
 				}
-				.itemAction_{|bank,items,send=false| // i don't think send is needed here
-					// when a sample is added or removed from the bank
+				// i don't think send is needed here
+				.itemAction_{|bank,items,send=false,updateBank=true| 					// when a sample is added or removed from the bank
 					this.updateSampleControlSpec(i);
-					models[100+i].doValueAction_(13,send:send);// send was true
+					if (updateBank) {
+						models[100+i].doValueAction_(13,send:send);// send was true
+					};
 				}
 				.title_("User: "++((i+1).asString))
 		} ! defaultChannels;
@@ -307,7 +309,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		modSequencers.do{|s| s.putLoadList(l.popEND("*** END OBJECT DOC ***")) };
 		if (loadVersion>=1.5) {
 			userBanks.do{|bank,i|
-				bank.putLoadListURL( l.popEND("*** END URL Bank Doc ***") );
+				bank.putLoadListURL( l.popEND("*** END URL Bank Doc ***"), updateBank:false );
 			}		
 		};
 	}
