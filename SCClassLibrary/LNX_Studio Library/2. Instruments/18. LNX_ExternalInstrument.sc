@@ -584,7 +584,8 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				 \noteBGS:    Color.orange*1.5,
 				 \noteBS:     Color.black,
 				 \velocitySel: Color.orange*1.5
-				)
+				),
+				parentViews: [ window, gui[\masterTabs].mvcTab(1)]
 				);
 		
 		// the keyboard, fix bug so we don't need this scrollView

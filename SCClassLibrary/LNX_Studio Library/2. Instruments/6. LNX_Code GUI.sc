@@ -664,7 +664,11 @@
 						 \velocityBG: Color(3/77,1/103,0,65/77),
 						 \buttons:    Color(6/11,42/83,29/65)*1.2,
 						 \boxes:		Color(0.1,0.05,0,0.5)
-						));
+						),
+						
+						parentViews: [ window, gui[\tabView].mvcTab(1)]
+						
+					);
 		
 
 	}

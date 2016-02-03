@@ -135,7 +135,7 @@
 	guiExitFullScreen{ gui[\window2].close }
 
 	// the gui widgets
-	createWidgets{|window, bounds, argColors, velocityOffset=0, menuOld=false|
+	createWidgets{|window, bounds, argColors, velocityOffset=0, menuOld=false, parentViews|
 		
 		var visibleOrigin=0@0, visibleRect=bounds, buttonPressed;
 		
@@ -354,6 +354,8 @@
 	// I'm going to remove tabs to make it easier to code !!! /////////////////////////////////////
 			
 	gui[\notes] = MVC_UserView(gui[\scrollView],Rect(0,0,gridW*(score.dur),gridH*128))
+		
+		.addParentView(parentViews)
 	
 		.clearOnRefresh_(true) //  ******** MUST BE TRUE NOW (memory leak when moving notes)
 
@@ -518,6 +520,9 @@
 	// and its this view that actually recieves all the mouse actions
 	gui[\notesPosAndMouse] = MVC_UserView(gui[\scrollView],Rect(0,0,gridW*(score.dur),gridH*128))
 		.canFocus_(true)
+		
+		.addParentView(parentViews)
+		
 		.clearOnRefresh_(true)
 		.onClose_{ lastVisibleRect=nil }		
 		.drawFunc_{|me|

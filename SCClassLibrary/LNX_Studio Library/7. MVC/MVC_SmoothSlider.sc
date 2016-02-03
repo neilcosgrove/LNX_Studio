@@ -258,7 +258,7 @@ MVC_SmoothSlider : MVC_View {
 		if (value!=val) {
 			value=val;
 			this.refreshValue;
-			this.refresh;
+			//this.refresh;
 		};
 	}
 	
@@ -328,10 +328,6 @@ MVC_SmoothSlider : MVC_View {
 	
 	// fresh the Slider Value
 	refreshValue{
-		
-		// this some how needs to stop updating when..
-		
-		
 		if (view.notClosed) {
 			if (controlSpec.notNil) {
 				if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) {
@@ -404,7 +400,6 @@ SmoothSliderAjusted : SmoothSlider {
 		var rect, drawBounds, radius;
 		var baseRect, knobRect;
 		var center, strOri;
-		
 		var bnds; // used with string
 		
 		Pen.use {

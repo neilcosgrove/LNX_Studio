@@ -562,7 +562,10 @@ LNX_Melody : LNX_InstrumentTemplate {
 						 \noteBS:     Color(1,1,1),
 						 \velocity:   Color(0.45,0.7,1),
 						 \velocitySel: Color.white
-						), 25);
+						), 25,
+						parentViews:[window]
+						
+						);
 
 		// MIDI In Lamp
 		gui[\pianoRollLamp] = MVC_PipeLampView(gui[\rcv7],Rect(236,7,10,10));

@@ -85,10 +85,10 @@ MVC_View {
 		rect    = args.findKindOf(Rect) ? Rect(); // temp fix for ColorAdaptor & FuncAdaptor
 		model   = args.findKindOf(MVC_Model       );
 		window  = args.findKindOf(MVC_Window      )  ??
-		         {args.findKindOf(MVC_TabbedView  )  ?? 
+		         {args.findKindOf(MVC_TabbedView  )} ?? 
 		         {args.findKindOf(MVC_TabView     )} ??
 		         {args.findKindOf(MVC_ExpandView  )} ??
-		         {args.findKindOf(MVC_ScrollView) }};
+		         {args.findKindOf(MVC_ScrollView  )};
 		strings = args.select(_.isKindOf(String));
 		
 		// register this MVC_item with the parent

@@ -3,7 +3,9 @@
 
 MVC_UserView{
 
-	var <window, bounds, <view;
+	var <parentViews;
+
+	var <>parent, <window, bounds, <view;
 	var <canFocus=false, <focusColor, <drawFunc, <mouseOverAction;
 	var <mouseDownAction, <mouseMoveAction, <mouseUpAction, <keyDownAction, <keyUpAction;
 	var <resize=5;
@@ -12,21 +14,21 @@ MVC_UserView{
 	var <>onClose;
 	var <beginDragAction, <canReceiveDragHandler, <receiveDragHandler;
 
-
 	*new {|...args| ^super.new.init(*args) }
 
 	init {|...args|
 	
 		bounds  = args.findKindOf(Rect);
 		rect = bounds;
-		window  = args.findKindOf(MVC_Window)
-				?? {args.findKindOf(MVC_TabbedView)}
-				?? {args.findKindOf(MVC_TabView)}
-				?? {args.findKindOf(MVC_ScrollView)}
-				?? {args.findKindOf(MVC_CompositeView)};
-
+		window  = args.findKindOf(MVC_Window      )  ??
+		         {args.findKindOf(MVC_TabbedView  )} ?? 
+		         {args.findKindOf(MVC_TabView     )} ??
+		         {args.findKindOf(MVC_ExpandView  )} ??
+		         {args.findKindOf(MVC_ScrollView  )};
+				
 		// will need to take care of MVC_TabbedViews here
 		if (window.notNil) {
+			parent = window;
 			// register this MVC_item with the view
 			if (window.isKindOf(MVC_TabbedView)) {
 				// get index to the tabbed view from supplied args index +1
@@ -153,7 +155,34 @@ MVC_UserView{
 		if (view.notClosed){ view.focusColor_(focusColor) }
 	}
 	
-	refresh{ if (view.notClosed) { view.refresh } }
+	//refresh{ if (view.notClosed) { view.refresh } }
+	
+	/*
+	a.a.window.isVisible
+	
+	
+	MVC_UserView
+	
+	LNX_PianoRollSequencer:createWidgets
+	
+	*/
+	
+	// you can't use System clock to call refresh
+	refresh{
+		if (view.notClosed) {
+			
+			
+			
+			// drop if tab is hiddden			
+			if ( (parent.isKindOf(MVC_TabView))and:{parent.isVisible.not} ) {^this };
+		
+			
+			parentViews.do{|view| if (view.isVisible.not) { ^this }};
+
+			
+			view.refresh;
+		}
+	}
 	
 	bounds_{|argRect|
 		bounds=argRect;
@@ -163,7 +192,7 @@ MVC_UserView{
 	
 	bounds{^rect}
 	
-	ref{"qwe".postln;}
+	ref{} // what is this used for?
 	
 	// resize item
 	resize_{|num|
@@ -189,6 +218,27 @@ MVC_UserView{
 
 	// is not closed
 	notClosed { ^this.isClosed.not }
+	
+	
+	addParentView{|view| 
+		if (view.isNil) {^this};
+		
+		if (view.isCollection) {
+			parentViews=parentViews++view
+		}{
+			parentViews=parentViews.add(view)
+		}
+	}
+	
+	removeParentView{|view| 
+		parentViews.remove(view)
+	}
+	
+	free{
+		
+	
+	}
+	
 
 }
 

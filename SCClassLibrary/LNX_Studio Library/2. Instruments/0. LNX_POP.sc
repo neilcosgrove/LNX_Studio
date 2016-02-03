@@ -392,7 +392,13 @@ LNX_POP {
 				// this uses the instrument api to talk to its instance of LNX_POP
 				api.groupCmdOD(\netSetPOP,i,me.value);
 			}
-			.updateFunc_{ LNX_POP.alignFromPOP };
+			.updateFunc_{ 
+				LNX_POP.alignFromPOP;
+//				if (studioModels[\toBecome]<0) {
+//					LNX_POP.alignFromPOP
+//				};
+				
+			};
 	}
 	
 	// keep both container views aligned
