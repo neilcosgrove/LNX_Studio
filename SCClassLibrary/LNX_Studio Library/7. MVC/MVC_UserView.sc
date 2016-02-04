@@ -170,16 +170,10 @@ MVC_UserView{
 	// you can't use System clock to call refresh
 	refresh{
 		if (view.notClosed) {
-			
-			
-			
-			// drop if tab is hiddden			
+			// exceptions			
 			if ( (parent.isKindOf(MVC_TabView))and:{parent.isVisible.not} ) {^this };
-		
-			
 			parentViews.do{|view| if (view.isVisible.not) { ^this }};
-
-			
+			// now refresh
 			view.refresh;
 		}
 	}
@@ -235,10 +229,9 @@ MVC_UserView{
 	}
 	
 	free{
-		
-	
+		parentViews = parent = window = drawFunc = mouseOverAction = mouseDownAction =
+		mouseMoveAction = mouseUpAction = keyDownAction = keyUpAction = nil;
 	}
-	
 
 }
 
