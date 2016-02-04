@@ -279,20 +279,20 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			in=LNX_AudioDevices.firstFXBus+(p[2]*2);
 					
 			server.sendBundle(latency,
-				["/n_set", node, \inAmp     ,p[4]],
-				["/n_set", node, \time      ,p[6]],
-				["/n_set", node, \damp      ,p[7]],
-				["/n_set", node, \dampIn    ,p[8]],
-				["/n_set", node, \dry       ,p[10]],
-				["/n_set", node, \early     ,p[11]],
-				["/n_set", node, \taillevel ,p[12]],
-				["/n_set", node, \outAmp    ,p[13]],
-				["/n_set", node, \outputChannels,out],
-				["/n_set", node, \inputChannels,in],
-				["/n_set", node, \on        ,p[1]],
-				["/n_set", node, \highPass  ,p[14]],
-				["/n_set", node, \delayL    ,p[15]],
-				["/n_set", node, \delayR    ,p[16]]);
+				[\n_set, node, \inAmp     ,p[4]],
+				[\n_set, node, \time      ,p[6]],
+				[\n_set, node, \damp      ,p[7]],
+				[\n_set, node, \dampIn    ,p[8]],
+				[\n_set, node, \dry       ,p[10]],
+				[\n_set, node, \early     ,p[11]],
+				[\n_set, node, \taillevel ,p[12]],
+				[\n_set, node, \outAmp    ,p[13]],
+				[\n_set, node, \outputChannels,out],
+				[\n_set, node, \inputChannels,in],
+				[\n_set, node, \on        ,p[1]],
+				[\n_set, node, \highPass  ,p[14]],
+				[\n_set, node, \delayL    ,p[15]],
+				[\n_set, node, \delayR    ,p[16]]);
 		}
 	}
 	

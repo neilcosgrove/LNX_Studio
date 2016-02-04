@@ -264,14 +264,14 @@ LNX_Delay : LNX_InstrumentTemplate {
 		var in  = LNX_AudioDevices.firstFXBus+(p[10]*2);
 		var out = (p[11]>=0).if(p[11]*2,LNX_AudioDevices.firstFXBus+(p[11].neg*2-2));
 		server.sendBundle(latency,
-			["/n_set", node, \inAmp          ,p[2]],
-			["/n_set", node, \mix            ,p[3]],
-			["/n_set", node, \delayTime      ,this.getDelayTime(p[12],p[4])],
-			["/n_set", node, \decay          ,p[5]],
-			["/n_set", node, \outAmp         ,p[6]],
-			["/n_set", node, \inputChannels  ,in  ],
-			["/n_set", node, \outputChannels ,out ],
-			["/n_set", node, \on             ,p[1]]
+			[\n_set, node, \inAmp          ,p[2]],
+			[\n_set, node, \mix            ,p[3]],
+			[\n_set, node, \delayTime      ,this.getDelayTime(p[12],p[4])],
+			[\n_set, node, \decay          ,p[5]],
+			[\n_set, node, \outAmp         ,p[6]],
+			[\n_set, node, \inputChannels  ,in  ],
+			[\n_set, node, \outputChannels ,out ],
+			[\n_set, node, \on             ,p[1]]
 		);
 		this.updateDelayNumberFunc;	// not best place for this
 	}

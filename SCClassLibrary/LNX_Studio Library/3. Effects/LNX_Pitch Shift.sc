@@ -230,14 +230,14 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 			in=LNX_AudioDevices.firstFXBus+(p[10]*2);
 			
 			server.sendBundle(latency,
-				["/n_set", node, \inAmp ,p[2]],
-				["/n_set", node, \pitch ,((60+p[3]).midicps)/(60.midicps)],
-				["/n_set", node, \randP ,p[4]],
-				["/n_set", node, \randT ,p[5]],
-				["/n_set", node, \outAmp,p[7]],
-				["/n_set", node, \outputChannels,out],
-				["/n_set", node, \inputChannels,in],
-				["/n_set", node, \on,p[1]]);
+				[\n_set, node, \inAmp ,p[2]],
+				[\n_set, node, \pitch ,((60+p[3]).midicps)/(60.midicps)],
+				[\n_set, node, \randP ,p[4]],
+				[\n_set, node, \randT ,p[5]],
+				[\n_set, node, \outAmp,p[7]],
+				[\n_set, node, \outputChannels,out],
+				[\n_set, node, \inputChannels,in],
+				[\n_set, node, \on,p[1]]);
 		}
 		
 	}

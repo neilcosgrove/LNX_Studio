@@ -240,18 +240,18 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 		var in  = LNX_AudioDevices.firstFXBus+(p[10]*2);
 		
 		server.sendBundle(latency,
-			["/n_set", node, \inAmp  ,p[2]],
-			["/n_set", node, \mix    ,p[3]],
-			["/n_set", node, \room   ,p[4]],
-			["/n_set", node, \damp   ,p[5]],
-			["/n_set", node, \outAmp ,p[6]],
-			["/n_set", node, \hiFreq ,p[7]],
-			["/n_set", node, \lowFreq,p[8]],
-			["/n_set", node, \inputChannels,in],
-			["/n_set", node, \outputChannels,out],
-			["/n_set", node, \on     ,p[1]],
-			["/n_set", node, \delayL ,p[12]],
-			["/n_set", node, \delayR ,p[13]]			
+			[\n_set, node, \inAmp  ,p[2]],
+			[\n_set, node, \mix    ,p[3]],
+			[\n_set, node, \room   ,p[4]],
+			[\n_set, node, \damp   ,p[5]],
+			[\n_set, node, \outAmp ,p[6]],
+			[\n_set, node, \hiFreq ,p[7]],
+			[\n_set, node, \lowFreq,p[8]],
+			[\n_set, node, \inputChannels,in],
+			[\n_set, node, \outputChannels,out],
+			[\n_set, node, \on     ,p[1]],
+			[\n_set, node, \delayL ,p[12]],
+			[\n_set, node, \delayR ,p[13]]			
 		);
 	}
 	

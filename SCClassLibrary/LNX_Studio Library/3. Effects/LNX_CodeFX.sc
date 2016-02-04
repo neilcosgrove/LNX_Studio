@@ -577,7 +577,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 	// called from the models to update synth arguments
 	updateSynthArg{|synthArg,val,latency|
 		if (node.notNil) {
-			server.sendBundle(latency,["/n_set",node,synthArg,val]);
+			server.sendBundle(latency,[\n_set,node,synthArg,val]);
 		};
 	}
 	
@@ -1008,7 +1008,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 				if (node.notNil) {
 					// no point setting a scalar
 					if (synthDefControl.rate!=\scalar) {
-						server.sendBundle(latency,["/n_set",node,synthDefControl.index,val]);
+						server.sendBundle(latency,[\n_set,node,synthDefControl.index,val]);
 					}{
 						this.replaceDSP(latency); // use replace instead	
 					};

@@ -218,12 +218,12 @@ LNX_Distort : LNX_InstrumentTemplate {
 		var in  = LNX_AudioDevices.firstFXBus+(p[10]*2);
 		var out = (p[11]>=0).if(p[11]*2,LNX_AudioDevices.firstFXBus+(p[11].neg*2-2));
 		server.sendBundle(latency,
-			["/n_set", node, \inAmp ,p[2]],
-			["/n_set", node, \type  ,p[3]],
-			["/n_set", node, \outAmp,p[4]],
-			["/n_set", node, \inputChannels,in],
-			["/n_set", node, \outputChannels,out],
-			["/n_set", node, \on    ,p[1]]
+			[\n_set, node, \inAmp ,p[2]],
+			[\n_set, node, \type  ,p[3]],
+			[\n_set, node, \outAmp,p[4]],
+			[\n_set, node, \inputChannels,in],
+			[\n_set, node, \outputChannels,out],
+			[\n_set, node, \on    ,p[1]]
 		);
 		
 	}
