@@ -212,8 +212,7 @@
 			.mode_(\play);
 
 		// forwards
-		MVC_OnOffView(mixerWindow,Rect(498, 3, 19, 19))
-			.action_{ this.guiJumpTo((beat+(MVC_Automation.barLength*6)).clip(0,inf)) }
+		MVC_OnOffView(models[\fowards], mixerWindow, Rect(498, 3, 19, 19))
 			.mode_(\icon)
 			.mouseMode_(\button)
 			.color_(\on,Color.yellow)
@@ -221,15 +220,13 @@
 			.strings_(["forward"]);
 					
 		// rewind
-		MVC_OnOffView(mixerWindow,Rect(431, 3, 19, 19))
-			.action_{ this.guiJumpTo((beat-(MVC_Automation.barLength*6)).clip(0,inf)) }
+		MVC_OnOffView(models[\rewind], mixerWindow,Rect(431, 3, 19, 19))
 			.mode_(\icon)
 			.mouseMode_(\button)
 			.color_(\on,Color.yellow)
 			.color_(\off,Color(46/77,46/79,72/145)/1.5)
 			.strings_(["rewind"]);	
-					
-					
+						
 		// auto On (play)
 		mixerGUI[\autoPlay] = MVC_OnOffView(models[\autoOn],mixerWindow,Rect(722, 453, 19, 19))
 			.resize_(3)
