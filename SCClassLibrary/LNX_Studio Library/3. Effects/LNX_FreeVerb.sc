@@ -45,17 +45,13 @@ LNX_FreeVerb : LNX_InstrumentTemplate {
 			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
 				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
 				
-		
 			1,   // 2. in
 			1,    // 3.mix
 			0.5,   // 4. room
 			0.5, // 5.damp
 			1,  // 6.out
-			
-			
 			0, // 7. hi pass
 			20000, // 8. low pass
-			
 			0, // 9. knob controls
 			
 			// 10. in channels

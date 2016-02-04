@@ -53,6 +53,7 @@ LNX_Delay : LNX_InstrumentTemplate {
 			0.5, // 5.decay
 			1,  // 6.out
 			0,0,0, // 7-9. knob controls
+			
 			// 10. in channels
 			[0, [0,LNX_AudioDevices.defaultFXBusChannels/2-1,\linear,1],
 				midiControl, 10, "In Channel",
@@ -198,19 +199,14 @@ LNX_Delay : LNX_InstrumentTemplate {
 			var in, out;
 			
 			in  = In.ar(inputChannels, 2)*inAmp;
-			
 			out = SelectX.ar(on.lag,[Silent.ar,in]);
 			
 			delayTime=delayTime.clip(0.0074,3);
-			
-			//mix
 			out = AllpassL.ar(out,3,
 					Lag.ar(delayTime.asAudioRateInput,0.66),(decay*(-1.73))**2*(delayTime+1));
-							
 			out = (((mix*outAmp)*out)+(((1-mix)*outAmp)*in));
 			
 			out = SelectX.ar(on.lag,[in,out]);
-			
 			Out.ar(outputChannels,out);
 		}).send(s);
 		

@@ -45,14 +45,12 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 			// 1.onOff
 			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
 				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
-				
-				
+			
 			1,   // 2. in
 			0,    // 3.pitch
 			0,   // 4. rand pitch
 			0,  // 5. rand time
 			0.5, // 6. size
-			
 			1, // 7.out
 			0, // 8.
 			0, // 9. knob controls
@@ -197,15 +195,10 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 				on=1
 			|
 			var in, out;	
-			
-			in = In.ar(inputChannels, 2)*inAmp;
-			
-			out=PitchShift.ar(in, size, pitch, randP, randT);
-
+			in  = In.ar(inputChannels, 2)*inAmp;
+			out = PitchShift.ar(in, size, pitch, randP, randT);
 			out = SelectX.ar(on.lag,[in,out]);
-			
 			out = out * outAmp;
-			
 			Out.ar(outputChannels,out);
 		}).send(s);
 
@@ -236,14 +229,15 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 			out=(p[11]>=0).if(p[11]*2,LNX_AudioDevices.firstFXBus+(p[11].neg*2-2));
 			in=LNX_AudioDevices.firstFXBus+(p[10]*2);
 			
-			server.sendBundle(latency,["/n_set", node, \inAmp ,p[2]]);
-			server.sendBundle(latency,["/n_set", node, \pitch ,((60+p[3]).midicps)/(60.midicps)]);
-			server.sendBundle(latency,["/n_set", node, \randP ,p[4]]);
-			server.sendBundle(latency,["/n_set", node, \randT ,p[5]]);
-			server.sendBundle(latency,["/n_set", node, \outAmp,p[7]]);
-			server.sendBundle(latency,["/n_set", node, \outputChannels,out]);
-			server.sendBundle(latency,["/n_set", node, \inputChannels,in]);
-			server.sendBundle(latency,["/n_set", node, \on,p[1]]);
+			server.sendBundle(latency,
+				["/n_set", node, \inAmp ,p[2]],
+				["/n_set", node, \pitch ,((60+p[3]).midicps)/(60.midicps)],
+				["/n_set", node, \randP ,p[4]],
+				["/n_set", node, \randT ,p[5]],
+				["/n_set", node, \outAmp,p[7]],
+				["/n_set", node, \outputChannels,out],
+				["/n_set", node, \inputChannels,in],
+				["/n_set", node, \on,p[1]]);
 		}
 		
 	}
@@ -272,19 +266,6 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 			\on, p[1]
 		]));
 	
-//		synth = Synth.replace(synth.nodeID,"LNX_PitchShift_FX",[
-//			\inAmp ,p[2],
-//			\pitch ,((60+p[3]).midicps)/(60.midicps),
-//			\randP ,p[4],
-//			\randT ,p[5],
-//			\size, lastSize,
-//			\outAmp,p[7],
-//			\outputChannels,out,
-//			\inputChannels,in
-//		]);
-//		
-//		node  = synth.nodeID; // need to update node
-
 	}
 	
 }

@@ -45,11 +45,7 @@ LNX_Ring : LNX_InstrumentTemplate {
 				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
 				
 			60,  // 2. freq
-			
-			
 			0,  // 3. mix
-			
-			
 			0,    // 4. out dbs
 			
 			0,0,0,0,0, // 5-9. knob controls

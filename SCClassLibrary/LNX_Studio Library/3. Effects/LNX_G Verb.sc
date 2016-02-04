@@ -74,13 +74,11 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			0.5,   // 6. time
 			0.4,  // 7. damp
 			0.2,  // 8. dampIn
-			
 			0.5, // 9. spread
 			0, // 10. dry
 			0.5, // 11. early
 			0.5, // 12. taillevel
 			1, // 13. out
-			
 			20, // 14. hp freq
 			0, // 15. left delay
 			0, // 16. right delay
@@ -233,7 +231,7 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			in  = In.ar(inputChannels, 2)*inAmp;	
 			out = SelectX.ar(on.lag,[Silent.ar,in]);
 			
-			out = HPF.ar(out,highPass);
+			out = HPF.ar(out,highPass.lag(0.2));
 			out = GVerb.ar(out[0]+out[1], 			
 					room,
 					Lag.kr(time,0.5),
@@ -280,20 +278,21 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			out=(p[3]>=0).if(p[3]*2,LNX_AudioDevices.firstFXBus+(p[3].neg*2-2));
 			in=LNX_AudioDevices.firstFXBus+(p[2]*2);
 					
-			server.sendBundle(latency,["/n_set", node, \inAmp     ,p[4]]);
-			server.sendBundle(latency,["/n_set", node, \time      ,p[6]]);
-			server.sendBundle(latency,["/n_set", node, \damp      ,p[7]]);
-			server.sendBundle(latency,["/n_set", node, \dampIn    ,p[8]]);
-			server.sendBundle(latency,["/n_set", node, \dry       ,p[10]]);
-			server.sendBundle(latency,["/n_set", node, \early     ,p[11]]);
-			server.sendBundle(latency,["/n_set", node, \taillevel ,p[12]]);
-			server.sendBundle(latency,["/n_set", node, \outAmp    ,p[13]]);
-			server.sendBundle(latency,["/n_set", node, \outputChannels,out]);
-			server.sendBundle(latency,["/n_set", node, \inputChannels,in]);
-			server.sendBundle(latency,["/n_set", node, \on        ,p[1]]);
-			server.sendBundle(latency,["/n_set", node, \highPass  ,p[14]]);
-			server.sendBundle(latency,["/n_set", node, \delayL    ,p[15]]);
-			server.sendBundle(latency,["/n_set", node, \delayR    ,p[16]]);
+			server.sendBundle(latency,
+				["/n_set", node, \inAmp     ,p[4]],
+				["/n_set", node, \time      ,p[6]],
+				["/n_set", node, \damp      ,p[7]],
+				["/n_set", node, \dampIn    ,p[8]],
+				["/n_set", node, \dry       ,p[10]],
+				["/n_set", node, \early     ,p[11]],
+				["/n_set", node, \taillevel ,p[12]],
+				["/n_set", node, \outAmp    ,p[13]],
+				["/n_set", node, \outputChannels,out],
+				["/n_set", node, \inputChannels,in],
+				["/n_set", node, \on        ,p[1]],
+				["/n_set", node, \highPass  ,p[14]],
+				["/n_set", node, \delayL    ,p[15]],
+				["/n_set", node, \delayR    ,p[16]]);
 		}
 	}
 	

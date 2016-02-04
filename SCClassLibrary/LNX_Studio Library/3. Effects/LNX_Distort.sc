@@ -43,8 +43,7 @@ LNX_Distort : LNX_InstrumentTemplate {
 			// 1.onOff
 			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
 				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
-				
-				
+			
 			0.1,  // 2. drive
 			0,    // 3. type
 			0.8,    // 4. out

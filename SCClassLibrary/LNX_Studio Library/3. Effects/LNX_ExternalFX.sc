@@ -251,7 +251,6 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			
 			in2Out = SelectX.ar(on.lag,[Silent.ar,in]);
 			
-			
 			silent = Silent.ar;
 
 			mono = in2Out[0]+in2Out[1];
@@ -265,7 +264,6 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 
 			out2In = Select.ar(xChannelSetup,[
 				[out2In[0],out2In[1]],(out2In[0]+out2In[1]).dup, out2In[0].dup, out2In[1].dup]);
-				
 				
 			out2In = SelectX.ar(on.lag,[in,out2In]) ;
 
@@ -301,16 +299,13 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			xout = LNX_AudioDevices.firstFXBus+(p[6].neg*2-2);
 		};
 				
-				
-		server.sendBundle(latency,["/n_set", node, \inAmp     ,p[4]]);
-		server.sendBundle(latency,["/n_set", node, \outAmp    ,p[5]]);
-		server.sendBundle(latency,["/n_set", node, \outputChannels,out]);
-		server.sendBundle(latency,["/n_set", node, \inputChannels,in]);
-		
-		server.sendBundle(latency,["/n_set", node, \xOutputChannels,xout]);
-		server.sendBundle(latency,["/n_set", node, \xInputChannels,xin]);
-		
 		server.sendBundle(latency,
+			[\n_set, node, \inAmp     ,p[4]],
+			[\n_set, node, \outAmp    ,p[5]],
+			[\n_set, node, \outputChannels,out],
+			[\n_set, node, \inputChannels,in],
+			[\n_set, node, \xOutputChannels,xout],
+			[\n_set, node,  \xInputChannels,xin],
 			[\n_set, node, \channelSetup, p[8]],
 			[\n_set, node, \xChannelSetup, p[9]],
 			[\n_set, node, \on, p[1]]
