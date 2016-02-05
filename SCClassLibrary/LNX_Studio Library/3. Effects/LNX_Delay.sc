@@ -81,7 +81,8 @@ LNX_Delay : LNX_InstrumentTemplate {
 		["IN","mix","time","decay","OUT"].do{|text,i|
 			template[i+2] = [ template[i+2], \unipolar, midiControl, i+2, text,
 				(\label_:text,\numberFunc_:\float2),
-				{|me,val,latency,send| this.setSynthArgVP(i+2,val,
+				{|me,val,latency,send| 
+					this.setSynthArgVP(i+2,val,
 							[\inAmp,\mix,\delayTime,\decay,\outAmp][i],val,latency,send)}]
 		};
 	
@@ -210,7 +211,6 @@ LNX_Delay : LNX_InstrumentTemplate {
 			Out.ar(outputChannels,out);
 		}).send(s);
 		
-
 	}
 	
 	getDelayTime{|scale,value|
@@ -263,6 +263,7 @@ LNX_Delay : LNX_InstrumentTemplate {
 	updateDSP{|oldP,latency|
 		var in  = LNX_AudioDevices.firstFXBus+(p[10]*2);
 		var out = (p[11]>=0).if(p[11]*2,LNX_AudioDevices.firstFXBus+(p[11].neg*2-2));
+		
 		server.sendBundle(latency,
 			[\n_set, node, \inAmp          ,p[2]],
 			[\n_set, node, \mix            ,p[3]],
