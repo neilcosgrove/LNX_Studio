@@ -750,7 +750,7 @@
 
 		// bCount=bCount+1;
 		
-		if (modifiers.isCtrl or: { modifiers.isCmd }) {
+		if (modifiers.isXCmd) {
 			if (key.isAlphaKey(\C)) {this.guiCopy }; // copy
 			if (key.isAlphaKey(\V)) {this.guiPaste}; //paste
 			if (key.isAlphaKey(\A)) {this.guiSelectAll}; 

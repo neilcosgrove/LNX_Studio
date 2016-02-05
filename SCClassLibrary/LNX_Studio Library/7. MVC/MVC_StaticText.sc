@@ -415,36 +415,53 @@ MVC_StaticText : MVC_View {
 		
 		// @TODO: new Qt "key" codes
 		view.keyDownAction_{|me,char,mod,uni,keycode,key|
-			//keycode.postln;
 			// help fixes double press bug by see if cmd is pressed
-			if (mod.isCmd) {
+			if (mod.isXCmd) {
 				noKeyPresses=noKeyPresses+1;
-				case {keycode==123} { // left	
+				case {key.isLeft} { // left	
 					cursor = 0;
 					if (editing.not) {this.startEditing};
 					this.refresh;
-				} {keycode==124} { // right
+				} {key.isRight} { // right
 					cursor = string.size;
 					if (editing.not) {this.startEditing};
 					this.refresh;
 				};
 			}{ noKeyPresses=1 };
 			
-			if (noKeyPresses.odd) { // stops double press bug
+			if ((Platform.name == \osx).not or: { Platform.name == \osx and: {noKeyPresses.odd} }) { // stops double press bug
 				keyDownAction.value(me,char,mod,uni,keycode);
-				if (mod.isCmd) { // apple cmd key
-					if (keycode==8) { // cmd copy	
+				if (mod.isXCmd) { // apple cmd key
+					if (key.isAlphaKey(\C)) { // cmd copy	
 						case {cursor.isNil} {
-							("echo"+string+"| pbcopy").unixCmd
-						} {cursor.isNumber} {									("echo"+string+"| pbcopy").unixCmd
+							Platform.case(
+								\osx, {
+									("echo"+string+"| pbcopy").unixCmd
+								},
+								\linux, {
+									("echo"+string+"| xclip -i -sel c -f | xclip -i -sel p").unixCmd
+								}
+							);
+						} {cursor.isNumber} {
+							Platform.case(
+								\osx, {
+									("echo"+string+"| pbcopy").unixCmd
+								},
+								\linux, {
+									("echo"+string+"| xclip -i -sel c -f | xclip -i -sel p").unixCmd
+								}
+							);
 						} {cursor.isCollection} {	
 							
 						};
 					}; 
 					
 					if (editing) {
-						case {keycode==9} { // cmd paste
-							var clipboard = "pbpaste".unixCmdGetStdOut;
+						case {key.isAlphaKey(\V)} { // cmd paste
+							var clipboard = Platform.case(
+								\osx, { "pbpaste".unixCmdGetStdOut },
+								\linux, { "xclip -selection clipboard -o".unixCmdGetStdOut }
+							);
 							clipboard = clipboard.select{|char| 
 								(char.isAlphaNum)||(char.isPunct)||(char==($\ ))
 							};
@@ -459,7 +476,7 @@ MVC_StaticText : MVC_View {
 							this.refresh;
 							this.valueActions(\stringAction,this);
 							if (model.notNil){ model.stringAction_(string,this) };
-						}{keycode==51} { // cmd delete
+						}{key.isDel} { // cmd delete
 							case {cursor.isNil} {
 								string="";
 							} {cursor.isNumber} {									string = string.drop(cursor);
@@ -474,15 +491,15 @@ MVC_StaticText : MVC_View {
 						}
 					};	
 				}{ // not cmd key
-					case {keycode==126} { // up
+					case {key.isUp} { // up
 						this.stopEditing;
 						this.refresh;
 						upKeyAction.value(this,string);
-					} {keycode==125} { // down
+					} {key.isDown} { // down
 						this.stopEditing;
 						this.refresh;
 						downKeyAction.value(this,string);
-					} {keycode==123} { // left	
+					} {key.isLeft} { // left	
 						case {cursor.isNil} {
 							cursor = string.size;
 						} {cursor.isNumber} {	
@@ -491,7 +508,7 @@ MVC_StaticText : MVC_View {
 							
 						};
 						this.refresh;
-					} {keycode==124} { // right
+					} {key.isRight} { // right
 						case {cursor.isNil} {
 							cursor = string.size;
 						} {cursor.isNumber} {	
@@ -501,8 +518,8 @@ MVC_StaticText : MVC_View {
 						};
 						this.refresh;
 					};
-					if (editing) {		
-						case {keycode==51} { // delete
+					if (editing) {
+						case {key.isDel or: {key.isBackspace}} { // delete
 							case {cursor.isNil} {
 								string=string.drop(-1);
 							} {cursor.isNumber} {
@@ -517,7 +534,7 @@ MVC_StaticText : MVC_View {
 							this.valueActions(\stringAction,this);
 							if (model.notNil){ model.stringAction_(string,this) };
 							stringAction.value(this,string);
-						} {keycode==36} { // enter
+						}{key.isEnter} { // enter
 							cursor=nil;
 							if (enterStopsEditing) {this.stopEditing};
 							this.refresh;
@@ -541,7 +558,7 @@ MVC_StaticText : MVC_View {
 							};
 						}
 					}{
-						if ((canEdit)&&(keycode==36)) { // enter
+						if ((canEdit)&&(key.isEnter)) { // enter
 							this.startEditing;
 							this.refresh;
 						};

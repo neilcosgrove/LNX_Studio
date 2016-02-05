@@ -340,7 +340,7 @@ MVC_PopUpMenu3 : MVC_View {
 				if (buttonNumber==2) {
 					this.toggleMIDIactive
 				}{
-					if (modifiers.isCmd.not) { this.openMenu };
+					if (modifiers.isXCmd.not) { this.openMenu };
 				};
 				down=true;
 				startTime = SystemClock.now;	

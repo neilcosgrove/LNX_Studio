@@ -1111,14 +1111,16 @@ gives min, max, averages and total
 	asNote4 {|spo=12| ^(this % (spo.asInt) + 65).asAscii ++((this div: spo).asString) }
 
 	isAlphaKey {|char| ^this == char.ascii[0]}
-	isEnter { ^(this == 0x01000005 or: {this == 65293}) }
+	isEnter { ^(this == 0x01000004 or: {(this == 0x01000005) or: {this == 65293}}) }
 	isDel { ^(this == 0x01000007 or: {this == 65535}) }
+	isBackspace { ^this == 0x01000003 }
 	isLeft { ^(this == 0x01000012 or: {this == 65361}) }
 	isUp { ^(this == 0x01000013 or: {this == 65362}) }
 	isRight { ^(this == 0x01000014 or: {this == 65363}) }
 	isDown { ^(this == 0x01000015 or: {this == 65364}) }
 	isSpace { ^this == 0x20 }
 	isArrow { ^(this.isLeft or: { this.isUp or: { this.isRight or: { this.isDown } } } ) }
+	isXCmd { ^(this.isCmd or: {this.isCtrl}) }
 	
 }
 

@@ -276,7 +276,7 @@ MVC_MIDIKeyboard {
 			
 				var kcm = keyCodeMap.indexOf(key);
 				
-				if (modifiers.isCmd.not) {  // no apple modifier
+				if (modifiers.isXCmd.not) {  // no apple modifier
 				
 					if (key.isUp) { miscKeyAction.value(\up)    };
 					if (key.isDown) { miscKeyAction.value(\down)  };
