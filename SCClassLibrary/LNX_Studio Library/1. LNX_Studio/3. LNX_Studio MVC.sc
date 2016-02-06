@@ -77,6 +77,16 @@
 		// stop
 		models[\stop]=[\switch, midiControl, 4, "Stop", {|me,val| this.guiStop}].asModel
 			.automationActive_(false);
+					
+		// clock fowards
+		models[\fowards]=[\switch, midiControl, -2, "Forwards", {
+			 this.guiJumpTo((beat+(MVC_Automation.barLength*6)).clip(0,inf)); }].asModel
+			.automationActive_(false);
+
+		// clock rewind
+		models[\rewind]=[\switch, midiControl, -3, "Rewind", {
+			 this.guiJumpTo((beat-(MVC_Automation.barLength*6)).clip(0,inf)); }].asModel
+			.automationActive_(false);		
 
 		// record
 		models[\record]=[\switch, midiControl, 2, "Record", (strings_:["Rec","Stop"]),

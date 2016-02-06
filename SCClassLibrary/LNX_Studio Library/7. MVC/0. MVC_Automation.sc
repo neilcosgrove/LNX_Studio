@@ -241,7 +241,7 @@ MVC_Automation {
 			if (gui.notNil) {
 				gui[\seqIndex] = beat;
 				if (models[\follow].value.isTrue) {
-					models[\offset].valueAction_((beat/duration).clip(0,1));
+					models[\offset].lazyValueAction_((beat/duration).clip(0,1));
 				}{
 					this.refreshPointer;
 				};
@@ -332,7 +332,7 @@ MVC_Automation {
 				if (gui.notNil) {
 					gui[\seqIndex] = beat;
 					if (models[\follow].value.isTrue && mouseUp) {
-						models[\offset].valueAction_((beat/duration).clip(0,1));
+						models[\offset].lazyValueAction_((beat/duration).clip(0,1));
 					}{
 						this.refreshPointer;
 					};
@@ -936,7 +936,7 @@ MVC_Automation {
 			w=gui[\graph].view.bounds.width;
 			h=gui[\graph].bounds.height;
 			h2= h/2;
-			
+
 			Pen.use{
 
 				// background & horizontal ruler

@@ -783,7 +783,9 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 				 \noteBS:     Color(1,1,1),
 				 \velocity:   Color(1,0.7,0.45),
 				 \velocitySel: Color.white
-				));
+				),
+				parentViews: [ window, gui[\masterTabs].mvcTab(1)]
+				);
 										
 		gui[\textHeader]=MVC_StaticText(gui[\synthTab],Rect(14,0,thisWidth-10, 18 ))
 			.shadow_(false)

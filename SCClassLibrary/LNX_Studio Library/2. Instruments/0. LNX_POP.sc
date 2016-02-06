@@ -368,9 +368,18 @@ LNX_POP {
 	
 	// put in the names of the presets
 	items_{|list|
-		if (inst.isKindOf(LNX_Sub37Control).not) {	
+		if (inst.isKindOf(LNX_Sub37Control).not) {
+			// pop can't be more than number of presets
+			var nop = inst.presetNames.size; // number of presets
+			presetsOfPresets.do{|value,i|
+				value = value.clip(0, nop + (inst.canTurnOnOff.if(2,1)) ); // clip to valid value
+				if (presetsOfPresets[i] != value) {                        // update if needed
+					presetsOfPresets[i] = value;
+					instGUI[(\pop++i).asSymbol].value_(value,false);      // & gui
+				};
+			};
 			items = this.itemHeader ++ list;
-			noPOP.do{|i| instGUI[(\pop++i).asSymbol].items_(items) }
+			noPOP.do{|i| instGUI[(\pop++i).asSymbol].items_(items) };      // update names > menus
 		};
 	}
 	
@@ -395,7 +404,13 @@ LNX_POP {
 				// this uses the instrument api to talk to its instance of LNX_POP
 				api.groupCmdOD(\netSetPOP,i,me.value);
 			}
-			.updateFunc_{ LNX_POP.alignFromPOP };
+			.updateFunc_{ 
+				LNX_POP.alignFromPOP;
+//				if (studioModels[\toBecome]<0) {
+//					LNX_POP.alignFromPOP
+//				};
+				
+			};
 	}
 	
 	// keep both container views aligned

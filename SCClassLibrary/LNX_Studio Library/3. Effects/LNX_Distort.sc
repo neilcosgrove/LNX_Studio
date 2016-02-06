@@ -9,7 +9,7 @@ LNX_Distort : LNX_InstrumentTemplate {
 	*sortOrder{^3}
 	isFX{^true}
 	isInstrument{^false}
-	canTurnOnOff{^false}
+	canTurnOnOff{^true}
 	
 	mixerColor{^Color(0.2,0.2,1,0.2)} // colour in mixer
 	
@@ -24,6 +24,11 @@ LNX_Distort : LNX_InstrumentTemplate {
 	// if you reduce the size of this list it will cause problems when loading older versions.
 	// the only 2 items i'm going for fix are 0.solo & 1.onOff
 
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
+	
 	inModel{^models[2]}
 	inChModel{^models[10]}
 	outModel{^models[4]}
@@ -36,10 +41,9 @@ LNX_Distort : LNX_InstrumentTemplate {
 			0, // 0.solo
 			
 			// 1.onOff
-			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
 				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
-				
-				
+			
 			0.1,  // 2. drive
 			0,    // 3. type
 			0.8,    // 4. out
@@ -145,8 +149,7 @@ LNX_Distort : LNX_InstrumentTemplate {
 		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(83, 6, 22, 19),gui[\onOffTheme1])
 			.color_(\on, Color(0.25,1,0.25) )
 			.color_(\off, Color(0.4,0.4,0.4) )
-			.rounded_(true)
-			.permanentStrings_(["On"]);
+			.rounded_(true);
 		
 		// midi control button
 		gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(109, 6, 43, 19),"Cntrl", gui[\midiTheme])
@@ -215,12 +218,12 @@ LNX_Distort : LNX_InstrumentTemplate {
 		var in  = LNX_AudioDevices.firstFXBus+(p[10]*2);
 		var out = (p[11]>=0).if(p[11]*2,LNX_AudioDevices.firstFXBus+(p[11].neg*2-2));
 		server.sendBundle(latency,
-			["/n_set", node, \inAmp ,p[2]],
-			["/n_set", node, \type  ,p[3]],
-			["/n_set", node, \outAmp,p[4]],
-			["/n_set", node, \inputChannels,in],
-			["/n_set", node, \outputChannels,out],
-			["/n_set", node, \on    ,p[1]]
+			[\n_set, node, \inAmp ,p[2]],
+			[\n_set, node, \type  ,p[3]],
+			[\n_set, node, \outAmp,p[4]],
+			[\n_set, node, \inputChannels,in],
+			[\n_set, node, \outputChannels,out],
+			[\n_set, node, \on    ,p[1]]
 		);
 		
 	}

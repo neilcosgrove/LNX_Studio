@@ -279,6 +279,9 @@ MVC_TabView {
 	// i should really store bounds on close, will i ever want this?
 	bounds { if (parent.notClosed) {^this.view.bounds} {^Rect(0,0,0,0)} }
 	
+	
+	isVisible{ ^parent.notClosed && (parent.tabIsHidden(tabIndex).not) }
+	
 	isHidden{ ^parent.tabIsHidden(tabIndex) } // very useful to stop updates from other tabs
 	
 	isClosed { ^parent.isClosed }

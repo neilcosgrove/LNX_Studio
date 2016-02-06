@@ -343,6 +343,12 @@ MVC_ScrollView {
 		if (view.notClosed) { view.visibleOrigin_(point) }
 	}
 	
+	// is this window visable i.e. open and not hidden
+	isVisible{
+		^((view.notNil) && visible and:{view.isClosed.not})
+	}
+	
+	
 	// boarder
 	hasBorder_{|bool|
 		hasBorder=bool;

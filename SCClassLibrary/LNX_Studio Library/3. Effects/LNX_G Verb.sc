@@ -15,7 +15,7 @@ LNX_GVerb : LNX_InstrumentTemplate {
 	
 	isFX{^true}
 	isInstrument{^false}
-	canTurnOnOff{^false}
+	canTurnOnOff{^true}
 	
 	mixerColor{^Color(0.3,0.3,0.8,0.2)} // colour in mixer
 	
@@ -30,6 +30,11 @@ LNX_GVerb : LNX_InstrumentTemplate {
 	// if you reduce the size of this list it will cause problems when loading older versions.
 	// the only 2 items i'm going for fix are 0.solo & 1.onOff
 	
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
+	
 	inModel{^models[4]}
 	inChModel{^models[2]}
 	outModel{^models[13]}
@@ -42,7 +47,7 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			0, // 0.solo
 			
 			// 1.onOff
-			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
 				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
 				
 								
@@ -69,13 +74,11 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			0.5,   // 6. time
 			0.4,  // 7. damp
 			0.2,  // 8. dampIn
-			
 			0.5, // 9. spread
 			0, // 10. dry
 			0.5, // 11. early
 			0.5, // 12. taillevel
 			1, // 13. out
-			
 			20, // 14. hp freq
 			0, // 15. left delay
 			0, // 16. right delay
@@ -161,8 +164,7 @@ LNX_GVerb : LNX_InstrumentTemplate {
 		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(83, 6, 22, 19),gui[\onOffTheme1])
 			.color_(\on, Color(0.25,1,0.25) )
 			.color_(\off, Color(0.4,0.4,0.4) )
-			.rounded_(true)
-			.permanentStrings_(["On"]);
+			.rounded_(true);
 		
 		// midi control button
 		gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(109, 6, 43, 19),"Cntrl", gui[\midiTheme])
@@ -224,17 +226,12 @@ LNX_GVerb : LNX_InstrumentTemplate {
 				
 			|
 			var in, out;
-
 			time=(time*4)**2;
 			damp=1-damp;
-			dampIn=dampIn;
-			dry=dry;
-			early=early;
-			taillevel=taillevel;
-			
 			in  = In.ar(inputChannels, 2)*inAmp;	
 			out = SelectX.ar(on.lag,[Silent.ar,in]);
-			out = HPF.ar(out,highPass);
+			
+			out = HPF.ar(out,highPass.lag(0.2));
 			out = GVerb.ar(out[0]+out[1], 			
 					room,
 					Lag.kr(time,0.5),
@@ -247,11 +244,10 @@ LNX_GVerb : LNX_InstrumentTemplate {
 					room+1
 					);
 			out = DelayN.ar(out, 0.2, [delayL.lag,delayR.lag]);
+			
 			out = SelectX.ar(on.lag,[in,out]);
 			out = out * outAmp;
-			
 			Out.ar(outputChannels,out);
-			
 		}).send(s);
 
 	}
@@ -282,20 +278,21 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			out=(p[3]>=0).if(p[3]*2,LNX_AudioDevices.firstFXBus+(p[3].neg*2-2));
 			in=LNX_AudioDevices.firstFXBus+(p[2]*2);
 					
-			server.sendBundle(latency,["/n_set", node, \inAmp     ,p[4]]);
-			server.sendBundle(latency,["/n_set", node, \time      ,p[6]]);
-			server.sendBundle(latency,["/n_set", node, \damp      ,p[7]]);
-			server.sendBundle(latency,["/n_set", node, \dampIn    ,p[8]]);
-			server.sendBundle(latency,["/n_set", node, \dry       ,p[10]]);
-			server.sendBundle(latency,["/n_set", node, \early     ,p[11]]);
-			server.sendBundle(latency,["/n_set", node, \taillevel ,p[12]]);
-			server.sendBundle(latency,["/n_set", node, \outAmp    ,p[13]]);
-			server.sendBundle(latency,["/n_set", node, \outputChannels,out]);
-			server.sendBundle(latency,["/n_set", node, \inputChannels,in]);
-			server.sendBundle(latency,["/n_set", node, \on        ,p[1]]);
-			server.sendBundle(latency,["/n_set", node, \highPass  ,p[14]]);
-			server.sendBundle(latency,["/n_set", node, \delayL    ,p[15]]);
-			server.sendBundle(latency,["/n_set", node, \delayR    ,p[16]]);
+			server.sendBundle(latency,
+				[\n_set, node, \inAmp     ,p[4]],
+				[\n_set, node, \time      ,p[6]],
+				[\n_set, node, \damp      ,p[7]],
+				[\n_set, node, \dampIn    ,p[8]],
+				[\n_set, node, \dry       ,p[10]],
+				[\n_set, node, \early     ,p[11]],
+				[\n_set, node, \taillevel ,p[12]],
+				[\n_set, node, \outAmp    ,p[13]],
+				[\n_set, node, \outputChannels,out],
+				[\n_set, node, \inputChannels,in],
+				[\n_set, node, \on        ,p[1]],
+				[\n_set, node, \highPass  ,p[14]],
+				[\n_set, node, \delayL    ,p[15]],
+				[\n_set, node, \delayR    ,p[16]]);
 		}
 	}
 	

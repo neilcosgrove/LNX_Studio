@@ -128,7 +128,7 @@ LNX_AppMenus {
 		SCMenuSeparator.new(tools);
 		SCMenuItem.new(tools, "Quit LNX_Studio").setShortCut("q").action_{
 			studio.server.quit;
-			1.exit
+			0.exit
 		};	
 	}
 

@@ -242,7 +242,10 @@
 				 \noteBS:     Color(1,1,1),
 				 \velocity:   Color(0.45,0.7,1),
 				 \velocitySel: Color.white
-				), 0);
+				), 0,
+				parentViews: [ window, gui[\masterTabs].mvcTab(2)]
+				
+				);
 
 		// lines ////////////////////////////////////////////////////////////////////
 				
@@ -294,6 +297,7 @@
 			.width_(6);
 			
 		MVC_UserView(gui[\filterViewHP], Rect(66+12,25+4,98-24,70-7))
+			.parent_(gui[\masterTabs].mvcTab(0))
 			.drawFunc_{|me|
 				Pen.use{
 					var w = me.bounds.width;
@@ -354,6 +358,7 @@
 			.width_(6);
 			
 		MVC_UserView(gui[\filterView], Rect(66+12,25+4,98-24,70-7))
+			.parent_(gui[\masterTabs].mvcTab(0)) 
 			.drawFunc_{|me|
 				Pen.use{
 					var w = me.bounds.width;

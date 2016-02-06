@@ -9,6 +9,7 @@ LNX_InstrumentTemplate {
 
 	classvar templateVersion="v1.2", <>noInternalBuses=3;
 	classvar <onSoloGroup,			<>verbose=false;
+	classvar fxFakeOnOffModel;
 
 	// header vars
 	var	<instrumentHeaderType,	<version,			<studioName,
@@ -67,6 +68,7 @@ LNX_InstrumentTemplate {
 		Class.initClassTree(LNX_OnSoloGroup);
 		onSoloGroup=LNX_OnSoloGroup();
 		onSoloGroup.addUser('lnx_song'); // add a fake user to use in a collaboration
+		fxFakeOnOffModel = 1.asModel;
 	}
 	
 	// post studio server init (useful for loading LNX_BufferProxys)
@@ -85,7 +87,8 @@ LNX_InstrumentTemplate {
 		// this is needed early on
 		instNoModel=(argInstNo?0).asModel
 			.action_{|me,val|
-				models[1].dependantsPerform(\strings_,(val+1).asString);//update ON/off buttons
+				//update ON/off buttons
+				models[1].dependantsPerform(\strings_,(val+1).asString);
 				this.updateWindowName;
 			};
 		
@@ -404,6 +407,7 @@ LNX_InstrumentTemplate {
 		nameModel.free;
 		instNoModel.free;
 		models.do(_.free);
+		fxFakeOnOffModel.free;
 		tasks.do(_.stop);
 		
 		{
@@ -683,8 +687,8 @@ LNX_InstrumentTemplate {
 	
 	// turn on and off via pop (presets of presets)
 	popOnOff_{|value,latency|	
-		if (this.isFX.not) { // make a better test for things that can be turned on/off
-			this.onOffModel.lazyValueAction_(value,latency,false,false);
+		if (this.canTurnOnOff) {
+			(this.fxOnOffModel ? this.onOffModel).lazyValueAction_(value,latency,false,false)
 		};
 	}
 	
@@ -939,7 +943,7 @@ LNX_InstrumentTemplate {
 	netOnOff {|v,userID,userIsListening|	
 		if (userIsListening.isTrue) {	
 			if (network.isListening) {
-				models[1].lazyValue_(v,false);
+				this.onOffModel.lazyValue_(v,false);
 				p[1]=v;
 				instOnSolo.on_(v);
 				this.stopNotesIfNeeded;
@@ -1016,7 +1020,7 @@ LNX_InstrumentTemplate {
 	onOff_{|v|	
 		p[1]=v;
 		instOnSolo.on_(v);
-		models[1].lazyValue_(v,false);
+		this.onOffModel.lazyValue_(v,false);
 		this.stopNotesIfNeeded;
 	}
 	
@@ -1028,7 +1032,7 @@ LNX_InstrumentTemplate {
 	}
 	
 	onOffEnabled_{|v|
-		models[1].enabled_(v);
+		this.onOffModel.enabled_(v);
 		this.stopNotesIfNeeded;
 	}
 	
@@ -1523,7 +1527,7 @@ LNX_InstrumentTemplate {
 	
 	on_{|flag| this.onOff_(flag.binaryValue) }
 	
-	on{ ^models[1].value }
+	on{ ^this.onOffModel.value }
 	
 	preset_{|preset| this.selectProgram(preset) }	
 	

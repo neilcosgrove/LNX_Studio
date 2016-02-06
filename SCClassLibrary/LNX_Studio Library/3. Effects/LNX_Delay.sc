@@ -9,9 +9,14 @@ LNX_Delay : LNX_InstrumentTemplate {
 	*sortOrder{^3}
 	isFX{^true}
 	isInstrument{^false}
-	canTurnOnOff{^false}
+	canTurnOnOff{^true}
 	
 	mixerColor{^Color(0.77,0.6,1,0.3)} // colour in mixer
+		
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
 	
 	inModel{^models[2]}
 	inChModel{^models[10]}
@@ -39,7 +44,7 @@ LNX_Delay : LNX_InstrumentTemplate {
 			0, // 0.solo
 			
 			// 1.onOff
-			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
 				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
 				
 			1,   // 2. in
@@ -48,6 +53,7 @@ LNX_Delay : LNX_InstrumentTemplate {
 			0.5, // 5.decay
 			1,  // 6.out
 			0,0,0, // 7-9. knob controls
+			
 			// 10. in channels
 			[0, [0,LNX_AudioDevices.defaultFXBusChannels/2-1,\linear,1],
 				midiControl, 10, "In Channel",
@@ -75,7 +81,8 @@ LNX_Delay : LNX_InstrumentTemplate {
 		["IN","mix","time","decay","OUT"].do{|text,i|
 			template[i+2] = [ template[i+2], \unipolar, midiControl, i+2, text,
 				(\label_:text,\numberFunc_:\float2),
-				{|me,val,latency,send| this.setSynthArgVP(i+2,val,
+				{|me,val,latency,send| 
+					this.setSynthArgVP(i+2,val,
 							[\inAmp,\mix,\delayTime,\decay,\outAmp][i],val,latency,send)}]
 		};
 	
@@ -140,8 +147,7 @@ LNX_Delay : LNX_InstrumentTemplate {
 		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(83, 6, 22, 19),gui[\onOffTheme1])
 			.color_(\on, Color(0.25,1,0.25) )
 			.color_(\off, Color(0.4,0.4,0.4) )
-			.rounded_(true)
-			.permanentStrings_(["On"]);
+			.rounded_(true);
 		
 		// midi control button
 		gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(109, 6, 43, 19),"Cntrl", gui[\midiTheme])
@@ -194,23 +200,17 @@ LNX_Delay : LNX_InstrumentTemplate {
 			var in, out;
 			
 			in  = In.ar(inputChannels, 2)*inAmp;
-			
 			out = SelectX.ar(on.lag,[Silent.ar,in]);
 			
 			delayTime=delayTime.clip(0.0074,3);
-			
-			//mix
 			out = AllpassL.ar(out,3,
 					Lag.ar(delayTime.asAudioRateInput,0.66),(decay*(-1.73))**2*(delayTime+1));
-							
 			out = (((mix*outAmp)*out)+(((1-mix)*outAmp)*in));
 			
 			out = SelectX.ar(on.lag,[in,out]);
-			
 			Out.ar(outputChannels,out);
 		}).send(s);
 		
-
 	}
 	
 	getDelayTime{|scale,value|
@@ -263,15 +263,16 @@ LNX_Delay : LNX_InstrumentTemplate {
 	updateDSP{|oldP,latency|
 		var in  = LNX_AudioDevices.firstFXBus+(p[10]*2);
 		var out = (p[11]>=0).if(p[11]*2,LNX_AudioDevices.firstFXBus+(p[11].neg*2-2));
+		
 		server.sendBundle(latency,
-			["/n_set", node, \inAmp          ,p[2]],
-			["/n_set", node, \mix            ,p[3]],
-			["/n_set", node, \delayTime      ,this.getDelayTime(p[12],p[4])],
-			["/n_set", node, \decay          ,p[5]],
-			["/n_set", node, \outAmp         ,p[6]],
-			["/n_set", node, \inputChannels  ,in  ],
-			["/n_set", node, \outputChannels ,out ],
-			["/n_set", node, \on             ,p[1]]
+			[\n_set, node, \inAmp          ,p[2]],
+			[\n_set, node, \mix            ,p[3]],
+			[\n_set, node, \delayTime      ,this.getDelayTime(p[12],p[4])],
+			[\n_set, node, \decay          ,p[5]],
+			[\n_set, node, \outAmp         ,p[6]],
+			[\n_set, node, \inputChannels  ,in  ],
+			[\n_set, node, \outputChannels ,out ],
+			[\n_set, node, \on             ,p[1]]
 		);
 		this.updateDelayNumberFunc;	// not best place for this
 	}

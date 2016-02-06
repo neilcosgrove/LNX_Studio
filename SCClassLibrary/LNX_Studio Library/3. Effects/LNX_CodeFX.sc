@@ -50,7 +50,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 	*sortOrder{^0.5}
 	isFX{^true}
 	isInstrument{^false}
-	canTurnOnOff{^false}
+	canTurnOnOff{^true}
 	
 	header { 
 		// define your document header details
@@ -58,6 +58,11 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 		version="v1.4";		
 	}
 
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
+	
 	inModel{^models[15]}
 	inChModel{^models[11]}
 	outModel{^models[2]}
@@ -71,14 +76,13 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 			[0],
 			
 			// 1.onOff
-			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
 				{|me,val,latency,send|
 					if (systemIndices[\on].notNil) {
 						this.updateSynthArg(systemIndices[\on],val,latency);
 					};
 				}],
-				
-					
+						
 			// 2.master amp
 			[\db6,midiControl, 2, "Out",
 				(\label_:"Out" , \numberFunc_:'db'),
@@ -573,7 +577,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 	// called from the models to update synth arguments
 	updateSynthArg{|synthArg,val,latency|
 		if (node.notNil) {
-			server.sendBundle(latency,["/n_set",node,synthArg,val]);
+			server.sendBundle(latency,[\n_set,node,synthArg,val]);
 		};
 	}
 	
@@ -1004,7 +1008,7 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 				if (node.notNil) {
 					// no point setting a scalar
 					if (synthDefControl.rate!=\scalar) {
-						server.sendBundle(latency,["/n_set",node,synthDefControl.index,val]);
+						server.sendBundle(latency,[\n_set,node,synthDefControl.index,val]);
 					}{
 						this.replaceDSP(latency); // use replace instead	
 					};

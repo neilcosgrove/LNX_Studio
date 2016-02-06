@@ -467,7 +467,7 @@ LNX_SampleBank{
 	}
 	
 	// add a url as a buffer. We maybe offline or it may not exist or not be in the cashe
-	addURL{|url,action,select=true|  // select sample
+	addURL{|url,action,select=true,updateBank=true|  // select sample
 
 		var buffer, path, metadata, metaModel, alreadyExists=false;
 
@@ -490,7 +490,7 @@ LNX_SampleBank{
 			metaModel       = this.addMetaModel; 
 			metaModel[\name].string_(path.basename);
 
-			this.updateList(false); // add to list
+			this.updateList(false,updateBank); // add to list
 			if (select) {
 				this.selectSample(samples.size-1,false,false); // select in...
 				selectMeFunc.value(samples.size-1); // select in...
@@ -531,7 +531,7 @@ LNX_SampleBank{
 	
 
 	// put the load list from the new style URL SampleBank
-	putLoadListURL{|l,clear=true|
+	putLoadListURL{|l,clear=true,updateBank=true|
 		var n,p, version, versionString;	
 		l=l.reverse;
 		
@@ -549,7 +549,7 @@ LNX_SampleBank{
 			this.title_(l.popS);
 			n=l.popI;
 			if ((n>0)and:{freed.not}) {
-				this.recursiveLoadURL(n,0,l,version);
+				this.recursiveLoadURL(n,0,l,version,updateBank);
 			}{
 				this.finishedLoading;
 			};
@@ -558,13 +558,13 @@ LNX_SampleBank{
 	}
 	
 	// recursive add each url sample
-	recursiveLoadURL{|n,i,l,version|
+	recursiveLoadURL{|n,i,l,version,updateBank=true|
 		
 		var metadata, metaModel;
 
 		studio.flashServerIcon; // gui
 		
-		this.addURL(l.popS,{},false); // add this URL
+		this.addURL(l.popS,{},false,updateBank); // add this URL
 
 		metaModel = metaModels.last;  // its the last one added in addURL
 		
@@ -596,7 +596,7 @@ LNX_SampleBank{
 				if ((i+1)<n) {
 					{
 						if (freed.not) { 
-							this.recursiveLoadURL(n,i+1,l,version)
+							this.recursiveLoadURL(n,i+1,l,version,updateBank)
 						}{				
 							this.finishedLoading;
 						};
@@ -604,7 +604,7 @@ LNX_SampleBank{
 				}{
 					this.finishedLoading; // notLoading so can play now
 					selectedSampleNo=0;  // what about loading???
-					this.updateGUI;	 // and update GUI
+					this.updateGUI(updateBank);	 // and update GUI
 				};
 			};
 		}.defer( studio.isPlaying.if(0.025,0.005)); // use different rates depending on isPlaying

@@ -13,7 +13,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 	
 	isFX{^true}
 	isInstrument{^false}
-	canTurnOnOff{^false}
+	canTurnOnOff{^true}
 	
 	mixerColor{^Color(0.3,0.3,0.8,0.2)} // colour in mixer
 	
@@ -28,6 +28,11 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 	// if you reduce the size of this list it will cause problems when loading older versions.
 	// the only 2 items i'm going for fix are 0.solo & 1.onOff
 	
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
+	
 	inModel{^models[4]}
 	inChModel{^models[2]}
 	outModel{^models[5]}
@@ -40,7 +45,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			0, // 0.solo
 			
 			// 1.onOff
-			[1, \switch, midiControl, 1, "On", (permanentStrings_:["I","I"]),
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
 				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
 				
 								
@@ -182,8 +187,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(108, 108, 22, 19),gui[\onOffTheme1])
 			.color_(\on, Color(0.25,1,0.25) )
 			.color_(\off, Color(0.4,0.4,0.4) )
-			.rounded_(true)
-			.permanentStrings_(["On"]);
+			.rounded_(true);
 				
 		// 2.in
 		MVC_PopUpMenu3(models[2],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);
@@ -247,7 +251,6 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			
 			in2Out = SelectX.ar(on.lag,[Silent.ar,in]);
 			
-			
 			silent = Silent.ar;
 
 			mono = in2Out[0]+in2Out[1];
@@ -261,7 +264,6 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 
 			out2In = Select.ar(xChannelSetup,[
 				[out2In[0],out2In[1]],(out2In[0]+out2In[1]).dup, out2In[0].dup, out2In[1].dup]);
-				
 				
 			out2In = SelectX.ar(on.lag,[in,out2In]) ;
 
@@ -297,16 +299,13 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			xout = LNX_AudioDevices.firstFXBus+(p[6].neg*2-2);
 		};
 				
-				
-		server.sendBundle(latency,["/n_set", node, \inAmp     ,p[4]]);
-		server.sendBundle(latency,["/n_set", node, \outAmp    ,p[5]]);
-		server.sendBundle(latency,["/n_set", node, \outputChannels,out]);
-		server.sendBundle(latency,["/n_set", node, \inputChannels,in]);
-		
-		server.sendBundle(latency,["/n_set", node, \xOutputChannels,xout]);
-		server.sendBundle(latency,["/n_set", node, \xInputChannels,xin]);
-		
 		server.sendBundle(latency,
+			[\n_set, node, \inAmp     ,p[4]],
+			[\n_set, node, \outAmp    ,p[5]],
+			[\n_set, node, \outputChannels,out],
+			[\n_set, node, \inputChannels,in],
+			[\n_set, node, \xOutputChannels,xout],
+			[\n_set, node,  \xInputChannels,xin],
 			[\n_set, node, \channelSetup, p[8]],
 			[\n_set, node, \xChannelSetup, p[9]],
 			[\n_set, node, \on, p[1]]
