@@ -300,12 +300,16 @@ LNX_MyInvite{
 
 	inviteString{
 		var string="You want to start a ";
-		string=string++(room.location);
-		string=string++" collaboration in\nRoom: ";
-		string=string++(room.name);
-		string=string++" @ ";
-		string=string++(room.address);
-		//string=string++"\nwith...";
+		if (network.isLAN) {
+			string=string++"  in\nRoom: ";
+			string=string++(room.name);
+		}{
+			string=string++(room.location);
+			string=string++" collaboration in\nRoom: ";
+			string=string++(room.name);
+			string=string++" @ ";
+			string=string++(room.address);
+		};
 		^string; 
 	}
 	

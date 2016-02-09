@@ -58,18 +58,8 @@
 // Josh           : helping with the SC side of OscGroups
 // and nonprivate : sound advice.
 //
-// BUG LOG:
-// MVC_Keyboard doesn't work on MVC_Window direcrtly, need to use MVC_ScrollView, why?
-// the arrow keys in midiProgram change aren't implemented, you need to select keyboard
-// Safe mode doesn''t launch // sudo -u nobody doesn't seem to work?
-// Large posts cause crash
-//
-// ISSUES:
-// pressing stop is a bit abrupted in SCCode, the release didn't work for some reason
-// keep an eye on memory usage: Object.totalFree
-// build for os<10.8
-//
-// all of the above are minor
+// Unsolved BUG LOG:
+// WebView crashes ramdomly in Cocoa.
 //
 // enjoy, love neil x (lnx)
 //
