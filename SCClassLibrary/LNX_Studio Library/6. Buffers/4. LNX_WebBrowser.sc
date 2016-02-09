@@ -74,6 +74,7 @@ LNX_WebBrowser{
 	// a url link was clicked on
 	onLink_{|url|
 		var ext = url.extension; // had to change wslib a bit
+		
 		url=url.replace("%20"," ");
 		if (ext.notNil) {
 			ext=ext.toLower.asSymbol;

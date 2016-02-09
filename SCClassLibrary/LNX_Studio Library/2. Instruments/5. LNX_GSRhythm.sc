@@ -545,6 +545,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	
 	// reset sequencers posViews
 	clockStop {
+		voicer.releaseAll;
 		sequencers.do(_.clockStop(studio.actualLatency));
 		modSequencers.do(_.clockStop(studio.actualLatency));
 	}

@@ -258,10 +258,7 @@
 		mixerGUI[\cpu]=MVC_StaticText(mixerWindow,Rect(593+68, 6, 30, 15),gui[\textTheme2])
 			.resize_(3)
 			.string_("-")
-			.excludeFromVerbose_(true);
-			
-		mixerGUI[\time]= ();
-		mixerGUI[\beat]= ();			
+			.excludeFromVerbose_(true);		
 
 		mixerGUI[\time]=MVC_StaticText(mixerWindow,Rect(518, 2, 52, 23),gui[\textTheme2])
 			.font_(Font("Helvetica",14))
@@ -291,7 +288,6 @@
 			.color_(\off,Color.black)
 			.color_(\on,Color.green)
 			.color_(\background,Color(46/77,46/79,72/145)/2) ;
-
 
 		gui[\multiTheme ]=(\font_:Font("Helvetica-Bold",12),
 			\states_ : [
