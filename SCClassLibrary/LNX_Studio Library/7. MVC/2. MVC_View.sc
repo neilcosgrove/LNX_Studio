@@ -208,15 +208,17 @@ MVC_View {
 			view.beginDragAction_(beginDragAction); 
 		}{
 			view.beginDragAction_{|me|
-				var val;
-				if (numberFunc.isNil) {
-					val=value.asString
-				}{
-					val=numberFunc.value(value).asString;
-				};
-				if ((controlSpec.notNil) && (showUnits)) { val=val+(controlSpec.units) };
-				// +units
-				me.dragLabel_(val); // the drag label
+				
+// dragLabel_ causes crash in Cocoa
+//				var val;
+//				if (numberFunc.isNil) {
+//					val=value.asString
+//				}{
+//					val=numberFunc.value(value).asString;
+//				};
+//				if ((controlSpec.notNil) && (showUnits)) { val=val+(controlSpec.units) };
+//				// +units
+//				me.dragLabel_(value.asString); // the drag label
 				value.asFloat;
 			};
 		};

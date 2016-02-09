@@ -293,7 +293,7 @@ MVC_StaticText : MVC_View {
 			view.beginDragAction_(beginDragAction); 
 		}{	
 			view.beginDragAction_{|me|
-				me.dragLabel_(string); // the drag label
+				//me.dragLabel_(string); // the drag label
 				string
 			};
 		};
