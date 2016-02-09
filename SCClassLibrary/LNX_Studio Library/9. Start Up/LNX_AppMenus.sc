@@ -64,11 +64,12 @@ LNX_AppMenus {
 		SCMenuItem.new(tools,  "Open Library in Finder").action_{
 			("open" + (LNX_File.prefDir++"Library").quote ).systemCmd};
 			
-		SCMenuSeparator.new(tools);
-		SCMenuItem.new(tools, "Quit LNX_Studio").setShortCut("q").action_{
-			studio.server.quit;
-			0.exit
-		};	
+//		SCMenuSeparator.new(tools);
+//		SCMenuItem.new(tools, "Quit LNX_Studio").setShortCut("q").action_{
+//			studio.server.quit;
+//			MIDIClient.disposeClient;
+//			{0.exit}.defer(0.5);
+//		};	
 	}
 
 	// application menus for the developer mode
