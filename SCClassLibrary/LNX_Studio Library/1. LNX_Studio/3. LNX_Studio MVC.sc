@@ -648,10 +648,8 @@
 
 			midiWin = MVC_ModalWindow(
 				(mixerWindow.isVisible).if(mixerWindow.view,window.view),
-				(420)@(449));
+				(420)@(468));
 			scrollView = midiWin.scrollView.view;
-
-
 
 			MVC_StaticText(scrollView, Rect(10, 10, 170, 18),gui[\labelTheme])
 			.string_("LNX_Studio Preferences");
@@ -828,7 +826,7 @@
 				
 				
 			// internal midi buses
-			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 397, 70, 17))
+			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 386, 70, 17))
 				.items_(["None","1 Bus","2 Buses","3 Buses"
 						 ,"4 Buses","5 Buses","6 Buses","7 Buses","8 Buses"
 						 ,"9 Buses","10 Buses","11 Buses","12 Buses","13 Buses"
@@ -844,15 +842,29 @@
 				}
 				.value_(noInternalBuses)
 				.font_(Font("Arial", 10));
-				
+			
+			// MacOS MIDI Fix
+			MVC_OnOffView(scrollView,Rect(311, 386, 72, 19), "MIDI Fix",
+								( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.value_(("midiBugFix".loadPref ? [false])[0].isTrue.asInt)
+				.label_("MacOS")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					[me.value.isTrue].savePref("midiBugFix");
+				};
+					
 			// scan for new midi equipment
-			MVC_FlatButton(scrollView,Rect(252 ,396, 70, 20),"Scan MIDI",gui[\buttonTheme])
+			MVC_FlatButton(scrollView,Rect(240 ,415, 70, 20),"Scan MIDI",gui[\buttonTheme])
 				.canFocus_(false)
 				.action_{ LNX_MIDIPatch.refreshPorts };
 				
 				
 			// Ok
-			MVC_FlatButton(scrollView,Rect(332, 396, 50, 20),"Ok",gui[\buttonTheme])
+			MVC_FlatButton(scrollView,Rect(332, 415, 50, 20),"Ok",gui[\buttonTheme])
 				.canFocus_(true)
 				.color_(\up,Color.white)
 				.action_{	 midiWin.close };

@@ -188,11 +188,7 @@ if (studio.batchOn) {
 			.color_(\focus,Color(1,1,1,0.5))
 			.colorizeOnOpen_(true)
 			.autoColorize_(true);
-			
-
-		
-		// add LNX Help menu
-		SCMenuItem('Help',"LNX_Studio Help", 0).setShortCut("d").action_{studio.openHelp};
+	
 //		
 //		
 //		SCMenuItem.new(tools,  "Close Post Window")
