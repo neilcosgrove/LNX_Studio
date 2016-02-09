@@ -33,7 +33,14 @@ MVC_Window {
 	init {|argName, argBounds, argResizable, argBorder, argScroll|
 		windows=windows.add(this);
 		name=argName;
-		bounds=argBounds ?? {Rect(128, 64, 400, 400)};
+		// stops crash on cocoa
+		if (argBounds.isKindOf(Rect)) {
+			bounds = Rect(argBounds.left.clip(0,inf), argBounds.top.clip(0,inf), argBounds.width,
+			 argBounds.height);
+		}{
+			bounds=Rect(128, 64, 400, 400);
+		};
+		
 		resizable=argResizable;
 		border=argBorder;
 		scroll=argScroll;
@@ -311,8 +318,10 @@ MVC_Window {
 	}
 	
 	// set the bounds
-	bounds_{ arg argBounds;
-		bounds=argBounds;
+	bounds_{ arg argBounds;	
+		// stops crash on cocoa
+		bounds = Rect(argBounds.left.clip(0,inf), argBounds.top.clip(0,inf), argBounds.width,
+			 argBounds.height);
 		if (this.notClosed) {
 			view.bounds_(bounds.convert);
 		};
