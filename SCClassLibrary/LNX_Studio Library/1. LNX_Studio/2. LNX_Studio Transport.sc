@@ -89,6 +89,9 @@
 					
 					if ((beat%6)==0) { this.refreshGuiBeat};
 					
+					
+					
+					
 					// midi clock out
 					if (firstLoop) {
 						if (beat==0) {
@@ -117,6 +120,9 @@
 							inst.midiClock(this.actualLatency);
 						};
 					};
+					
+					
+					
 					
 					beat = beat + 1;
 					instBeat = instBeat + 1;	

@@ -324,9 +324,9 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 				{|me,val,latency,send|	
 					this.setPVP(29,val,latency,send);
 					if (val.isTrue) {
-						presetExclusion=[0,1];
+						presetExclusion=[0,1,28];
 					}{
-						presetExclusion=[0,1]++(11..26);
+						presetExclusion=[0,1,28]++(11..26);
 					}	
 				}],
 		
@@ -335,8 +335,8 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 		#models,defaults=template.generateAllModels;
 
 		// list all parameters you want exluded from a preset change, rand or automation
-		presetExclusion=(0..1)++(11..26);
-		randomExclusion=(0..1)++10;
+		presetExclusion=[0,1,28]++(11..26);
+		randomExclusion=[0,1,10,28];
 		autoExclusion=[];
 
 	}
@@ -386,7 +386,6 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 	
 	// free this
 	iFree{ sequencer.do(_.free) }
-
 
 	// PRESETS /////////////////////////
 	
@@ -529,11 +528,11 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 		MVC_PopUpMenu3(models[9],window,Rect(85,5,75,17), gui[\menuTheme ] );
 		
 		// 10. syncDelay
-		MVC_NumberBox(models[10], window,Rect(194, 30-25, 40, 18),  gui[\theme2])
+		MVC_NumberBox(models[10], window,Rect(194, 5, 40, 18),  gui[\theme2])
 			.labelShadow_(false)
 			.color_(\label,Color.white);
 			
-		MVC_StaticText(Rect(100+140,30-25, 40, 18), window,)
+		MVC_StaticText(Rect(240,5, 40, 18), window,)
 			.string_("sec(s)")
 			.font_(Font("Helvetica",10))
 			.shadow_(false)

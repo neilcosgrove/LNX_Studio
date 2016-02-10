@@ -3,7 +3,7 @@
 
 LNX_VolcaBass : LNX_InstrumentTemplate {
 
-	var <sequencer, <keyboardView, lastKeyboardNote, <midiInBuffer, <midiOutBuffer, <seqOutBuffer;
+	var <sequencer, <keyboardView, <midiInBuffer, <midiOutBuffer, <seqOutBuffer;
 
 	*initClass{ Class.initClassTree(LNX_VolcaBeats) }
 	*isVisible{ ^LNX_VolcaBeats.isVisible }
@@ -116,25 +116,13 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 
 			// 0.solo
 			[0, \switch, (\strings_:"S"), midiControl, 0, "Solo",
-				{|me,val,latency,send,toggle|
-					this.solo(val,latency,send,toggle);
-					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
-				},
-				\action2_ -> {|me|
-					this.soloAlt(me.value);
-					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
-				 }],
+				{|me,val,latency,send,toggle| this.solo(val,latency,send,toggle) },
+				\action2_ -> {|me| this.soloAlt(me.value) }],
 			
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
-				{|me,val,latency,send,toggle|
-					this.onOff(val,latency,send,toggle);
-					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
-				},
-				\action2_ -> {|me|	
-					this.onOffAlt(me.value);
-					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
-				}],
+				{|me,val,latency,send,toggle| this.onOff(val,latency,send,toggle) },
+				\action2_ -> {|me|	this.onOffAlt(me.value) }],
 					
 			// 2.master amp
 			[\db6,midiControl, 2, "Master volume",
@@ -306,9 +294,9 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 				{|me,val,latency,send|	
 					this.setPVP(25,val,latency,send);
 					if (val.isTrue) {
-						presetExclusion=[0,1];
+						presetExclusion=[0,1,24];
 					}{
-						presetExclusion=[0,1]++(11..22);
+						presetExclusion=[0,1,24]++(11..22)
 					}	
 				}],
 		
@@ -316,8 +304,9 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 		
 		#models,defaults=template.generateAllModels;
 
-		presetExclusion=(0..1)++(11..22);
-		randomExclusion=(0..1)++10;
+		// list all parameters you want exluded from a preset change, rand or automation
+		presetExclusion=[0,1,24]++(11..22);
+		randomExclusion=[0,1,10,24];
 		autoExclusion=[];
 
 	}
@@ -348,10 +337,10 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 	
 	// clock in for midi out clock methods
 	midiSongPtr{|songPtr,latency| if (p[24].isTrue) { midi.songPtr(songPtr,latency) } } 
-	midiStart{|latency| if (p[24].isTrue) { midi.start(latency) } }
-	midiClock{|latency| if (p[24].isTrue) { midi.midiClock(latency) } }
-	midiContinue{|latency| if (p[24].isTrue) { midi.continue(latency) } }
-	midiStop{|latency| if (p[24].isTrue) { midi.stop(latency) } }
+	midiStart{|latency|           if (p[24].isTrue) { midi.start(latency) } }
+	midiClock{|latency|           if (p[24].isTrue) { midi.midiClock(latency) } }
+	midiContinue{|latency|        if (p[24].isTrue) { midi.continue(latency) } }
+	midiStop{|latency|            if (p[24].isTrue) { midi.stop(latency) } }
 	
 	// disk i/o ///////////////////////////////
 		
@@ -367,7 +356,6 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 	
 	// free this
 	iFree{ sequencer.do(_.free) }
-
 
 	// PRESETS /////////////////////////
 	
@@ -400,7 +388,7 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 		
 		presetToLoad=presetMemory[i].copy;
 		
-		// 29.use controls
+		// 25.use controls
 		models[25].lazyValueAction_(presetToLoad[25],latency,false);
 
 		// exclude these parameters
@@ -503,11 +491,11 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 		MVC_PopUpMenu3(models[9],window,Rect(85,5,75,17), gui[\menuTheme ] );
 		
 		// 10. syncDelay
-		MVC_NumberBox(models[10], window,Rect(194, 30-25, 40, 18),  gui[\theme2])
+		MVC_NumberBox(models[10], window,Rect(194, 5, 40, 18),  gui[\theme2])
 			.labelShadow_(false)
 			.color_(\label,Color.white);
 			
-		MVC_StaticText(Rect(100+140,30-25, 40, 18), window,)
+		MVC_StaticText(Rect(240,5, 40, 18), window,)
 			.string_("sec(s)")
 			.font_(Font("Helvetica",10))
 			.shadow_(false)

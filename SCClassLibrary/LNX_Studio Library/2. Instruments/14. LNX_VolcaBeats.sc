@@ -105,7 +105,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 	clockPause{ sequencers.do(_.clockPause(studio.actualLatency)) }
 	
 	// clock in for midi out clock methods
-	midiSongPtr {|songPtr,latency| if (p[52].isTrue) { midi.songPtr(songPtr.postln,latency) } } 
+	midiSongPtr {|songPtr,latency| if (p[52].isTrue) { midi.songPtr(songPtr,latency) } } 
 	midiStart   {|latency|         if (p[52].isTrue) { midi.start(latency) } }
 	midiClock   {|latency|         if (p[52].isTrue) { midi.midiClock(latency) } }
 	midiContinue{|latency|         if (p[52].isTrue) { midi.continue(latency) } }
@@ -122,22 +122,18 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 			[0, \switch, (\strings_:"S"), midiControl, 0, "Solo",
 				{|me,val,latency,send,toggle|
 					this.solo(val,latency,send,toggle);
-					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
 				},
 				\action2_ -> {|me|
 					this.soloAlt(me.value);
-					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 				 }],
 			
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
 				{|me,val,latency,send,toggle|
 					this.onOff(val,latency,send,toggle);
-					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
 				},
 				\action2_ -> {|me|	
 					this.onOffAlt(me.value);
-					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 				}],
 					
 			// 2.master amp
@@ -327,17 +323,17 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 			{|me,val,latency,send|	
 				this.setPVP(53,val,latency,send);
 				if (val.isTrue) {
-					presetExclusion=[0,1];
+					presetExclusion=[0,1,52];
 				}{
-					presetExclusion=[0,1]++(11..20);
+					presetExclusion=[0,1,52]++(11..20);
 				}	
 			}];
 
 		#models,defaults=template.generateAllModels;
 	
 		// list all parameters you want exluded from a preset change
-		presetExclusion=(0..1)++(11..20);
-		randomExclusion=(0..1)++10;
+		presetExclusion=[0,1,52]++(11..20);
+		randomExclusion=[0,1,10,52];
 		autoExclusion=[];
 
 	}
@@ -880,21 +876,21 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 		this.updateOnSolo;
 	}
 	
-	updateOnSolo{
+	updateOnSolo{|latency|
 		switch (p[51].asInt)
 			{0} {
 				// "Audio In"
-				if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
+				if (node.notNil)
+					{server.sendBundle(latency,[\n_set, node, \on, this.isOn.asInt])};
 			}
 			{1} {
 				// "Sequencer"
-				if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, true])};
-				if (this.isOff) {this.stopAllNotes};
+				if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, true.asInt])};
 			}
 			{2} {
 				// "Both"
-				if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
-				if (this.isOff) {this.stopAllNotes};
+				if (node.notNil)
+					{server.sendBundle(latency,[\n_set, node, \on, this.isOn.asInt])};
 			};		
 	}
 	
