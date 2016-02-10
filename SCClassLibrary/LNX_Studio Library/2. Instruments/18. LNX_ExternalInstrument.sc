@@ -64,8 +64,6 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 		midiOutBuffer = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.toMIDIPipeOut(pipe) };
 		midiInBuffer  = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromInBuffer(pipe)  };
 		seqOutBuffer  = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromSequencerBuffer(pipe) };
-		
-		
 	}
 
 	// midi pipe in. This is the future
@@ -137,33 +135,13 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 
 			// 0.solo
 			[0, \switch, (\strings_:"S"), midiControl, 0, "Solo",
-				{|me,val,latency,send,toggle|
-					this.solo(val,latency,send,toggle);
-					if (node.notNil) {
-						server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
-					};
-				},
-				\action2_ -> {|me|
-					this.soloAlt(me.value);
-					if (node.notNil) {
-						server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
-					}
-				 }],
+				{|me,val,latency,send,toggle| this.solo(val,latency,send,toggle) },
+				\action2_ -> {|me| this.soloAlt(me.value) }],
 			
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
-				{|me,val,latency,send,toggle|
-					this.onOff(val,latency,send,toggle);
-					if (node.notNil) {
-						server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
-					};
-				},
-				\action2_ -> {|me|	
-					this.onOffAlt(me.value);
-					if (node.notNil) {
-						server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
-					};
-				}],
+				{|me,val,latency,send,toggle| this.onOff(val,latency,send,toggle) },
+				\action2_ -> {|me|	this.onOffAlt(me.value) }],
 					
 			// 2.master amp
 			[\db6,midiControl, 2, "Master volume",
@@ -250,9 +228,9 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				{|me,val,latency,send|	
 					this.setPVP(13,val,latency,send);
 					if (val.isTrue) {
-						presetExclusion=[0,1];
+						presetExclusion=[0,1,12];
 					}{
-						presetExclusion=[0,1]++(14..141);
+						presetExclusion=[0,1,12]++(14..141);
 					}	
 				}],
 		];
@@ -271,8 +249,8 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 		
 		#models,defaults=template.generateAllModels;
 
-		presetExclusion=(0..1)++(14..141);
-		randomExclusion=(0..1)++10;
+		presetExclusion=[0,1,12]++(14..141);
+		randomExclusion=[0.1,10,12];
 		autoExclusion=[];
 
 	}
@@ -302,10 +280,10 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	
 	// clock in for midi out clock methods
 	midiSongPtr{|songPtr,latency| if (p[12].isTrue) { midi.songPtr(songPtr,latency) } } 
-	midiStart{|latency| if (p[12].isTrue) { midi.start(latency) } }
-	midiClock{|latency| if (p[12].isTrue) { midi.midiClock(latency) } }
-	midiContinue{|latency| if (p[12].isTrue) { midi.continue(latency) } }
-	midiStop{|latency| if (p[12].isTrue) { midi.stop(latency) } }
+	midiStart{|latency|           if (p[12].isTrue) { midi.start(latency) } }
+	midiClock{|latency|           if (p[12].isTrue) { midi.midiClock(latency) } }
+	midiContinue{|latency|        if (p[12].isTrue) { midi.continue(latency) } }
+	midiStop{|latency|            if (p[12].isTrue) { midi.stop(latency) } }
 	
 	// disk i/o ///////////////////////////////
 		
