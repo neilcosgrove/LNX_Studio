@@ -157,9 +157,9 @@ a.a.touch(0);
 	
 	// used for noteOff in sequencers
 	// efficiency issue: this is called 3 times in alt_solo over a network
-	stopNotesIfNeeded{
+	stopNotesIfNeeded{|latency|
 		if ((instOnSolo.isOff)and:{this.alwaysOn.not}) {this.stopAllNotes};
-		this.updateOnSolo;
+		this.updateOnSolo(latency);
 	}
 	
 	// also called by onOff & solo buttons & alwaysOn model
@@ -336,7 +336,7 @@ a.a.touch(0);
 	toStoreChordsMod    {|pipe| storeChordsMod.pipeIn(pipe) }
 	toChordQuantiserMod {|pipe| chordQuantiserMod.pipeIn(pipe) }
 	toArpeggiatorMod    {|pipe| arpeggiatorMod.pipeIn(pipe) }
-	toMultiPipeOut      {|pipe| multiPipeOut.pipeIn(pipe) }
+	toMultiPipeOut      {|pipe| multiPipeOut.pipeIn(pipe.addLatency(syncDelay)) }
 	
 	toSequencer{|pipe|
 		case
@@ -347,7 +347,7 @@ a.a.touch(0);
 	toMIDIOut{|pipe|
 		case
 			{pipe.isNoteOn } { midi.noteOn (pipe.note, pipe.velocity, pipe.latency) }
-			{pipe.isNoteOff} { midi.noteOff(pipe.note, pipe.velocity, pipe.latency) };
+			{pipe.isNoteOff} { midi.noteOff(pipe.note, pipe.velocity, pipe.latency) }
 	}
 	
 	toKeyboardSelectColors{|pipe|

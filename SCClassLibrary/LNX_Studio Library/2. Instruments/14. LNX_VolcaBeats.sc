@@ -42,6 +42,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 	panModel    {^models[5]}
 	sendChModel {^models[7]}
 	sendAmpModel{^models[8]}
+	syncModel   {^models[10]}
 
 	header { 
 		// define your document header details
@@ -89,8 +90,8 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 		
 		if (channelOnSolo[channel].isOff) {^this}; // exceptions: drop out if not on
 		
-		midi.control(channel+40, velocity*127*p[channel+21], latency); // volume 40-49
-		midi.noteOn([36,38,43,50,42,46,39,75,67,49][channel], 127, latency);
+		midi.control(channel+40, velocity*127*p[channel+21], latency +! syncDelay); // volume 40-49
+		midi.noteOn([36,38,43,50,42,46,39,75,67,49][channel], 127, latency +! syncDelay);
 		{gui[\lamps][channel].value_(velocity,0.1)}.defer(latency);
 	}
 		
@@ -105,11 +106,11 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 	clockPause{ sequencers.do(_.clockPause(studio.actualLatency)) }
 	
 	// clock in for midi out clock methods
-	midiSongPtr {|songPtr,latency| if (p[52].isTrue) { midi.songPtr(songPtr,latency) } } 
-	midiStart   {|latency|         if (p[52].isTrue) { midi.start(latency) } }
-	midiClock   {|latency|         if (p[52].isTrue) { midi.midiClock(latency) } }
-	midiContinue{|latency|         if (p[52].isTrue) { midi.continue(latency) } }
-	midiStop    {|latency|         if (p[52].isTrue) { midi.stop(latency) } }
+	midiSongPtr {|songPtr,latency| if (p[52].isTrue) { midi.songPtr(songPtr,latency +! syncDelay)}} 
+	midiStart   {|latency|         if (p[52].isTrue) { midi.start(latency +! syncDelay) } }
+	midiClock   {|latency|         if (p[52].isTrue) { midi.midiClock(latency +! syncDelay) } }
+	midiContinue{|latency|         if (p[52].isTrue) { midi.continue(latency +! syncDelay) } }
+	midiStop    {|latency|         if (p[52].isTrue) { midi.stop(latency +! syncDelay) } }
 	
 	///////////////////////////////////////////////////////
 	
@@ -194,86 +195,83 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 				}],
 				
 			// 10. syncDelay
-			[[-1,1,\lin,0.001,0], midiControl, 10, "Sync",
-				(label_:"Sync", zeroValue_:0),
-				{|me,val,latency,send|
-					this.setPVP(10,val,latency,send);
-					this.syncDelay_(val.clip(-inf,0).abs); // this will update delay as well
-				}],
+			[[-1,1,\lin,0.001,0], {|me,val,latency,send|
+				this.setPVP(10,val,latency,send);
+				this.syncDelay_(val);
+			}],
 			
 			// 11. midiControl 50 PCM Speed "Clap",
 			[\midi, midiControl, 11, "PCM Clap", (\label_:"PCM Clap" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(11, val, latency, send); // network this
-					midi.control(50, val, latency);           // send midi control data
+					this.setPVPModel(11, val, latency, send);    // network this
+					midi.control(50, val, latency +! syncDelay); // send midi control data
 				}],	
 				
 			// 12. midiControl 51 PCM Speed "Claves"
 			[\midi, midiControl, 12, "PCM Claves", (\label_:"PCM Claves" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(12, val, latency, send); // network this
-					midi.control(51, val, latency);           // send midi control data
+					this.setPVPModel(12, val, latency, send);    // network this
+					midi.control(51, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 13. midiControl 52 PCM Speed "Agogo"
 			[\midi, midiControl, 13, "PCM Agogo", (\label_:"PCM Agogo" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(13, val, latency, send); // network this
-					midi.control(52, val, latency);           // send midi control data
+					this.setPVPModel(13, val, latency, send);    // network this
+					midi.control(52, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 14. midiControl 53 PCM Speed "Crash"
 			[\midi, midiControl, 14, "PCM Crash", (\label_:"PCM Crash" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(14, val, latency, send); // network this
-					midi.control(53, val, latency);           // send midi control data
+					this.setPVPModel(14, val, latency, send);    // network this
+					midi.control(53, val, latency +! syncDelay); // send midi control data
 				}],	
 
 			// 15. midiControl 54 Shutter Time
 			[0, \midi, midiControl, 15, "Shutter Time",
 			(\label_:"Shutter Time" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(15, val, latency, send); // network this
-					midi.control(54, val, latency);           // send midi control data
+					this.setPVPModel(15, val, latency, send);    // network this
+					midi.control(54, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 16. midiControl 55 Shutter Depth
 			[0, \midi, midiControl, 16, "Shutter Depth",
 			(\label_:"Shutter Depth" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(16, val, latency, send); // network this
-					midi.control(55, val, latency);           // send midi control data
+					this.setPVPModel(16, val, latency, send);    // network this
+					midi.control(55, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 17. midiControl 56 Tom Decay
 			[\midi, midiControl, 17, "Tom Decay", (\label_:"Tom Decay" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(17, val, latency, send); // network this
-					midi.control(56, val, latency);           // send midi control data
+					this.setPVPModel(17, val, latency, send);    // network this
+					midi.control(56, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 18. midiControl 57 Closed Hat Decay
 			[\midi, midiControl, 18, "Closed Decay",
 			(\label_:"Closed Decay" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(18, val, latency, send); // network this
-					midi.control(57, val, latency);           // send midi control data
+					this.setPVPModel(18, val, latency, send);    // network this
+					midi.control(57, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 19. midiControl 58 Open Hat Decay
 			[\midi, midiControl, 19, "Open Decay", (\label_:"Open Decay" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(19, val, latency, send); // network this
-					midi.control(58, val, latency);           // send midi control data
+					this.setPVPModel(19, val, latency, send);    // network this
+					midi.control(58, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 20. midiControl 59 Hat Grain
 			[\midi, midiControl, 20, "Hat Grain", (\label_:"Hat Grain" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(20, val, latency, send); // network this
-					midi.control(59, val, latency);           // send midi control data
-				}],	
-		
+					this.setPVPModel(20, val, latency, send);    // network this
+					midi.control(59, val, latency +! syncDelay); // send midi control data
+				}],
 		];
 		
 		template=template.extend(54,0);
@@ -315,7 +313,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 		template[52] = [0, \switch, midiControl, 52, "MIDI Clock", (strings_:["MIDI Clock"]),
 			{|me,val,latency,send|
 				this.setPVP(52,val,latency,send);
-				if (val.isFalse) { midi.stop(latency) };
+				if (val.isFalse) { midi.stop(latency +! syncDelay) };
 			}];				
 
 		// 53. use controls in presets
@@ -323,18 +321,18 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 			{|me,val,latency,send|	
 				this.setPVP(53,val,latency,send);
 				if (val.isTrue) {
-					presetExclusion=[0,1,52];
+					presetExclusion=[0,1,10,52];
 				}{
-					presetExclusion=[0,1,52]++(11..20);
+					presetExclusion=[0,1,10,52]++(11..20);
 				}	
 			}];
 
 		#models,defaults=template.generateAllModels;
 	
 		// list all parameters you want exluded from a preset change
-		presetExclusion=[0,1,52]++(11..20);
+		presetExclusion=[0,1,10,52]++(11..20);
 		randomExclusion=[0,1,10,52];
-		autoExclusion=[];
+		autoExclusion=[10];
 
 	}
 
@@ -372,15 +370,6 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 		};
 	}
 
-
-	///////
-
-	delayTime{^(this.mySyncDelay.clip(0,inf))+(p[10].clip(0,inf))  }
-
-	iSyncDelayChanged{ this.setDelay }
-
-	setDelay{ if (node.notNil) {server.sendBundle(nil,[\n_set, node, \delay, this.delayTime])} }
-		
 	// disk i/o ///////////////////////////////
 		
 	// for your own saving
@@ -588,21 +577,10 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 		MVC_PopUpMenu3(models[51], gui[\scrollView] ,Rect(289, 5, 70, 17), gui[\menuTheme] );
 
 		// 52. midi clock out
-		MVC_OnOffView(models[52], gui[\scrollView], Rect(180, 27, 70, 18),gui[\onOffTheme3]);
+		MVC_OnOffView(models[52], gui[\scrollView], Rect(180, 16, 70, 18),gui[\onOffTheme3]);
 
 		// 53. use controls in presets
 		MVC_OnOffView(models[53], gui[\scrollView], Rect(289, 27, 70, 18),gui[\onOffTheme3]);
-
-		// 10. syncDelay
-		MVC_NumberBox(models[10], gui[\scrollView],Rect(196, 5, 40, 18),  gui[\theme2])
-			.labelShadow_(false)
-			.color_(\label,Color.white);
-			
-		MVC_StaticText(Rect(242, 5, 30, 18), gui[\scrollView],)
-			.string_("sec(s)")
-			.font_(Font("Helvetica",10))
-			.shadow_(false)
-			.color_(\string,Color.white);
 					
 		// MIDI Settings
  		MVC_FlatButton(gui[\scrollView],Rect(20, 27, 43, 19),"MIDI")
@@ -872,8 +850,8 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 	
 	// used for noteOff in sequencers
 	// efficiency issue: this is called 3 times in alt_solo over a network
-	stopNotesIfNeeded{
-		this.updateOnSolo;
+	stopNotesIfNeeded{|latency|
+		this.updateOnSolo(latency);
 	}
 	
 	updateOnSolo{|latency|
@@ -913,8 +891,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 			[\n_set, node, \on, on],
 			[\n_set, node, \sendChannels,LNX_AudioDevices.getOutChannelIndex(p[7])],
 			[\n_set, node, \sendAmp, p[8].dbamp],
-			[\n_set, node, \channelSetup, p[9]],
-			[\n_set, node, \delay, this.delayTime ]
+			[\n_set, node, \channelSetup, p[9]]
 			
 		);
 	}

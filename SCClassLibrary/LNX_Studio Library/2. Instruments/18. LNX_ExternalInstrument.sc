@@ -30,6 +30,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	panModel    {^models[5]}
 	sendChModel {^models[7]}
 	sendAmpModel{^models[8]}
+	syncModel   {^models[10]}
 
 	header { 
 		// define your document header details
@@ -115,7 +116,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	
 	// and finally to the midi out
 	toMIDIPipeOut{|pipe|
-		midi.pipeIn(pipe.addToHistory(this));          // add this to its history
+		midi.pipeIn(pipe.addToHistory(this).addLatency(syncDelay)); // add this to its history
 	}
 
 	// release all played notes, uses midi Buffer
@@ -201,12 +202,10 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				}],
 				
 			// 10. syncDelay
-			[[-1,1,\lin,0.001,0], midiControl, 10, "Sync",
-				(label_:"Sync", zeroValue_:0),
-				{|me,val,latency,send|
-					this.setPVP(10,val,latency,send);
-					this.syncDelay_(val.clip(-inf,0).abs); // this will update delay as well
-				}],
+			[[-1,1,\lin,0.001,0], {|me,val,latency,send|
+				this.setPVP(10,val,latency,send);
+				this.syncDelay_(val);
+			}],
 			
 			// 11. onSolo turns audioIn, seq or both on/off
 			[1, [0,2,\lin,1],  midiControl, 11, "On/Off Model",
@@ -220,7 +219,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			[1, \switch, midiControl, 12, "MIDI Clock", (strings_:["MIDI Clock"]),
 				{|me,val,latency,send|
 					this.setPVP(12,val,latency,send);
-					if (val.isFalse) { midi.stop(latency)};
+					if (val.isFalse) { midi.stop(latency +! syncDelay)};
 				}],
 				
 			// 13. use controls in presets
@@ -228,9 +227,9 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				{|me,val,latency,send|	
 					this.setPVP(13,val,latency,send);
 					if (val.isTrue) {
-						presetExclusion=[0,1,12];
+						presetExclusion=[0,1,10,12];
 					}{
-						presetExclusion=[0,1,12]++(14..141);
+						presetExclusion=[0,1,10,12]++(14..141);
 					}	
 				}],
 		];
@@ -241,26 +240,20 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				[0, \midi, midiControl, 14+i, "CC"++(i+1),
 					(\label_:(i+1).asString , \numberFunc_:'int'),
 					{|me,val,latency,send,toggle|
-						this.setPVPModel(i, val, latency, send); // network this
-						midi.control(i, val, latency);           // send midi control data
+						this.setPVPModel(i, val, latency, send);    // network this
+						midi.control(i, val, latency +! syncDelay); // send midi control data
 					}],	
 			);
 		};
 		
 		#models,defaults=template.generateAllModels;
 
-		presetExclusion=[0,1,12]++(14..141);
+		presetExclusion=[0,1,10,12]++(14..141);
 		randomExclusion=[0.1,10,12];
-		autoExclusion=[];
+		autoExclusion=[10];
 
 	}
 
-	// sync stuff ///////////////////////////
-	
-	delayTime{^(this.mySyncDelay.clip(0,inf))+(p[10].clip(0,inf))  }
-	iSyncDelayChanged{ this.setDelay }
-	setDelay{ if (node.notNil) {server.sendBundle(nil,[\n_set, node, \delay, this.delayTime])} }
-	
 	// clock in //////////////////////////////
 	
 	// clock in for pRoll sequencer
@@ -279,11 +272,11 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	}
 	
 	// clock in for midi out clock methods
-	midiSongPtr{|songPtr,latency| if (p[12].isTrue) { midi.songPtr(songPtr,latency) } } 
-	midiStart{|latency|           if (p[12].isTrue) { midi.start(latency) } }
-	midiClock{|latency|           if (p[12].isTrue) { midi.midiClock(latency) } }
-	midiContinue{|latency|        if (p[12].isTrue) { midi.continue(latency) } }
-	midiStop{|latency|            if (p[12].isTrue) { midi.stop(latency) } }
+	midiSongPtr{|songPtr,latency| if (p[12].isTrue) { midi.songPtr(songPtr,latency +! syncDelay) }} 
+	midiStart{|latency|           if (p[12].isTrue) { midi.start(latency +! syncDelay) } }
+	midiClock{|latency|           if (p[12].isTrue) { midi.midiClock(latency +! syncDelay) } }
+	midiContinue{|latency|        if (p[12].isTrue) { midi.continue(latency +! syncDelay) } }
+	midiStop{|latency|            if (p[12].isTrue) { midi.stop(latency +! syncDelay) } }
 	
 	// disk i/o ///////////////////////////////
 		
@@ -593,24 +586,27 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	
 	// used for noteOff in sequencers
 	// efficiency issue: this is called 3 times in alt_solo over a network
-	stopNotesIfNeeded{
-		this.updateOnSolo;
+	stopNotesIfNeeded{|latency|
+		this.updateOnSolo(latency);
 	}
 	
-	updateOnSolo{
+	updateOnSolo{|latency|
 		switch (p[11].asInt)
 			{0} {
 				// "Audio In"
-				if (node.notNil) { server.sendBundle(nil,[\n_set, node, \on, this.isOn]) };
+				if (node.notNil) { server.sendBundle(latency +! syncDelay,
+					[\n_set, node, \on, this.isOn]) };
 			}
 			{1} {
 				// "Sequencer"
-				if (node.notNil) { server.sendBundle(nil,[\n_set, node, \on, true]) };
+				if (node.notNil) { server.sendBundle(latency +! syncDelay,
+					[\n_set, node, \on, true]) };
 				if (this.isOff) {this.stopAllNotes};
 			}
 			{2} {
 				// "Both"
-				if (node.notNil) { server.sendBundle(nil,[\n_set, node, \on, this.isOn]) };
+				if (node.notNil) { server.sendBundle(latency +! syncDelay,
+					[\n_set, node, \on, this.isOn]) };
 				if (this.isOff) {this.stopAllNotes};
 			};		
 	}
@@ -634,9 +630,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			[\n_set, node, \on, on],
 			[\n_set, node, \sendChannels,LNX_AudioDevices.getOutChannelIndex(p[7])],
 			[\n_set, node, \sendAmp, p[8].dbamp],
-			[\n_set, node, \channelSetup, p[9]],
-			[\n_set, node, \delay, this.delayTime ]
-			
+			[\n_set, node, \channelSetup, p[9]]
 		);
 	}
 

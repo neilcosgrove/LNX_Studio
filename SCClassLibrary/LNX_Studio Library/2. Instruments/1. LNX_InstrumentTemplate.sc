@@ -58,6 +58,17 @@ LNX_InstrumentTemplate {
 	var <lastTemplateLoadVersion=1.2;
 	
 	var <syncDelay=0;
+	
+	syncDelay_{|val|	
+		syncDelay = val;
+		studio.updateSyncDelay; // studio will call iSyncDelayChanged
+	}
+		
+	iSyncDelayChanged{} // to overwrite
+	
+	instLatency{ ^studio.actualLatency + syncDelay } // actual latency of this inst
+			
+	syncModel{^nil} // to overwrite
 				
 	////////////////////////////////////////
 	//                                    //
@@ -207,7 +218,8 @@ LNX_InstrumentTemplate {
 	
 	instOutChannel_{|channel,latency|
 		if (instOutSynth.notNil) {
-			server.sendBundle(latency, [\n_set, instOutSynth.nodeID, \outChannel, channel]);
+			server.sendBundle(latency +! syncDelay,
+				[\n_set, instOutSynth.nodeID, \outChannel, channel]);
 		};
 	}
 	
@@ -215,15 +227,6 @@ LNX_InstrumentTemplate {
 	peakOutLeft_{|value| peakLeftModel.lazyValueAction_(value,0) }
 	peakOutRight_{|value| peakRightModel.lazyValueAction_(value,0) }
 		
-	// latency & sync
-	
-	syncDelay_{|delay|
-		syncDelay=delay;
-		studio.updateSyncDelay;
-	}
-	
-	mySyncDelay{ ^ studio.syncDelay - syncDelay}
-	
 	////////////////////////////////////////
 	//                                    //
 	//// MIDI stuff ////////////////////////
@@ -910,7 +913,7 @@ LNX_InstrumentTemplate {
 		var doISet=true;
 		p[1]=v;
 		instOnSolo.on_(v);
-		this.stopNotesIfNeeded;
+		this.stopNotesIfNeeded(latency);
 		// if (send) mean this could have come from external or internal controllers
 		if (send) {
 			if (network.isListening) {
@@ -946,7 +949,7 @@ LNX_InstrumentTemplate {
 				this.onOffModel.lazyValue_(v,false);
 				p[1]=v;
 				instOnSolo.on_(v);
-				this.stopNotesIfNeeded;
+				this.stopNotesIfNeeded; // no latency
 			};
 			onSoloGroup.userInstOn_('lnx_song',id,v);
 		}{
@@ -966,7 +969,7 @@ LNX_InstrumentTemplate {
 		p[0]=v;
 		instOnSolo.solo_(v);
 		{studio.refreshOnOffEnabled}.defer;
-		this.stopNotesIfNeeded;
+		this.stopNotesIfNeeded(latency);
 		if (send) {
 			if (network.isListening) {
 				// network this
@@ -999,7 +1002,7 @@ LNX_InstrumentTemplate {
 				p[0]=v;
 				instOnSolo.solo_(v);
 				studio.refreshOnOffEnabled;
-				this.stopNotesIfNeeded;
+				this.stopNotesIfNeeded; // no latency
 			};
 			onSoloGroup.userInstSolo_('lnx_song',id,v);
 		}{
@@ -1038,9 +1041,9 @@ LNX_InstrumentTemplate {
 	
 	// used for noteOff in sequencers
 	// efficiency issue: this is called 3 times in alt_solo over a network
-	stopNotesIfNeeded{
+	stopNotesIfNeeded{|latency|
 		if (instOnSolo.isOff) {this.stopAllNotes};
-		this.updateOnSolo;
+		this.updateOnSolo(latency);
 	}
 	
 	// set inst parameters from gui and net ////////////////////////////////////////////////
@@ -1149,7 +1152,8 @@ LNX_InstrumentTemplate {
 	setSynthArg{|index,value,synthArg,argValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
+		if (node.notNil) { server.sendBundle(latency +! syncDelay,
+				[\n_set, node, synthArg, argValue]) };
 		if ((network.isConnected)and:{send}) {
 			api.send(\netSynthArg,index,value,synthArg,argValue);
 		}
@@ -1160,7 +1164,8 @@ LNX_InstrumentTemplate {
 	setSynthArgGD{|index,value,synthArg,argValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
+		if (node.notNil) { server.sendBundle(latency +! syncDelay,
+				[\n_set, node, synthArg, argValue]) };
 		if ((network.isConnected)and:{send}) {
 			api.sendGD(\netSynthArg,index,value,synthArg,argValue);
 		};
@@ -1171,7 +1176,9 @@ LNX_InstrumentTemplate {
 	setSynthArgOD{|index,value,synthArg,argValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
+		if (node.notNil) {
+			server.sendBundle(latency +! syncDelay,[\n_set, node, synthArg, argValue])
+		};
 		if ((network.isConnected)and:{send}) {
 			api.sendOD(\netSynthArg,index,value,synthArg,argValue);
 		};
@@ -1194,7 +1201,9 @@ LNX_InstrumentTemplate {
 	setSynthArgVP{|index,value,synthArg,argValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
+		if (node.notNil) {
+			server.sendBundle(latency +! syncDelay,[\n_set, node, synthArg, argValue])
+		};
 		if ((network.isConnected)and:{send}) {
 			api.sendVP((id+""++index).asSymbol,\netSynthArg,index,value,synthArg,argValue);
 		};
@@ -1216,7 +1225,9 @@ LNX_InstrumentTemplate {
 	setSynthArgGUI{|index,value,synthArg,argValue,guiIndex,guiValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
+		if (node.notNil) {
+			server.sendBundle(latency +! syncDelay,[\n_set, node, synthArg, argValue])
+		};
 		if (send) {
 			api.send(\netSynthArgGUI,index,value,synthArg,argValue,guiIndex,guiValue);
 		}
@@ -1227,7 +1238,9 @@ LNX_InstrumentTemplate {
 	setSynthArgGUIGD{|index,value,synthArg,argValue,guiIndex,guiValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
+		if (node.notNil) {
+			server.sendBundle(latency +! syncDelay,[\n_set, node, synthArg, argValue])
+		};
 		if (send) {
 			api.sendGD(\netSynthArgGUI,index,value,synthArg,argValue,guiIndex,guiValue);
 		}
@@ -1238,7 +1251,9 @@ LNX_InstrumentTemplate {
 	setSynthArgGUIOD{|index,value,synthArg,argValue,guiIndex,guiValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
+		if (node.notNil) {
+			server.sendBundle(latency +! syncDelay,[\n_set, node, synthArg, argValue])
+		};
 		if (send) {
 			api.sendOD(\netSynthArgGUI,index,value,synthArg,argValue,guiIndex,guiValue);
 		}
@@ -1262,7 +1277,9 @@ LNX_InstrumentTemplate {
 	setSynthArgGUIVP{|index,value,synthArg,argValue,guiIndex,guiValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		if (node.notNil) { server.sendBundle(latency,[\n_set, node, synthArg, argValue]) };
+		if (node.notNil) {
+			server.sendBundle(latency +! syncDelay,[\n_set, node, synthArg, argValue])
+		};
 		if (send) {
 			api.sendVP(id+"_ssvp_"++index,
 				\netSynthArgGUI,index,value,synthArg,argValue,guiIndex,guiValue);

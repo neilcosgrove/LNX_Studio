@@ -527,7 +527,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		sequencers.do(_.clockIn(beat,latency));	 // the bundles are then made here
 	
 		// then play the bundles so choke has a chance to work on the other channels
-		voicer.playAll(latency, {|channel,velocity|
+		voicer.playAll(latency +! syncDelay, {|channel,velocity|
 			this.bangMIDI(channel,velocity,latency);
 			{gui[\lamps][channel].value_(chokeLamp[channel][0],0.1)}.defer(chokeLamp[channel][1]);
 		});
@@ -535,6 +535,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	}
 	
 	// temp to hook up volca beats
+	// now used to send midi out
 	bangMIDI{|channel,velocity, latency, volume=1|
 		midi.noteOn(channel+44, velocity*127, latency);
 		{
@@ -626,7 +627,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		masterSendAmp      = this.getSynthArg(\masterSendAmp,i);
 		masterSendChannels = this.getSynthArg(\masterSendChannels,i);
 
-		voicer.killChannelNow(i,latency); // kill previous if it exists (mono)
+		voicer.killChannelNow(i,latency +! syncDelay); // kill previous if it exists (mono)
 		
 		// am i a grain player?
 		isGrainPlayer=(p[148+i]==1);	
@@ -702,16 +703,16 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		
 		};
 				
-		voicer.choke(i,latency); // choke other channels as needed
+		voicer.choke(i,latency +! syncDelay); // choke other channels as needed
 		
 		// play it if not from this internal sequencer, else play it from clockIn
 		if (internalSeq.not) {
 			if (latency.isNil) {
-				voicer.play(i,latency); // if from gui or extrnal midi
+				voicer.play(i,latency +! syncDelay); // if from gui or extrnal midi
 			}{
 				// else from another internal sequencer (use slight delay method to allow choke)
 				{
-					voicer.play(i,latency-0.001);
+					voicer.play(i,latency +! syncDelay -0.001);
 					nil;
 				}.sched(0.001);
 			};
@@ -793,7 +794,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		var value=synthArgFuncs[synthArg].value(i);
 		if (value!=synthArgValues[i][synthArg]) {
 			synthArgValues[i][synthArg]=value;	
-			voicer.setArg(i,\samplePlayer, synthArg, value, latency);
+			voicer.setArg(i,\samplePlayer, synthArg, value, latency +! syncDelay);
 		}
 	}
 	
@@ -931,7 +932,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	// called from the models to update synth arguments, no testing
 	// currently set only for \samplePlayer
 	setSynths{|synthArg,i,value,latency|
-		voicer.setArg(i,\samplePlayer, synthArg, value, latency);
+		voicer.setArg(i,\samplePlayer, synthArg, value, latency +! syncDelay);
 	}
 	
 } // end ////////////////////////////////////

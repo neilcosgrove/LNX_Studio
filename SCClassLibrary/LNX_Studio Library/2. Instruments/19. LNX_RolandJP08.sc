@@ -52,6 +52,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 	panModel    {^models[5]}
 	sendChModel {^models[7]}
 	sendAmpModel{^models[8]}
+	syncModel   {^models[10]}
 
 	header { 
 		// define your document header details
@@ -156,12 +157,10 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 				}],
 				
 			// 10. syncDelay
-			[[-1,1,\lin,0.001,0], midiControl, 10, "Sync",
-				(label_:"Sync", zeroValue_:0),
-				{|me,val,latency,send|
-					this.setPVP(10,val,latency,send);
-					this.syncDelay_(val.clip(-inf,0).abs); // this will update delay as well
-				}],		
+			[[-1,1,\lin,0.001,0], {|me,val,latency,send|
+				this.setPVP(10,val,latency,send);
+				this.syncDelay_(val);
+			}],		
 						
 			// 11. empty
 			[0],
@@ -181,12 +180,12 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 					this.updateOnSolo;
 				}],
 						
-			// 14. midi clock out
+			// 14. x clock out
 			[0, \switch, midiControl, 14, "MIDI Clock",
 					(strings_:["MIDI Clock"]),
 					{|me,val,latency,send|
 						this.setPVP(14,val,latency,send);
-						if (val.isFalse) { midi.stop(latency) };
+						if (val.isFalse) { midi.stop(latency +! syncDelay) };
 					}],
 					
 			// 15. use controls in presets
@@ -195,9 +194,9 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 					{|me,val,latency,send|	
 						this.setPVP(15,val,latency,send);
 						if (val.isTrue) {
-							presetExclusion=[0,1];
+							presetExclusion=[0,1,10,14];
 						}{
-							presetExclusion=[0,1]++((1..RolandJP08.size)+16);
+							presetExclusion=[0,1,10,14]++((1..RolandJP08.size)+16);
 						}	
 					}],
 	
@@ -222,9 +221,9 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		#models,defaults=template.generateAllModels;
 
 		// list all parameters you want exluded from a preset change
-		presetExclusion=[0,1];
-		randomExclusion=[0,1,10];
-		autoExclusion=[12];
+		presetExclusion=[0,1,10,14];
+		randomExclusion=[0,1,10,14];
+		autoExclusion=[10,12];
 
 	}
 		
@@ -299,10 +298,12 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 											value.div(16), value.asInt%16, 0, -9 ];
 											
 		data[14] = RolandJP08.checkSum(data[8..13]); // put in Roland checksum
-		midi.sysex(data,latency);                    // midi control out
+		midi.sysex(data,latency +! syncDelay);       // midi control out
 		
 		// to prevent feedback, when can i start listening again?
-		sysex2Time[index] = SystemClock.now + (latency?0) + (studio.midiSyncLatency) + 1;
+		sysex2Time[index] =
+			SystemClock.now + (latency +! syncDelay ?0) + (studio.midiSyncLatency) + 1;
+			// not sure how the sync works here
 	}
 	
 /*
@@ -393,7 +394,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	
 	// and finally to the midi out
 	toMIDIPipeOut{|pipe|
-		midi.pipeIn(pipe.addToHistory(this));          // add this to its history
+		midi.pipeIn(pipe.addToHistory(this).addLatency(syncDelay));    // add this to its history
 	}
 
 	// release all played notes, uses midi Buffer
@@ -432,12 +433,6 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		}.defer;
 	}
 
-	// sync stuff ///////////////////////////
-	
-	delayTime{^(this.mySyncDelay.clip(0,inf))+(p[10].clip(0,inf))  }
-	iSyncDelayChanged{ this.setDelay }
-	setDelay{ if (node.notNil) {server.sendBundle(nil,[\n_set, node, \delay, this.delayTime])} }
-
 	// clock in //////////////////////////////
 	
 	// clock in for pRoll sequencer
@@ -456,11 +451,11 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	}
 	
 	// clock in for midi out clock methods
-	midiSongPtr{|songPtr,latency| if (p[14].isTrue) { midi.songPtr(songPtr,latency) } } 
-	midiStart{|latency| if (p[14].isTrue) { midi.start(latency) } }
-	midiClock{|latency| if (p[14].isTrue) { midi.midiClock(latency) } }
-	midiContinue{|latency| if (p[14].isTrue) { midi.continue(latency) } }
-	midiStop{|latency| if (p[14].isTrue) { midi.stop(latency) } }
+	midiSongPtr{|songPtr,latency| if (p[14].isTrue) { midi.songPtr(songPtr,latency +! syncDelay) }} 
+	midiStart{|latency|           if (p[14].isTrue) { midi.start(latency +! syncDelay) } }
+	midiClock{|latency|           if (p[14].isTrue) { midi.midiClock(latency +! syncDelay) } }
+	midiContinue{|latency|        if (p[14].isTrue) { midi.continue(latency +! syncDelay) } }
+	midiStop{|latency|            if (p[14].isTrue) { midi.stop(latency +! syncDelay) } }
 
 	// disk i/o ///////////////////////////////
 		
@@ -514,12 +509,6 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	clearSequencer{ sequencer.clear }
 
 	// roland jp08 stuff ///////////////////////***************************************************
-
-
-	/*
-		in LNX_MIDIPatch:program can i put...
-		if (latency.notNil) { latency = latency + midiSyncLatency };
-	*/
 
 	preLoadP{|tempP|
 
@@ -587,7 +576,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	// set program on roland, latency isn't really needed here
 	setRolandProgram{|latency|
 		var prog=	p[12];
-		midi.program(prog-1, latency); // out to midi
+		midi.program(prog-1, latency +! syncDelay); // out to midi
 		this.updatePresetGUI;
 	}
 
@@ -610,7 +599,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	// GUI
 	
 	*thisWidth  {^952}
-	*thisHeight {^435+25}
+	*thisHeight {^460}
 	
 	createWindow{|bounds|	
 		this.createTemplateWindow(bounds,Color(0.1221, 0.0297, 0.0297));
@@ -684,20 +673,9 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	
 		// 9. channelSetup
 		MVC_PopUpMenu3(models[9],window,Rect(417,5,75,16), gui[\menuTheme2 ] );
-		
-		// 10. syncDelay
-		MVC_NumberBox(models[10],window,Rect(552, 4, 40, 16),  gui[\theme2])
-			.labelShadow_(false)
-			.color_(\label,Color.white);
-			
-		MVC_StaticText(window, Rect(596,3, 40, 18))
-			.string_("sec(s)")
-			.font_(Font("Helvetica",10))
-			.shadow_(false)
-			.color_(\string,Color.white);
-						
+								
 		// MIDI Settings
- 		MVC_FlatButton(window,Rect(658, 5, 43, 18),"MIDI")
+ 		MVC_FlatButton(window,Rect(502, 4, 43, 18),"MIDI")
 			.rounded_(true)
 			.shadow_(true)
 			.canFocus_(false)
@@ -709,7 +687,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			)};
 	
 		// MIDI Controls
-	 	MVC_FlatButton(window,Rect(706, 5, 43, 18),"Cntrl")
+	 	MVC_FlatButton(window,Rect(553, 4, 43, 18),"Cntrl")
 			.rounded_(true)
 			.shadow_(true)
 			.canFocus_(false)
@@ -988,14 +966,13 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		if (verbose) { "SynthDef loaded: Audio In x2".postln; };
 	
 		SynthDef("LNX_AudioIn2", {
-			|outputChannels=0, inputChannels=2, pan=0, amp=0, delay=0, channelSetup=0, on=1,
+			|outputChannels=0, inputChannels=2, pan=0, amp=0, channelSetup=0, on=1,
 			sendChannels=4, sendAmp=0 |
 			
 			var signal = In.ar(inputChannels, 2);
 			var signalL, signalR;
 			
 			signal  = signal * 2;
-			signal  = DelayN.ar(signal, 2, delay);
 			signal  = signal * Lag.kr(amp*on);
 			pan     = Lag.kr(pan*2);
 			sendAmp = Lag.kr(sendAmp);
@@ -1025,24 +1002,27 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	
 	// used for noteOff in sequencers
 	// efficiency issue: this is called 3 times in alt_solo over a network
-	stopNotesIfNeeded{
-		this.updateOnSolo;
+	stopNotesIfNeeded{|latency|
+		this.updateOnSolo(latency);
 	}
 	
-	updateOnSolo{
+	updateOnSolo{|latency|
 		switch (p[13].asInt)
 			{0} {
 				// "Audio In"
-				if (node.notNil) { server.sendBundle(nil,[\n_set, node, \on, this.isOn]) };
+				if (node.notNil) {
+					server.sendBundle(latency +! syncDelay,[\n_set, node, \on, this.isOn]) };
 			}
 			{1} {
 				// "Sequencer"
-				if (node.notNil) { server.sendBundle(nil,[\n_set, node, \on, true]) };
+				if (node.notNil) {
+					server.sendBundle(latency +! syncDelay,[\n_set, node, \on, true]) };
 				if (this.isOff) {this.stopAllNotes};
 			}
 			{2} {
 				// "Both"
-				if (node.notNil) { server.sendBundle(nil,[\n_set, node, \on, this.isOn]) };
+				if (node.notNil) {
+					server.sendBundle(latency +! syncDelay,[\n_set, node, \on, this.isOn]) };
 				if (this.isOff) {this.stopAllNotes};
 			};		
 	}
@@ -1058,7 +1038,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		this.instOutChannel_(out,latency);
 		if (p[13]==1) { on=true } { on=this.isOn };
 			
-		server.sendBundle(latency,
+		server.sendBundle(latency+! syncDelay,
 			[\n_set, node, \amp,p[2].dbamp],
 			[\n_set, node, \pan,p[5]],
 			[\n_set, node, \inputChannels,in],
@@ -1066,8 +1046,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			[\n_set, node, \on, on],
 			[\n_set, node, \sendChannels,LNX_AudioDevices.getOutChannelIndex(p[7])],
 			[\n_set, node, \sendAmp, p[8].dbamp],
-			[\n_set, node, \channelSetup, p[9]],
-			[\n_set, node, \delay, this.delayTime ]
+			[\n_set, node, \channelSetup, p[9]]
 		);
 	}
 

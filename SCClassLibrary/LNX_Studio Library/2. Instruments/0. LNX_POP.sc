@@ -443,8 +443,8 @@ LNX_POP {
 			// adjust gui widgets	
 			gui[\more].bounds_(Rect(47, (noPOP+3)*21+12, 19, 19));
 			gui[\less].bounds_(Rect(18, (noPOP+3)*21+12, 19, 19));
-			gui[\plainSquare].bounds_(Rect(10, (noPOP+4.5)*21+4, 1, 1));
-			gui[\plainSquare2].bounds_(Rect(10, (noPOP+4.5)*21, 1, 1));
+			gui[\plainSquare].bounds_(Rect(10, (noPOP+4.5)*21+4+15, 1, 1));
+			gui[\plainSquare2].bounds_(Rect(10, (noPOP+4.5)*21+15, 1, 1));
 			gui[\program].noPOP_(noPOP);
 			studioModels[\program].controlSpec_( [-1,noPOP-1,\lin,1,1]);
 			studioModels[\toBecome].controlSpec_( [-1,noPOP-1,\lin,1,1]);
@@ -479,7 +479,7 @@ LNX_POP {
 	
 	// adjust the size of the composite view
 	adjustSize{
-		instGUI[\popWindow].bounds_(instGUI[\popWindow].bounds.height_(21*(noPOP+4)+12));
+		instGUI[\popWindow].bounds_(instGUI[\popWindow].bounds.height_(21*(noPOP+4)+15+15));
 	}
 	
 	// incoming midi program as a pipe ?

@@ -522,10 +522,9 @@ LNX_Studio {
 	// the total latency of this system. includes syncDelay. sync delay is -ive delay in
 	// AudioIn and MIDIOut
 	
-	actualLatency{ ^latency + syncDelay } 
+	actualLatency{ ^latency + syncDelay } // s
 									
 	// set latency of studio
-	
 	latency_{|argLatency|
 		if (argLatency<latency) {
 			latency=argLatency;
@@ -533,17 +532,37 @@ LNX_Studio {
 		}{
 			latency=argLatency;
 		};
-		this.updateSyncDelay; // update sync delay so intruments are updated too
+		
+		
+		// replace with something like above
+		// this.updateSyncDelay; // update sync delay so intruments are updated too
+		
 		server.latency_(this.actualLatency); // this is now the latency between Lang & Server
 		[latency].savePref("latency");       // save preference
 	}
 	
-	// work out the largest sync delay in all instruments and set that as the studio syncdelay
-	
+	// work out the largest -ive sync delay in all instruments
+	// and set that as the studio +ive syncdelay
 	updateSyncDelay{
-		syncDelay = insts.collect{|inst| inst.syncDelay}.asList.sort.last ? 0;
-		insts.do(_.iSyncDelayChanged); // update all insts
+		
+		// largest only -ive is turned into a +ive syncDelay so we don't below latency
+		syncDelay = insts.collect{|inst| inst.syncDelay.clip(-inf,0).abs }.asList.sort.last ? 0;
+	
 	}
+	
+	
+	checkSyncDelay{
+		var oldSync = syncDelay;
+		var newSync = insts.collect{|inst| inst.syncDelay.clip(-inf,0).abs }.asList.sort.last ? 0;	
+		if (oldSync != newSync) {
+			syncDelay = newSync; 
+			
+			// do i need to free everything?
+		};
+		
+		
+	}
+	
 		
 	// MIDI ///////////////////////////////////////////////////////////////////////////////
 	
@@ -1060,6 +1079,8 @@ LNX_Studio {
 				
 				MVC_Automation.updateDurationAndGUI; // temp
 				
+				this.checkSyncDelay;
+				
 			};
 		}
 	}
@@ -1258,6 +1279,8 @@ LNX_Studio {
 		MVC_Automation.resetZoom;
 		
 		onSoloGroup.reset; // this does not clear onSolo it's been set after by something else?
+		
+		this.checkSyncDelay;
 		
 		//{LNX_SampleBank.emptyTrash}.defer(1); // empty trash 10 seconds later
 		// needs to be triggered when finished loading

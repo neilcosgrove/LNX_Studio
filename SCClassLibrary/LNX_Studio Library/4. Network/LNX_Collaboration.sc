@@ -914,7 +914,7 @@ LNX_Collaboration{
 	//	gui[\userScrollView].bounds_(gui[\userScrollView].bounds.height_(h));
 			
 			
-		gui[\userScrollView].bounds_( Rect(5,473-h,202,h) );
+		gui[\userScrollView].bounds_( Rect(5,488-h,202,h) );
 			
 			
 		gui[\userView].bounds_(gui[\userView].bounds.height_(noLines*16+5));
