@@ -382,10 +382,22 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		sequencer.putLoadList(l.popEND("*** END OBJECT DOC ***"));
 	}
 	
-	// anything else that needs doing after a load. all paramemters will be loaded by here
-	iPostLoad{
-		if (p[90].isTrue) { this.setMoogProgram };
+	// anything else that needs doing before a load
+	preLoadP{|tempP|
+		models[90].doLazyValueAction_(tempP[90],nil,false); // use programs in presets
+		// check send program  1st and then send
+		if (models[90].isTrue) {
+			models[11].lazyValue_(tempP[11],false);
+			p[11] = tempP[11];
+			models[12].lazyValue_(tempP[12],false);
+			p[12] = tempP[12];
+			this.setMoogProgram;
+		};
+		^tempP
 	}
+	
+	// anything else that needs doing after a load. all paramemters will be loaded by here
+	iPostLoad{}
 	
 	// free this
 	iFree{ sequencer.do(_.free) }
@@ -457,7 +469,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 
 	// set program on moog, latency isn't really needed here
 	setMoogProgram{|latency|
-		var prog=	(p[11]*16)+p[12];
+		var prog=	(p[11]*16)+p[12];		
 		midi.control(32, prog.div(128), latency +! syncDelay);
 		midi.program(prog % 128, latency +! syncDelay);
 		this.updatePresetGUI;
@@ -491,7 +503,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 					// dont do any actions on p==11 or 12
 					models[j].lazyValue_(v,false);
 				}{
-					models[j].lazyValueAction_(v,send:false)
+					models[j].lazyValueAction_(v,0.1,send:false); // a little timedelay
 				}
 			}
 		});

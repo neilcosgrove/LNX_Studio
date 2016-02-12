@@ -513,7 +513,7 @@ LNX_MIDIPatch {
 	
 	// packet needs to be a Int8Array
 	// no latency in sysex, shall i delay it myself
-	sysex {|packet,latency|
+	sysex {|packet,latency|		
 		if ((uidOut>0)and:{uidOut<=noInternalBuses}) {
 	 		patches.do({|patch|
 				if ( (patch.uidIn==uidOut) and:{(patch===this).not} and:

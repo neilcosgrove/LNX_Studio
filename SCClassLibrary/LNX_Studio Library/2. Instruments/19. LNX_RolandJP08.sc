@@ -278,7 +278,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 
 		if (index.isNil)    {^this};            // key not found
 
-		// feedback exception, not needed if we different device IDs
+		// feedback exception, not needed if we different device IDs, to check with new jp
 		if (sysex2Time[index].notNil and: { SystemClock.now < sysex2Time[index] })
 			{ ^this }                          // exception
 			{ sysex2Time[index] = nil };       // else clear time
@@ -296,14 +296,15 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		var key      = RolandJP08.keyAt(index.asInt);
 		var data     = Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, key.div(25), key%25,
 											value.div(16), value.asInt%16, 0, -9 ];
-											
+		
 		data[14] = RolandJP08.checkSum(data[8..13]); // put in Roland checksum
 		midi.sysex(data,latency +! syncDelay);       // midi control out
 		
 		// to prevent feedback, when can i start listening again?
 		sysex2Time[index] =
-			SystemClock.now + (latency +! syncDelay ?0) + (studio.midiSyncLatency) + 1;
+			SystemClock.now + ((latency +! syncDelay) ? 0) + (studio.midiSyncLatency) + 1;
 			// not sure how the sync works here
+			
 	}
 	
 /*
@@ -469,9 +470,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	}
 	
 	// anything else that needs doing after a load. all paramemters will be loaded by here
-	iPostLoad{ 
-		// if (p[16].isTrue) { this.setRolandProgram }
-	}
+	iPostLoad{}
 	
 	// free this
 	iFree{
@@ -534,7 +533,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 					// dont do any actions on p== 12
 					models[j].lazyValue_(v,false);
 				}{
-					models[j].lazyValueAction_(v,0.2,send:false); // extra here as well
+					models[j].lazyValueAction_(v,0.1 - syncDelay.clip(-inf,0) - studio.midiSyncLatency  ,send:false); // extra here as well
 				}
 			}
 		});

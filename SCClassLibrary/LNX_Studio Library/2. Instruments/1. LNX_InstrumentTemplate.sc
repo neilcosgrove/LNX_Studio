@@ -822,12 +822,8 @@ LNX_InstrumentTemplate {
 			// am i ever going to need this?
 			this.clear; // clear presets, midi controls and call .iClear
 
-			// pop & adjust in preLoadP if needed, used to change p in LNX_BumNote2:preLoadP only
-			tempP = this.preLoadP(l.popNF(noP),loadVersion);
-			
-			// extend older versions with deault P and clip any extra
-			tempP = (tempP++defaults[(tempP.size)..(defaults.size)])[0..(defaults.size-1)];
-					
+			tempP = l.popNF(noP); // read tempP now, for use after midi loaded
+
 			// now put in the presets	
 			presetMemory = 0!noPre;
 			noPre.do({|i|
@@ -843,11 +839,18 @@ LNX_InstrumentTemplate {
 			// put in midi
 			midi.putLoadList(l.popNI(4));
 			
+			// now use tempP
+			// pop & adjust in preLoadP if needed, used to change p in LNX_BumNote2:preLoadP only
+			tempP = this.preLoadP(tempP,loadVersion);
+			
+			// extend older versions with deault P and clip any extra
+			tempP = (tempP++defaults[(tempP.size)..(defaults.size)])[0..(defaults.size-1)];
+			
 			// and midi controls but do later...
 			midiLoadVersion = l.pop.version;
 			midiContolList = l.popEND("*** End MIDI Control Doc ***");
 			
-			l = this.iPutLoadList(l,noPre,loadVersion,templateLoadVersion);
+			l = this.iPutLoadList(l,noPre,loadVersion,templateLoadVersion); // for instance
 								
 			this.onOffModel.valueAction_(tempP[1],nil,false,false);
 			this.soloModel.valueAction_(tempP[0],nil,false,false);
