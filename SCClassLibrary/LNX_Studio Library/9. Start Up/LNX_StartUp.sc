@@ -14,35 +14,59 @@ LNX_StartUp {
 	*initClass{
 		Class.initClassTree(LNX_File);
 		StartUp.add {
-			// bug fix for starting macOS midi and some MIDI devices
-			var midiBugFix = ("midiBugFix".loadPref ? [false])[0].isTrue; // get preference
-			var audioRunning = "Audio".pid.notNil;    // is Audio MIDI Setup running?
-			if (audioRunning.not  && midiBugFix) {
-				"Audio MIDI Setup".openApplication;  // if not open it
-			}; 
-			SCDoc.indexAllDocuments;
-			"".postln;
-			"".postln;
-			"If this application repeatedly hangs on opening the following might help...".postln;
-			"===========================================================================".postln;
-			"1. In the preferences of the Mac-OS 'Audio MIDI Setup' application choose".postln;
-			"      'When application launches open MIDI Window'".postln;
-			"2. Remove all MIDI devices & Relaunch LNX_Studio".postln;
-			"3. Open LNX_Studio preferences & Turn on MacOS [MIDI Fix]".postln;
-			"4. Plug all MIDI equipment back in".postln;
-			"5. Quit & Relaunch LNX_Studio".postln;
-			"".postln;
-			
-			if (audioRunning) {
-				this.doStartUp;
-			}{
-				{ this.doStartUp }.defer(2); // delay start-up so Audio MIDI Setup starts 1st
-			}; 
+			Platform.case(
+			Ê Ê \osx, Ê Ê Ê { this.osxStartUp     },
+			Ê Ê \linux, Ê Ê { this.linuxStartUp   },
+			Ê Ê \windows, Ê { this.windowsStartUp }
+			);
+			this.postStartUp;
 		};	
 		ShutDown.add { studio.onClose };		 // and on shutdown
 	}
 	
-	*doStartUp{
+	*windowsStartUp{} // to do
+	
+	*linuxStartUp{
+								
+		studio = LNX_Studio(Server.local); 	// start the studio, use local server
+//		studio = LNX_Studio(Server.internal); // start the studio, use internal server
+				
+		LNX_AppMenus.addReleaseMenus(studio);
+
+		// to remove for release
+		LNX_AppMenus.addDeveloperMenus(studio); 
+			
+	}	
+	
+	*osxStartUp{
+	
+		// bug fix for starting macOS midi and some MIDI devices
+		var midiBugFix = ("midiBugFix".loadPref ? [false])[0].isTrue; // get preference
+		var audioRunning = "Audio".pid.notNil;    // is Audio MIDI Setup running?
+		if (audioRunning.not  && midiBugFix) {
+			"Audio MIDI Setup".openApplication;  // if not open it
+		}; 
+		SCDoc.indexAllDocuments;
+		"".postln;
+		"".postln;
+		"If this application repeatedly hangs on opening the following might help...".postln;
+		"===========================================================================".postln;
+		"1. In the preferences of the Mac-OS 'Audio MIDI Setup' application choose".postln;
+		"      'When application launches open MIDI Window'".postln;
+		"2. Remove all MIDI devices & Relaunch LNX_Studio".postln;
+		"3. Open LNX_Studio preferences & Turn on MacOS [MIDI Fix]".postln;
+		"4. Plug all MIDI equipment back in".postln;
+		"5. Quit & Relaunch LNX_Studio".postln;
+		"".postln;
+		
+		if (audioRunning) {
+			this.osxStartUp2;
+		}{
+			{ this.osxStartUp2 }.defer(2); // delay start-up so Audio MIDI Setup starts 1st
+		}; 
+	}
+	
+	*osxStartUp2{
 							
 		studio = LNX_Studio(Server.local); 	// start the studio, use local server
 //		studio = LNX_Studio(Server.internal); // start the studio, use internal server
@@ -52,7 +76,7 @@ LNX_StartUp {
 		// to remove for release
 		LNX_AppMenus.addDeveloperMenus(studio); 
 		Document.listener.bounds=Rect(LNX_Studio.osx,32,535,175);
-		this.interpreterDebugging;
+		
 		
 		// to uncomment for release
 //		Document.listener.close;				
@@ -127,11 +151,12 @@ LNX_StartUp {
 			thisProcess.platform.recordingsDir = "~/Desktop".standardizePath;
 		};
 		
-		this.postStartUp;
 		
 	}
 	
-	*postStartUp{}
+	*postStartUp{
+		this.interpreterDebugging;
+	}
 	
 	*interpreterDebugging{
 		// attach various objects to interpreter variables for debugging
@@ -145,7 +170,7 @@ LNX_StartUp {
 		".interpret;		
 	}
 	
-	*studio{^studio}
+	*studio{^studio} // to remove for release
 
 }
 
