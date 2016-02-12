@@ -19,7 +19,6 @@ LNX_StartUp {
 			Ê Ê \linux, Ê Ê { this.linuxStartUp   },
 			Ê Ê \windows, Ê { this.windowsStartUp }
 			);
-			this.postStartUp;
 		};	
 		ShutDown.add { studio.onClose };		 // and on shutdown
 	}
@@ -35,6 +34,8 @@ LNX_StartUp {
 
 		// to remove for release
 		LNX_AppMenus.addDeveloperMenus(studio); 
+		
+		this.postStartUp;
 			
 	}	
 	
@@ -151,7 +152,7 @@ LNX_StartUp {
 			thisProcess.platform.recordingsDir = "~/Desktop".standardizePath;
 		};
 		
-		
+		this.postStartUp;
 	}
 	
 	*postStartUp{

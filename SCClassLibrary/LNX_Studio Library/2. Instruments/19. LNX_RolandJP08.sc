@@ -262,7 +262,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 	// to prevent feedback ouput chokes input for 1 second
 	sysex2{|data, latency|
 		var index, key, value;
-		
+
 		// exceptions
 		if (data.size!=16)    {^this};          // packet size exception
 		if (data[1]!=65)      {^this};          // Roland SYSEX number
@@ -469,7 +469,9 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	}
 	
 	// anything else that needs doing after a load. all paramemters will be loaded by here
-	iPostLoad{ if (p[16].isTrue) { this.setRolandProgram } }
+	iPostLoad{ 
+		// if (p[16].isTrue) { this.setRolandProgram }
+	}
 	
 	// free this
 	iFree{
