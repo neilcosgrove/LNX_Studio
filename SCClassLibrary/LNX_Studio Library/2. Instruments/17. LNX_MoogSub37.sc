@@ -433,7 +433,10 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		// check send program  1st and then send
 		if (models[90].isTrue) {
 			models[11].lazyValue_(presetToLoad[11],false);
-			models[12].doLazyValueAction_(presetToLoad[12],latency,false);
+			p[11] = presetToLoad[11];
+			models[12].lazyValue_(presetToLoad[12],false);
+			p[12] = presetToLoad[12];
+			this.setMoogProgram(latency);
 		};
 			
 		// update models
@@ -451,7 +454,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		this.updateDSP(oldP,latency); // and update any dsp
 				
 	}
-		
+
 	// set program on moog, latency isn't really needed here
 	setMoogProgram{|latency|
 		var prog=	(p[11]*16)+p[12];
