@@ -57,18 +57,7 @@ LNX_InstrumentTemplate {
 		
 	var <lastTemplateLoadVersion=1.2;
 	
-	var <syncDelay=0;
-	
-	syncDelay_{|val|	
-		syncDelay = val;
-		studio.updateSyncDelay; // studio will call iSyncDelayChanged
-	}
-		
-	iSyncDelayChanged{} // to overwrite
-	
-	instLatency{ ^studio.actualLatency + syncDelay } // actual latency of this inst
-			
-	syncModel{^nil} // to overwrite
+	var <syncDelay=0, <previousSync;
 				
 	////////////////////////////////////////
 	//                                    //
@@ -226,6 +215,19 @@ LNX_InstrumentTemplate {
 	
 	peakOutLeft_{|value| peakLeftModel.lazyValueAction_(value,0) }
 	peakOutRight_{|value| peakRightModel.lazyValueAction_(value,0) }
+		
+	///////////// sync stuff ///////////////
+	
+	syncDelay_{|val|
+		if (previousSync.notNil) {
+			syncDelay = val;
+			studio.updateSyncDelay; // studio will call iSyncDelayChanged
+			if (syncDelay<previousSync) { this.stopAllNotes }; // incase we miss the end of a note
+		};
+		previousSync = syncDelay;
+	}
+	
+	instLatency{ ^studio.actualLatency + syncDelay } // actual latency of this inst
 		
 	////////////////////////////////////////
 	//                                    //
