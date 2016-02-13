@@ -67,7 +67,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			.pipeOutAction_{|pipe|
 				if (((p[13]>0)&&(this.isOff)).not) {seqOutBuffer.pipeIn(pipe)};
 			}
-			.releaseAllAction_{ seqOutBuffer.releaseAll }
+			.releaseAllAction_{ seqOutBuffer.releaseAll(studio.actualLatency) }
 			.keyDownAction_{|me, char, modifiers, unicode, keycode|
 				keyboardView.view.keyDownAction.value(me,char, modifiers, unicode, keycode)
 			}
@@ -163,9 +163,9 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 
 	// release all played notes, uses midi Buffer
 	stopAllNotes{ 
-		midiInBuffer.releaseAll; // *** how is this working
-		seqOutBuffer.releaseAll; // *** how is this working
-		midiOutBuffer.releaseAll; // *** how is this working
+		midiInBuffer.releaseAll(studio.actualLatency);
+		seqOutBuffer.releaseAll(studio.actualLatency); 
+		midiOutBuffer.releaseAll(studio.actualLatency); 
 		{keyboardView.clear}.defer(studio.actualLatency);
 	}
 	
@@ -358,13 +358,13 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	// reset sequencers posViews
 	clockStop {
 		sequencer.do(_.clockStop(studio.actualLatency));
-		seqOutBuffer.releaseAll(studio.actualLatency); // *** how is this working
+		seqOutBuffer.releaseAll(studio.actualLatency);
 	}
 	
 	// remove any clock hilites
 	clockPause{
 		sequencer.do(_.clockPause(studio.actualLatency));
-		seqOutBuffer.releaseAll(studio.actualLatency);	 // *** how is this working
+		seqOutBuffer.releaseAll(studio.actualLatency);
 	}
 	
 	// clock in for midi out clock methods

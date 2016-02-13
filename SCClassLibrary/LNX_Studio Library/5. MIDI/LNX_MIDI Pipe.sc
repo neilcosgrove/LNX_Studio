@@ -339,8 +339,12 @@ LNX_MIDIBuffer{
 	}
 	
 	// release everything
-	releaseAll{|latencyAdj|
-		notesOn.do{|pipe| midiPipeOutFunc.value(pipe.asNoteOff.addLatency(latencyAdj)) };
+	releaseAll{|latency|
+		if (latency.notNil) {
+			notesOn.do{|pipe| midiPipeOutFunc.value(pipe.asNoteOff.latency_(latency)) };
+		}{
+			notesOn.do{|pipe| midiPipeOutFunc.value(pipe.asNoteOff) };
+		};
 		notesOn.clear;
 	}
 	

@@ -164,13 +164,13 @@ a.a.touch(0);
 	
 	// also called by onOff & solo buttons & alwaysOn model
 	stopAllNotes{
-		midiBuffer1.releaseAll;
-		midiBuffer2.releaseAll;
-		midiBuffer3.releaseAll;
-		midiBuffer4.releaseAll;
-		midiBuffer5.releaseAll;
-		chordQuantiserMod.releaseAll;
-		gui[\pianoRollLamp].releaseAll;
+		midiBuffer1.releaseAll(studio.actualLatency);
+		midiBuffer2.releaseAll(studio.actualLatency);
+		midiBuffer3.releaseAll(studio.actualLatency);
+		midiBuffer4.releaseAll(studio.actualLatency);
+		midiBuffer5.releaseAll(studio.actualLatency);
+		chordQuantiserMod.releaseAll(studio.actualLatency);
+		gui[\pianoRollLamp].releaseAll(studio.actualLatency);
 	} 
 	
 	// the slower clock

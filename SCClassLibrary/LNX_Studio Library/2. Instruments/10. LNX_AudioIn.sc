@@ -213,7 +213,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			
 			var signalL, signalR;
 			
-			signal  = DelayN.ar(signal, 2, delay);
+			signal  = DelayN.ar(signal, 1, delay);
 			signal  = signal * Lag.kr(amp*on);
 			pan     = Lag.kr(pan*2);
 			sendAmp = Lag.kr(sendAmp);
