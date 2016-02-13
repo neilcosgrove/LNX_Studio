@@ -4,6 +4,8 @@
 // on load program need to trigger program change as needed
 // wired bug selecting programs stored in presets
 
+// using preset controls is unpredictable
+
 LNX_MoogSub37 : LNX_InstrumentTemplate {
 		
 	classvar <moogPresets, <>isVisiblePref;
@@ -161,9 +163,9 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 
 	// release all played notes, uses midi Buffer
 	stopAllNotes{ 
-		midiInBuffer.releaseAll;
-		seqOutBuffer.releaseAll;
-		midiOutBuffer.releaseAll;
+		midiInBuffer.releaseAll; // *** how is this working
+		seqOutBuffer.releaseAll; // *** how is this working
+		midiOutBuffer.releaseAll; // *** how is this working
 		{keyboardView.clear}.defer(studio.actualLatency);
 	}
 	
@@ -356,13 +358,13 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	// reset sequencers posViews
 	clockStop {
 		sequencer.do(_.clockStop(studio.actualLatency));
-		seqOutBuffer.releaseAll;
+		seqOutBuffer.releaseAll(studio.actualLatency); // *** how is this working
 	}
 	
 	// remove any clock hilites
 	clockPause{
 		sequencer.do(_.clockPause(studio.actualLatency));
-		seqOutBuffer.releaseAll;	
+		seqOutBuffer.releaseAll(studio.actualLatency);	 // *** how is this working
 	}
 	
 	// clock in for midi out clock methods
@@ -394,6 +396,25 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			this.setMoogProgram;
 		};
 		^tempP
+	}
+	
+	// override insts template, only does this on load, should be called update models
+	updateGUI{|tempP|
+		tempP.do({|v,j|
+			if (p[j]!=v) { 
+				if ((j==11)||(j==12)) { 
+					// dont do any actions on p==11 or 12
+					models[j].lazyValue_(v,false);
+				}{
+					if ((tempP[89].isFalse)&&(j>=14)&&(j<=87)) {
+						models[j].lazyValue_(v,false); // don't do action
+					}{
+						models[j].lazyValueAction_(v, nil ,send:false);
+					}
+				}
+			}
+		});
+		this.iUpdateGUI(tempP);
 	}
 	
 	// anything else that needs doing after a load. all paramemters will be loaded by here
@@ -440,8 +461,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		models[90].lazyValueAction_(presetToLoad[90],latency,false);
 		
 		// exclude these parameters
-		presetExclusion.do{|i| presetToLoad[i]=p[i]};
-		
+		presetExclusion.do{|i| presetToLoad[i]=p[i]}; // THIS STOP UPDATING DOWN BELOW *** VVVV		
 		// check send program  1st and then send
 		if (models[90].isTrue) {
 			models[11].lazyValue_(presetToLoad[11],false);
@@ -451,15 +471,15 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			this.setMoogProgram(latency);
 		};
 			
-		// update models
-		presetToLoad.do({|v,j|	
+		// 89. use controls in presets & presetExclusion WORK HERE FROM ABOVE *** ^^^
+		presetToLoad.do{|v,j|	
 			if (#[89,90,11,12].includes(j).not) {
 				if (p[j]!=v) {
 					models[j].lazyValueAction_(v,latency,false)
 				}
 			};
-		});
-		
+		};
+
 		this.iLoadPreset(i,presetToLoad,latency);    // any instrument specific details
 		oldP=p.copy;
 		p=presetToLoad;               // copy the paramaters to p (is this needed any more?)
@@ -478,7 +498,6 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	// set control
 	midiControlVP{|item,value,latency|
 		p[item+14]=value;		
-		// go on, do a pipe here
 		midi.control(Sub37.keyAt(item),value,latency +! syncDelay,false,true); // midi control out
 		api.sendVP((id++"_ccvp_"++item).asSymbol,
 					'netMidiControlVP',item,value,midi.uidOut,midi.midiOutChannel);
@@ -493,22 +512,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		midi.control(Sub37.keyAt(item) ,value,nil,false,true);
 		// ignore set to true so no items learnt from this
 	}
-	
 
-	// override insts template to stop select program / preset when loading 
-	updateGUI{|tempP|
-		tempP.do({|v,j|
-			if (p[j]!=v) { 
-				if ((j==11)||(j==12)) { 
-					// dont do any actions on p==11 or 12
-					models[j].lazyValue_(v,false);
-				}{
-					models[j].lazyValueAction_(v,0.1,send:false); // a little timedelay
-				}
-			}
-		});
-		this.iUpdateGUI(tempP);
-	}
 
 	//////////////////////////*****************************************************
 	// GUI

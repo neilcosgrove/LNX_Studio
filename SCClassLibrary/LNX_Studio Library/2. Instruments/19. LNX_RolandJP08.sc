@@ -463,6 +463,39 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	// for your own saving
 	iGetSaveList{ ^(midi2.getSaveList) ++ (sequencer.getSaveList) }
 	
+	// anything else that needs doing before a load
+	preLoadP{|tempP|
+		models[16].doLazyValueAction_(tempP[16],nil,false);
+		// check send program  1st and then send
+		if (models[16].isTrue) {
+			models[12].doLazyValueAction_(tempP[12],nil,false); // THIS WILL LOAD PROGRAM
+		};
+		^tempP
+	}
+	
+	// override insts template to stop select program / preset when loading 
+	// add 0.075 to latency to allow control to update
+	// and this should really be called update models
+	updateGUI{|tempP|
+		tempP.do({|v,j|
+			if (p[j]!=v) { 
+				if (j==12) { 
+					// dont do any actions on p== 12
+					models[j].lazyValue_(v,false);
+				}{
+					if ((tempP[89].isFalse)&&(j>=17)) {
+						models[j].lazyValue_(v,false); // don't do action
+					}{
+						models[j].lazyValueAction_(v,
+							0.1 - syncDelay.clip(-inf,0) - studio.midiSyncLatency 
+						,send:false); // extra here as well
+					}
+				}
+			}
+		});
+		this.iUpdateGUI(tempP);
+	}
+	
 	// for your own loading
 	iPutLoadList{|l,noPre,loadVersion,templateLoadVersion|
 		midi2.putLoadList(l.popNI(4));
@@ -511,39 +544,13 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 
 	// roland jp08 stuff ///////////////////////***************************************************
 
-	preLoadP{|tempP|
 
-		models[16].doLazyValueAction_(tempP[16],nil,false);
-
-		// check send program  1st and then send
-		if (models[16].isTrue) {
-			models[12].doLazyValueAction_(tempP[12],nil,false);
-		};
-		
-		^tempP
-	}
-	
-	// override insts template to stop select program / preset when loading 
-	// add 0.075 to latency to allow control to update
-	// and this should really be called update models
-	updateGUI{|tempP|
-		tempP.do({|v,j|
-			if (p[j]!=v) { 
-				if (j==12) { 
-					// dont do any actions on p== 12
-					models[j].lazyValue_(v,false);
-				}{
-					models[j].lazyValueAction_(v,0.1 - syncDelay.clip(-inf,0) - studio.midiSyncLatency  ,send:false); // extra here as well
-				}
-			}
-		});
-		this.iUpdateGUI(tempP);
-	}
 
 	//  this is overriden to force program changes & exclusions by put p[15 & 16] 1st
 	loadPreset{|i,latency|
 		var oldP;
 		var presetToLoad=  presetMemory[i].copy;
+		var adjustedLatency;
 		
 		models[15].lazyValueAction_(presetToLoad[15],latency,false); // 89.use controls
 		models[16].lazyValueAction_(presetToLoad[16],latency,false); // 16.use program
@@ -553,14 +560,20 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		if (models[16].isTrue) {
 			models[12].doLazyValueAction_(presetToLoad[12],latency,false);
 		};
+		
+		if (latency.isNil) {
+			adjustedLatency = 0.1 - syncDelay.clip(-inf,0) - studio.midiSyncLatency
+		}{
+			adjustedLatency = latency + 0.075;
+			// above updateGUI only works after 0.2 so why 0.075 here? because of out adjustments
+		};
 				
 		if (p[15].isTrue) {
 			// update models
 			presetToLoad.do({|v,j|	
 				if (#[15,16,12].includes(j).not) {
 					if (p[j]!=v) {
-						// above updateGUI only works after 0.2 so why 0.075 here?
-						models[j].lazyValueAction_(v,(latency?0)+0.075,false)
+						models[j].lazyValueAction_(v,adjustedLatency,false)
 					}
 				};
 			});
