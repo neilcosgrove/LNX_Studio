@@ -1,5 +1,9 @@
 
 // midi patching  ////////////////////////////////////////////////////////////////////
+/*
+
+LNX_MIDIPatch.panic;
+*/
 
 LNX_MIDIPatch {
 
@@ -557,6 +561,8 @@ LNX_MIDIPatch {
 		outs[midiOut].touchLatency  (midiOutChannel, val, latency);
 		
 	}
+	
+	*panic{ patches.do(_.panic) }
 	
 	panic{ 127.do({|n|     outs[midiOut].noteOff(midiOutChannel, n, 0) }) }
 	
