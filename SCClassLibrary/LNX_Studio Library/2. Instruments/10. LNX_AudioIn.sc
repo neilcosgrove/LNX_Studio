@@ -116,7 +116,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 				}],
 				
 			// 10. syncDelay
-			[[0,1,\lin,0.001,0], midiControl, 10, "Sync",
+			[\syncTime, midiControl, 10, "Sync",
 				{|me,val,latency,send|
 					this.setSynthArgVP(10,val,\delay,val,latency,send);
 				}],
@@ -213,7 +213,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			
 			var signalL, signalR;
 			
-			signal  = DelayN.ar(signal, 1, delay);
+			signal  = DelayN.ar(signal, \syncTime.asSpec.maxval, delay);
 			signal  = signal * Lag.kr(amp*on);
 			pan     = Lag.kr(pan*2);
 			sendAmp = Lag.kr(sendAmp);

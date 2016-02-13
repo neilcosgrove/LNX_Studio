@@ -11,6 +11,10 @@ MVC_NumberFunc{
 	
 		// any extra specs i want
 	
+		Spec.add(\sync,         ControlSpec(-1, 1, 'linear', 0.001, 0, " s") );
+		Spec.add(\syncTime,     ControlSpec(0, \sync.asSpec.minval.abs, 'linear',
+						0.001, 0, " s") );
+		
 		Spec.add(\delayms,      ControlSpec(0.0001, 1, 'exp', 0, 0.3, " ms") ); 
 		Spec.add(\duration,     ControlSpec(0.005,  1, 'exp', default:1) );
 		Spec.add(\duration2,    ControlSpec(0.005,  2, 'exp', default:1) );

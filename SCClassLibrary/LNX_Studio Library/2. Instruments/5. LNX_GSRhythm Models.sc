@@ -231,7 +231,7 @@
 				}];
 				
 		// 297. syncDelay
-		template[297]=[[-1,1,\lin,0.001,0], {|me,val,latency,send|
+		template[297]=[\sync, {|me,val,latency,send|
 			this.setPVP(297,val,latency,send);
 			this.syncDelay_(val);
 		}];

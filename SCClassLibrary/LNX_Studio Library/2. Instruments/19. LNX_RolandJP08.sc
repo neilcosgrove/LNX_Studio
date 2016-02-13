@@ -157,7 +157,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 				}],
 				
 			// 10. syncDelay
-			[[-1,1,\lin,0.001,0], {|me,val,latency,send|
+			[\sync, {|me,val,latency,send|
 				this.setPVP(10,val,latency,send);
 				this.syncDelay_(val);
 			}],		

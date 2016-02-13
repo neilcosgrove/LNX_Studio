@@ -250,7 +250,7 @@ LNX_Melody : LNX_InstrumentTemplate {
 				{|me,val,latency,send,toggle| this.setPVPModel(30,val,latency,send) }],
 				
 			// 31. syncDelay
-			[[-1,1,\lin,0.001,0], {|me,val,latency,send|
+			[\sync, {|me,val,latency,send|
 				this.setPVP(31,val,latency,send);
 				this.syncDelay_(val);
 			}],	
