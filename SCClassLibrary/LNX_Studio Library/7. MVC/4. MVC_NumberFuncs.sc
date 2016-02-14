@@ -38,6 +38,8 @@ MVC_NumberFunc{
 		Spec.add(\db2,          ControlSpec(0.ampdb, 2, \db, units: " dB"));
 		Spec.add(\db4,          ControlSpec(-inf, 4, \db, 0, 0, " dB"));
 		Spec.add(\db6,          ControlSpec(-inf, 6, \db, 0, 0, " dB"));
+		Spec.add(\db12,          ControlSpec(-inf, 12, \db, 0, 0, " dB"));
+		Spec.add(\db24,          ControlSpec(-inf, 24, \db, 0, 0, " dB"));
 		
 		Spec.add(\dbEQ,         ControlSpec(-20, 20, \lin, 0, 0, " dB"));
 		

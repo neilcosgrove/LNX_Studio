@@ -69,7 +69,7 @@ LNX_Studio {
 	//// class ////////////////////////////////////////////////////
 		
 	classvar	<>versionMajor=2,	<>versionMinor=0,	<version,
-			<internetVersion,	<fileLoadVersion=2;
+			<internetVersion,	<fileLoadVersion=3;
 		
 	classvar	studios,			<instTypes, 
 			<thisWidth=212, 	<thisHeight,		<defaultHeight=374,
@@ -80,7 +80,7 @@ LNX_Studio {
 	//// instruments & main studio ///////////////////////////////
 	var	<server,			<songPath	,		<title="LNX_Studio",
 		<insts,			<onSoloGroup,		<>groups,
-		<>groupIDs,		<serverBootNo;
+		<>groupIDs,		<serverBootNo,     <channelOutSynths;
 
 	//// groups // to be replaced by groups & groupIDs above;
 	var	<instGroup, 		<fxGroup,			<channelOutGroup,
@@ -407,11 +407,12 @@ LNX_Studio {
 		// all purpose out for studio.
 		// nb need to think about >2 channels out because this wont work
 		
-		SynthDef("LNX_LimitOut", {|channel=0|
+		SynthDef("LNX_LimitOut", {|channel=0,preAmp=0|
 			var out;
 			out=In.ar(channel, 2);
 			out=Protect.newNoClip(out);
 			out=LeakDC.ar(out);
+			out=out * (preAmp.dbamp);
 			out=Limiter.ar(out,0.99, 0.001);
 			
 			SendPeakRMS.kr(out[0], 20, 1.5, "/peakOutL");
@@ -437,11 +438,18 @@ LNX_Studio {
 	startDSP{		
 		//"<#>".postln;
 		// add a limiter to each stereo out pair
-		(LNX_AudioDevices.numOutputBusChannels/2).do{|i|
-			Synth.tail(channelOutGroup,"LNX_LimitOut",i*2)
+		channelOutSynths = (LNX_AudioDevices.numOutputBusChannels/2).asInt.collect{|i|
+			Synth.tail(channelOutGroup,"LNX_LimitOut",i*2);
 		};
 		if (thisProcess.platform.name!=\osx) {
 			LNX_MouseXY.startDSP(server); // old hack for getting x,y on other op systems
+		};
+		this.setPreAmp;
+	}
+	
+	setPreAmp{
+		channelOutSynths.do{|synth|
+			synth.set(\preAmp, models[\preAmp].value)
 		};
 	
 	}
@@ -1441,6 +1449,7 @@ LNX_Studio {
 					bpm,
 					latency,
 					models[\volume].value,
+					models[\preAmp].value,
 					title.asSymbol,
 					insts.size,
 					noInternalBuses,
@@ -1664,6 +1673,7 @@ LNX_Studio {
 		if (insts.size<1) {this.updateOSX}; // update the studio window offset
 		l=l.reverse;
 		header=l.popS;	
+		
 		loadVersion=header.version;
 		
 		if (this.versionAtLeast(loadVersion.asInt,loadVersion.frac.asString.drop(2).asInt)) {
@@ -1718,6 +1728,11 @@ LNX_Studio {
 						absTime=2.5/bpm;
 						l.popF; // pop latency and do nothing with it
 						models[\volume].valueAction_(l.popF);
+						if (header.subVersion>=3) {
+							models[\preAmp].valueAction_(l.popF);
+						}{
+							models[\preAmp].valueAction_(0);
+						};
 					};
 					// start putting the info in
 					title=l.popS;

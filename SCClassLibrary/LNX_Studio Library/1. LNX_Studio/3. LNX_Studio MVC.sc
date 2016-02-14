@@ -167,6 +167,12 @@
 				this.setPVP(\mute,val,nil,send);
 			}].asModel;
 
+		models[\preAmp] = [ \db6, midiControl, 69, "PreAmp",
+			{|me,val,latency,send=true,toggle|
+				this.setPVP(\preAmp,val,nil,send);
+				this.setPreAmp;
+			}].asModel;
+	
 		// set range of volume
 		server.volume.setVolumeRange(-inf, 0);
 

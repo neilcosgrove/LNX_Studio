@@ -127,6 +127,18 @@
 							\colors_	: (	\on:		Color.red,
 										\off:	Color(46/77,46/79,72/145)/1.5,
 										\string:	Color.black ) );
+										
+		gui[\syncTheme]=(	\orientation_  : \horiz,
+						\resoultion_	 : 8,
+						\visualRound_  : 0.1,
+						\rounded_      : true,
+						\font_		 : Font("Helvetica",10),
+						\labelFont_	 : Font("Helvetica",10),
+						\showNumberBox_: false,
+						\colors_       : (	\background : Color(0,0,0,0.15),
+										\backgroundDown : Color(0.1,0.1,0.1,0.85),
+										\string : Color.black,
+										\focus : Color(0,0,0,0)));
 					
 		// file menu 10
 		MVC_PopUpMenu2(mixerWindow,Rect(7, 3, 74, 22))
@@ -388,14 +400,14 @@
 		sv = mixerGUI[\masterLevelsScrollView];
 		
 		// levels
-		MVC_FlatDisplay(models[\peakOutL],sv,Rect(3, 23, 7, 192+15));
-		MVC_FlatDisplay(models[\peakOutR],sv,Rect(12, 23, 7, 192+15));
-		MVC_Scale(sv,Rect(9+1, 23, 2, 192+15));
+		MVC_FlatDisplay(models[\peakOutL],sv,Rect(3, 23, 7, 192-7));
+		MVC_FlatDisplay(models[\peakOutR],sv,Rect(12, 23, 7, 192-7));
+		MVC_Scale(sv,Rect(9+1, 23, 2, 192-7));
 			
 		// peakLevel
-		MVC_PeakLevel(sv,models[\peakLevel],Rect(56, 27, 13, 184+15));		
+		MVC_PeakLevel(sv,models[\peakLevel],Rect(56, 27, 13, 184-7));		
 		// volume
-		MVC_SmoothSlider(models[\volume],sv,Rect(22, 23, 33, 192+15))
+		MVC_SmoothSlider(models[\volume],sv,Rect(22, 23, 33, 192-7))
 			.labelShadow_(false)
 			.thumbSizeAsRatio_(0.18,8)
 			.numberFunc_(\float2)
@@ -408,13 +420,19 @@
 			.color_(\numberDown,Color.white);
 				
 		// mute
-		MVC_OnOffView(models[\mute],sv, Rect(21, 250+15, 34, 20))
+		MVC_OnOffView(models[\mute],sv, Rect(21, 250-7, 34, 20))
 				.permanentStrings_(["Mute"])
 				.font_(Font("Helvetica-Bold",11))
 				.color_(\on,Color.red)
 				.color_(\off, Color(0.3686, 0.3373, 0.2412,0.5) )
 				.rounded_(true)
 				.canFocus_(false);
+				
+
+		MVC_NumberBox(models[\preAmp], sv,Rect(12, 268, 50, 16),  gui[\syncTheme])
+			.postfix_(" db")
+			.color_(\label,Color.white);
+			
 			
 		// fadeIn
 		MVC_FlatButton(sv,Rect(24+1, 2+1, 27, 17), mixerGUI[\buttonTheme2 ] ,"up")
@@ -422,7 +440,7 @@
 			.action_{ this.fadeIn };
 			
 		// fadeOut
-		MVC_FlatButton(sv,Rect(24+1, 206+1+22+15, 27, 17), mixerGUI[\buttonTheme2 ] ,"down")
+		MVC_FlatButton(sv,Rect(24+1, 206+1+22-7, 27, 17), mixerGUI[\buttonTheme2 ] ,"down")
 			.mode_(\icon)
 			.action_{ this.fadeOut };
 			
@@ -753,6 +771,7 @@
 			// sync	
 			if (inst.syncModel.notNil) {
 				MVC_NumberBox(inst.syncModel, sv,Rect(12, 430, 50, 16),  gui[\syncTheme])
+					.postfix_(" s")
 					.color_(\label,Color.white);
 			};
 							
