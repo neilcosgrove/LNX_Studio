@@ -81,9 +81,6 @@
 	// in models (fx's)
 	inModel{^nil}
 	inChModel{^nil}
-	
-	// latency & sync
-	iSyncDelayChanged{}
 
 	// your own vars
 	iInitVars{}

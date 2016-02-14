@@ -57,7 +57,7 @@ LNX_InstrumentTemplate {
 		
 	var <lastTemplateLoadVersion=1.2;
 	
-	var <syncDelay=0, <previousSync;
+	var <syncDelay=0;
 				
 	////////////////////////////////////////
 	//                                    //
@@ -218,16 +218,13 @@ LNX_InstrumentTemplate {
 		
 	///////////// sync stuff ///////////////
 	
-	syncDelay_{|val|
-		if (previousSync.notNil) {
-			syncDelay = val;
-			studio.updateSyncDelay; // studio will call iSyncDelayChanged
-			if (syncDelay<previousSync) { this.stopAllNotes }; // incase we miss the end of a note
-		};
-		previousSync = syncDelay;
-	}
-	
 	instLatency{ ^studio.actualLatency + syncDelay } // actual latency of this inst
+		
+	// set the sync time
+	syncDelay_{|val|
+		syncDelay = val;
+		studio.checkSyncDelay; // studio will call stopAllNotes to all inst
+	}
 		
 	////////////////////////////////////////
 	//                                    //

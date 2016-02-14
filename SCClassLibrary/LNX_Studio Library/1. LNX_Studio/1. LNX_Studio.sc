@@ -528,7 +528,7 @@ LNX_Studio {
 	latency_{|argLatency|
 		if (argLatency<latency) {
 			latency=argLatency;
-			insts.do(_.stopAllNotes); // if its small release notes
+			insts.do(_.stopAllNotes); // if its smaller release notes
 		}{
 			latency=argLatency;
 		};
@@ -542,28 +542,13 @@ LNX_Studio {
 	}
 	
 	// work out the largest -ive sync delay in all instruments
-	// and set that as the studio +ive syncdelay
-	updateSyncDelay{
-		
+	// and set that as the studio +ive syncdelay	
+	checkSyncDelay{	
 		// largest only -ive is turned into a +ive syncDelay so we don't below latency
 		syncDelay = insts.collect{|inst| inst.syncDelay.clip(-inf,0).abs }.asList.sort.last ? 0;
-	
+		insts.do(_.stopAllNotes);
 	}
 	
-	
-	checkSyncDelay{
-		var oldSync = syncDelay;
-		var newSync = insts.collect{|inst| inst.syncDelay.clip(-inf,0).abs }.asList.sort.last ? 0;	
-		if (oldSync != newSync) {
-			syncDelay = newSync; 
-			
-			// do i need to free everything?
-		};
-		
-		
-	}
-	
-		
 	// MIDI ///////////////////////////////////////////////////////////////////////////////
 	
 	// start midi stuff
