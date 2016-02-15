@@ -23,6 +23,8 @@ MVC_Window {
 	var <>helpAction;
 	var <>keepClosed=false;
 	
+	var <parentViews;
+	
 	*initClass { windows = [] }
 		
 	// new only creates an instance of MVC_Window
@@ -47,6 +49,9 @@ MVC_Window {
 		colors=IdentityDictionary[];
 		gui=[];
 		helpAction={true};
+		
+		parentViews = [this];
+		
 	}
 
 	// add or remove an MVC_View to the view, all views will be created this scrollView

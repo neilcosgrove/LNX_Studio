@@ -1777,7 +1777,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	
 	//clockIn is the clock pulse, with the current song pointer in beats
 	clockIn{|beat,latency|	
-		sequencers.do{|seq,n|
+		sequencers[0..3].do{|seq,n|
 			if ((((n>=3)and:{n<=5})and:{p[60].isTrue}).not) {
 				seq.clockIn(beat,latency);
 			};			

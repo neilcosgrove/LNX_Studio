@@ -28,7 +28,7 @@
 		var path;
 								
 		// block size
-		models[\blockSize] = [(("blockSize".loadPref?[1])[0]).asInt,[0,4,\lin,1],
+		models[\blockSize] = [(("blockSize".loadPref?[2])[0]).asInt,[0,4,\lin,1],
 			(\label_:"Block Size", \items_: (2**(5..9)).collect(_.asString) ),
 			{|me,val,latency,send|
 				this.initServerPostModels;   // update server options
@@ -148,7 +148,7 @@
 			.automationActive_(false);
 
 		// tempo
-		models[\tempo]=[bpm,[1,999], midiControl, 7, "Tempo", (moveRound_:1,resoultion_:10),
+		models[\tempo]=[bpm,[10,1000], midiControl, 7, "Tempo", (moveRound_:1,resoultion_:10),
 			{|me,val| this.guiSetBPM(val) }].asModel;
 
 		// tap
@@ -483,7 +483,7 @@
 		this.addTextToDialog("",false,true);
 		this.addTextToDialog("                  LNX_Studio",false,true);
 		this.addTextToDialog("",false,true);
-		this.addTextToDialog("                 "+(version.drop(1))+"alpha",false,true);
+		this.addTextToDialog("                 "+(version.drop(1))+"beta",false,true);
 		this.addTextToDialog("",false,true);
 
 		// user dialog input

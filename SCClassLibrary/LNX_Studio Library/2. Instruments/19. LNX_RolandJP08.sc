@@ -487,7 +487,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 						models[j].lazyValue_(v,false); // don't do action
 					}{
 						models[j].lazyValueAction_(v,
-							0.2 - syncDelay.clip(-inf,0) - studio.midiSyncLatency 
+							0.3 - syncDelay.clip(-inf,0) - studio.midiSyncLatency 
 						,send:false); // extra here as well
 					}
 				}

@@ -155,18 +155,6 @@ MVC_UserView{
 		if (view.notClosed){ view.focusColor_(focusColor) }
 	}
 	
-	//refresh{ if (view.notClosed) { view.refresh } }
-	
-	/*
-	a.a.window.isVisible
-	
-	
-	MVC_UserView
-	
-	LNX_PianoRollSequencer:createWidgets
-	
-	*/
-	
 	// you can't use System clock to call refresh
 	refresh{
 		if (view.notClosed) {

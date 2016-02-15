@@ -200,7 +200,7 @@ MVC_RoundedScrollView : MVC_ScrollView {
 
 MVC_ScrollView {
 
-	var	<parent,		<>window, 	<rect,	<view;
+	var	<parent,		<>window, 	<rect,	<view, <parentViews;
 		
 	var	<hasBorder=true,
 		<autoScrolls=false,			<autohidesScrollers=true,
@@ -258,6 +258,8 @@ MVC_ScrollView {
 		visibleOrigin=0@0;
 		
 		myGUI=IdentityDictionary[];
+		
+		if (parent.notNil) { parentViews = parent.parentViews };
 		
 		this.postInit;
 		

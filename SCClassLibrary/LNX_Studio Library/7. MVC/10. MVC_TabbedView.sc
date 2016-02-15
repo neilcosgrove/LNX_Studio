@@ -5,7 +5,7 @@
 		
 MVC_TabbedView {
 
-	var	<parent,		<>window, 		<rect,		<view;
+	var	<parent,		<>window, 		<rect,		<view,     <parentViews;
 		
 	var	<gui, 		<colors,			<>font;	
 	
@@ -45,14 +45,21 @@ MVC_TabbedView {
 				window=nil;
 				rect=bounds;
 				argView.addView(this);
+				if (argView.parentViews.notNil)
+					{ parentViews = argView.parentViews };
+			
 			}
 			{argView.isKindOf(MVC_ScrollView)} {
 				window=nil;
+				parent = argView;
 				rect=bounds;
 				argView.addView(this);
+				if (argView.parentViews.notNil)
+					{ parentViews = argView.parentViews};
 			}
 			{argView.isKindOf(SCWindow)} {
 				window=argView;  // else is view or window
+				parent = argView;
 				rect=bounds;
 			};
 		
@@ -262,7 +269,7 @@ MVC_TabbedView {
 		
 MVC_TabView {
 
-	var <parent, <tabIndex, <gui;
+	var <parent, <tabIndex, <gui, <parentViews;
 
 	*new {|tabbedView,tabIndex| ^super.new.init(tabbedView,tabIndex) }
 		
@@ -271,6 +278,8 @@ MVC_TabView {
 		tabIndex=argTabIndex;
 		gui=[];
 		//if (window.notNil) { this.create(window) }
+		
+		parentViews = parent.parentViews ++ [this];
 	}
 	
 	// the actual view
