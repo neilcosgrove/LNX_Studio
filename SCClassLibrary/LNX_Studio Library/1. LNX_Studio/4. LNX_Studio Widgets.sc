@@ -90,9 +90,12 @@
 		mixerGUI[\fxInfoText].hidden_(insts.effects.size>0);
 		mixerGUI[\midiInfoText].hidden_(insts.midi.size>0);
 		mixerGUI[\everythingInfoText].hidden_(insts.size>0);
-		if (insts.size<1) { mixerGUI[\everythingInfoText].bounds_(
-			Rect(0, 190, mixerGUI[\presetTab].bounds.width , 43);
-		) };	
+		if (insts.size<1) { 
+			mixerGUI[\instInfoText].bounds_(
+				Rect(0, 190, mixerGUI[\instScrollView].bounds.width , 43));
+			mixerGUI[\everythingInfoText].bounds_(
+				Rect(0, 190, mixerGUI[\presetTab].bounds.width , 43));
+		};
 	}
 	
 	// and create the the widgets
@@ -338,7 +341,15 @@
 			.tabHeight_(22)
 			.followEdges_(true)
 			.adjustments_([nil, Rect(83,0,-83,0)])
-			.value_(0);
+			.value_(0)
+			.resizeAction_{
+				if (insts.size<1) { 
+					mixerGUI[\instInfoText].bounds_(
+						Rect(0, 190, mixerGUI[\instScrollView].bounds.width , 43));
+					mixerGUI[\everythingInfoText].bounds_(
+						Rect(0, 190, mixerGUI[\presetTab].bounds.width , 43));
+				};
+			};
 		
 		mixerGUI[\masterTabs].focusActions_([{},{
 			mixerGUI[\popProgramsScrollView].visible_(true);
