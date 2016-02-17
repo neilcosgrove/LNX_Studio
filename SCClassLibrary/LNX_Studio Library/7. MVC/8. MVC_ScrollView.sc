@@ -22,7 +22,7 @@ MVC_RoundedComView : MVC_RoundedScrollView {
 
 MVC_RoundedScrollView : MVC_ScrollView {
 	
-	var <>width=6, <views, <>resizeList; // in future might need resizeList_{|array| ...
+	var <>width=6, <views, <resizeList; // in future might need resizeList_{|array| ...
 	
 	refreshOthers{ if (view.notClosed) {views.do(_.refresh)} }
 	
@@ -37,6 +37,16 @@ MVC_RoundedScrollView : MVC_ScrollView {
 		views=IdentityDictionary[];
 	}
 	
+	resizeList_{|list|
+		resizeList = list;
+		if (view.notNil) {
+			view.resize_(resizeList[0]);
+			views[\left].resize_(resizeList[1]);
+			views[\top].resize_(resizeList[2]);
+			views[\right].resize_(resizeList[3]);
+			views[\bottom].resize_(resizeList[4]);
+		};
+	}
 	
 	bounds_{|argRect|
 		var l,t,w,h;
