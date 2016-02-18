@@ -1,7 +1,8 @@
 
 /////////// MVC_OnOffView /////////////////////////////////////////////////////////////////
 
-/*(
+/*
+(
 w=MVC_Window();
 MVC_OnOffView(\switch.asModel,w,Rect(10, 10, 19, 19))
 	.resize_(3)
@@ -14,7 +15,132 @@ MVC_OnOffView(\switch.asModel,w,Rect(10, 10, 19, 19))
 	.strings_([\record]);
 w.create;
 )
+(
+w=MVC_Window();
+MVC_OnOffFlatView(\switch.asModel,w,Rect(10, 10, 19, 19))
+	.insetBy_(1)
+	.color_(\border,Color.black)
+	.color_(\on,Color.green)
+	.color_(\off,Color(46/77,46/79,72/145)/1.5)
+	.color_(\icon,Color.green)
+	.color_(\iconOff,Color.grey)
+	.mode_(\icon)
+	.strings_([\play]);
+w.create;
+)
+
 */
+
+MVC_OnOffFlatView : MVC_OnOffView {
+
+	// make the view
+	createView{
+		view=SCUserView.new(window,rect)
+			.drawFunc={|me|
+				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
+				
+				Pen.use{
+					Pen.smoothing_(false);
+					Color.black.set;
+					Pen.fillRect(Rect(0,0,w,h));
+					if (down) {
+						(colors[\background]/1.3).set;
+					}{
+						colors[\background].set;
+					};
+					if (midiLearn) {
+						colors[\midiLearn].set;
+					};
+					Pen.fillRect(Rect(1,1,w-2,h-2));
+				
+					if (down) {
+						Color(0,0,0,0.55).set;
+						Pen.fillRect(Rect(1,1,w-3,1));
+						Pen.fillRect(Rect(1,1,1,h-3));
+						
+						Color(1,1,1,0.15).set;
+						Pen.fillRect(Rect(w-2,2,1,h-3));
+						Pen.fillRect(Rect(2,h-2,w-3,1));
+						
+						Color(0,0,0,0.13).setFill;
+						Pen.moveTo(2@2);
+						Pen.lineTo((w-3)@2);
+						Pen.lineTo(2@(h-3));
+						Pen.lineTo(2@2);
+						Pen.fill;
+						
+						if (darkerWhenPressed) {
+							if (value==1) {
+								Pen.fillColor_(colors[\on]/1.5)
+							}{
+								Pen.fillColor_(colors[\off]/1.5)
+							};
+						}{
+							if (value==1) {
+								Pen.fillColor_(colors[\on])
+							}{
+								Pen.fillColor_(colors[\off])
+							};		
+						};
+						
+					}{
+						Color(1,1,1,0.2).set;
+						Pen.fillRect(Rect(1,1,w-3,1));
+						Pen.fillRect(Rect(1,1,1,h-3));
+						Color(0,0,0,0.45).set;
+						Pen.fillRect(Rect(w-2,2,1,h-3));
+						Pen.fillRect(Rect(2,h-2,w-3,1));
+						
+						Color(1,1,1,0.065).setFill;
+						Pen.moveTo(2@2);
+						Pen.lineTo((w-3)@2);
+						Pen.lineTo(2@(h-3));
+						Pen.lineTo(2@2);
+						Pen.fill;
+						
+						if (value==1) {
+							Pen.fillColor_(colors[\on]*flashState)
+						}{
+							Pen.fillColor_(colors[\off]*flashState)
+						};
+						
+					};
+					
+					case
+						{mode==nil}{
+							Pen.smoothing_(true);
+							if (down) {
+								Pen.font_(font.copy.size_(font.size-1));
+							}{
+								Pen.font_(font);
+							};
+								
+							if (value==1) {
+								Pen.stringCenteredIn(strings@@1,
+									Rect(down.if(1,0),down.if(1,0),w,h));
+							}{
+								Pen.stringCenteredIn(strings[0],
+									Rect(down.if(1,0),down.if(1,0),w,h));
+							};
+						}{
+							Pen.smoothing_(true);
+							if (value>=0.5) {	
+							DrawIcon.symbolArgs((permanentStrings?strings)|@|1,
+								Rect(down.if(1,0),down.if(1,0),w-1,h).insetBy(insetBy));
+							}{
+							DrawIcon.symbolArgs((permanentStrings?strings)|@|0,
+								Rect(down.if(1,0),down.if(1,0),w-1,h).insetBy(insetBy));
+							};
+						}			
+				}; // end.pen
+
+		}	
+	}	
+	
+	
+}
+
+
 
 MVC_OnOffView : MVC_View {
 
@@ -26,6 +152,7 @@ MVC_OnOffView : MVC_View {
 	var <>onValue = 1;
 	var flashState = 1, flashTask, lastFlashTime, <>flashTime = 0.33, <>flashDuration = 1.65;
 	var <>iconOffColor=true;
+	var <>darkerWhenPressed=true;
 
 	flash{
 		if (flashTask.isNil) {	
@@ -261,9 +388,11 @@ MVC_OnOffView : MVC_View {
 						this.toggleMIDIactive
 					}{
 						case {mouseMode==\button} {
+							down=true;
 							value=1;
 							view.refresh;
 						} {mouseMode==\tap} {
+							down=true;
 							this.viewDoValueAction_(1,nil,true,false);
 						} {mouseMode==\switch} {
 							down=true;
@@ -297,10 +426,10 @@ MVC_OnOffView : MVC_View {
 						}
 					}
 				};
-				if ((mouseMode==\switch) || (mouseMode==\multi)) {
+				//if ((mouseMode==\switch) || (mouseMode==\multi)) {
 					if (	inBounds && (down.not) ) { down=true; this.refresh};
 					if (	(inBounds.not) && (down) ) { down=false; this.refresh};
-				};
+				//};
 			}
 		};
 		
@@ -336,13 +465,14 @@ MVC_OnOffView : MVC_View {
 							};
 						}
 					};
-					if (down) {
-						down=false;
-						this.refresh;
-					};
+
 					
 				}
-			}
+			};
+			if (down) {
+				down=false;
+				this.refresh;
+			};
 		};
 		
 	}
