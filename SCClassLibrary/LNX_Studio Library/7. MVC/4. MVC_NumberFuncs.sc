@@ -12,6 +12,10 @@ MVC_NumberFunc{
 	
 		// any extra specs i want
 	
+		Spec.add(\sync,         ControlSpec(-1, 1, 'linear', 0.001, 0, " s") );
+		Spec.add(\syncTime,     ControlSpec(0, \sync.asSpec.minval.abs, 'linear',
+						0.001, 0, " s") );
+		
 		Spec.add(\delayms,      ControlSpec(0.0001, 1, 'exp', 0, 0.3, " ms") ); 
 		Spec.add(\duration,     ControlSpec(0.005,  1, 'exp', default:1) );
 		Spec.add(\duration2,    ControlSpec(0.005,  2, 'exp', default:1) );
@@ -35,6 +39,8 @@ MVC_NumberFunc{
 		Spec.add(\db2,          ControlSpec(0.ampdb, 2, \db, units: " dB"));
 		Spec.add(\db4,          ControlSpec(-inf, 4, \db, 0, 0, " dB"));
 		Spec.add(\db6,          ControlSpec(-inf, 6, \db, 0, 0, " dB"));
+		Spec.add(\db12,          ControlSpec(-inf, 12, \db, 0, 0, " dB"));
+		Spec.add(\db24,          ControlSpec(-inf, 24, \db, 0, 0, " dB"));
 		
 		Spec.add(\dbEQ,         ControlSpec(-20, 20, \lin, 0, 0, " dB"));
 		

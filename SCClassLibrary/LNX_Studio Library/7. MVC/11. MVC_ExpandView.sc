@@ -19,7 +19,7 @@ ColorPicker(v[0]);
 
 MVC_ExpandView {
 
-	var	<parent,		<>window, 	<rect,	<view;
+	var	<parent,		<>window, 	<rect,	<view,   <parentViews;
 	
 	var	<smallBounds, <collapsed, button;
 		
@@ -99,24 +99,28 @@ MVC_ExpandView {
 				rect=bounds;
 				smallBounds=small;
 				argView.addView(this);
+				parentViews = argView.parentViews;
 			}
 			{argView.isKindOf(MVC_ScrollView)} {
 				if (argView.isOpen) {window = argView.view } { window=nil };
 				rect=bounds;
 				smallBounds=small;
 				argView.addView(this);
+				parentViews = argView.parentViews;
 			}
 			{argView.isKindOf(MVC_RoundedScrollView)} {
 				if (argView.isOpen) {window = argView.view } { window=nil };
 				rect=bounds;
 				smallBounds=small;
 				argView.addView(this);
+				parentViews = argView.parentViews;
 			}
 			{argView.isKindOf(MVC_TabView)} {
 				window=nil;
 				rect=bounds;
 				smallBounds=small;
 				argView.addView(this);
+				parentViews = argView.parentViews;
 			}
 			{argView.isKindOf(Window)} {
 				window=argView;  // else is view or window

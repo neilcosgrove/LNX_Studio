@@ -157,20 +157,20 @@ a.a.touch(0);
 	
 	// used for noteOff in sequencers
 	// efficiency issue: this is called 3 times in alt_solo over a network
-	stopNotesIfNeeded{
+	stopNotesIfNeeded{|latency|
 		if ((instOnSolo.isOff)and:{this.alwaysOn.not}) {this.stopAllNotes};
-		this.updateOnSolo;
+		this.updateOnSolo(latency);
 	}
 	
 	// also called by onOff & solo buttons & alwaysOn model
 	stopAllNotes{
-		midiBuffer1.releaseAll;
-		midiBuffer2.releaseAll;
-		midiBuffer3.releaseAll;
-		midiBuffer4.releaseAll;
-		midiBuffer5.releaseAll;
-		chordQuantiserMod.releaseAll;
-		gui[\pianoRollLamp].releaseAll;
+		midiBuffer1.releaseAll(studio.actualLatency);
+		midiBuffer2.releaseAll(studio.actualLatency);
+		midiBuffer3.releaseAll(studio.actualLatency);
+		midiBuffer4.releaseAll(studio.actualLatency);
+		midiBuffer5.releaseAll(studio.actualLatency);
+		chordQuantiserMod.releaseAll(studio.actualLatency);
+		gui[\pianoRollLamp].releaseAll(studio.actualLatency);
 	} 
 	
 	// the slower clock
@@ -336,7 +336,7 @@ a.a.touch(0);
 	toStoreChordsMod    {|pipe| storeChordsMod.pipeIn(pipe) }
 	toChordQuantiserMod {|pipe| chordQuantiserMod.pipeIn(pipe) }
 	toArpeggiatorMod    {|pipe| arpeggiatorMod.pipeIn(pipe) }
-	toMultiPipeOut      {|pipe| multiPipeOut.pipeIn(pipe) }
+	toMultiPipeOut      {|pipe| multiPipeOut.pipeIn(pipe.addLatency(syncDelay)) }
 	
 	toSequencer{|pipe|
 		case
@@ -347,7 +347,7 @@ a.a.touch(0);
 	toMIDIOut{|pipe|
 		case
 			{pipe.isNoteOn } { midi.noteOn (pipe.note, pipe.velocity, pipe.latency) }
-			{pipe.isNoteOff} { midi.noteOff(pipe.note, pipe.velocity, pipe.latency) };
+			{pipe.isNoteOff} { midi.noteOff(pipe.note, pipe.velocity, pipe.latency) }
 	}
 	
 	toKeyboardSelectColors{|pipe|

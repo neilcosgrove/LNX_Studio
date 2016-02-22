@@ -21,21 +21,23 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
-	*studioName {^"Drum Synth"}
-	*sortOrder{^1}
-	isInstrument{^true}
-	canBeSequenced{^true}
+	*studioName      {^"Drum Synth"}
+	*sortOrder       {^1}
+	isInstrument     {^true}
+	canBeSequenced   {^true}
 	isMixerInstrument{^true}
-	hasLevelsOut{^true}
-	mixerColor{^Color(0.75,1,0.75,0.4)} // colour in mixer
-	peakModel{^models[131]}
-	volumeModel{^models[2] }
-	outChModel{^models[25]}
-	soloModel{^models[0]}
-	onOffModel{^models[1]}
-	panModel{^models[130]}
-	sendChModel{^models[132]}
+	hasLevelsOut     {^true}
+	mixerColor       {^Color(0.75,1,0.75,0.4)} // colour in mixer
+	
+	peakModel   {^models[131]}
+	volumeModel {^models[2] }
+	outChModel  {^models[25]}
+	soloModel   {^models[0]}
+	onOffModel  {^models[1]}
+	panModel    {^models[130]}
+	sendChModel {^models[132]}
 	sendAmpModel{^models[133]}
+	syncModel   {^models[134]}
 	
 	// an immutable list of methods available to the network
 	interface{^#[ \netSeq, \netChannelItem, \netSteps, \netRuler]}
@@ -399,6 +401,12 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 			[-inf, \db2,  midiControl, 133, "Maseter Send Amp", (label_:"Send"),
 				{|me,val,latency,send| this.setPVPModel(133,val,latency,send) }],
 				
+			// 134. syncDelay
+			[\sync, {|me,val,latency,send|
+				this.setPVP(134,val,latency,send);
+				this.syncDelay_(val);
+			}],
+				
  		];
  			
  		defaultChannels.do{|y|
@@ -447,10 +455,10 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
  		#models,defaults = template.generateAllModels;
  		
  		// list all parameters you want exluded from a preset change
-		presetExclusion=[0,1,21,22,26,119];
+		presetExclusion=[0,1,21,22,26,119,134];
 		randomExclusion=[0,1,2,21,22,23,24,25,26,27,28,29,30,31,37,38,
-				39,40,41,118,119,120,121,122,123,124,125,126,127,128,129,131];
-		autoExclusion=[26];
+				39,40,41,118,119,120,121,122,123,124,125,126,127,128,129,131,134];
+		autoExclusion=[26,134];
 
 	}
 		
@@ -769,13 +777,10 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 	
 		 this.instOutChannel_(  LNX_AudioDevices.getOutChannelIndex(p[25]), latency);
 		 
-		 
-		 
-		 
 	} // also used for server reboot
 	
 	//clockIn is the clock pulse, with the current song pointer in beats
-	clockIn   {|beat|
+	clockIn   {|beat,latency|
 		channels.do({|y|
 			var vel,pos,note,speed,dur;
 			speed=sP[y][6];
@@ -784,9 +789,9 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 				vel=seq[y][pos];
 				note=sP[y][2];
 				if (vel>0) {
-					this.bang(y,vel,studio.actualLatency);
+					this.bang(y,vel,latency);
 				};
-				{posModels[y].lazyValue_(pos,false)}.defer(studio.actualLatency);
+				{posModels[y].lazyValue_(pos,false)}.defer(latency);
 			};
 		});
 	}	
@@ -860,7 +865,7 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 					q           =vel.mapVelocityToRange(p[10],p[18],0   ,1 );
 					noise       =vel.mapVelocityToRange(p[19],p[20],0   ,1 );
 					node=server.nextNodeID;
-					server.sendBundle(latency,
+					server.sendBundle(latency +! syncDelay,
 						["/s_new", "kick", node, 0, instGroupID,
 							\amp,		   amp,
 							\note,	   	   npoNote,
@@ -881,7 +886,8 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 
 						]);
 					if (synthsOn[drum].notNil) {
-						server.sendBundle(latency,[\n_set, synthsOn[drum], \gate, -1.005]);
+						server.sendBundle(latency +! syncDelay,
+							[\n_set, synthsOn[drum], \gate, -1.005]);
 					};
 					synthsOn[drum]=node;
 					{gui[\lamps][drum].value_(vel,0.15);}.defer(latency?0);
@@ -900,7 +906,7 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 					env         =vel.mapVelocityToRange(p[74] ,p[79],0   ,1.3 );
 					nDur        =vel.mapVelocityToRange(p[75] ,p[80],0   ,1   );
 					node=server.nextNodeID;
-					server.sendBundle(latency,
+					server.sendBundle(latency +! syncDelay,
 						["/s_new", "snare", node, 0, instGroupID,
 							\amp,            amp,	
 							\note,	   	   npoNote,
@@ -919,7 +925,8 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 							\masterSendAmp,		masterSendAmp,
 							]);
 					if (synthsOn[drum].notNil) {
-						server.sendBundle(latency,[\n_set, synthsOn[drum], \gate, -1.005]);
+						server.sendBundle(latency +! syncDelay,
+							[\n_set, synthsOn[drum], \gate, -1.005]);
 					};
 					synthsOn[drum]=node;
 					{gui[\lamps][drum].value_(vel,0.1);}.defer(latency?0);
@@ -935,7 +942,7 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 					fq=fq-(((fq*2000*q*3).clip(17000,9999999)-17000)/(2000*q*3));
 					rnd         =vel.mapVelocityToRange(p[87] ,p[88],0   ,1   )/20;
 					node=server.nextNodeID;
-					server.sendBundle(latency,
+					server.sendBundle(latency +! syncDelay,
 						["/s_new", "clap", node, 0, instGroupID,
 							\amp,            amp*(q.map(0,2,0.5,0.25)),
 							\outputChannels, outputChannels,
@@ -952,7 +959,8 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 							\masterSendAmp,		masterSendAmp,
 							]);
 					if (synthsOn[drum].notNil) {
-						server.sendBundle(latency,[\n_set, synthsOn[drum], \gate, -1.005]);
+						server.sendBundle(latency +! syncDelay,
+							[\n_set, synthsOn[drum], \gate, -1.005]);
 					};
 					synthsOn[drum]=node;
 					{gui[\lamps][drum].value_(vel,0.1);}.defer(latency?0);
@@ -978,7 +986,7 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 					stick = (vel.mapVelocityToRange(p[103],p[104],0,2)**2)**1.25;
 					
 					node=server.nextNodeID;
-					server.sendBundle(latency,
+					server.sendBundle(latency +! syncDelay,
 						["/s_new", "SOStom", node, 0, instGroupID,
 							\amp,            amp,
 							\decay,          dur,
@@ -1005,7 +1013,8 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 							
 						]);
 					if (synthsOn[drum].notNil) {
-						server.sendBundle(latency,[\n_set, synthsOn[drum], \gate, -1.01]);
+						server.sendBundle(latency +! syncDelay,
+							[\n_set, synthsOn[drum], \gate, -1.01]);
 					};
 					synthsOn[drum]=node;
 					{gui[\lamps][drum].value_(vel,0.1);}.defer(latency?0);
@@ -1021,7 +1030,7 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 					hp        =vel.mapVelocityToRange(p[115] ,p[116],  0.5 ,1  );
 					
 					node=server.nextNodeID;	
-					server.sendBundle(latency,
+					server.sendBundle(latency +! syncDelay,
 						["/s_new", "hat", node, 0, instGroupID,
 							\amp,amp,
 							\outputChannels, outputChannels,
@@ -1037,7 +1046,8 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 							\masterSendAmp,		masterSendAmp,
 						]);
 					if (synthsOn[drum].notNil) {
-						server.sendBundle(latency,[\n_set, synthsOn[drum], \gate, -1.01]);
+						server.sendBundle(latency +! syncDelay,
+							[\n_set, synthsOn[drum], \gate, -1.01]);
 					};
 					synthsOn[drum]=node;
 					{gui[\lamps][drum].value_(vel/2+0.5,dur/10);}.defer(latency?0);

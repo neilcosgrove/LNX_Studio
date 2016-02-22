@@ -81,9 +81,6 @@
 	// in models (fx's)
 	inModel{^nil}
 	inChModel{^nil}
-	
-	// latency & sync
-	iSyncDelayChanged{}
 
 	// your own vars
 	iInitVars{}
@@ -206,7 +203,7 @@
 	stopAllNotes{} 			// used for noteOff when stopping sequencers & midi Devices
 							// also called by onOff & solo buttons
 							
-	updateOnSolo{}  // onSolo has changed
+	updateOnSolo{|latency|}  // onSolo has changed
 		
 	popItems{^[]}
 		

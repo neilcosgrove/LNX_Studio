@@ -282,23 +282,29 @@ MVC_SmoothSlider : MVC_View {
 	// set the colour in the Dictionary
 	// need to do disable here
 	color_{|key,color|
+		var visible = this.parentsVisible;
+			
 		if (colors.includesKey(key).not) {^this}; // drop out
 		colors[key]=color;
 		if (key=='focus'      ) { {if (view.notClosed) { view.focusColor_(
-				colors[\focus]) } }.defer };
+				colors[\focus],visible) } }.defer };
+				
 		if (key=='knob'       ) { {if (view.notClosed) { view.knobColor_ (
-				colors[midiLearn.if(\midiLearn,enabled.if(\knob,\knobDisabled))]) } }.defer };
+				colors[midiLearn.if(\midiLearn,enabled.if(\knob,\knobDisabled))],visible ) } }.defer };
+				
 		if (key=='hilite'	 ) { {if (view.notClosed) { view.hiliteColor_(
-				colors[enabled.if(\hilite,\backgroundDisabled)]) } }.defer };
+				colors[enabled.if(\hilite,\backgroundDisabled)],visible) } }.defer };
+		
 		if (key=='background' ) { {if (view.notClosed) { view.background_(
-				colors[enabled.if(\background,\backgroundDisabled)]) } }.defer };
+				colors[enabled.if(\background,\backgroundDisabled)],visible) } }.defer };
+		
 		if (key=='border'     ) { {if (view.notClosed) { view.borderColor_(
-				colors[midiLearn.if(\midiLearn,\border)]) } }.defer };
+				colors[midiLearn.if(\midiLearn,\border)],visible) } }.defer };
+		
 		if (key=='label') { {labelGUI.do(_.refresh)}.defer };
-	
 		
 		if (key=='knobBorder') { {if (view.notClosed) {
-				view.knobBorder_(colors[\knobBorder])
+				view.knobBorder_(colors[\knobBorder],visible)
 		} }.defer };
 		
 		if (key=='numberUp') { { if (numberGUI.notClosed) { numberGUI.refresh } }.defer; };
@@ -328,30 +334,38 @@ MVC_SmoothSlider : MVC_View {
 	
 	// fresh the Slider Value
 	refreshValue{
+		var parentsVisible = this.parentsVisible;
 		if (view.notClosed) {
 			if (controlSpec.notNil) {
-				if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) {
-					view.valueNoRefresh_(controlSpec.unmap(value))
-				}{
+				if (parentsVisible) {
 					view.value_(controlSpec.unmap(value))
+				}{
+					view.valueNoRefresh_(controlSpec.unmap(value))
 				}
 			}{
-				if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) {
-					view.valueNoRefresh_(value);
-				}{
+				if ( parentsVisible) {
 					view.value_(value);
+				}{
+					view.valueNoRefresh_(value);
 				}
 			};
 		}
 	}
 	
-	// unlike SCView there is no refresh needed with SCSlider
-	// this is not true, valueAction_ calls this and so value does need updating. Changed!
+	parentsVisible{
+		parentViews.do{|view| if (view.isVisible.not) { ^false }};
+		^true;
+	}
+	
+	// you can't use System clock to call refresh
 	refresh{
-		if ((view.notClosed) and: { (numberGUI.notNil) }) {
-			if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) { ^this };
-			numberGUI.refresh;
-			this.refreshValue;
+		if (view.notClosed) {
+			// drop of if tab is hiddden			
+			//if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) { ^this };
+			parentViews.do{|view| if (view.isVisible.not) { ^this }};
+			// else
+			view.refresh;
+			if (numberGUI.notNil) { numberGUI.refresh }
 		}
 	}
 
@@ -360,6 +374,32 @@ MVC_SmoothSlider : MVC_View {
 SmoothSliderAjusted : SmoothSlider {
 	
 	var <>drawNegative=true;
+		
+	focusColor_ { |newColor,refresh=true|
+		focusColor = newColor;
+		if (refresh) {this.parent.refresh}
+	}
+	knobColor_ { |newColor,refresh=true| 
+		color[3] = newColor; 
+		if (refresh) {this.refresh}
+	}
+	hilightColor_ { |newColor,refresh=true|
+		color[1] = newColor;
+		if (refresh) {this.refresh}
+	}
+	background_ { |newColor,refresh=true|
+		color[0] = newColor;
+		if (refresh) {this.refresh}
+	}
+	borderColor_ { |newColor,refresh=true|
+		color[2] = newColor;
+		if (refresh) {this.refresh}
+	}
+	
+	knobBorder_{|color,refresh=true|
+		knobBorder=color;
+		if (refresh) {this.refresh}
+	}
 	
 	*initClass{ RoundView.focusRingSize_(0) }
 	mouseDown{}
@@ -401,7 +441,7 @@ SmoothSliderAjusted : SmoothSlider {
 		var baseRect, knobRect;
 		var center, strOri;
 		var bnds; // used with string
-		
+
 		Pen.use {
 			
 			rect = this.drawBounds;

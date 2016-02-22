@@ -101,7 +101,7 @@
 				
 		];
 			
-		template=template.extend(289+8,0); // extend the list to add the channel parameters
+		template=template.extend(297+1,0); // extend the list to add the channel parameters
 			
 	// MASTER FILTER ///////////////////////////////////////////////////////////////////////
 						
@@ -228,7 +228,13 @@
 				{|me,val,latency,send|
 					this.setPVPModel(288,val,latency,send);
 					this.setAllBoth(\masterSendAmp,latency);
-				}];		
+				}];
+				
+		// 297. syncDelay
+		template[297]=[\sync, {|me,val,latency,send|
+			this.setPVP(297,val,latency,send);
+			this.syncDelay_(val);
+		}];
 		
 	// channels parameters // * * * * * * * * * * * * * * * * * * *//////////////////////
 						
@@ -494,17 +500,17 @@
 			template[289+i]=[0,\switch,midiControl, 289+i, "Rand Smp"+(i+1),
 				(\strings_:["R"]),
 				{|me,val,latency,send,toggle| this.setPVP(289+i,val,latency,send) }];
-	
+					
 		};
 		
 		#models,defaults=template.generateAllModels;
 
 		// list all parameters you want exluded from a preset change
-		presetExclusion=#[0,1,10];
+		presetExclusion=#[0,1,10,297];
 		randomExclusion=#[0,1,2,3,4,7,8,10,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,
 						29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,76,77,78,79,80,81,82,83,
-						5,6,52,53,54,55,56,57,58,59,68,69,70,71,72,73,74,75,286];
-		autoExclusion=#[10];
+						5,6,52,53,54,55,56,57,58,59,68,69,70,71,72,73,74,75,286,297];
+		autoExclusion=#[10,297];
 						
 		defaultChannels.do{|i| models[108+i].constrain_(false) }; // this may not work
 		
@@ -516,18 +522,16 @@
 	}
 	
 	// peak / target volume model
-	peakModel{^models[286]}
-	
+	peakModel   {^models[286]}
 	// return the volume model
-	volumeModel{^models[2] }
-	outChModel{^models[3]}
-	
-	soloModel{^models[0]}
-	onOffModel{^models[1]}
-	panModel{^models[4]}
-	
-	sendChModel{^models[287]}
+	volumeModel {^models[2]}
+	outChModel  {^models[3]}
+	soloModel   {^models[0]}
+	onOffModel  {^models[1]}
+	panModel    {^models[4]}
+	sendChModel {^models[287]}
 	sendAmpModel{^models[288]}
+	syncModel   {^models[297]}
 	
 }
 

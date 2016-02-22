@@ -73,19 +73,20 @@ LNX_WebBrowser{
 
 	// a url link was clicked on
 	onLink_{|url|
-		var ext = url.extension; // had to change wslib a bit
-		url=url.replace("%20"," ");
+		var ext = url.extension;    // had to change wslib a bit
+		if (url=="") { ^this };     // exception
+		url=url.replace("%20"," "); // replace %20 with space
+		
 		if (ext.notNil) {
 			ext=ext.toLower.asSymbol;
-			// is recognised audio
-			if (formats.includes(ext)) {
-				gui[\urlView].string_(url); // download
-				this.download(url);	
+			if (formats.includes(ext)) {      // is recognised audio
+				gui[\urlView].string_(url);  // set gui string
+				this.download(url);          // & download
 			}{
-				gui[\webView].url_(url); // webview
+				gui[\webView].url_(url);     // webview
 			}
 		}{
-			gui[\webView].url_(url); // webview
+			gui[\webView].url_(url);          // webview
 		}
 	}
 	

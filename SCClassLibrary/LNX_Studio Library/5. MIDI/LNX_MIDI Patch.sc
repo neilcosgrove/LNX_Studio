@@ -1,5 +1,9 @@
 
 // midi patching  ////////////////////////////////////////////////////////////////////
+/*
+
+LNX_MIDIPatch.panic;
+*/
 
 LNX_MIDIPatch {
 
@@ -513,7 +517,7 @@ LNX_MIDIPatch {
 	
 	// packet needs to be a Int8Array
 	// no latency in sysex, shall i delay it myself
-	sysex {|packet,latency|
+	sysex {|packet,latency|		
 		if ((uidOut>0)and:{uidOut<=noInternalBuses}) {
 	 		patches.do({|patch|
 				if ( (patch.uidIn==uidOut) and:{(patch===this).not} and:
@@ -557,6 +561,8 @@ LNX_MIDIPatch {
 		outs[midiOut].touchLatency  (midiOutChannel, val, latency);
 		
 	}
+	
+	*panic{ patches.do(_.panic) }
 	
 	panic{ 127.do({|n|     outs[midiOut].noteOff(midiOutChannel, n, 0) }) }
 	

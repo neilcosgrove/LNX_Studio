@@ -58,18 +58,8 @@
 // Josh           : helping with the SC side of OscGroups
 // and nonprivate : sound advice.
 //
-// BUG LOG:
-// MVC_Keyboard doesn't work on MVC_Window direcrtly, need to use MVC_ScrollView, why?
-// the arrow keys in midiProgram change aren't implemented, you need to select keyboard
-// Safe mode doesn''t launch // sudo -u nobody doesn't seem to work?
-// Large posts cause crash
-//
-// ISSUES:
-// pressing stop is a bit abrupted in SCCode, the release didn't work for some reason
-// keep an eye on memory usage: Object.totalFree
-// build for os<10.8
-//
-// all of the above are minor
+// Unsolved BUG LOG:
+// WebView crashes ramdomly in Cocoa.
 //
 // enjoy, love neil x (lnx)
 //
@@ -79,7 +69,7 @@ LNX_Studio {
 	//// class ////////////////////////////////////////////////////
 		
 	classvar	<>versionMajor=2,	<>versionMinor=0,	<version,
-			<internetVersion,	<fileLoadVersion=2;
+			<internetVersion,	<fileLoadVersion=3;
 		
 	classvar	studios,			<instTypes, 
 			<thisWidth=212, 	<thisHeight,		<defaultHeight=374,
@@ -90,7 +80,7 @@ LNX_Studio {
 	//// instruments & main studio ///////////////////////////////
 	var	<server,			<songPath	,		<title="LNX_Studio",
 		<insts,			<onSoloGroup,		<>groups,
-		<>groupIDs,		<serverBootNo;
+		<>groupIDs,		<serverBootNo,     <channelOutSynths;
 
 	//// groups // to be replaced by groups & groupIDs above;
 	var	<instGroup, 		<fxGroup,			<channelOutGroup,
@@ -420,11 +410,12 @@ LNX_Studio {
 		// all purpose out for studio.
 		// nb need to think about >2 channels out because this wont work
 		
-		SynthDef("LNX_LimitOut", {|channel=0|
+		SynthDef("LNX_LimitOut", {|channel=0,preAmp=0|
 			var out;
 			out=In.ar(channel, 2);
 			out=Protect.newNoClip(out);
 			out=LeakDC.ar(out);
+			out=out * (preAmp.dbamp);
 			out=Limiter.ar(out,0.99, 0.001);
 			
 			SendPeakRMS.kr(out[0], 20, 1.5, "/peakOutL");
@@ -450,11 +441,18 @@ LNX_Studio {
 	startDSP{		
 		//"<#>".postln;
 		// add a limiter to each stereo out pair
-		(LNX_AudioDevices.numOutputBusChannels/2).do{|i|
-			Synth.tail(channelOutGroup,"LNX_LimitOut",i*2)
+		channelOutSynths = (LNX_AudioDevices.numOutputBusChannels/2).asInt.collect{|i|
+			Synth.tail(channelOutGroup,"LNX_LimitOut",i*2);
 		};
 		if (thisProcess.platform.name!=\osx) {
 			LNX_MouseXY.startDSP(server); // old hack for getting x,y on other op systems
+		};
+		this.setPreAmp;
+	}
+	
+	setPreAmp{
+		channelOutSynths.do{|synth|
+			synth.set(\preAmp, models[\preAmp].value)
 		};
 	
 	}
@@ -535,29 +533,33 @@ LNX_Studio {
 	// the total latency of this system. includes syncDelay. sync delay is -ive delay in
 	// AudioIn and MIDIOut
 	
-	actualLatency{ ^latency + syncDelay } 
+	actualLatency{ ^latency + syncDelay } // s
 									
 	// set latency of studio
-	
 	latency_{|argLatency|
 		if (argLatency<latency) {
 			latency=argLatency;
-			insts.do(_.stopAllNotes); // if its small release notes
+			insts.do(_.stopAllNotes); // if its smaller release notes
 		}{
 			latency=argLatency;
 		};
-		this.updateSyncDelay; // update sync delay so intruments are updated too
+		
+		
+		// replace with something like above
+		// this.updateSyncDelay; // update sync delay so intruments are updated too
+		
 		server.latency_(this.actualLatency); // this is now the latency between Lang & Server
 		[latency].savePref("latency");       // save preference
 	}
 	
-	// work out the largest sync delay in all instruments and set that as the studio syncdelay
-	
-	updateSyncDelay{
-		syncDelay = insts.collect{|inst| inst.syncDelay}.asList.sort.last ? 0;
-		insts.do(_.iSyncDelayChanged); // update all insts
+	// work out the largest -ive sync delay in all instruments
+	// and set that as the studio +ive syncdelay	
+	checkSyncDelay{	
+		// largest only -ive is turned into a +ive syncDelay so we don't below latency
+		syncDelay = insts.collect{|inst| inst.syncDelay.clip(-inf,0).abs }.asList.sort.last ? 0;
+		insts.do(_.stopAllNotes);
 	}
-		
+	
 	// MIDI ///////////////////////////////////////////////////////////////////////////////
 	
 	// start midi stuff
@@ -1073,6 +1075,8 @@ LNX_Studio {
 				
 				MVC_Automation.updateDurationAndGUI; // temp
 				
+				this.checkSyncDelay;
+				
 			};
 		}
 	}
@@ -1272,6 +1276,8 @@ LNX_Studio {
 		
 		onSoloGroup.reset; // this does not clear onSolo it's been set after by something else?
 		
+		this.checkSyncDelay;
+		
 		//{LNX_SampleBank.emptyTrash}.defer(1); // empty trash 10 seconds later
 		// needs to be triggered when finished loading
 		
@@ -1446,6 +1452,7 @@ LNX_Studio {
 					bpm,
 					latency,
 					models[\volume].value,
+					models[\preAmp].value,
 					title.asSymbol,
 					insts.size,
 					noInternalBuses,
@@ -1672,6 +1679,7 @@ LNX_Studio {
 		if (insts.size<1) {this.updateOSX}; // update the studio window offset
 		l=l.reverse;
 		header=l.popS;	
+		
 		loadVersion=header.version;
 		
 		if (this.versionAtLeast(loadVersion.asInt,loadVersion.frac.asString.drop(2).asInt)) {
@@ -1726,6 +1734,11 @@ LNX_Studio {
 						absTime=2.5/bpm;
 						l.popF; // pop latency and do nothing with it
 						models[\volume].valueAction_(l.popF);
+						if (header.subVersion>=3) {
+							models[\preAmp].valueAction_(l.popF);
+						}{
+							models[\preAmp].valueAction_(0);
+						};
 					};
 					// start putting the info in
 					title=l.popS;

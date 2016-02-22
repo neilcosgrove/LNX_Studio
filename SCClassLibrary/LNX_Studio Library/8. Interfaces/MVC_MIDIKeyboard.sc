@@ -191,7 +191,7 @@ MVC_MIDIKeyboard {
 			.drawFunc_({
 				
 				var l,t,w,h,b,m;
-				
+
 				octaves.do({arg j;
 					// first draw the white keys
 					12.do({arg i;

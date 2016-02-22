@@ -22,7 +22,7 @@ MVC_View {
 	
 	var	<model;
 	
-	var	<parent,		<>window, 	<rect,
+	var	<parent,		<>window, 	<rect,	<parentViews,
 		<l, 			<t, 			<w, 		<h,
 		<view,		<enabled=true,<canFocus=false,
 		<string,		<>onClose,	<strings,
@@ -93,6 +93,9 @@ MVC_View {
 		
 		// register this MVC_item with the parent
 		if (window.notNil) {
+					
+			parentViews = window.parentViews;
+			
 			window.addView(this);	// add so this view can be created with the MVC_ScrollView
 			parent=window; // parent will be the mvc window view & window the view
 			// the follow will add view if MVC_Window/MVC_TabbedView/MVC_ScrollView is open
@@ -208,15 +211,17 @@ MVC_View {
 			view.beginDragAction_(beginDragAction); 
 		}{
 			view.beginDragAction_{|me|
-				var val;
-				if (numberFunc.isNil) {
-					val=value.asString
-				}{
-					val=numberFunc.value(value).asString;
-				};
-				if ((controlSpec.notNil) && (showUnits)) { val=val+(controlSpec.units) };
-				// +units
-				me.dragLabel_(val); // the drag label
+				
+// dragLabel_ causes crash in Cocoa
+//				var val;
+//				if (numberFunc.isNil) {
+//					val=value.asString
+//				}{
+//					val=numberFunc.value(value).asString;
+//				};
+//				if ((controlSpec.notNil) && (showUnits)) { val=val+(controlSpec.units) };
+//				// +units
+//				me.dragLabel_(value.asString); // the drag label
 				value.asFloat;
 			};
 		};
@@ -485,7 +490,6 @@ MVC_View {
 
 	// set the colour in the Dictionary 
 	color_{|key,color,forceAdd=false|
-		
 		if  ((forceAdd.not)and:{ (colors.includesKey(key).not)}) {^this}; // drop out
 		colors[key]=color;
 		if (key=='focus') {
@@ -612,7 +616,8 @@ MVC_View {
 	refresh{
 		if (view.notClosed) {
 			// drop of if tab is hiddden			
-			if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) { ^this };
+			//if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) { ^this };
+			parentViews.do{|view| if (view.isVisible.not) { ^this }};
 			// else
 			view.refresh;
 			if (numberGUI.notNil) { numberGUI.refresh }

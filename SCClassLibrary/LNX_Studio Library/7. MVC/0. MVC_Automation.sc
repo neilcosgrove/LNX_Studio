@@ -793,7 +793,7 @@ MVC_Automation {
 				};
 			
 		// offset
-		gui[\offset] = MVC_SmoothSlider(gui[\window],models[\offset],Rect(135, 405, 343, 20))
+		gui[\offset] = MVC_SmoothSlider(gui[\window],models[\offset],Rect(135, 405+15, 343, 20))
 			.thumbSizeAsRatio_(1)
 			.resize_(5)
 			.color_(\knob,Color(1,1,1,86/125))
@@ -811,14 +811,14 @@ MVC_Automation {
 			.action_{|me| if (selA.notNil) { studio.guiJumpTo( selA ) }};
 			
 		// follow
-		MVC_OnOffView(models[\follow], gui[\window],Rect(10, 405, 45, 20))
+		MVC_OnOffView(models[\follow], gui[\window],Rect(10, 405+15, 45, 20))
 			.strings_(["Follow"])
 			.rounded_(true)  
 			.color_(\on,Color(0.7,0.7,1,0.7))
 			.color_(\off,Color(0,0,0,0.5));
 		
 		// zoom out
-		MVC_OnOffView(gui[\window],Rect(60, 405, 20, 20),"-")
+		MVC_OnOffView(gui[\window],Rect(60, 405+15, 20, 20),"-")
 			.rounded_(true)  
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
@@ -828,7 +828,7 @@ MVC_Automation {
 			};
 			
 		// zoom in
-		MVC_OnOffView(gui[\window],Rect(85, 405, 20, 20),"+")
+		MVC_OnOffView(gui[\window],Rect(85, 405+15, 20, 20),"+")
 			.rounded_(true)  
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
@@ -843,7 +843,7 @@ MVC_Automation {
 			};
 		
 		// fit to window
-		MVC_OnOffView(gui[\window],Rect(110, 405, 20, 20),"=")
+		MVC_OnOffView(gui[\window],Rect(110, 405+15, 20, 20),"=")
 			.rounded_(true)  
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
@@ -852,7 +852,7 @@ MVC_Automation {
 				gui[\offset].thumbSizeAsRatio_(1/(models[\zoom].value));
 			};
 		
-		gui[\graph] = MVC_UserView(gui[\window], Rect(10, 120, 468, 280) )
+		gui[\graph] = MVC_UserView(gui[\window], Rect(10, 120, 468, 280+15) )
 		
 		// 0.0625 is max resoultion we would need when drawing
 		

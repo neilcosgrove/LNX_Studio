@@ -4,6 +4,8 @@
 // on load program need to trigger program change as needed
 // wired bug selecting programs stored in presets
 
+// using preset controls is unpredictable
+
 LNX_MoogSub37 : LNX_InstrumentTemplate {
 		
 	classvar <moogPresets, <>isVisiblePref;
@@ -46,6 +48,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	panModel    {^models[5]}
 	sendChModel {^models[7]}
 	sendAmpModel{^models[8]}
+	syncModel   {^models[10]}
 
 	header { 
 		// define your document header details
@@ -64,7 +67,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			.pipeOutAction_{|pipe|
 				if (((p[13]>0)&&(this.isOff)).not) {seqOutBuffer.pipeIn(pipe)};
 			}
-			.releaseAllAction_{ seqOutBuffer.releaseAll }
+			.releaseAllAction_{ seqOutBuffer.releaseAll(studio.actualLatency) }
 			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 				keyboardView.view.keyDownAction.value(me,char, modifiers, unicode, keycode, key)
 			}
@@ -155,14 +158,14 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	
 	// and finally to the midi out
 	toMIDIPipeOut{|pipe|
-		midi.pipeIn(pipe.addToHistory(this));          // add this to its history
+		midi.pipeIn(pipe.addToHistory(this).addLatency(syncDelay)); // add this to its history
 	}
 
 	// release all played notes, uses midi Buffer
 	stopAllNotes{ 
-		midiInBuffer.releaseAll;
-		seqOutBuffer.releaseAll;
-		midiOutBuffer.releaseAll;
+		midiInBuffer.releaseAll(studio.actualLatency);
+		seqOutBuffer.releaseAll(studio.actualLatency); 
+		midiOutBuffer.releaseAll(studio.actualLatency); 
 		{keyboardView.clear}.defer(studio.actualLatency);
 	}
 	
@@ -275,12 +278,10 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				}],
 				
 			// 10. syncDelay
-			[[-1,1,\lin,0.001,0], midiControl, 10, "Sync",
-				(label_:"Sync", zeroValue_:0),
-				{|me,val,latency,send|
-					this.setPVP(10,val,latency,send);
-					this.syncDelay_(val.clip(-inf,0).abs); // this will update delay as well
-				}],		
+			[\sync, {|me,val,latency,send|
+				this.setPVP(10,val,latency,send);
+				this.syncDelay_(val);
+			}],		
 						
 			// 11. bank
 			[0,[0,15,\lin,1], midiControl, 11, "Bank",{|me,value,latency,send,toggle|
@@ -318,7 +319,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				(strings_:["MIDI Clock"]),
 				{|me,val,latency,send|
 					this.setPVP(88,val,latency,send);
-					if (val.isFalse) { midi.stop(latency) };
+					if (val.isFalse) { midi.stop(latency +! syncDelay) };
 				}]);
 				
 		// 89. use controls in presets
@@ -327,9 +328,9 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				{|me,val,latency,send|	
 					this.setPVP(89,val,latency,send);
 					if (val.isTrue) {
-						presetExclusion=[0,1];
+						presetExclusion=[0,1,10];
 					}{
-						presetExclusion=[0,1]++((1..Sub37.size)+13);
+						presetExclusion=[0,1,10]++((1..Sub37.size)+13);
 					}	
 				}]);
 
@@ -343,17 +344,11 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		#models,defaults=template.generateAllModels;
 
 		// list all parameters you want exluded from a preset change
-		presetExclusion=[0,1]++((1..Sub37.size)+13);
+		presetExclusion=[0,1,10]++((1..Sub37.size)+13);
 		randomExclusion=[0,1,10];
-		autoExclusion=[11,12];
+		autoExclusion=[10,11,12];
 
 	}
-
-	// sync stuff ///////////////////////////
-	
-	delayTime{^(this.mySyncDelay.clip(0,inf))+(p[10].clip(0,inf))  }
-	iSyncDelayChanged{ this.setDelay }
-	setDelay{ if (node.notNil) {server.sendBundle(nil,[\n_set, node, \delay, this.delayTime])} }
 
 	// clock in //////////////////////////////
 	
@@ -363,21 +358,21 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	// reset sequencers posViews
 	clockStop {
 		sequencer.do(_.clockStop(studio.actualLatency));
-		seqOutBuffer.releaseAll;
+		seqOutBuffer.releaseAll(studio.actualLatency);
 	}
 	
 	// remove any clock hilites
 	clockPause{
 		sequencer.do(_.clockPause(studio.actualLatency));
-		seqOutBuffer.releaseAll;	
+		seqOutBuffer.releaseAll(studio.actualLatency);
 	}
 	
 	// clock in for midi out clock methods
-	midiSongPtr{|songPtr,latency| if (p[88].isTrue) { midi.songPtr(songPtr,latency) } } 
-	midiStart{|latency| if (p[88].isTrue) { midi.start(latency) } }
-	midiClock{|latency| if (p[88].isTrue) { midi.midiClock(latency) } }
-	midiContinue{|latency| if (p[88].isTrue) { midi.continue(latency) } }
-	midiStop{|latency| if (p[88].isTrue) { midi.stop(latency) } }
+	midiSongPtr{|songPtr,latency| if (p[88].isTrue) { midi.songPtr(songPtr,latency +! syncDelay) }} 
+	midiStart{|latency|           if (p[88].isTrue) { midi.start(latency +! syncDelay) } }
+	midiClock{|latency|           if (p[88].isTrue) { midi.midiClock(latency +! syncDelay) } }
+	midiContinue{|latency|        if (p[88].isTrue) { midi.continue(latency +! syncDelay) } }
+	midiStop{|latency|            if (p[88].isTrue) { midi.stop(latency +! syncDelay) } }
 
 	// disk i/o ///////////////////////////////
 		
@@ -389,10 +384,41 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		sequencer.putLoadList(l.popEND("*** END OBJECT DOC ***"));
 	}
 	
-	// anything else that needs doing after a load. all paramemters will be loaded by here
-	iPostLoad{
-		if (p[90].isTrue) { this.setMoogProgram };
+	// anything else that needs doing before a load
+	preLoadP{|tempP|
+		models[90].doLazyValueAction_(tempP[90],nil,false); // use programs in presets
+		// check send program  1st and then send
+		if (models[90].isTrue) {
+			models[11].lazyValue_(tempP[11],false);
+			p[11] = tempP[11];
+			models[12].lazyValue_(tempP[12],false);
+			p[12] = tempP[12];
+			this.setMoogProgram;
+		};
+		^tempP
 	}
+	
+	// override insts template, only does this on load, should be called update models
+	updateGUI{|tempP|
+		tempP.do({|v,j|
+			if (p[j]!=v) { 
+				if ((j==11)||(j==12)) { 
+					// dont do any actions on p==11 or 12
+					models[j].lazyValue_(v,false);
+				}{
+					if ((tempP[89].isFalse)&&(j>=14)&&(j<=87)) {
+						models[j].lazyValue_(v,false); // don't do action
+					}{
+						models[j].lazyValueAction_(v, nil ,send:false);
+					}
+				}
+			}
+		});
+		this.iUpdateGUI(tempP);
+	}
+	
+	// anything else that needs doing after a load. all paramemters will be loaded by here
+	iPostLoad{}
 	
 	// free this
 	iFree{ sequencer.do(_.free) }
@@ -435,43 +461,44 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		models[90].lazyValueAction_(presetToLoad[90],latency,false);
 		
 		// exclude these parameters
-		presetExclusion.do{|i| presetToLoad[i]=p[i]};
-		
+		presetExclusion.do{|i| presetToLoad[i]=p[i]}; // THIS STOP UPDATING DOWN BELOW *** VVVV		
 		// check send program  1st and then send
 		if (models[90].isTrue) {
 			models[11].lazyValue_(presetToLoad[11],false);
-			models[12].doLazyValueAction_(presetToLoad[12],latency,false);
+			p[11] = presetToLoad[11];
+			models[12].lazyValue_(presetToLoad[12],false);
+			p[12] = presetToLoad[12];
+			this.setMoogProgram(latency);
 		};
 			
-		// update models
-		presetToLoad.do({|v,j|	
+		// 89. use controls in presets & presetExclusion WORK HERE FROM ABOVE *** ^^^
+		presetToLoad.do{|v,j|	
 			if (#[89,90,11,12].includes(j).not) {
 				if (p[j]!=v) {
 					models[j].lazyValueAction_(v,latency,false)
 				}
 			};
-		});
-		
+		};
+
 		this.iLoadPreset(i,presetToLoad,latency);    // any instrument specific details
 		oldP=p.copy;
 		p=presetToLoad;               // copy the paramaters to p (is this needed any more?)
 		this.updateDSP(oldP,latency); // and update any dsp
 				
 	}
-		
+
 	// set program on moog, latency isn't really needed here
 	setMoogProgram{|latency|
-		var prog=	(p[11]*16)+p[12];
-		midi.control(32, prog.div(128), latency);
-		midi.program(prog % 128, latency);
+		var prog=	(p[11]*16)+p[12];		
+		midi.control(32, prog.div(128), latency +! syncDelay);
+		midi.program(prog % 128, latency +! syncDelay);
 		this.updatePresetGUI;
 	}
 
 	// set control
 	midiControlVP{|item,value,latency|
 		p[item+14]=value;		
-		// go on, do a pipe here
-		midi.control(Sub37.keyAt(item),value,latency,false,true); // midi control out
+		midi.control(Sub37.keyAt(item),value,latency +! syncDelay,false,true); // midi control out
 		api.sendVP((id++"_ccvp_"++item).asSymbol,
 					'netMidiControlVP',item,value,midi.uidOut,midi.midiOutChannel);
 	}
@@ -485,22 +512,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		midi.control(Sub37.keyAt(item) ,value,nil,false,true);
 		// ignore set to true so no items learnt from this
 	}
-	
 
-	// override insts template to stop select program / preset when loading 
-	updateGUI{|tempP|
-		tempP.do({|v,j|
-			if (p[j]!=v) { 
-				if ((j==11)||(j==12)) { 
-					// dont do any actions on p==11 or 12
-					models[j].lazyValue_(v,false);
-				}{
-					models[j].lazyValueAction_(v,send:false)
-				}
-			}
-		});
-		this.iUpdateGUI(tempP);
-	}
 
 	//////////////////////////*****************************************************
 	// GUI
@@ -575,20 +587,9 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	
 		// 9. channelSetup
 		MVC_PopUpMenu3(models[9],window,Rect(395,5,75,16), gui[\menuTheme2 ] );
-		
-		// 10. syncDelay
-		MVC_NumberBox(models[10],window,Rect(507, 5, 40, 16),  gui[\theme2])
-			.labelShadow_(false)
-			.color_(\label,Color.white);
-			
-		MVC_StaticText(window, Rect(550,3, 40, 18))
-			.string_("sec(s)")
-			.font_(Font("Helvetica",10))
-			.shadow_(false)
-			.color_(\string,Color.white);
 						
 		// MIDI Settings
- 		MVC_FlatButton(window,Rect(588, 5, 43, 18),"MIDI")
+ 		MVC_FlatButton(window,Rect(488, 5, 43, 18),"MIDI")
 			.rounded_(true)
 			.shadow_(true)
 			.canFocus_(false)
@@ -600,7 +601,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			)};
 	
 		// MIDI Controls
-	 	MVC_FlatButton(window,Rect(634, 5, 43, 18),"Cntrl")
+	 	MVC_FlatButton(window,Rect(534, 5, 43, 18),"Cntrl")
 			.rounded_(true)
 			.shadow_(true)
 			.canFocus_(false)
@@ -610,7 +611,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
 							
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(window,689@5,80+17,
+		presetView=MVC_PresetMenuInterface(window,589@5,180+17,
 				Color(0.6 , 0.562, 0.5)/1.6,
 				Color(0.6 , 0.562, 0.5)/3,
 				Color(0.6 , 0.562, 0.5)/1.5,
@@ -877,24 +878,27 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	
 	// used for noteOff in sequencers
 	// efficiency issue: this is called 3 times in alt_solo over a network
-	stopNotesIfNeeded{
-		this.updateOnSolo;
+	stopNotesIfNeeded{|latency|
+		this.updateOnSolo(latency);
 	}
 	
-	updateOnSolo{
+	updateOnSolo{|latency|
 		switch (p[13].asInt)
 			{0} {
 				// "Audio In"
-				if (node.notNil) { server.sendBundle(nil,[\n_set, node, \on, this.isOn]) };
+				if (node.notNil) {
+					server.sendBundle(latency +! syncDelay,[\n_set, node, \on, this.isOn]) };
 			}
 			{1} {
 				// "Sequencer"
-				if (node.notNil) { server.sendBundle(nil,[\n_set, node, \on, true]) };
+				if (node.notNil) {
+					server.sendBundle(latency +! syncDelay,[\n_set, node, \on, true]) };
 				if (this.isOff) {this.stopAllNotes};
 			}
 			{2} {
 				// "Both"
-				if (node.notNil) { server.sendBundle(nil,[\n_set, node, \on, this.isOn]) };
+				if (node.notNil) {
+					server.sendBundle(latency +! syncDelay,[\n_set, node, \on, this.isOn]) };
 				if (this.isOff) {this.stopAllNotes};
 			};		
 	}
@@ -910,7 +914,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		this.instOutChannel_(out,latency);
 		if (p[13]==1) { on=true } { on=this.isOn };
 			
-		server.sendBundle(latency,
+		server.sendBundle(latency +! syncDelay,
 			[\n_set, node, \amp,p[2].dbamp],
 			[\n_set, node, \pan,p[5]],
 			[\n_set, node, \inputChannels,in],
@@ -918,8 +922,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			[\n_set, node, \on, on],
 			[\n_set, node, \sendChannels,LNX_AudioDevices.getOutChannelIndex(p[7])],
 			[\n_set, node, \sendAmp, p[8].dbamp],
-			[\n_set, node, \channelSetup, p[9]],
-			[\n_set, node, \delay, this.delayTime ]
+			[\n_set, node, \channelSetup, p[9]]
 			
 		);
 	}

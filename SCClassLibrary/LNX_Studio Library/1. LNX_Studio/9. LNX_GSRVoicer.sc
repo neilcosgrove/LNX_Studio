@@ -100,6 +100,11 @@ LNX_GSRVoicer{
 		nodesOn[channel][nodeName] = LNX_GSRVoicerNode(server,nodeID,duration,vel,bundle);
 	}
 	
+	// released used when pressing pause on the clock
+	releaseAll{
+		noChannels.do{|c| this.killChannelNow(c)}
+	}
+	
 	// choke other channels
 	choke{|channel,latency|
 		var choke = chokeModels[channel].value; // get my choke channel ID

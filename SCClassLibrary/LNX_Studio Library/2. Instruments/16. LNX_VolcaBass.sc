@@ -3,7 +3,7 @@
 
 LNX_VolcaBass : LNX_InstrumentTemplate {
 
-	var <sequencer, <keyboardView, lastKeyboardNote, <midiInBuffer, <midiOutBuffer, <seqOutBuffer;
+	var <sequencer, <keyboardView, <midiInBuffer, <midiOutBuffer, <seqOutBuffer;
 
 	*initClass{ Class.initClassTree(LNX_VolcaBeats) }
 	*isVisible{ ^LNX_VolcaBeats.isVisible }
@@ -30,6 +30,7 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 	panModel    {^models[5]}
 	sendChModel {^models[7]}
 	sendAmpModel{^models[8]}
+	syncModel   {^models[10]}
 
 	header { 
 		// define your document header details
@@ -45,7 +46,7 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			.pipeOutAction_{|pipe|
 				if (((p[23]>0)&&(this.isOff)).not) {seqOutBuffer.pipeIn(pipe)};
 			}
-			.releaseAllAction_{ seqOutBuffer.releaseAll }
+			.releaseAllAction_{ seqOutBuffer.releaseAll(studio.actualLatency) }
 			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 				keyboardView.view.keyDownAction.value(me,char, modifiers, unicode, keycode, key)
 			}
@@ -96,14 +97,14 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 	
 	// and finally to the midi out
 	toMIDIPipeOut{|pipe|
-		midi.pipeIn(pipe.addToHistory(this));          // add this to its history
+		midi.pipeIn(pipe.addToHistory(this).addLatency(syncDelay)); // add this to its history
 	}
 
 	// release all played notes, uses midi Buffer
-	stopAllNotes{ 
-		midiInBuffer.releaseAll;
-		seqOutBuffer.releaseAll;
-		midiOutBuffer.releaseAll;
+	stopAllNotes{
+		midiInBuffer.releaseAll(studio.actualLatency);
+		seqOutBuffer.releaseAll(studio.actualLatency); 
+		midiOutBuffer.releaseAll(studio.actualLatency); 
 		{keyboardView.clear}.defer(studio.actualLatency);
 	}
 	
@@ -116,25 +117,13 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 
 			// 0.solo
 			[0, \switch, (\strings_:"S"), midiControl, 0, "Solo",
-				{|me,val,latency,send,toggle|
-					this.solo(val,latency,send,toggle);
-					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
-				},
-				\action2_ -> {|me|
-					this.soloAlt(me.value);
-					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
-				 }],
+				{|me,val,latency,send,toggle| this.solo(val,latency,send,toggle) },
+				\action2_ -> {|me| this.soloAlt(me.value) }],
 			
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
-				{|me,val,latency,send,toggle|
-					this.onOff(val,latency,send,toggle);
-					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
-				},
-				\action2_ -> {|me|	
-					this.onOffAlt(me.value);
-					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
-				}],
+				{|me,val,latency,send,toggle| this.onOff(val,latency,send,toggle) },
+				\action2_ -> {|me|	this.onOffAlt(me.value) }],
 					
 			// 2.master amp
 			[\db6,midiControl, 2, "Master volume",
@@ -194,96 +183,94 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 				}],
 				
 			// 10. syncDelay
-			[[-1,1,\lin,0.001,0], midiControl, 10, "Sync",
-				(label_:"Sync", zeroValue_:0),
-				{|me,val,latency,send|
-					this.setPVP(10,val,latency,send);
-					this.syncDelay_(val.clip(-inf,0).abs); // this will update delay as well
-				}],
-		
+			[\sync,{|me,val,latency,send|
+				this.setPVP(10,val,latency,send);
+				this.syncDelay_(val);
+			}],
 			
 			// 11. midiControl 5. Slide Time
 			[\midi, midiControl, 11, "Slide Time", (\label_:"Slide Time" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(11, val, latency, send); // network this
-					midi.control(5, val, latency);           // send midi control data
+					this.setPVPModel(11, val, latency, send);   // network this
+					midi.control(5, val, latency +! syncDelay); // send midi control data
 				}],	
 				
 			// 12. midiControl 11. Expression
 			[127,\midi, midiControl, 12, "Expression",(\label_:"Expression" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(12, val, latency, send); // network this
-					midi.control(11, val, latency);           // send midi control data
+					this.setPVPModel(12, val, latency, send);    // network this
+					midi.control(11, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 13. midiControl 40. Octave
 			[\midi, midiControl, 13, "Octave", (\label_:"Octave" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(13, val, latency, send); // network this
-					midi.control(40, val, latency);           // send midi control data
+					this.setPVPModel(13, val, latency, send);    // network this
+					midi.control(40, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 14. midiControl 41. LFO Rate
 			[\midi, midiControl, 14, "LFO Rate", (\label_:"LFO Rate" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(14, val, latency, send); // network this
-					midi.control(41, val, latency);           // send midi control data
+					this.setPVPModel(14, val, latency, send);    // network this
+					midi.control(41, val, latency +! syncDelay); // send midi control data
 				}],	
 
 			// 15. midiControl 42. LFO Int
 			[0, \midi, midiControl, 15, "LFO Int", (\label_:"LFO Int", \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(15, val, latency, send); // network this
-					midi.control(42, val, latency);           // send midi control data
+					this.setPVPModel(15, val, latency, send);    // network this
+					midi.control(42, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 16. midiControl 43. VCO Pitch 1
 			[\midi, midiControl, 16, "VCO Pitch 1", (\label_:"VCO Pitch 1" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(16, val, latency, send); // network this
-					midi.control(43, val, latency);           // send midi control data
+					this.setPVPModel(16, val, latency, send);    // network this
+					midi.control(43, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 17. midiControl 44. VCO Pitch 2
 			[\midi, midiControl, 17, "VCO Pitch 2", (\label_:"VCO Pitch 2" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(17, val, latency, send); // network this
-					midi.control(44, val, latency);           // send midi control data
+					this.setPVPModel(17, val, latency, send);    // network this
+					midi.control(44, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 18. midiControl 45. VCO Pitch 3
 			[\midi, midiControl, 18, "VCO Pitch 3", (\label_:"VCO Pitch 3" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(18, val, latency, send); // network this
-					midi.control(45, val, latency);           // send midi control data
+					this.setPVPModel(18, val, latency, send);    // network this
+					midi.control(45, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 19. midiControl 46. Attack
 			[0,\midi, midiControl, 19, "Attack", (\label_:"Attack" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(19, val, latency, send); // network this
-					midi.control(46, val, latency);           // send midi control data
+					this.setPVPModel(19, val, latency, send);    // network this
+					midi.control(46, val, latency +! syncDelay); // send midi control data
 				}],	
 			
 			// 20. midiControl 47. Decay
 			[\midi, midiControl, 20, "Decay", (\label_:"Decay" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(20, val, latency, send); // network this
-					midi.control(47, val, latency);           // send midi control data
+					this.setPVPModel(20, val, latency, send);    // network this
+					midi.control(47, val, latency +! syncDelay); // send midi control data
 				}],	
 				
 			// 21. midiControl 48. Cutoff Eg Int
-			[\midi, midiControl, 21, "Cutoff Eg Int", (\label_:"Cutoff Eg Int" , \numberFunc_:'int'),
+			[\midi, midiControl, 21, "Cutoff Eg Int",
+				(\label_:"Cutoff Eg Int" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(21, val, latency, send); // network this
-					midi.control(48, val, latency);           // send midi control data
+					this.setPVPModel(21, val, latency, send);    // network this
+					midi.control(48, val, latency +! syncDelay); // send midi control data
 				}],	
 				
 			// 22. midiControl 49. Gate Time
 			[\midi, midiControl, 22, "Gate Time", (\label_:"Gate Time" , \numberFunc_:'int'),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(22, val, latency, send); // network this
-					midi.control(49, val, latency);           // send midi control data
+					this.setPVPModel(22, val, latency, send);    // network this
+					midi.control(49, val, latency +! syncDelay); // send midi control data
 				}],	
 				
 			// 23. onSolo turns audioIn, seq or both on/off
@@ -298,7 +285,7 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			[0, \switch, midiControl, 24, "MIDI Clock", (strings_:["MIDI Clock"]),
 				{|me,val,latency,send|
 					this.setPVP(24,val,latency,send);
-					if (val.isFalse) { midi.stop(latency) };
+					if (val.isFalse) { midi.stop(latency +! syncDelay) };
 				}],
 				
 			// 25. use controls in presets
@@ -306,9 +293,9 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 				{|me,val,latency,send|	
 					this.setPVP(25,val,latency,send);
 					if (val.isTrue) {
-						presetExclusion=[0,1];
+						presetExclusion=[0,1,10,24];
 					}{
-						presetExclusion=[0,1]++(11..22);
+						presetExclusion=[0,1,10,24]++(11..22)
 					}	
 				}],
 		
@@ -316,18 +303,12 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 		
 		#models,defaults=template.generateAllModels;
 
-		presetExclusion=(0..1)++(11..22);
-		randomExclusion=(0..1)++10;
-		autoExclusion=[];
+		// list all parameters you want exluded from a preset change, rand or automation
+		presetExclusion=[0,1,10,24]++(11..22);
+		randomExclusion=[0,1,10,24];
+		autoExclusion=[10];
 
 	}
-
-
-	// sync stuff ///////////////////////////
-	
-	delayTime{^(this.mySyncDelay.clip(0,inf))+(p[10].clip(0,inf))  }
-	iSyncDelayChanged{ this.setDelay }
-	setDelay{ if (node.notNil) {server.sendBundle(nil,[\n_set, node, \delay, this.delayTime])} }
 	
 	// clock in //////////////////////////////
 	
@@ -337,21 +318,21 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 	// reset sequencers posViews
 	clockStop {
 		sequencer.do(_.clockStop(studio.actualLatency));
-		seqOutBuffer.releaseAll;
+		seqOutBuffer.releaseAll(studio.actualLatency);
 	}
 	
 	// remove any clock hilites
 	clockPause{
 		sequencer.do(_.clockPause(studio.actualLatency));
-		seqOutBuffer.releaseAll;	
+		seqOutBuffer.releaseAll(studio.actualLatency);	
 	}
 	
 	// clock in for midi out clock methods
-	midiSongPtr{|songPtr,latency| if (p[24].isTrue) { midi.songPtr(songPtr,latency) } } 
-	midiStart{|latency| if (p[24].isTrue) { midi.start(latency) } }
-	midiClock{|latency| if (p[24].isTrue) { midi.midiClock(latency) } }
-	midiContinue{|latency| if (p[24].isTrue) { midi.continue(latency) } }
-	midiStop{|latency| if (p[24].isTrue) { midi.stop(latency) } }
+	midiSongPtr{|songPtr,latency| if (p[24].isTrue) { midi.songPtr(songPtr,latency +! syncDelay) }} 
+	midiStart{|latency|           if (p[24].isTrue) { midi.start(latency +! syncDelay) } }
+	midiClock{|latency|           if (p[24].isTrue) { midi.midiClock(latency +! syncDelay) } }
+	midiContinue{|latency|        if (p[24].isTrue) { midi.continue(latency +! syncDelay) } }
+	midiStop{|latency|            if (p[24].isTrue) { midi.stop(latency +! syncDelay) } }
 	
 	// disk i/o ///////////////////////////////
 		
@@ -367,7 +348,6 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 	
 	// free this
 	iFree{ sequencer.do(_.free) }
-
 
 	// PRESETS /////////////////////////
 	
@@ -400,7 +380,7 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 		
 		presetToLoad=presetMemory[i].copy;
 		
-		// 29.use controls
+		// 25.use controls
 		models[25].lazyValueAction_(presetToLoad[25],latency,false);
 
 		// exclude these parameters
@@ -502,19 +482,8 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 		// 9. channelSetup
 		MVC_PopUpMenu3(models[9],window,Rect(85,5,75,17), gui[\menuTheme ] );
 		
-		// 10. syncDelay
-		MVC_NumberBox(models[10], window,Rect(194, 30-25, 40, 18),  gui[\theme2])
-			.labelShadow_(false)
-			.color_(\label,Color.white);
-			
-		MVC_StaticText(Rect(100+140,30-25, 40, 18), window,)
-			.string_("sec(s)")
-			.font_(Font("Helvetica",10))
-			.shadow_(false)
-			.color_(\string,Color.white);
-		
 		// MIDI Settings
- 		MVC_FlatButton(window,Rect(277, 4, 43, 19),"MIDI")
+ 		MVC_FlatButton(window,Rect(177, 4, 43, 19),"MIDI")
 			.rounded_(true)
 			.canFocus_(false)
 			.shadow_(true)
@@ -527,7 +496,7 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			) };
 			
 		// MIDI Control
- 		MVC_FlatButton(window,Rect(327, 4, 43, 19),"Cntrl")
+ 		MVC_FlatButton(window,Rect(227, 4, 43, 19),"Cntrl")
 			.rounded_(true)
 			.canFocus_(false)
 			.shadow_(true)
@@ -636,7 +605,7 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 		MVC_MyKnob3(models[22], gui[\controlsTab], Rect(203, 28, 30, 30),gui[\knobTheme2]);
 	
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(window,380@5,50,
+		presetView=MVC_PresetMenuInterface(window,280@5,150,
 				Color(0.7,0.65,0.65)/1.6,
 				Color(0.7,0.65,0.65)/3,
 				Color(0.7,0.65,0.65)/1.5,
@@ -687,24 +656,27 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 	
 	// used for noteOff in sequencers
 	// efficiency issue: this is called 3 times in alt_solo over a network
-	stopNotesIfNeeded{
-		this.updateOnSolo;
+	stopNotesIfNeeded{|latency|
+		this.updateOnSolo(latency);
 	}
 	
-	updateOnSolo{
+	updateOnSolo{|latency|
 		switch (p[23].asInt)
 			{0} {
 				// "Audio In"
-				if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
+				if (node.notNil) {server.sendBundle(latency +! syncDelay,
+					[\n_set, node, \on, this.isOn])};
 			}
 			{1} {
 				// "Sequencer"
-				if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, true])};
+				if (node.notNil) {server.sendBundle(latency +! syncDelay,
+					[\n_set, node, \on, true])};
 				if (this.isOff) {this.stopAllNotes};
 			}
 			{2} {
 				// "Both"
-				if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
+				if (node.notNil) {server.sendBundle(latency +! syncDelay,
+					[\n_set, node, \on, this.isOn])};
 				if (this.isOff) {this.stopAllNotes};
 			};		
 	}
@@ -728,8 +700,7 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			[\n_set, node, \on, on],
 			[\n_set, node, \sendChannels,LNX_AudioDevices.getOutChannelIndex(p[7])],
 			[\n_set, node, \sendAmp, p[8].dbamp],
-			[\n_set, node, \channelSetup, p[9]],
-			[\n_set, node, \delay, this.delayTime ]
+			[\n_set, node, \channelSetup, p[9]]
 			
 		);
 	}

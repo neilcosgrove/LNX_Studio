@@ -1,8 +1,18 @@
 
 // LNX_BevelPushOnOffView
 
+/*(
+w=MVC_Window();
+MVC_FlatButton2(\switch.asModel,w,Rect(10, 10, 19, 19))
+	.mode_(\icon)
+	.strings_([\play]);
+w.create;
+)
+*/
+
 MVC_FlatButton2 : MVC_View {
 
+	var <>mode; // {mode==='icon'}
 	var <>mouseMode = 'switch'; // nil = default 'switch', 'tapUp'
 	var flashState = 1, flashTask, lastFlashTime, <>flashTime = 0.33, <>flashDuration = inf;
 	var down=false, clickCount;
@@ -103,18 +113,21 @@ MVC_FlatButton2 : MVC_View {
 						if (value==1) {Pen.fillColor_(colors[\on]*flashState)} {Pen.fillColor_(colors[\off]*flashState)};
 					};
 					
-					if (down) {				
-						Pen.font_(font.copy.size_(font.size-1));
-					}{
-						Pen.font_(font);
-					};
+	
+						if (down) {
+							Pen.font_(font.copy.size_(font.size-1));
+						}{
+							Pen.font_(font);
+						};
+							
+						Pen.smoothing_(true);
+						if (value==1) {
+							Pen.stringCenteredIn(strings@@1,Rect(0,0,w,h));
+						}{
+							Pen.stringCenteredIn(strings[0],Rect(0,0,w,h));
+						};
 						
-					Pen.smoothing_(true);
-					if (value==1) {
-						Pen.stringCenteredIn(strings@@1,Rect(0,0,w,h));
-					}{
-						Pen.stringCenteredIn(strings[0],Rect(0,0,w,h));
-					};
+		
 				}; // end.pen
 
 		}	

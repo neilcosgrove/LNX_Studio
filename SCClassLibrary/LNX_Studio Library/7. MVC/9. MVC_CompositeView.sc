@@ -150,6 +150,8 @@ MVC_CompositeView : MVC_ScrollView {
 				window=argView;  // else is view or window
 				rect=bounds;
 			};
+			
+		if (parent.notNil) { parentViews = parent.parentViews };
 		
 		colors=IdentityDictionary[];
 		gui=[];

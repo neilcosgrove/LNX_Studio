@@ -1,10 +1,8 @@
 /*
 + MIDIClient {
-	
 	*init { arg inports, outports; // by default initialize all available ports
 								// you still must connect to them using MIDIIn.connect
-
-		this.prInitClient;
+		this.prInit(50,50);
 		this.list;
 		if(inports.isNil,{inports = sources.size});
 		if(outports.isNil,{outports = destinations.size});
@@ -12,6 +10,7 @@
 
 		this.prInit(inports,outports);
 		initialized = true;
+		
 		// might ask for 1 and get 2 if your device has it
 		// or you might ask for a 1 and get 0 of nothing is plugged in
 		// so we warn you
@@ -26,8 +25,7 @@
 
 		this.list;
 
-		// bug fix. Crash on close when using midi i.e clock out. The following is now disabled
-		ShutDown.add { this.disposeClient }; 
+		ShutDown.add { this.disposeClient };
 
 		Post << "MIDI Sources:" << Char.nl;
 		sources.do({ |x| Post << Char.tab << x << Char.nl });

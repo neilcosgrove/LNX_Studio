@@ -19,15 +19,16 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 	
-	*studioName {^"Step Sequencer"}
-	isMIDI{^true}
-	*sortOrder{^1.99}
-	isInstrument{^true}
-	onColor{^Color(0.5,0.7,1)} 
+	*studioName  {^"Step Sequencer"}
+	isMIDI       {^true}
+	*sortOrder   {^1.99}
+	isInstrument {^true}
+	onColor      {^Color(0.5,0.7,1)} 
 	clockPriority{^3}
 	alwaysOnModel{^models[2]}
-	alwaysOn{^models[2].isTrue} // am i? used by melody maker to change onOff widgets
-	canAlwaysOn{^true} // can i?
+	alwaysOn     {^models[2].isTrue} // am i? used by melody maker to change onOff widgets
+	canAlwaysOn  {^true} // can i?
+	syncModel    {^models[3]}
 
 	header { 
 		// define your document header details
@@ -60,13 +61,19 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 					if ((val==0)&&(instOnSolo.isOff)) {this.stopAllNotes}; 
 					{studio.updateAlwaysOn(id,val.isTrue)}.defer;
 				}],
+				
+			// 3. syncDelay
+			[\sync, {|me,val,latency,send|
+				this.setPVP(3,val,latency,send);
+				this.syncDelay_(val);
+			}],	
 			
 		].generateAllModels;
 
 		// list all parameters you want exluded from a preset change
-		presetExclusion=[0,1];
-		randomExclusion=[0,1];
-		autoExclusion=[];
+		presetExclusion=[0,1,3];
+		randomExclusion=[0,1,3];
+		autoExclusion=[3];
 		
 	}
 	
@@ -381,17 +388,24 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 		});
 		
 		// MIDI Settings
- 		MVC_FlatButton(gui[\scrollView],Rect(237, 6, 43, 19),"MIDI",gui[\button])
+ 		MVC_FlatButton(gui[\scrollView],Rect(174, 6, 43, 19),"MIDI",gui[\button])
 			.action_{ this.createMIDIInOutModelWindow(window,nil,nil,
 				colors:(border1:Color(0,0,0.2), border2:Color(0.36, 0.24, 0.6))
 			)};
 		
 		// midi control button
-		MVC_FlatButton(gui[\scrollView],Rect(294, 6, 43, 19),"Cntrl",gui[\button])
+		MVC_FlatButton(gui[\scrollView],Rect(228, 6, 43, 19),"Cntrl",gui[\button])
 			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
 				
-		MVC_FlatButton(gui[\scrollView],Rect(354 , 6, 43, 19),"All",gui[\button])
+		MVC_FlatButton(gui[\scrollView],Rect(282 , 6, 43, 19),"All",gui[\button])
 			.action_{ LNX_MIDIControl.editControls(studio); LNX_MIDIControl.window.front };
+			
+		// 31. sync
+		MVC_NumberBox(models[3],gui[\scrollView], Rect(380, 6, 43, 17))
+			.labelShadow_(false)
+			.label_("Sync")
+			.orientation_(\horizontal)
+			.color_(\label,Color.black);
 		
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],(375+134-50)@(6),75+50,
@@ -702,7 +716,7 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 																			vel=(vel+sP[y][5]).clip(0,127);
 							dur=sP[y][1];
 							
-							midi.control(note,vel,studio.actualLatency,false,true);
+							midi.control(note,vel,latency +! syncDelay,false,true);
 							lastCCvalue[y]=vel;
 							
 							nextVel=seq[y][((beat/speed).asInt+1)%(sP[y][3])];
@@ -717,7 +731,7 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 											(studio.absTime*speed*3/interp).wait;
 											iVel=vel+((nextVel-vel)/interp*(i+1));
 											lastCCvalue[y]=iVel;
-											midi.control(note, iVel, studio.actualLatency, 
+											midi.control(note, iVel, latency +! syncDelay, 
 												false, true);
 										};
 									};
@@ -743,7 +757,7 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 					};
 					wasOn[y]=false;
 				};
-				{posModels[y].lazyValue_(pos,false)}.defer(studio.actualLatency);
+				{posModels[y].lazyValue_(pos,false)}.defer(latency);
 			};
 		});
 	}	
@@ -751,7 +765,7 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 	// stops interpolations and send a cc value so last midi was the same on all machines
 	stopInterpAndSet{|y,val,cc|
 		interpNo.do{|i,j| interpNo.put(j,i+1) };
-		{midi.control(cc,val,nil,false,true);}.sched(studio.actualLatency+0.05);
+		midi.control(cc,val,studio.actualLatency +! syncDelay + 0.05,false,true);
 	}
 	
 	// band it boy!!
@@ -759,17 +773,17 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 		var noteOffNumber;
 		// stop previous note
 		if (bangsOn[note]==1) {
-			midi.noteOff(note,vel,studio.actualLatency);
+			midi.noteOff(note,vel,studio.actualLatency +! syncDelay);
 		};
 		// note on
-		midi.noteOn(note,vel,studio.actualLatency);
+		midi.noteOn(note,vel,studio.actualLatency +! syncDelay);
 		bangsOn[note]=1; // on
 		noteOffNumber=bangNumber[note]+1;
 		bangNumber[note]=noteOffNumber;
 		//note off
 		SystemClock.sched(dur,{
 			if (bangNumber[note]==noteOffNumber) {
-				midi.noteOff(note,vel,studio.actualLatency);
+				midi.noteOff(note,vel,studio.actualLatency +! syncDelay);
 				bangsOn[note]=0; // off
 			};
 			nil

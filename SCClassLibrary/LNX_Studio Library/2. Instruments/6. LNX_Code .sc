@@ -193,7 +193,7 @@ LNX_Code : LNX_InstrumentTemplate {
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(12,val,latency,send);
 					voicer.poly_(val);
-					voicer.limitPoly(latency ? studio.actualLatency,0);
+					voicer.limitPoly((latency ? studio.actualLatency) +! syncDelay,0);
 				}],
 				
 			// 13. tab
@@ -249,7 +249,12 @@ LNX_Code : LNX_InstrumentTemplate {
 				(\label_:"Static",\numberFunc_:'intSign','zeroValue_':0),
 				{|me,val,latency,send,toggle| this.setPVPModel(22,val,latency,send)}],
 				
-		
+			// 23. syncDelay
+			[\sync, {|me,val,latency,send|
+				this.setPVP(23,val,latency,send);
+				this.syncDelay_(val);
+			}],	
+				
 		].generateAllModels;
 		
 		// networked pianoRoll
@@ -257,7 +262,7 @@ LNX_Code : LNX_InstrumentTemplate {
 			.action_   {|note,velocity,latency| this.seqNoteOn(note,velocity,latency) }
 			.offAction_{|note,velocity,latency| this.seqNoteOff(note,velocity*127,latency) }
 			.releaseAllAction_{
-				voicer.releaseAllNotes(studio.actualLatency);
+				voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
 				{gui[\keyboardView].clear}.defer(studio.actualLatency);
 			}
 			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
@@ -285,9 +290,9 @@ LNX_Code : LNX_InstrumentTemplate {
 		errorModel = "".asModel;
 
 		// list all parameters you want exluded from a preset change
-		presetExclusion=[0,1,13];
-		randomExclusion=[0,1,2,3,7,8,13,9,11,14,16,17];
-		autoExclusion=[];
+		presetExclusion=[0,1,13,23];
+		randomExclusion=[0,1,2,3,7,8,13,9,11,14,16,17,23];
+		autoExclusion=[23];
 		
 		// unique id for this instrument to use in SynthDef name
 		sythDefID = LNX_SynthDefID.next;
@@ -309,20 +314,16 @@ LNX_Code : LNX_InstrumentTemplate {
 		
 	}
 	
-	// peak / target volume model
-	peakModel{^models[17]}
-	
-	// return the volume model
-	volumeModel{^models[2] }
-	outChModel{^models[3]}
-	
-	soloModel{^models[0]}
-	onOffModel{^models[1]}
-	
-	panModel{^models[4]}
-	
-	sendChModel{^models[9]}
+	// return the models
+	peakModel   {^models[17]}
+	volumeModel {^models[2]}
+	outChModel  {^models[3]}
+	soloModel   {^models[0]}
+	onOffModel  {^models[1]}
+	panModel    {^models[4]}
+	sendChModel {^models[9]}
 	sendAmpModel{^models[10]}
+	syncModel   {^models[23]}
 	
 	// MIDI and synth control ////////////////////////////////////////////////////////////
 	
@@ -345,7 +346,7 @@ LNX_Code : LNX_InstrumentTemplate {
 	// reset sequencers posViews
 	clockStop {
 		sequencer.clockStop(studio.actualLatency);
-		voicer.killAllNotes(studio.actualLatency);
+		voicer.killAllNotes(studio.actualLatency +! syncDelay);
 		{if (gui[\keyboardView].notNil) {gui[\keyboardView].clear};}.defer(studio.actualLatency);
 		lastClockBeat=0;
 	}
@@ -353,19 +354,19 @@ LNX_Code : LNX_InstrumentTemplate {
 	// remove any clock hilites
 	clockPause{
 		sequencer.clockPause(studio.actualLatency);
-		voicer.releaseAllNotes(studio.actualLatency);
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
 		{if (gui[\keyboardView].notNil) {gui[\keyboardView].clear};}.defer(studio.actualLatency)
 	}
 	
 	// called from onSolo funcs
 	stopAllNotes{
-		voicer.releaseAllNotes(studio.actualLatency);
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
 		{if (gui[\keyboardView].notNil) {gui[\keyboardView].clear};}.defer(studio.actualLatency);	
 	}
 	
 	stopDSP{
-		voicer.releaseAllNotes(studio.actualLatency);
-		voicer.killAllNotes(studio.actualLatency);
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
+		voicer.killAllNotes(studio.actualLatency +! syncDelay);
 	}
 
 	// noteOn (from MIDI in)
@@ -403,8 +404,9 @@ LNX_Code : LNX_InstrumentTemplate {
 		var voicerNode;
 		if (valid) {  // this is test to see if synthDef is valid
 			if (instOnSolo.onOff==0) {^nil}; // drop out if instrument onSolo is off
-			voicerNode = voicer.noteOn(note, velocity, latency); // create a voicer node
-			server.sendBundle(latency,[\s_new, synthDef.name, voicerNode.node, 0, scCodeGroupID]++
+			voicerNode = voicer.noteOn(note, velocity, latency +! syncDelay); // create a voicer node
+			server.sendBundle(latency +! syncDelay,
+				[\s_new, synthDef.name, voicerNode.node, 0, scCodeGroupID]++
 					(this.getSystemMsg(note,velocity))++(this.getUserMsg));
 		};
 	}
@@ -441,7 +443,7 @@ LNX_Code : LNX_InstrumentTemplate {
 	
 	// stop note (called by noteOn, seqNoteOff & keyboard)
 	stopNote{|note, velocity, latency|
-		voicer.releaseNote(note,latency);
+		voicer.releaseNote(note,latency +! syncDelay);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////
@@ -841,7 +843,8 @@ LNX_Code : LNX_InstrumentTemplate {
 	updateSynthArg{|synthArg,val,latency|
 		voicer.allNodes.do{|voicerNode|
 			// i have decided to go with studioLatency to stop wrong values on userModel changes
-			server.sendBundle(studio.actualLatency,[\n_set,voicerNode.node,synthArg,val]);
+			server.sendBundle(studio.actualLatency +! syncDelay,
+				[\n_set,voicerNode.node,synthArg,val]);
 		};
 	}
 	
@@ -1234,7 +1237,7 @@ LNX_Code : LNX_InstrumentTemplate {
 									
 					voicer.allNodes.do{|voicerNode|
 						
-						server.sendBundle(latency,
+						server.sendBundle(latency +! syncDelay,
 							[\n_set,voicerNode.node,synthDefControl.index,val]);
 					};
 					

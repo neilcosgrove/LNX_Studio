@@ -28,7 +28,7 @@
 		var path;
 								
 		// block size
-		models[\blockSize] = [(("blockSize".loadPref?[1])[0]).asInt,[0,4,\lin,1],
+		models[\blockSize] = [(("blockSize".loadPref?[2])[0]).asInt,[0,4,\lin,1],
 			(\label_:"Block Size", \items_: (2**(5..9)).collect(_.asString) ),
 			{|me,val,latency,send|
 				this.initServerPostModels;   // update server options
@@ -148,7 +148,7 @@
 			.automationActive_(false);
 
 		// tempo
-		models[\tempo]=[bpm,[1,999], midiControl, 7, "Tempo", (moveRound_:1,resoultion_:10),
+		models[\tempo]=[bpm,[10,1000], midiControl, 7, "Tempo", (moveRound_:1,resoultion_:10),
 			{|me,val| this.guiSetBPM(val) }].asModel;
 
 		// tap
@@ -167,6 +167,12 @@
 				this.setPVP(\mute,val,nil,send);
 			}].asModel;
 
+		models[\preAmp] = [ \db6, midiControl, 69, "PreAmp",
+			{|me,val,latency,send=true,toggle|
+				this.setPVP(\preAmp,val,nil,send);
+				this.setPreAmp;
+			}].asModel;
+	
 		// set range of volume
 		server.volume.setVolumeRange(-inf, 0);
 
@@ -459,7 +465,7 @@
 		w=thisWidth-12;
 
 		// scroll view for network dialog
-		gui[\netScrollView] = MVC_RoundedScrollView(mixerWindow, Rect(11,319+30,w-10,h-25))
+		gui[\netScrollView] = MVC_RoundedScrollView(mixerWindow, Rect(11,349+25,w-10,h-25))
 			.resizeList_([1,1,1,1,1]) //  0:view 1:left 2:top 3:right 4:bottom
 			.color_(\background,Color(59/77,59/77,59/77))
 			.color_(\border,Color(6/11,42/83,29/65))
@@ -477,7 +483,7 @@
 		this.addTextToDialog("",false,true);
 		this.addTextToDialog("                  LNX_Studio",false,true);
 		this.addTextToDialog("",false,true);
-		this.addTextToDialog("                 "+(version.drop(1))+"alpha",false,true);
+		this.addTextToDialog("                 "+(version.drop(1))+"beta",false,true);
 		this.addTextToDialog("",false,true);
 
 		// user dialog input
@@ -523,8 +529,8 @@
 	autoSizeGUI{
 		var h;
 		h=network.collaboration.autoSizeGUI(menuGap.y);
-		mixerGUI[\libraryScrollView].bounds_(Rect(11, 36, 190, 269-h+8+30+menuGap.y));
-		gui[\netScrollView].bounds_(Rect(11,319+30-h+8+menuGap.y,190,105));
+		mixerGUI[\libraryScrollView].bounds_(Rect(11, 33, 190, 269+15-h+8+30+menuGap.y));
+		gui[\netScrollView].bounds_(Rect(11,319+30+15-h+8+menuGap.y,190,105));
 	}
 
 
@@ -648,10 +654,8 @@
 
 			midiWin = MVC_ModalWindow(
 				(mixerWindow.isVisible).if(mixerWindow.view,window.view),
-				(420)@(449));
+				(420)@(468));
 			scrollView = midiWin.scrollView.view;
-
-
 
 			MVC_StaticText(scrollView, Rect(10, 10, 170, 18),gui[\labelTheme])
 			.string_("LNX_Studio Preferences");
@@ -828,7 +832,7 @@
 				
 				
 			// internal midi buses
-			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 397, 70, 17))
+			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 386, 70, 17))
 				.items_(["None","1 Bus","2 Buses","3 Buses"
 						 ,"4 Buses","5 Buses","6 Buses","7 Buses","8 Buses"
 						 ,"9 Buses","10 Buses","11 Buses","12 Buses","13 Buses"
@@ -844,15 +848,29 @@
 				}
 				.value_(noInternalBuses)
 				.font_(Font("Arial", 10));
-				
+			
+			// MacOS MIDI Fix
+			MVC_OnOffView(scrollView,Rect(311, 386, 72, 19), "MIDI Fix",
+								( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.value_(("midiBugFix".loadPref ? [false])[0].isTrue.asInt)
+				.label_("MacOS")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					[me.value.isTrue].savePref("midiBugFix");
+				};
+					
 			// scan for new midi equipment
-			MVC_FlatButton(scrollView,Rect(252 ,396, 70, 20),"Scan MIDI",gui[\buttonTheme])
+			MVC_FlatButton(scrollView,Rect(240 ,415, 70, 20),"Scan MIDI",gui[\buttonTheme])
 				.canFocus_(false)
 				.action_{ LNX_MIDIPatch.refreshPorts };
 				
 				
 			// Ok
-			MVC_FlatButton(scrollView,Rect(332, 396, 50, 20),"Ok",gui[\buttonTheme])
+			MVC_FlatButton(scrollView,Rect(332, 415, 50, 20),"Ok",gui[\buttonTheme])
 				.canFocus_(true)
 				.color_(\up,Color.white)
 				.action_{	 midiWin.close };

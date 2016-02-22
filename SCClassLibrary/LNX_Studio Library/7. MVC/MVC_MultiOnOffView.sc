@@ -3,7 +3,7 @@
 
 MVC_MultiOnOffView : MVC_View {
 
-	var <states;
+	var <states, <>darkerWhenPressed=true, down=false;
 
 	// set your defaults
 	initView{
@@ -27,18 +27,63 @@ MVC_MultiOnOffView : MVC_View {
 				state=states[value];
 				Pen.use{
 					Pen.smoothing_(false);
-					colors[\background].set;
+					Color.black.set;
 					Pen.fillRect(Rect(0,0,w,h));
-					if (state.notNil) {
-						if (midiLearn) {
-							colors[\midiLearn].set;
+					if (down) {
+						(colors[\background]/1.3).set;
+					}{
+						colors[\background].set;
+					};
+					if (midiLearn) {
+						colors[\midiLearn].set;
+					};
+					Pen.fillRect(Rect(1,1,w-2,h-2));
+				
+					if (down) {
+						Color(0,0,0,0.55).set;
+						Pen.fillRect(Rect(1,1,w-3,1));
+						Pen.fillRect(Rect(1,1,1,h-3));
+						
+						Color(1,1,1,0.15).set;
+						Pen.fillRect(Rect(w-2,2,1,h-3));
+						Pen.fillRect(Rect(2,h-2,w-3,1));
+						
+						Color(0,0,0,0.13).setFill;
+						Pen.moveTo(2@2);
+						Pen.lineTo((w-3)@2);
+						Pen.lineTo(2@(h-3));
+						Pen.lineTo(2@2);
+						Pen.fill;
+						
+						if (darkerWhenPressed) {
+							Pen.fillColor_(state[enabled.if(1,3)]/1.5)
 						}{
-							state[enabled.if(1,3)].set;
-						};	
-						Pen.fillRect(Rect(1,1,w- 2,h- 2));
-						Pen.font_(font);
-						Pen.fillColor_(state[enabled.if(2,4)]);
-						Pen.smoothing_(true);		
+							Pen.fillColor_(state[enabled.if(1,3)])
+						}
+						
+					}{
+						Color(1,1,1,0.2).set;
+						Pen.fillRect(Rect(1,1,w-3,1));
+						Pen.fillRect(Rect(1,1,1,h-3));
+						Color(0,0,0,0.45).set;
+						Pen.fillRect(Rect(w-2,2,1,h-3));
+						Pen.fillRect(Rect(2,h-2,w-3,1));
+						
+						Color(1,1,1,0.065).setFill;
+						Pen.moveTo(2@2);
+						Pen.lineTo((w-3)@2);
+						Pen.lineTo(2@(h-3));
+						Pen.lineTo(2@2);
+						Pen.fill;
+						
+						Pen.fillColor_(state[enabled.if(1,3)]);
+					};
+					
+		
+					if (state.notNil) {
+						
+						Pen.smoothing_(true);	
+						Pen.font_(font);						
 						Pen.stringCenteredIn(state[0].asString,Rect(0,0,w,h));
 					};
 				}; // end.pen
@@ -55,10 +100,25 @@ MVC_MultiOnOffView : MVC_View {
 			if (modifiers==524576) { buttonPressed=1 };
 			if (modifiers==262401) {buttonNumber=2};
 			if (buttonNumber==2) { this.toggleMIDIactive };
+			down=true;
+			this.refresh;
 		};
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			if (editMode) { this.moveBy(x-startX,y-startY) };
 		};
+		
+		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
+			var xx=x/w, yy=y/h;
+			var inBounds=(xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1};
+			
+			if (editMode||viewEditMode) {
+				this.moveBy(x-startX,y-startY,buttonPressed)
+			}{
+				if (	inBounds && (down.not) ) { down=true; this.refresh};
+				if (	(inBounds.not) && (down) ) { down=false; this.refresh};
+			}
+		};
+		
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
 			if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}and:{evaluateAction}and:{editMode.not}) {
@@ -66,10 +126,13 @@ MVC_MultiOnOffView : MVC_View {
 					this.viewValueAction_((value+1).asInt.wrap(0,states.size-1),nil,true,false);
 				}{
 					if (buttonPressed==1) {
-						this.viewValueAction2_((value+1).asInt.wrap(0,states.size-1),nil,true,false);
+						this.viewValueAction2_(
+							(value+1).asInt.wrap(0,states.size-1),nil,true,false);
 					}
 				};
 			};
+			down=false;
+			this.refresh;
 		};
 	}
 	

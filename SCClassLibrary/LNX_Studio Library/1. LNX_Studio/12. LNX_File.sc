@@ -6,15 +6,20 @@ LNX_File{
 	classvar <prefDir;
 
 	*initClass {
-		// get from studio
-		Platform.case(
-			\osx, { prefDir = Platform.userHomeDir +/+ "Library/Preferences/LNX_Studio_"++
-			(LNX_Studio.versionMajor)++"."++(LNX_Studio.versionMinor)++"/"; },
-			\linux, { prefDir = Platform.userHomeDir +/+ ".config/LNX_Studio"++
-			(LNX_Studio.versionMajor)++"."++(LNX_Studio.versionMinor)++"/"; },
-			\windows, { prefDir = Platform.userHomeDir +/+ "LNX_Studio"++
-			(LNX_Studio.versionMajor)++"."++(LNX_Studio.versionMinor)++"/"; } );
-		
+		var vStr = (LNX_Studio.versionMajor)++"."++(LNX_Studio.versionMinor);
+		Class.initClassTree(LNX_Mode);
+		if (LNX_Mode.isSafe.not) {
+			// get from studio
+			Platform.case(
+				\osx, { prefDir = Platform.userHomeDir +/+ "Library/Preferences/LNX_Studio_"++
+				vStr++"/"; },
+				\linux, { prefDir = Platform.userHomeDir +/+ ".config/LNX_Studio"++
+				vStr++"/"; },
+				\windows, { prefDir = Platform.userHomeDir +/+ "LNX_Studio"++
+				vStr++"/"; } );
+		}{
+			prefDir =  Platform.resourceDir +/+ "preferences/".absolutePath;
+		};
 		if (prefDir.pathExists(false).not) { prefDir.makeDir };
 	}
 
