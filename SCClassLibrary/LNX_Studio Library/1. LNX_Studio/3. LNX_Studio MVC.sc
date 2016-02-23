@@ -529,8 +529,8 @@
 	autoSizeGUI{
 		var h;
 		h=network.collaboration.autoSizeGUI(menuGap.y);
-		mixerGUI[\libraryScrollView].bounds_(Rect(11, 33, 190, 269+15-h+8+30+menuGap.y));
-		gui[\netScrollView].bounds_(Rect(11,319+30+15-h+8+menuGap.y,190,105));
+		mixerGUI[\libraryScrollView].bounds_(Rect(11, 33, 190, 269+15-h+8+30));
+		gui[\netScrollView].bounds_(Rect(11,319+30+15-h+8,190,105));
 	}
 
 

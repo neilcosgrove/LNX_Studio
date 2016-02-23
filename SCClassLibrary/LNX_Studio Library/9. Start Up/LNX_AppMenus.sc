@@ -24,7 +24,7 @@ LNX_AppMenus {
 
 		// width: 74, height: 22
 		mWidth = 74;
-		mHeight = 22;
+		mHeight = 19;
 
 		// tools menu
 		i = 2;
@@ -267,7 +267,7 @@ if (studio.batchOn) {
 
 		// width: 74, height: 22
 		mWidth = 74;
-		mHeight = 22;
+		mHeight = 19;
 
 		// dev menu
 		i = 3;
