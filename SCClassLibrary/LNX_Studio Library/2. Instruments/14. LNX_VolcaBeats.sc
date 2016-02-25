@@ -10,7 +10,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 
 	*initClass{
 		Class.initClassTree(LNX_File);
-		isVisiblePref = ("KorgIsVisible".loadPref ? [true])[0].isTrue;
+		isVisiblePref = ("KorgIsVisible".loadPref ? [false])[0].isTrue;
 	}
 	
 	*saveIsVisiblePref{ [isVisiblePref].savePref("KorgIsVisible") }

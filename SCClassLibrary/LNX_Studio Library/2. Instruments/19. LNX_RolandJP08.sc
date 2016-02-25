@@ -15,7 +15,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 	*initClass{
 		Class.initClassTree(LNX_File);
 		// load in all the preferences
-		isVisiblePref = ("RolandIsVisible".loadPref ? [true])[0].isTrue;
+		isVisiblePref = ("RolandIsVisible".loadPref ? [false])[0].isTrue;
 		// how shall i insert the factory defaults here?
 		rolandPresets = "Roland Presets".loadPref ?? { (8*8).collect{|i| "" } }; 
 		rolandPresetDict = IdentityDictionary[];

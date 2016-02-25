@@ -54,7 +54,7 @@ LNX_Network {
 		this.socketAsNil;
 		
 		isLAN="isLAN".loadPref;
-		if (isLAN.isNil) { isLAN = false } { isLAN = isLAN[0].isTrue };
+		if (isLAN.isNil) { isLAN = true } { isLAN = isLAN[0].isTrue };
 
 		// connect this network to everything
 		[

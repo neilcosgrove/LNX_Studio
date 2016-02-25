@@ -1,8 +1,8 @@
-SC BumNote2 Doc v1.4
+SC BumNote2 Doc v1.6
 Template Version v1.2
 LNX_BumNote2
 wobbly melody
-71
+80
 0
 0
 1
@@ -34,7 +34,7 @@ wobbly melody
 0
 127
 0
-2
+-1
 -inf
 0.31921875
 -0.27703125
@@ -45,11 +45,11 @@ wobbly melody
 0
 -0.98203125
 0
-1
+0
 -17.672664774726
 1
 0.7
--10.4380859375
+-15.524674479167
 0.9336767578125
 0
 17.65625
@@ -63,7 +63,7 @@ wobbly melody
 1
 5
 1
-55
+60
 0
 0
 0
@@ -75,11 +75,21 @@ wobbly melody
 0
 0
 0
+0
+8
 1
+1
+0
+2
+0
+2
+0
+0
 0
 1
 0
-*** MIDI Control Doc v1.1
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
 6
@@ -359,4 +369,19 @@ LNX StepSequencer Doc v1.1
 0.90469751602564
 0
 *** END OBJECT DOC ***
+LNX PRSeq DOC v1.2
+0
+LNX Score DOC v1.4
+0
+0
+64
+22
+15
+0
+0
+1
+16
+1
+*** END Score DOC ***
+*** END PRSeq DOC ***
 *** END INSTRUMENT DOC ***

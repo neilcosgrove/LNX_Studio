@@ -1,8 +1,8 @@
 SC GSRhythm Doc v1.5
-Template Version v1.1
+Template Version v1.2
 LNX_GSRhythm
-GS Rhythm
-278
+Sexy Beat
+298
 0
 0
 1
@@ -14,7 +14,7 @@ GS Rhythm
 0
 127
 0
-0
+1
 0
 0
 0
@@ -118,7 +118,7 @@ GS Rhythm
 4
 6
 15
-5
+0
 17
 0
 0
@@ -282,11 +282,32 @@ GS Rhythm
 0.00085937500000011
 0
 0
-1
 0
-1
 0
-*** MIDI Control Doc v1.1
+0
+0
+0
+0
+0
+0
+0.77281416223404
+-1
+-inf
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
 8
@@ -1173,40 +1194,7 @@ User: 6
 *** END URL Bank Doc ***
 SC URL Bank Doc v1.1
 User: 7
-6
-file://snares/US_SNARE_LOOPA.WAV
 1
-0
-120
-1
-0
-0
-US_SNARE_LOOPA.WAV
-64
-0.042434802158273
-100
-http://apeyman.free.fr/sfx/sexy/canard.wav
-1
-0
-120
-1
-0
-0
-canard.wav
-64
-0.011374494154676
-100
-http://apeyman.free.fr/sfx/sexy/violent2.wav
-1
-0
-120
-1
-0
-0
-violent2.wav
-64
-0.48120644109712
-100
 http://apeyman.free.fr/sfx/sexy/lickme.wav
 1
 6
@@ -1217,28 +1205,6 @@ http://apeyman.free.fr/sfx/sexy/lickme.wav
 lickme.wav
 64
 0.50001405125899
-100
-http://apeyman.free.fr/sfx/sexy/Satisfaction.wav
-1
-0
-120
-1
-0
-0
-Satisfaction.wav
-64
-0
-100
-http://apeyman.free.fr/sfx/sexy/1gemissement.wav
-1
-5.2213762096288
-120
-1
-0
-0
-1gemissement.wav
-64
-0
 100
 *** END URL Bank Doc ***
 SC URL Bank Doc v1.1

@@ -1,8 +1,8 @@
 SC BumNote2 Doc v1.6
 Template Version v1.2
 LNX_BumNote2
-acid flow
-75
+nice synth
+80
 0
 0
 1
@@ -45,7 +45,7 @@ acid flow
 0
 -3.484375
 0
-1
+0
 -0.66961157666832
 0
 0.7
@@ -63,7 +63,7 @@ acid flow
 3.3754736593206
 0
 1
-48
+40
 0
 0.3719921875
 0
@@ -79,7 +79,12 @@ acid flow
 8
 1
 1
-1
+0
+2
+0
+2
+0
+0
 0
 1
 0

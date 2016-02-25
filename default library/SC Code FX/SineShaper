@@ -1,7 +1,7 @@
 SC CodeFX Doc v1.4
 Template Version v1.2
 LNX_CodeFX
-Streson Filter
+SineShaper
 19
 0
 0
@@ -20,17 +20,18 @@ Streson Filter
 0
 1
 6
-263
-290
+284
+209
 9
 0
 -1
 1
 0
-*** MIDI Control Doc v1.1
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
-340
+369
 10
 47
 47
@@ -132,6 +133,9 @@ Streson Filter
 109
 105
 116
+44
+111
+110
 124
 10
 9
@@ -147,6 +151,16 @@ Streson Filter
 110
 97
 108
+44
+32
+115
+105
+103
+110
+97
+108
+73
+110
 32
 61
 32
@@ -204,6 +218,8 @@ Streson Filter
 110
 97
 108
+73
+110
 44
 32
 108
@@ -227,6 +243,8 @@ Streson Filter
 78
 88
 95
+70
+88
 79
 117
 116
@@ -237,6 +255,18 @@ Streson Filter
 110
 97
 108
+44
+115
+105
+103
+110
+97
+108
+73
+110
+44
+111
+110
 44
 111
 117
@@ -404,7 +434,7 @@ off
 1
 on
 1
-0.55038759689922
+0.7641109496124
 1
 1
 midiLearn
@@ -464,7 +494,7 @@ off
 1
 on
 1
-0.55038759689922
+0.7641109496124
 1
 1
 midiLearn
@@ -524,7 +554,7 @@ off
 1
 on
 1
-0.55038759689922
+0.7641109496124
 1
 1
 midiLearn
@@ -554,16 +584,46 @@ focus
 0
 *** END MVC_View Document ***
 7
-MVC_MyKnob
-0.22041275390625
+MVC_SmoothSlider
+0.27157043159299
 *** MVC_View Document v1 ***
-9
+13
 0
-20
-84
 35
-35
-pin
+72
+170
+25
+backgroundDisabled
+0.25
+0.25
+0.25
+1
+numberDown
+1
+0.5
+0
+1
+midiLearn
+0
+1
+1
+1
+background
+0
+0
+0
+0.37662337662338
+hilite
+0
+0
+0
+0.3
+knob
+1
+0.76141593992248
+1
+1
+knobBorder
 0
 0
 0
@@ -573,24 +633,14 @@ numberUp
 0
 0
 1
-off
+knobDisabled
+0.6
+0.6
+0.6
+1
+border
 0
 0
-0
-1
-on
-1
-0.55038759689922
-1
-1
-midiLearn
-0
-1
-1
-1
-numberDown
-1
-0.5
 0
 1
 label

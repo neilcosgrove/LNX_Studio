@@ -1,8 +1,8 @@
-SC GSRhythm Doc v1.4
-Template Version v1.1
+SC GSRhythm Doc v1.5
+Template Version v1.2
 LNX_GSRhythm
 cybertron
-260
+298
 0
 0
 1
@@ -264,11 +264,50 @@ cybertron
 0
 0
 0
-1
+2
+2
+2
+2
+2
+2
+2
+2
+2
 0
-1
 0
-*** MIDI Control Doc v1.1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0.62815824468085
+-1
+-inf
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
 8
@@ -1008,4 +1047,36 @@ LNX StepSequencer Doc v1.1
 0
 0
 *** END OBJECT DOC ***
+SC URL Bank Doc v1.1
+User: 1
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 2
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 3
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 4
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 5
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 6
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 7
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 8
+0
+*** END URL Bank Doc ***
 *** END INSTRUMENT DOC ***

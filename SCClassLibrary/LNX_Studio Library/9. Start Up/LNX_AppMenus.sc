@@ -53,10 +53,10 @@ LNX_AppMenus {
 		SCMenuItem.new(tools,  "Clear All Automation").action_({
 			studio.freeAllAutomation;
 		});
-			
-		SCMenuSeparator.new(tools);
-		SCMenuItem.new(tools,  "Master EQ").action_({MasterEQ.new});
-		
+//			
+//		SCMenuSeparator.new(tools);
+//		SCMenuItem.new(tools,  "Master EQ").action_({MasterEQ.new});
+//		
 		SCMenuSeparator.new(tools);
 		SCMenuItem.new(tools,  "Backup Library to Desktop").action_{studio.backupLibrary};
 		SCMenuItem.new(tools,  "Restore Library Defaults").action_{studio.restoreLibraryDefaults};

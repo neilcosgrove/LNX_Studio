@@ -1,8 +1,8 @@
-SC BumNote2 Doc v1.4
+SC BumNote2 Doc v1.6
 Template Version v1.2
 LNX_BumNote2
-12
-71
+lead acid stab B
+80
 0
 0
 1
@@ -29,12 +29,12 @@ LNX_BumNote2
 1
 1.0858158898124
 0.001
-1.2836654296875
+3.5694990234375
 0.0998828125
 0
 127
 0
-2
+-1
 -15.936457211834
 0
 0
@@ -45,11 +45,11 @@ LNX_BumNote2
 0
 2.02734375
 0
-1
+0
 -23.970455277258
 0
 0.57976217830882
-13.7794921875
+-10.8900390625
 0.7496455078125
 0
 17.853515625
@@ -60,26 +60,36 @@ LNX_BumNote2
 -4
 0
 1
-1.9168286386087
-1
-0
-50
-0
-0
-0
-0
 1
 1
-0
+1
+14
 0
 0
 0
 0
 1
+1
+0
+0
+0
+0
+0
+0
+8
+1
+1
+1
+8
+0
+2
+0
+0
 0
 1
 0
-*** MIDI Control Doc v1.1
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
 6
@@ -359,4 +369,19 @@ LNX StepSequencer Doc v1.1
 0
 0
 *** END OBJECT DOC ***
+LNX PRSeq DOC v1.2
+0
+LNX Score DOC v1.4
+0
+0
+64
+22
+15
+0
+0
+1
+16
+1
+*** END Score DOC ***
+*** END PRSeq DOC ***
 *** END INSTRUMENT DOC ***

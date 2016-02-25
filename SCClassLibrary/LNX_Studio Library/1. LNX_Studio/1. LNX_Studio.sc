@@ -553,10 +553,11 @@ LNX_Studio {
 	
 	// work out the largest -ive sync delay in all instruments
 	// and set that as the studio +ive syncdelay	
-	checkSyncDelay{	
+	checkSyncDelay{
+		var oldSync = syncDelay;
 		// largest only -ive is turned into a +ive syncDelay so we don't below latency
 		syncDelay = insts.collect{|inst| inst.syncDelay.clip(-inf,0).abs }.asList.sort.last ? 0;
-		insts.do(_.stopAllNotes);
+		if (oldSync!=syncDelay) {insts.do(_.stopAllNotes) };
 	}
 	
 	// MIDI ///////////////////////////////////////////////////////////////////////////////

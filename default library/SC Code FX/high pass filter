@@ -1,12 +1,12 @@
 SC CodeFX Doc v1.4
-Template Version v1.1
+Template Version v1.2
 LNX_CodeFX
 high pass filter
 19
 0
 0
 1
--2.7040066986866
+0.2002167030576
 0
 0
 1
@@ -19,7 +19,7 @@ high pass filter
 8
 0
 1
--2.9823953407251
+-0.12023097548052
 263
 243
 9
@@ -27,10 +27,11 @@ high pass filter
 0
 1
 0
-*** MIDI Control Doc v1.1
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
-318
+340
 10
 47
 47
@@ -89,6 +90,9 @@ high pass filter
 32
 123
 124
+111
+110
+44
 32
 111
 117
@@ -153,6 +157,8 @@ high pass filter
 124
 10
 9
+10
+9
 118
 97
 114
@@ -163,17 +169,16 @@ high pass filter
 110
 97
 108
-59
-10
-9
-10
-9
+44
+32
 115
 105
 103
 110
 97
 108
+73
+110
 32
 61
 32
@@ -189,7 +194,9 @@ high pass filter
 32
 50
 41
+32
 42
+32
 105
 110
 65
@@ -223,6 +230,8 @@ high pass filter
 110
 97
 108
+73
+110
 44
 32
 102
@@ -252,6 +261,8 @@ high pass filter
 78
 88
 95
+70
+88
 79
 117
 116
@@ -262,6 +273,18 @@ high pass filter
 110
 97
 108
+44
+115
+105
+103
+110
+97
+108
+73
+110
+44
+111
+110
 44
 111
 117
@@ -533,12 +556,12 @@ focus
 *** END MVC_View Document ***
 7
 MVC_MyKnob
-0
+389.96891995161
 *** MVC_View Document v1 ***
 9
 0
-131
-80
+46
+82
 35
 35
 pin
@@ -587,14 +610,14 @@ focus
 0
 0
 *** END MVC_View Document ***
-6
+8
 MVC_MyKnob
-470.91666332012
+0
 *** MVC_View Document v1 ***
 9
 0
-46
-82
+131
+80
 35
 35
 pin

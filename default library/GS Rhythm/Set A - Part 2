@@ -1,8 +1,8 @@
-SC GSRhythm Doc v1.4
-Template Version v1.1
+SC GSRhythm Doc v1.5
+Template Version v1.2
 LNX_GSRhythm
 Set A - Part 2
-260
+298
 4
 0
 1
@@ -264,6 +264,44 @@ Set A - Part 2
 0
 0
 0
+2
+2
+2
+2
+2
+2
+2
+2
+2
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0.74468085106383
+-1
+-inf
+0
+0
+0
+0
+0
+0
+0
+0
+0
 0
 1
 0.87880745658233
@@ -515,6 +553,44 @@ Set A - Part 2
 0
 0
 0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+2
+2
+2
+2
+2
+2
+2
+2
+2
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0.7
+-1
+-inf
 0
 0
 0
@@ -775,6 +851,44 @@ Set A - Part 2
 0
 0
 0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+2
+2
+2
+2
+2
+2
+2
+2
+2
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0.7
+-1
+-inf
 0
 0
 0
@@ -1044,6 +1158,44 @@ Set A - Part 2
 0
 0
 0
+2
+2
+2
+2
+2
+2
+2
+2
+2
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0.7
+-1
+-inf
+0
+0
+0
+0
+0
+0
+0
+0
+0
 0
 1
 0.87880745658233
@@ -1304,15 +1456,54 @@ Set A - Part 2
 0
 0
 0
+2
+2
+2
+2
+2
+2
+2
+2
+2
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0.7
+-1
+-inf
+0
+0
+0
+0
+0
+0
+0
+0
+0
 Preset 0
 Preset 1
 Preset 2
 Preset 3
-1
 0
-1
 0
-*** MIDI Control Doc v1.1
+0
+0
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
 8
@@ -4676,4 +4867,36 @@ LNX StepSequencer Doc v1.1
 0
 0
 *** END OBJECT DOC ***
+SC URL Bank Doc v1.1
+User: 1
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 2
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 3
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 4
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 5
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 6
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 7
+0
+*** END URL Bank Doc ***
+SC URL Bank Doc v1.1
+User: 8
+0
+*** END URL Bank Doc ***
 *** END INSTRUMENT DOC ***
