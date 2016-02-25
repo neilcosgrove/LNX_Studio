@@ -168,13 +168,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		midiOutBuffer.releaseAll(studio.actualLatency); 
 		{keyboardView.clear}.defer(studio.actualLatency);
 	}
-	
-//	// external midi setting controls (these are network methods)
-//	netExtCntIn{|index,val|
-//		p[index.asInt]=val.asFloat;
-//		models[index.asInt].lazyValue_(val.asFloat,false); // false is no auto
-//	}
-	
+		
 	// external midi setting prog number (these are network methods)
 	extProgIn{|prog,send=false|
 		prog=prog.asInt;
@@ -279,7 +273,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				
 			// 10. syncDelay
 			[\sync, {|me,val,latency,send|
-				this.setPVP(10,val,latency,send);
+				this.setPVPModel(10,val,latency,send);
 				this.syncDelay_(val);
 			}],		
 						
@@ -318,7 +312,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		template = template.add([1, \switch, midiControl, 88, "MIDI Clock",
 				(strings_:["MIDI Clock"]),
 				{|me,val,latency,send|
-					this.setPVP(88,val,latency,send);
+					this.setPVPModel(88,val,latency,send);
 					if (val.isFalse) { midi.stop(latency +! syncDelay) };
 				}]);
 				
@@ -326,7 +320,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		template = template.add([0, \switch, midiControl, 89, "Controls Preset",
 				(strings_:["Controls"]),
 				{|me,val,latency,send|	
-					this.setPVP(89,val,latency,send);
+					this.setPVPModel(89,val,latency,send);
 					if (val.isTrue) {
 						presetExclusion=[0,1,10];
 					}{

@@ -510,19 +510,45 @@ MVC_Automation {
 		}
 	}
 	
-	// (class) all Automations jump to beat in song
-	*jumpTo{|beat|
-		if (isPlaying) { allAutomations.do{|automation| automation.jumpTo(beat) } };
+	// new style jump, do events in order on time line
+	*jumpToEventsInOrder{|beat|
+		var events =[];
+		allAutomations.do{|automation|
+			var event = automation.collectEventBefore(beat);
+			if (event.notNil) { events=events.add(event) };
+		};
+		
+		events = events.sort{|a, b| a.beat <= b.beat };
+		
+		events.do{|event| event.bang(refAbsTime?0,\jumpTo) };
+		
 	}
 	
-	// jump to beat in song
+	// get the event but don't bang it unless a start event
+	collectEventBefore{|beat|
+		var event = this.findEventBefore(beat);
+		if (event==(-1)) {
+			this.reset;
+			^nil
+		}{
+			^event
+		};
+	}
+	
+	// (class) all Automations jump to beat in song
+	*jumpTo{|beat|
+		this.jumpToEventsInOrder(beat);
+		//if (isPlaying) { allAutomations.do{|automation| automation.jumpTo(beat) } };
+	}
+	
+	// jump to beat in song (this is not used now)
 	jumpTo{|beat|
 		var event = this.findEventBefore(beat);
 		overwrite = false; // stop overwrite	
 		if (event==(-1)) {
 			this.reset;
 		}{
-			event.bang(refAbsTime,\jumpTo);
+			event.bang(refAbsTime?0,\jumpTo);
 		};
 	}
 	
@@ -537,6 +563,22 @@ MVC_Automation {
 			}
 		};
 		^jumpTo
+	}
+	
+	// jump when to transport stopped
+	*jumpWhileStopped{|beat|
+		this.jumpToEventsInOrder(beat);
+		this.clearRef;
+		{
+			if (gui.notNil) {
+				gui[\seqIndex] = beat;
+				if (models[\follow].value.isTrue && mouseUp) {
+					models[\offset].lazyValueAction_((beat/duration).clip(0,1));
+				}{
+					this.refreshPointer;
+				};
+			}
+		}.defer;
 	}
 	
 	// GUI Widgets /////////////////////////////////////////////////////////////////////////////
@@ -668,7 +710,7 @@ MVC_Automation {
 		models[\zoom]      = [1,[1,inf],{gui[\graph].refresh}].asModel;  // zoom
 		models[\offset]    = [0,[0,1]  ,{MVC_Automation.lazyRefreshGUI}].asModel;  // offset
 		models[\quant]     = [0,[0,128,\lin,1], (label_:"Quantise:")].asModel;  // quantise
-		models[\penMode]   = [1,[0,3,\lin,1], (label_:"Pen Mode:")].asModel; // write or erase
+		models[\penMode]   = [2,[0,3,\lin,1], (label_:"Pen Mode:")].asModel; // write or erase
 		models[\follow]    = [0,\switch].asModel;
 		models[\barLength] = [32,[1,128,\lin,1],{gui[\graph].refresh},
 												(label_:"Bar (steps):")].asModel;
@@ -1247,5 +1289,71 @@ MVC_Automation {
 	}
 
 }
+
+// this silences .autoIn_ bug. bad neil you should find what is going on!
++ Nil { autoIn_{} } // why does nil get called with autoIn_ ?
+
+/*
+
+ERROR: Message 'autoIn_' not understood.
+RECEIVER:
+   nil
+ARGS:
+   nil
+CALL STACK:
+	DoesNotUnderstandError:reportError   0x13368e5e8
+		arg this = <instance of DoesNotUnderstandError>
+		var s = "ERROR: Message 'autoIn_' not..."
+	< closed FunctionDef >   0x133692c58
+		arg error = <instance of DoesNotUnderstandError>
+	Integer:forBy   0x179487e98
+		arg this = 0
+		arg endval = 52
+		arg stepval = 2
+		arg function = <instance of Function>
+		var i = 42
+		var j = 21
+	SequenceableCollection:pairsDo   0x18381a2d8
+		arg this = [*54]
+		arg function = <instance of Function>
+	Scheduler:seconds_   0x1a158b338
+		arg this = <instance of Scheduler>
+		arg newSeconds = 373.544973445
+	Meta_AppClock:tick   0x14fb81888
+		arg this = <instance of Meta_AppClock>
+		var saveClock = <instance of Meta_SystemClock>
+	Process:tick   0x180649508
+		arg this = <instance of Main>
+ERROR: Message 'autoIn_' not understood.
+RECEIVER:
+   nil
+ARGS:
+   nil
+CALL STACK:
+	DoesNotUnderstandError:reportError   0x1336d9e88
+		arg this = <instance of DoesNotUnderstandError>
+		var s = "ERROR: Message 'autoIn_' not..."
+	< closed FunctionDef >   0x1336d7bd8
+		arg error = <instance of DoesNotUnderstandError>
+	Integer:forBy   0x179487e98
+		arg this = 0
+		arg endval = 52
+		arg stepval = 2
+		arg function = <instance of Function>
+		var i = 44
+		var j = 22
+	SequenceableCollection:pairsDo   0x18381a2d8
+		arg this = [*54]
+		arg function = <instance of Function>
+	Scheduler:seconds_   0x1a158b338
+		arg this = <instance of Scheduler>
+		arg newSeconds = 373.544973445
+	Meta_AppClock:tick   0x14fb81888
+		arg this = <instance of Meta_AppClock>
+		var saveClock = <instance of Meta_SystemClock>
+	Process:tick   0x180649508
+		arg this = <instance of Main>
+
+*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

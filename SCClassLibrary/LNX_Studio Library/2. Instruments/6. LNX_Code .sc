@@ -251,7 +251,7 @@ LNX_Code : LNX_InstrumentTemplate {
 				
 			// 23. syncDelay
 			[\sync, {|me,val,latency,send|
-				this.setPVP(23,val,latency,send);
+				this.setPVPModel(23,val,latency,send);
 				this.syncDelay_(val);
 			}],	
 				

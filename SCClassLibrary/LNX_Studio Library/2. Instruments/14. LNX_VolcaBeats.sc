@@ -196,7 +196,7 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 				
 			// 10. syncDelay
 			[\sync, {|me,val,latency,send|
-				this.setPVP(10,val,latency,send);
+				this.setPVPModel(10,val,latency,send);
 				this.syncDelay_(val);
 			}],
 			
@@ -312,14 +312,14 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 		// 52. midi clock out
 		template[52] = [0, \switch, midiControl, 52, "MIDI Clock", (strings_:["MIDI Clock"]),
 			{|me,val,latency,send|
-				this.setPVP(52,val,latency,send);
+				this.setPVPModel(52,val,latency,send);
 				if (val.isFalse) { midi.stop(latency +! syncDelay) };
 			}];				
 
 		// 53. use controls in presets
 		template[53] = [0, \switch, midiControl, 53, "Controls Preset", (strings_:["Controls"]),
 			{|me,val,latency,send|	
-				this.setPVP(53,val,latency,send);
+				this.setPVPModel(53,val,latency,send);
 				if (val.isTrue) {
 					presetExclusion=[0,1,10,52];
 				}{

@@ -158,7 +158,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 				
 			// 10. syncDelay
 			[\sync, {|me,val,latency,send|
-				this.setPVP(10,val,latency,send);
+				this.setPVPModel(10,val,latency,send);
 				this.syncDelay_(val);
 			}],		
 						
@@ -184,15 +184,18 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 			[0, \switch, midiControl, 14, "MIDI Clock",
 					(strings_:["MIDI Clock"]),
 					{|me,val,latency,send|
-						this.setPVP(14,val,latency,send);
-						if (val.isFalse) { midi.stop(latency +! syncDelay) };
+						this.setPVPModel(14,val,latency,send);
+						if (val.isFalse) {
+							//">>> Out Stop >>> ".post; [latency +! syncDelay].postln;
+							midi.stop(latency +! syncDelay)
+						};
 					}],
 					
 			// 15. use controls in presets
 			[1, \switch, midiControl, 15, "Controls Preset",
 					(strings_:["Controls"]),
 					{|me,val,latency,send|	
-						this.setPVP(15,val,latency,send);
+						this.setPVPModel(15,val,latency,send);
 						if (val.isTrue) {
 							presetExclusion=[0,1,10,14];
 						}{
@@ -263,6 +266,8 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 	sysex2{|data, latency|
 		var index, key, value;
 
+		// if (true) {^this}; // temp disable
+
 		// exceptions
 		if (data.size!=16)    {^this};          // packet size exception
 		if (data[1]!=65)      {^this};          // Roland SYSEX number
@@ -271,7 +276,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		if (data[8]!=3)       {^this};          // unsure, maybe set value command?
 		if (data[0]!=(-16))   {^this};          // first byte
 		if (data[15]!=(-9))   {^this};          // last byte
-
+		
 		key   = (data[10]*25) + data[11];       // key to metadata in RolandJP08 dictionary
 		value = (data[12]*16) + data[13];       // 8 bit value (0-255)
 		index = RolandJP08.indexOfKey(key);     // index of model
@@ -282,6 +287,8 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		if (sysex2Time[index].notNil and: { SystemClock.now < sysex2Time[index] })
 			{ ^this }                          // exception
 			{ sysex2Time[index] = nil };       // else clear time
+			
+		//"<<< In Sysex  <<< ".post; data.postln;
 
 		models[(index+17)].lazyValue_(value, true); // set model, no action
 		p[index+17]=value;                          // set p[]
@@ -298,6 +305,9 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 											value.div(16), value.asInt%16, 0, -9 ];
 		
 		data[14] = RolandJP08.checkSum(data[8..13]); // put in Roland checksum
+		
+		//">>> Out Sysex >>> ".post; data.postln;
+		
 		midi.sysex(data,latency +! syncDelay);       // midi control out
 		
 		// to prevent feedback, when can i start listening again?
@@ -364,6 +374,9 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	netExtCntIn{|item,value,uidOut,midiOutChannel|
 		p[item+17]=value;
 		models[item+17].lazyValue_(value,false);
+		
+		// need to do this via sysex on nrtwork
+		
 		// go on, do a pipe here
 		midi.control(RolandJP08.keyAt(item) ,value,nil,false,true);
 		// ignore set to true so no items learnt from this
@@ -395,6 +408,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	
 	// and finally to the midi out
 	toMIDIPipeOut{|pipe|
+		//">>> Out Pipe >>> ".post; pipe.postln;
 		midi.pipeIn(pipe.addToHistory(this).addLatency(syncDelay));    // add this to its history
 	}
 
@@ -452,11 +466,26 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	}
 	
 	// clock in for midi out clock methods
-	midiSongPtr{|songPtr,latency| if (p[14].isTrue) { midi.songPtr(songPtr,latency +! syncDelay) }} 
-	midiStart{|latency|           if (p[14].isTrue) { midi.start(latency +! syncDelay) } }
-	midiClock{|latency|           if (p[14].isTrue) { midi.midiClock(latency +! syncDelay) } }
-	midiContinue{|latency|        if (p[14].isTrue) { midi.continue(latency +! syncDelay) } }
-	midiStop{|latency|            if (p[14].isTrue) { midi.stop(latency +! syncDelay) } }
+	midiSongPtr{|songPtr,latency| if (p[14].isTrue) {
+		//">>> Out songPtr >>> ".post; [songPtr,latency].postln;
+		midi.songPtr(songPtr,latency +! syncDelay);
+	}} 
+	midiStart{|latency|           if (p[14].isTrue) { 
+		//">>> Out start >>> ".post; [latency].postln;
+		midi.start(latency +! syncDelay);
+	} }
+	midiClock{|latency|           if (p[14].isTrue) {
+		//">>> Out midiClock >>> ".post; [latency].postln;
+		midi.midiClock(latency +! syncDelay)
+	} }
+	midiContinue{|latency|        if (p[14].isTrue) {
+		//">>> Out continue >>> ".post; [latency].postln;
+		midi.continue(latency +! syncDelay)
+	} }
+	midiStop{|latency|            if (p[14].isTrue) {
+		//">>> Out stop >>> ".post; [latency].postln;
+		midi.stop(latency +! syncDelay)
+	} }
 
 	// disk i/o ///////////////////////////////
 		
@@ -588,6 +617,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	// set program on roland, latency isn't really needed here
 	setRolandProgram{|latency|
 		var prog=	p[12];
+		//">>> Out program >>> ".post; [prog-1, latency +! syncDelay].postln;
 		midi.program(prog-1, latency +! syncDelay); // out to midi
 		this.updatePresetGUI;
 	}

@@ -274,6 +274,7 @@
 		if ((isLoading.not)and:{server.serverRunning}) {
 			list = filename.loadPref;
 			if (list.notNil) {
+				list[3]=name; // fix for naming over network
 				this.guiAddInst(type,list,name);
 				{MVC_Automation.updateDurationAndGUI.refreshGUI}.defer(1);
 			}

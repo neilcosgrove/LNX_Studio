@@ -677,7 +677,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 				
 			// 79. syncDelay
 			[\sync, {|me,val,latency,send|
-				this.setPVP(79,val,latency,send);
+				this.setPVPModel(79,val,latency,send);
 				this.syncDelay_(val);
 			}],	
 								

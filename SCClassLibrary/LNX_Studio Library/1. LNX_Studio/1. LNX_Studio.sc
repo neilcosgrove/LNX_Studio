@@ -58,6 +58,8 @@
 // Josh           : helping with the SC side of OscGroups
 // and nonprivate : sound advice.
 //
+// also thanks to Southern express, Themes Link and Gatwick Express for the time
+//
 // Unsolved BUG LOG:
 // WebView crashes ramdomly in Cocoa.
 //
@@ -279,7 +281,7 @@ LNX_Studio {
 			\netSyncCollaboration, \netAddLoadList, \netOnSoloUpdate, \netMove, \hostPlay,
 			\play, \netPause, \hostStop, \netStop, \hostSetBPM, \setBPM,
 			\netAddInstWithLoadList,\netAllInstsSelectProgram, \netSetModel, \hostJumpTo,
-			\netSetAuto, \netNoteOn, \netNoteOff, \netAllToPOP
+			\netSetAuto, \netNoteOn, \netNoteOff, \netAllToPOP, \jumpWhileStopped
 		],#[
 			\post, \postMe, \postList, \postAll, \postStuff, \postTime, \postClock,
 			\postSpecies

@@ -203,7 +203,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				
 			// 10. syncDelay
 			[\sync, {|me,val,latency,send|
-				this.setPVP(10,val,latency,send);
+				this.setPVPModel(10,val,latency,send);
 				this.syncDelay_(val);
 			}],
 			
@@ -218,14 +218,14 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			// 12. midi clock out
 			[1, \switch, midiControl, 12, "MIDI Clock", (strings_:["MIDI Clock"]),
 				{|me,val,latency,send|
-					this.setPVP(12,val,latency,send);
+					this.setPVPModel(12,val,latency,send);
 					if (val.isFalse) { midi.stop(latency +! syncDelay)};
 				}],
 				
 			// 13. use controls in presets
 			[0, \switch, midiControl, 13, "Controls Preset", (strings_:["Controls"]),
 				{|me,val,latency,send|	
-					this.setPVP(13,val,latency,send);
+					this.setPVPModel(13,val,latency,send);
 					if (val.isTrue) {
 						presetExclusion=[0,1,10,12];
 					}{

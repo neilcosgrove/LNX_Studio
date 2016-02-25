@@ -232,7 +232,7 @@
 				
 		// 297. syncDelay
 		template[297]=[\sync, {|me,val,latency,send|
-			this.setPVP(297,val,latency,send);
+			this.setPVPModel(297,val,latency,send);
 			this.syncDelay_(val);
 		}];
 		
