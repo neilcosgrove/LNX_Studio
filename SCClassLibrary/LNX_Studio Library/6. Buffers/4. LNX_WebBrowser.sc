@@ -481,15 +481,18 @@ LNX_WebBrowser{
 					
 					text = [
 						"<h1>",prefix,"</h1>",
+						userFiles,
+						
+						"<br/>",
+							
+						
 						"The Cashe.<br/>Found ",
 						size,
 						" sounds out of ",
 						cashe.size ,
 						" in the cashe… ",
 				"<a href='http://***LNX_DeleteCashe.mp3'>[Delete all cashe files]</a><br/><br/>",
-							text,
-							"<br/><br/>",
-							userFiles
+							text
 					].join;
 		
 					gui[\webView].html_(text);
@@ -505,35 +508,31 @@ LNX_WebBrowser{
 	showCasheHTMLNoFilter{|prefix=""|
 		var calls = 1, modInterval=600;
 		var text, size;
-		
 		{
-		
 			LNX_BufferProxy.fetchEasyCashe{|cashe|
-			
 				text = cashe.collect {|str|
-				
 					if (calls%modInterval==0) { 0.01.wait };
 					calls = calls + 1;
 					"<a href='%'>%</a><br/>".format( str,str)
 					
 				};
-				
 				size = text.size;
 				text = text.join;
-			
 				text = [
 					"<h1>",prefix,"</h1>",
+										
+					userFilesText,
+					"<br/>",
+					
 					"The Cashe.<br/>There are ",
 					size,
 					" sounds available in the cashe… ",
 			"<a href='http://***LNX_DeleteCashe.mp3'>[Delete all cashe files]</a><br/><br/>",
-					text,
-					"<br/><br/>",
-					userFilesText
+					text
+
 				].join;
-						
 				gui[\webView].html_(text);
-			
+				
 			};
 		
 		}.fork;
@@ -866,7 +865,7 @@ LNX_WebBrowser{
 			.color_(\off,Color(1,1,1,0.5))
 			.action_{	
 				var url=gui[\text].string;
-				favourites=favourites.add(url.postln);
+				favourites=favourites.add(url);
 				this.makeMenus;
 				this.updateMenus;
 				this.saveFavourites;

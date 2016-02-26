@@ -351,7 +351,7 @@ LNX_BufferProxy {
 		var list=[];	
 		var nonUserContent = this.nonUserContent; // just a few folders here
 		var done = 1 ! (nonUserContent.size);
-		
+		if (nonUserContent.size==0) { action.value(list); ^this };
 		nonUserContent.do{|folder,i|
 			FolderContents.fetchFolderContents(folder,inf,{|contents|
 				list = list ++ (contents.select(_.isLNXSoundFile));
