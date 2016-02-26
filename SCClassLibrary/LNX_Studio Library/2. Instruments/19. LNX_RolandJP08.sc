@@ -325,10 +325,23 @@ RolandJP08.checkSum(Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13
 Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 */
 
+	// import a complete folder of roland patches
+	importFolder{
+		Dialog.openPanel({|files|
+			files = files.select{|path|
+				(path.basename[..9] == "JP08_PATCH")&&(path.extension=="PRM")
+			};	
+			files.do{|path|
+				var index = (path.basename.drop(10).drop(-4).asInt);
+				this.dropFile(index,path);
+			}
+		},multipleSelection:true)		
+	}
+	
 	// drag and drop a Roland PATCH.PRM file into the preset
 	dropFile{|i,path|
 		var file,loadList;
-		
+				
 		// file type / name exceptions
 		if (path.keep(-4)!=".PRM")      { "Not a .PRM file".postln;  ^this};
 		if (path.contains("PATCH").not) { "Not a PATCH file".postln; ^this};
@@ -941,7 +954,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		
 		// program names in a 8 x 8 grid	
 		rolandPresets.do{|string,i|
-			gui[i]=MVC_Text(gui[\preTab], Rect( 40+((i%8)*113), 30+(i.div(8)*34), 105, 30) )
+			gui[i]=MVC_Text(gui[\preTab], Rect( 40+((i%8)*113), 30+(i.div(8)*33), 105, 29) )
 				.string_(string)
 				.canEdit_(false)
 				.enterStopsEditing_(true)
@@ -983,7 +996,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 				.color_(\string,Color(59/77,59/77,59/77)*1.4)
 				.color_(\background,Color(0.14,0.12,0.11,0.25)*0.4)
 				.font_(Font.new("STXihei", 11));	
-			gui[2000+i]=MVC_Text(gui[\preTab], Rect( 15, 30+(i*34), 20, 30) )
+			gui[2000+i]=MVC_Text(gui[\preTab], Rect( 15, 30+(i*33), 20, 29) )
 				.align_(\right)
 				.string_((i+1).asString)
 				.color_(\string,Color(59/77,59/77,59/77)*1.4)
@@ -996,7 +1009,27 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			.value_(1)
 			.permanentStrings_(["S","S"])
 			.action_{|me| rolandPresets.do{|string,i| gui[i].canEdit_(me.value.isFalse) } };
+				
+		// ImportFolder
+	 	MVC_FlatButton(gui[\preTab],Rect(40, 294, 57, 20),"Import")
+			.rounded_(true)
+			.shadow_(true)
+			.canFocus_(false)
+			.color_(\up,Color.orange*0.75)
+			.color_(\down,Color.orange*0.75/2)
+			.color_(\string,Color.white)
+			.action_{
+				this.importFolder;
+			};
 			
+		// info text
+		
+		MVC_Text(gui[\preTab],Rect(97, 294, 346, 20))
+			.string_("= [PATCH 2 + Power On] JP-08/BACKUP/All files")
+			.font_(Font("Helvetica",11))
+			.shadow_(false)
+			.color_(\string,Color.black)
+	
 	}
 	
 	// dsp stuFF for audio in /////////////////////////////////////////////////////////////////////
