@@ -263,6 +263,7 @@ LNX_Studio {
 		MVC_Automation.studio_(this);         // for finding MVC_Automation's on the network
 		LNX_POP.studio_(this);                // for finding instBeat when gui pressing program
 		LNX_BufferProxy.studio_(this);        // for gui flashing
+		LNX_URLDownloadManager.studio_(this); // for "Downloading samples..." & "Finished." Dialog
 		
 		//insts.addDependant(LNX_POP); // for updating gui positions
 		
