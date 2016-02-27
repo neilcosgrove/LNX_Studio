@@ -222,12 +222,12 @@ LNX_POP {
 								\focus : Color(0,0,0,0.5)));
 								
 		// Quantise
-		MVC_NumberBox(studioModels[\quant], gui[\window] ,Rect(13,45, 35, 18),  gui[\theme2])
+		MVC_NumberBox(studioModels[\quant], gui[\window] ,Rect(13,50, 35, 18),  gui[\theme2])
 			.orientation_(\vert)
 			.labelShadow_(false);
 		
 		// the Edit menu
-		MVC_PopUpMenu3(  gui[\window], Rect(51+2,45, 18, 18))
+		MVC_PopUpMenu3(  gui[\window], Rect(51+2,50, 18, 18))
 			.items_(["Copy","Paste", "-", "Insert","Clear","Remove"])
 			.showTick_(false)
 			.staticText_("")
@@ -243,7 +243,7 @@ LNX_POP {
 					{5}{ this.guiRemove }
 			};
 		
-		MVC_StaticText(gui[\window], Rect(1, 1, 74, 27))
+		MVC_StaticText(gui[\window], Rect(1, 1+3, 74, 27))
 			.shadow_(false)
 			.color_(\string,Color(0.85,0.85,0.85))
 			.align_(\center)
@@ -253,7 +253,7 @@ LNX_POP {
 		
 		// 23.program number (to become)
 		gui[\program]=MVC_ProgramChangeMain(studioModels[\toBecome],gui[\window],
-			Rect(10,42+26,40,noPOP*21))
+			Rect(10,42+26+10,40,noPOP*21))
 			.ww_(40)
 			.hh_(21)
 			.noPOP_(noPOP);
@@ -269,12 +269,12 @@ LNX_POP {
 		.numberFunc_(\intPlus1);
 
 		// plainSquare to cover top of resets
- 		MVC_PlainSquare(gui[\window],Rect(50, 68, 22, 1))
+ 		MVC_PlainSquare(gui[\window],Rect(50, 68+10, 22, 1))
  			.color_(\on,Color.black)
  			.color_(\off,Color.black);
 
 		// More
- 		gui[\more]=MVC_FlatButton(gui[\window],Rect(47, (noPOP+3)*21+12, 19, 19),"+")
+ 		gui[\more]=MVC_FlatButton(gui[\window],Rect(47, (noPOP+3)*21+22, 19, 19),"+")
 			.rounded_(true)
 			.canFocus_(false)
 			.shadow_(true)
@@ -284,7 +284,7 @@ LNX_POP {
 			.action_{ classAPI.groupCmdOD(\more) };
 			
 		// Less
- 		gui[\less]=MVC_FlatButton(gui[\window],Rect(18, (noPOP+3)*21+12, 19, 19),"-")
+ 		gui[\less]=MVC_FlatButton(gui[\window],Rect(18, (noPOP+3)*21+22, 19, 19),"-")
 			.rounded_(true)
 			.canFocus_(false)
 			.shadow_(true)
@@ -294,7 +294,7 @@ LNX_POP {
 			.action_{  classAPI.groupCmdOD(\less) };
 	
 		// plainSquare to extend scroll
- 		gui[\plainSquare]=MVC_PlainSquare(gui[\window],Rect(0, (noPOP+4.5)*21+3, 1, 1))
+ 		gui[\plainSquare]=MVC_PlainSquare(gui[\window],Rect(0, (noPOP+4.5)*21+22, 1, 1))
  			.color_(\on,Color.clear)
  			.color_(\off,Color.clear);
  			
@@ -304,7 +304,7 @@ LNX_POP {
  			.color_(\off,Color.clear);
  		
  		// plainSquare to extend scroll
- 		gui[\plainSquare2]=MVC_PlainSquare(gui[\window2],Rect(0, (noPOP+4.5)*21+3, 1, 1))
+ 		gui[\plainSquare2]=MVC_PlainSquare(gui[\window2],Rect(0, (noPOP+4.5)*21+18, 1, 1))
  			.color_(\on,Color.clear)
  			.color_(\off,Color.clear);
 
@@ -313,8 +313,8 @@ LNX_POP {
 	// give me more programs i can use
 	*more{
 		this.noPOP_(noPOP+16);
-		gui[\window2].view.visibleOrigin_(0@((21+4)*noPOP));
-		gui[\window].view.visibleOrigin_(0@((21+4)*noPOP));
+		gui[\window2].view.visibleOrigin_(0@(25*noPOP));
+		gui[\window].view.visibleOrigin_(0@(25*noPOP));
 	}
 	
 	// give me less
@@ -330,7 +330,7 @@ LNX_POP {
 	
 	// make the reset widgets
 	*createResetWidget{|i|
-		gui[(\popReset++i).asSymbol] = MVC_OnOffView(gui[\window],Rect(50,43+26+(21*i),22,21))
+		gui[(\popReset++i).asSymbol] = MVC_OnOffView(gui[\window],Rect(50,79+(21*i),22,21))
 			.action_{|me|
 				resets[i]=me.value;
 				classAPI.groupCmdOD(\netPopReset,i,me.value)
@@ -389,7 +389,7 @@ LNX_POP {
 	createPOPWidget{|i|
 		
 		instGUI[(\pop++i).asSymbol] = MVC_PopUpMenu3(instGUI[\popWindow],
-			Rect(2,43+(21*i)+26,70,21))
+			Rect(2,(21*i)+79,70,21))
 			.color_(\background, inst.mixerColor)
 			.font_(Font("Helvetica",11))
 			.items_(items)
@@ -441,10 +441,10 @@ LNX_POP {
 			var old = noPOP;
 			noPOP = num;
 			// adjust gui widgets	
-			gui[\more].bounds_(Rect(47, (noPOP+3)*21+12, 19, 19));
-			gui[\less].bounds_(Rect(18, (noPOP+3)*21+12, 19, 19));
-			gui[\plainSquare].bounds_(Rect(10, (noPOP+4.5)*21+4+15, 1, 1));
-			gui[\plainSquare2].bounds_(Rect(10, (noPOP+4.5)*21+15, 1, 1));
+			gui[\more].bounds_(Rect(47, (noPOP+3)*21+22, 19, 19));
+			gui[\less].bounds_(Rect(18, (noPOP+3)*21+22, 19, 19));
+			gui[\plainSquare].bounds_(Rect(10, (noPOP+4.5)*21+23, 1, 1));
+			gui[\plainSquare2].bounds_(Rect(10, (noPOP+4.5)*21+19, 1, 1));
 			gui[\program].noPOP_(noPOP);
 			studioModels[\program].controlSpec_( [-1,noPOP-1,\lin,1,1]);
 			studioModels[\toBecome].controlSpec_( [-1,noPOP-1,\lin,1,1]);
@@ -479,7 +479,7 @@ LNX_POP {
 	
 	// adjust the size of the composite view
 	adjustSize{
-		instGUI[\popWindow].bounds_(instGUI[\popWindow].bounds.height_(21*(noPOP+4)+15+15));
+		instGUI[\popWindow].bounds_(instGUI[\popWindow].bounds.height_(21*(noPOP+4)+30));
 	}
 	
 	// incoming midi program as a pipe ?

@@ -52,7 +52,7 @@
 
 	// create the mixer gui
 	createMixerWindow{
-		var bounds, width=1006, height=479+15;
+		var bounds, width=1006, height=494;
 		
 		bounds = this.savedWindowBounds ? Rect(osx,0,width,height);
 		bounds = bounds.setExtent(width,height).moveBy(0,0);
@@ -93,7 +93,7 @@
 			mixerGUI[\instInfoText].bounds_(
 				Rect(0, 190, mixerGUI[\instScrollView].bounds.width , 43));
 			mixerGUI[\everythingInfoText].bounds_(
-				Rect(0, 190, mixerGUI[\presetTab].bounds.width , 43));
+				Rect(20, 190, mixerGUI[\presetTab].bounds.width-40 , 43));
 		};
 	}
 	
@@ -227,7 +227,7 @@
 			.color_(\background,Color(46/77,46/79,72/145)/2);
 
 		// play
-		MVC_OnOffFlatView(models[\play],mixerWindow,Rect(388+65, 3, 19, 19))
+		MVC_OnOffFlatView(models[\play],mixerWindow,Rect(453, 3, 19, 19))
 			.strings_(["play"])
 			.insetBy_(-1)
 			.color_(\on,Color.green)
@@ -236,7 +236,7 @@
 			.mode_(\play);
 
 		// stop
-		MVC_OnOffFlatView(models[\stop],mixerWindow,Rect(410+65, 3, 19, 19))
+		MVC_OnOffFlatView(models[\stop],mixerWindow,Rect(475, 3, 19, 19))
 			.strings_(["stop"])
 			.darkerWhenPressed_(false)
 			.insetBy_(0)
@@ -287,12 +287,12 @@
 
 
 		// server stats: cpu
-		MVC_StaticText(mixerWindow,Rect(567+68, 6, 24, 15),gui[\textTheme2])
+		MVC_StaticText(mixerWindow,Rect(635, 6, 24, 15),gui[\textTheme2])
 			.resize_(3)
 			.string_("CPU:")
 			.excludeFromVerbose_(true);
 			
-		mixerGUI[\cpu]=MVC_StaticText(mixerWindow,Rect(593+68, 6, 30, 15),gui[\textTheme2])
+		mixerGUI[\cpu]=MVC_StaticText(mixerWindow,Rect(661, 6, 30, 15),gui[\textTheme2])
 			.resize_(3)
 			.string_("-")
 			.excludeFromVerbose_(true);		
@@ -319,7 +319,7 @@
 			.color_(\background,Color(46/77,46/79,72/145)/2) ;
 			
 		// net on/off view
-		MVC_FlatButton2(models[\network],mixerWindow,Rect(533+68, 4, 26, 19))
+		MVC_FlatButton2(models[\network],mixerWindow,Rect(601, 4, 26, 19))
 			.resize_(3)
 			.font_(Font("Helvetica-Bold",11))
 			.color_(\off,Color.black)
@@ -341,7 +341,7 @@
 
 // *******************
 
-		mixerGUI[\popProgramsScrollView] = MVC_ScrollView(mixerWindow,Rect(220, 33, 83, 435+15))
+		mixerGUI[\popProgramsScrollView] = MVC_ScrollView(mixerWindow,Rect(220, 33, 73, 450))
 			.autoScrolls_(true)
 			.hasVerticalScroller_(false)
 			.autohidesScrollers_(true)
@@ -349,8 +349,8 @@
 			.visible_(false)
 			.color_(\background,Color(0.8,0.8,0.8));
 
-		mixerGUI[\masterTabs]=MVC_TabbedView(mixerWindow,Rect(220, 33, 514, 435+15),
-			scroll:[true,true,false], offset:(6@(264+15)))
+		mixerGUI[\masterTabs]=MVC_TabbedView(mixerWindow,Rect(220, 33, 514, 450),
+			scroll:[true,true,false], offset:(6@(279)))
 			.action_{|me|}
 			.labels_(["Mixer","Prog","Auto"])
 			.resize_(2)
@@ -363,14 +363,14 @@
 			.tabWidth_([ 45, 41, 38 ])
 			.tabHeight_(22)
 			.followEdges_(true)
-			.adjustments_([nil, Rect(83,0,-83,0)])
+			.adjustments_([nil, Rect(83-10,0,-83+10,0)])
 			.value_(0)
 			.resizeAction_{
 				if (insts.size<1) { 
 					mixerGUI[\instInfoText].bounds_(
 						Rect(0, 190, mixerGUI[\instScrollView].bounds.width , 43));
 					mixerGUI[\everythingInfoText].bounds_(
-						Rect(0, 190, mixerGUI[\presetTab].bounds.width , 43));
+						Rect(20, 190, mixerGUI[\presetTab].bounds.width-40 , 43));
 				};
 			};
 		
@@ -385,7 +385,7 @@
 		
 		mixerGUI[\instScrollView] = mixerGUI[\masterTabs].mvcTab(0);
 		
-		MVC_RoundBounds(mixerWindow,Rect(220, 33, 492, 435+15))
+		MVC_RoundBounds(mixerWindow,Rect(220, 33, 492, 450))
 			.setResize(1,2,3,2)
 			.width_(6)
 			.color_(\background, Color(6/11,42/83,29/65));
@@ -394,7 +394,7 @@
 			Rect(162, 190, 174, 43)).string_("Instruments");
 			
 		// the fx scroll view
-		mixerGUI[\fxScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(732, 10, 170, 273+15))
+		mixerGUI[\fxScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(732, 10, 170, 288))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -408,7 +408,7 @@
 			.string_("Effects");	
 		
 		// the midi scroll view	
-		mixerGUI[\midiScrollView] = MVC_RoundedScrollView (mixerWindow, Rect(754, 301+15, 240, 167))
+		mixerGUI[\midiScrollView] = MVC_RoundedScrollView (mixerWindow, Rect(754, 316, 240, 167))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -423,7 +423,7 @@
 		
 		// the master levels scroll view
 		mixerGUI[\masterLevelsScrollView] = MVC_RoundedScrollView (mixerWindow, 
-												Rect(921, 10, 73, 273+15))
+												Rect(921, 10, 73, 288))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -436,7 +436,7 @@
 		// levels
 		MVC_FlatDisplay(models[\peakOutL],sv,Rect(3, 23, 7, 192-7));
 		MVC_FlatDisplay(models[\peakOutR],sv,Rect(12, 23, 7, 192-7));
-		MVC_Scale(sv,Rect(9+1, 23, 2, 192-7));
+		MVC_Scale(sv,Rect(10, 23, 2, 192-7));
 			
 		// peakLevel
 		MVC_PeakLevel(sv,models[\peakLevel],Rect(56, 27, 13, 184-7));		
@@ -469,12 +469,12 @@
 			
 			
 		// fadeIn
-		MVC_FlatButton(sv,Rect(24+1, 2+1, 27, 17), mixerGUI[\buttonTheme2 ] ,"up")
+		MVC_FlatButton(sv,Rect(25, 3, 27, 17), mixerGUI[\buttonTheme2 ] ,"up")
 			.mode_(\icon)
 			.action_{ this.fadeIn };
 			
 		// fadeOut
-		MVC_FlatButton(sv,Rect(24+1, 206+1+22-7, 27, 17), mixerGUI[\buttonTheme2 ] ,"down")
+		MVC_FlatButton(sv,Rect(25, 222, 27, 17), mixerGUI[\buttonTheme2 ] ,"down")
 			.mode_(\icon)
 			.action_{ this.fadeOut };
 			
@@ -487,7 +487,7 @@
 		LNX_POP.createWidgets( mixerGUI[\popProgramsScrollView], mixerGUI[\presetTab]);
 		
 		mixerGUI[\everythingInfoText] = MVC_StaticText(mixerGUI[\presetTab], mixerGUI[\textTheme],
-			Rect(0, 190,409, 43)).string_("Everything");
+			Rect(20, 190, 369, 43)).string_("Everything");
 						
 	}
 	
@@ -572,12 +572,12 @@
 		y = (i*70);
 			
 		mixerGUI[id][\scrollViewPOP] = MVC_CompositeView(mixerGUI[\presetTab],
-									Rect(y,0,70,21*(16+4)+15+15), hasBorder:false);
+									Rect(y,0,70,21*20+30), hasBorder:false);
 		
 		sv=mixerGUI[id][\scrollViewPOP];
 		
 		// divider
-		mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(71,0,1,69))
+		mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(71,0,1,79))
 			.color_(\on,Color(0,0,0,0.3))
 			.color_(\off,Color(0,0,0,0.3));
 	
@@ -642,19 +642,19 @@
 				
 			if (inst.fxOnOffModel.notNil) {
 				// on/off
-				MVC_OnOffView(inst.fxOnOffModel, sv, Rect(27,44, 20, 20), mixerGUI[\onOffTheme2])
+				MVC_OnOffView(inst.fxOnOffModel, sv, Rect(27,49, 20, 20), mixerGUI[\onOffTheme2])
 					.rounded_(true)
 					.canFocus_(false);
 			}{
 			
 				// on/off
-				MVC_OnOffView( inst.onOffModel, sv, Rect(13,44, 20, 20),mixerGUI[\onOffTheme2])
+				MVC_OnOffView( inst.onOffModel, sv, Rect(13,49, 20, 20),mixerGUI[\onOffTheme2])
 					//.permanentStrings_(["On"])
 					.rounded_(true)
 					.canFocus_(false);
 							
 				// solo
-				MVC_OnOffView(inst.soloModel , sv, Rect(41, 44, 20, 20),mixerGUI[\soloTheme])
+				MVC_OnOffView(inst.soloModel , sv, Rect(41,49, 20, 20),mixerGUI[\soloTheme])
 					.rounded_(true)
 					.canFocus_(false);
 			}
@@ -670,7 +670,7 @@
 			y = (i*70);
 			
 			mixerGUI[id][\scrollView] = MVC_CompositeView(mixerGUI[\instScrollView],
-										Rect(0+y,0,72,435+15), hasBorder:false);
+										Rect(0+y,0,72,450), hasBorder:false);
 			
 			sv=mixerGUI[id][\scrollView];
 		
@@ -733,8 +733,8 @@
 				;
 								
 			// levels
-			MVC_FlatDisplay(inst.peakLeftModel,sv,Rect(8-3, 128, 6, 180));
-			MVC_FlatDisplay(inst.peakRightModel,sv,Rect(15-2, 128, 6, 180));
+			MVC_FlatDisplay(inst.peakLeftModel,sv,Rect(5, 128, 6, 180));
+			MVC_FlatDisplay(inst.peakRightModel,sv,Rect(13, 128, 6, 180));
 			MVC_Scale(sv,Rect(11, 128, 2, 180));
 				
 			// volume
@@ -750,7 +750,7 @@
 				.color_(\numberDown,Color.white);
 				
 			// peakLevel
-			MVC_PeakLevel(sv,inst.peakModel,Rect(56-2, 132, 13, 142+30));
+			MVC_PeakLevel(sv,inst.peakModel,Rect(54, 132, 13, 172));
 			
 			// fadeIn
 			MVC_FlatButton(sv,Rect(24, 107, 27, 17), mixerGUI[\buttonTheme2 ] ,"up")
@@ -763,7 +763,7 @@
 				.action_{ inst.fadeOut };
 			
 			// pan
-			MVC_MyKnob3(inst.panModel,sv,Rect(25, 314+30, 25, 25),mixerGUI[\knobTheme1])
+			MVC_MyKnob3(inst.panModel,sv,Rect(25, 344, 25, 25),mixerGUI[\knobTheme1])
 				.numberFont_(Font("Helvetica",10))
 				.numberFunc_(\pan)
 				.label_(nil)
@@ -786,13 +786,13 @@
 			};
 	
 			// on/off
-			MVC_OnOffView(inst.onOffModel, sv, Rect(13, 353+30, 20, 20),mixerGUI[\onOffTheme2])
+			MVC_OnOffView(inst.onOffModel, sv, Rect(13, 383, 20, 20),mixerGUI[\onOffTheme2])
 				//.permanentStrings_(["On"])
 				.rounded_(true)
 				.canFocus_(false);
 					
 			// solo
-			MVC_OnOffView(inst.soloModel , sv, Rect(42, 353+30, 20, 20),mixerGUI[\soloTheme])
+			MVC_OnOffView(inst.soloModel , sv, Rect(42, 383, 20, 20),mixerGUI[\soloTheme])
 				.rounded_(true)
 				.canFocus_(false);
 		
@@ -810,12 +810,12 @@
 			};
 							
 			// divider
-			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(71,0,1,435+15))
+			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(71,0,1,450))
 				.color_(\on,Color(0,0,0,0.3))
 				.color_(\off,Color(0,0,0,0.3));
 
 			// divider
-			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(72,0,1,435+15))
+			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(72,0,1,450))
 				.color_(\on,Color(1,1,1,0.4))
 				.color_(\off,Color(1,1,1,0.4));
 			
@@ -1030,7 +1030,7 @@
 				
 				// MIDI icon
 				mixerGUI[id][\midi]=MVC_OnOffView(inst.onOffModel,sv,
-											Rect(151,3,20+19,16))
+											Rect(151,3,39,16))
 					.permanentStrings_(["MIDI"])
 					.canFocus_(false)
 					.color_(\on, Color(0.2,0.3,0.5))
@@ -1047,7 +1047,7 @@
 						
 				// always on, hidden at start
 				if (inst.canAlwaysOn) {
-					mixerGUI[id][\alwaysOn]=MVC_OnOffView(1, sv, Rect(150,3,20+19,16),
+					mixerGUI[id][\alwaysOn]=MVC_OnOffView(1, sv, Rect(150,3,39,16),
 							( \font_		: Font("Helvetica-Bold", 12),
 							 \colors_     : (\on : inst.onColor,
 							 			  \off : inst.onColor)))

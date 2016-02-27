@@ -48,6 +48,16 @@ LNX_StartUp {
 			"Audio MIDI Setup".openApplication;  // if not open it
 		}; 
 		SCDoc.indexAllDocuments;
+
+		if (audioRunning) {
+			this.osxStartUp2;
+		}{
+			{ this.osxStartUp2 }.defer(2); // delay start-up so Audio MIDI Setup starts 1st
+		}; 
+	}
+	
+	*osxStartUp2{
+		
 		"".postln;
 		"".postln;
 		"If this application repeatedly hangs on opening the following might help...".postln;
@@ -59,16 +69,7 @@ LNX_StartUp {
 		"4. Plug all MIDI equipment back in".postln;
 		"5. Quit & Relaunch LNX_Studio".postln;
 		"".postln;
-		
-		if (audioRunning) {
-			this.osxStartUp2;
-		}{
-			{ this.osxStartUp2 }.defer(2); // delay start-up so Audio MIDI Setup starts 1st
-		}; 
-	}
-	
-	*osxStartUp2{
-							
+				
 		studio = LNX_Studio(Server.local); 	// start the studio, use local server
 //		studio = LNX_Studio(Server.internal); // start the studio, use internal server
 				
