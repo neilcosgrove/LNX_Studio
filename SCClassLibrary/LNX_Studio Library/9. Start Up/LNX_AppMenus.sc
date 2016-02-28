@@ -17,6 +17,9 @@ LNX_AppMenus {
 		SCMenuItem.new(tools,  "Save").setShortCut("s").action_({ studio.saveDialog });
 		SCMenuItem.new(tools,  "Open...").setShortCut("o").action_({ studio.loadDialog });
 		SCMenuItem.new(tools,  "Network").setShortCut("n").action_({ studio.network.guiConnect });
+		
+		SCMenuSeparator.new(tools);
+		
 		SCMenuItem.new(tools,  "Add preset to all instruments")
 			.action_{studio.guiAllInstsAddPreset};
 			

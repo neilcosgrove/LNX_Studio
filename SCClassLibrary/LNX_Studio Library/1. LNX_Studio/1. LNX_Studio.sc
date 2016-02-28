@@ -3,7 +3,7 @@
  //     LNX_STUDIO Version 2.0     //        //  ||   //    |// 
 // ****************************** //        //   ||  //     //|
 //                               //        //    || //     //||
-//   2015 by neil cosgrove      //======= //     ||//     // ||
+//   2016 by neil cosgrove      //======= //     ||//     // ||
 //     for Mac & Linux
 //
 // Linux port (andrew lambert)
