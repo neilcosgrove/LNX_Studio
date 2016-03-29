@@ -249,10 +249,10 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			sendAmp = Lag.kr(sendAmp);
 			              
 			signalL = Select.ar(channelSetup,[
-				signal[0], signal[0]+signal[1], signal[0], signal[1] ]);
+				signal[0], signal[0]+signal[1], signal[0], signal[1], Silent.ar]);
 				
 			signalR = Select.ar(channelSetup,[
-				signal[1], signal[0]+signal[1], signal[0], signal[1] ]);
+				signal[1], signal[0]+signal[1], signal[0], signal[1], Silent.ar]);
 				
 				
 			signal = LinPan2.ar(signalL, (pan-1).clip(-1,1))

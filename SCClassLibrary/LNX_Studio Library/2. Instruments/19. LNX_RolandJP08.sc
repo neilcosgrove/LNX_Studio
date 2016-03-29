@@ -150,8 +150,8 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 				}], 		
 				
 			// 9. channelSetup
-			[0,[0,3,\lin,1], midiControl, 9, "Channel Setup",
-				(\items_:["Left & Right","Left + Right","Left","Right"]),
+			[0,[0,4,\lin,1], midiControl, 9, "Channel Setup",
+				(\items_:["Left & Right","Left + Right","Left","Right","No Audio"]),
 				{|me,val,latency,send|
 					this.setSynthArgVH(9,val,\channelSetup,val,latency,send);
 				}],
@@ -1053,10 +1053,10 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			sendAmp = Lag.kr(sendAmp);
 			              
 			signalL = Select.ar(channelSetup,[
-				signal[0], signal[0]+signal[1], signal[0], signal[1] ]);
+				signal[0], signal[0]+signal[1], signal[0], signal[1], Silent.ar ]);
 				
 			signalR = Select.ar(channelSetup,[
-				signal[1], signal[0]+signal[1], signal[0], signal[1] ]);
+				signal[1], signal[0]+signal[1], signal[0], signal[1], Silent.ar ]);
 					
 			signal = LinPan2.ar(signalL, (pan-1).clip(-1,1))
 			       + LinPan2.ar(signalR, (pan+1).clip(-1,1));
