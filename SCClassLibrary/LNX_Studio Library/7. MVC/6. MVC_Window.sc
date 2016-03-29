@@ -446,6 +446,8 @@ MVC_Window {
 		^false;
 	}
 	
+	a{|...a| this.labelWithNumbers(*a)}
+	
 	labelWithNumbers{|snap=1,v|
 		var gui=(), ps=[0@0], move, size=16;
 		

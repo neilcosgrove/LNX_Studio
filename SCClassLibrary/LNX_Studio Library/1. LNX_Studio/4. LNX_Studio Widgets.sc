@@ -762,6 +762,15 @@
 				.mode_(\icon)
 				.action_{ inst.fadeOut };
 			
+//			// pan text
+//			MVC_StaticText(sv,Rect(3, 344, 22, 10))
+//				.string_("Pan")
+//				.shadow_(false)
+//				.penShadow_(false)
+//				.font_(Font("Helvetica",10))
+//				.color_(\string,Color.black)
+//				.excludeFromVerbose_(true);
+			
 			// pan
 			MVC_MyKnob3(inst.panModel,sv,Rect(25, 344, 25, 25),mixerGUI[\knobTheme1])
 				.numberFont_(Font("Helvetica",10))
@@ -770,6 +779,15 @@
 				.showNumberBox_(true);
 			
 			if (inst.sendAmpModel.notNil) {
+
+				// fx
+				MVC_StaticText(sv,Rect(3, 46, 17, 10))
+					.string_("FX")
+					.shadow_(false)
+					.penShadow_(false)
+					.font_(Font("Helvetica",10))
+					.color_(\string,Color.black)
+					.excludeFromVerbose_(true);
 
 				// send
 				MVC_MyKnob3(inst.sendAmpModel,sv,Rect(25, 46, 25, 25),

@@ -39,5 +39,12 @@ MVC_ImageView : MVC_View {
 		this.initView;
 		if (view.notClosed) {view.refresh}
 	}
+	
+	imagePath_{|filename|
+		image=filename;
+		scimage=SCImage.new(image);
+		if (view.notClosed) {view.refresh}
+	}
+	
 
 }

@@ -632,7 +632,7 @@ LNX_WebBrowser{
 		favourites = ("Browser Favourites".loadPref ?? {[
 			"https://www.google.com",
 			"http://www.findsounds.com/types.html",
-			"http://www.freesound.org/",
+			//"http://www.freesound.org/",
 			"https://www.youtube.com/",
 			"http://anything2mp3.com/",
 			"http://www.soundjay.com/",
@@ -659,7 +659,9 @@ LNX_WebBrowser{
 		favourites.do{|s| guiMenuFuncs = guiMenuFuncs.add({|me,gui| gui[\webView].url_(s) }) };
 		
 		guiMenuItems = guiMenuItems++["-", "Add to Favourites",
-			"Manage Favourites","-","Set Current Page as Home","-","Free Sound - API Key"];
+			"Manage Favourites","-","Set Current Page as Home",
+//			"-","Free Sound - API Key"
+		];
 	
 		guiMenuFuncs = guiMenuFuncs.add(nil);
 		
@@ -688,12 +690,12 @@ LNX_WebBrowser{
 			this.saveHomePage;
 		});
 		
-		guiMenuFuncs = guiMenuFuncs.add(nil);
-
-		// Free Sound - API Key
-		guiMenuFuncs = guiMenuFuncs.add({|me,gui,browser|
-			this.freeSoundAPIKey(me,gui,browser)
-		});
+//		guiMenuFuncs = guiMenuFuncs.add(nil);
+//
+//		// Free Sound - API Key
+//		guiMenuFuncs = guiMenuFuncs.add({|me,gui,browser|
+//			this.freeSoundAPIKey(me,gui,browser)
+//		});
 		
 	}
 	

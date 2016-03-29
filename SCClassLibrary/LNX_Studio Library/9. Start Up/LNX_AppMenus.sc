@@ -12,7 +12,7 @@ LNX_AppMenus {
 		var tools  = SCMenuGroup.new(nil, "Tools",9);
 		
 		// add LNX Help menu
-		SCMenuItem('Help',"LNX_Studio Help", 0).setShortCut("b").action_{studio.openHelp};
+		SCMenuItem('Help',"LNX_Studio Help", 0).setShortCut("d").action_{studio.openHelp};
 		
 		SCMenuItem.new(tools,  "Save").setShortCut("s").action_({ studio.saveDialog });
 		SCMenuItem.new(tools,  "Open...").setShortCut("o").action_({ studio.loadDialog });

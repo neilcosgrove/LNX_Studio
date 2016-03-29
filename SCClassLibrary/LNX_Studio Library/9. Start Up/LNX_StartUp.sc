@@ -79,7 +79,6 @@ LNX_StartUp {
 		LNX_AppMenus.addDeveloperMenus(studio); 
 		Document.listener.bounds=Rect(LNX_Studio.osx,32,535,175);
 		
-		
 		// to uncomment for release
 //		Document.listener.close;				
 //		Document.initAction=Document.initAction.addFunc{|doc|
@@ -87,29 +86,6 @@ LNX_StartUp {
 //				doc.editable_(false)
 //			};
 //		};
-			
-		// resize help documents to readable sizes
- 		Document.initAction=Document.initAction.addFunc{|doc|
-			var b;
-			{
-				if ((doc.name=="LNX_BumNote")
-					||(doc.name=="LNX_DrumSynth")
-					||(doc.name=="LNX_Code")
-					||(doc.name=="LNX_GSRhythm")
-				) {
-					b=doc.bounds;
-					doc.bounds_(Rect(b.left,b.top,760,b.height+230));
-				};
-				if (doc.name=="Quick Start Guide") {
-					b=doc.bounds;
-					doc.bounds_(Rect( 
-						SCWindow.screenBounds.width/2-(498/2),
-						SCWindow.screenBounds.height-635-40,
-						497,635));
-					doc.alwaysOnTop_(true);
-				};
-			}.defer(0.1);
-		};
 					
 		// load songs dropped or opened in SC
 		Document.initAction=Document.initAction.addFunc{|doc|

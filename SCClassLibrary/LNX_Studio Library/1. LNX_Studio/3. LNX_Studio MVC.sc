@@ -28,7 +28,7 @@
 		var path;
 								
 		// block size
-		models[\blockSize] = [(("blockSize".loadPref?[2])[0]).asInt,[0,4,\lin,1],
+		models[\blockSize] = [(("blockSize".loadPref?[1])[0]).asInt,[0,4,\lin,1],
 			(\label_:"Block Size", \items_: (2**(5..9)).collect(_.asString) ),
 			{|me,val,latency,send|
 				this.initServerPostModels;   // update server options
@@ -676,7 +676,7 @@
 			LNX_POP.midi.createInGUIB (scrollView, (330-25)@(222-2), false, false);
 			LNX_POP.midi.action_{|me| LNX_POP.saveMIDIPrefs };
 			LNX_POP.midi.portInGUI
-				.label_("Preset MIDI controller In")
+				.label_("Program Launchpad In")
 				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black);
