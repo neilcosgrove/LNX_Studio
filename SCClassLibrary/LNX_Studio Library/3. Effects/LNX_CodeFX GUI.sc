@@ -294,13 +294,18 @@
 						};	
 					
 					gui[\codeWindow].helpAction_{
-						var string=gui[\codeWindowText].selectedString.split($.)[0];
-						if (string.asSymbol.asClass.isNil) {
-							"How to program LNX_Studio".help
+						var string;
+						if (gui.notNil) {
+							string=gui[\codeWindowText].selectedString.split($.)[0];
+							if (string.asSymbol.asClass.isNil) {
+								"How to program LNX_Studio".help
+							}{
+								string.help
+							};
+							false; // don't open studio help
 						}{
-							string.help
-						};
-						false; // don't open studio help
+							true	
+						}
 					};
 						
 					// ugen help button

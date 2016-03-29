@@ -1302,7 +1302,17 @@ LNX_Studio {
 	
 	///////////////  info  /////////////////////////
 		
-	openHelp{ "LNX_Studio Help".help }
+	//openHelp{ "LNX_Studio Help".help }
+		
+		
+	openHelp{
+		if ( (frontWindow.isKindOf(SCWindow))
+			or: {frontWindow.isNil}
+			or: {frontWindow.helpAction.value}) {
+				"LNX_Studio Help".help
+		}
+	}
+		
 		
 	fullDump{
 		"// LNX_Studio Dump ///////////".postln;
