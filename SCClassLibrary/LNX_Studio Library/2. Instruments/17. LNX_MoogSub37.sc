@@ -57,7 +57,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	}
 	
 	// an immutable list of methods available to the network
-	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn]}
+	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn, \netNoteOn, \netNoteOff]}
 
 	// MIDI patching ///////////////////////////////////////////////////////
 
@@ -310,30 +310,34 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		
 		// 88. midi clock out
 		template = template.add([1, \switch, midiControl, 88, "MIDI Clock",
-				(strings_:["MIDI Clock"]),
-				{|me,val,latency,send|
-					this.setPVPModel(88,val,latency,send);
-					if (val.isFalse) { midi.stop(latency +! syncDelay) };
-				}]);
+			(strings_:["MIDI Clock"]),
+			{|me,val,latency,send|
+				this.setPVPModel(88,val,latency,send);
+				if (val.isFalse) { midi.stop(latency +! syncDelay) };
+			}]);
 				
 		// 89. use controls in presets
 		template = template.add([0, \switch, midiControl, 89, "Controls Preset",
-				(strings_:["Controls"]),
-				{|me,val,latency,send|	
-					this.setPVPModel(89,val,latency,send);
-					if (val.isTrue) {
-						presetExclusion=[0,1,10];
-					}{
-						presetExclusion=[0,1,10]++((1..Sub37.size)+13);
-					}	
-				}]);
+			(strings_:["Controls"]),
+			{|me,val,latency,send|	
+				this.setPVPModel(89,val,latency,send);
+				if (val.isTrue) {
+					presetExclusion=[0,1,10];
+				}{
+					presetExclusion=[0,1,10]++((1..Sub37.size)+13);
+				}	
+			}]);
 
 		// 90. use program in presets
 		template = template.add([1, \switch, midiControl, 90, "Program",
-				(strings_:["Program"]),
-				{|me,val,latency,send|	
-					this.setPVP(90,val,latency,send);
-				}]);
+			(strings_:["Program"]),
+			{|me,val,latency,send|	
+				this.setPVP(90,val,latency,send);
+			}]);
+				
+		// 91.network this
+		template = template.add([0, \switch, midiControl, 91, "Network",
+			(strings_:["N"]), {|me,val,latency,send|	this.setPVH(91,val,latency,send) }]);
 		
 		#models,defaults=template.generateAllModels;
 
@@ -795,6 +799,9 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			var prog=	(p[11]*16)+p[12];
 			gui[\programName].string_(moogPresets[prog]);
 		};
+
+		// 91.network this
+		MVC_OnOffView(models[91], gui[\scrollView], Rect(1001, 250, 18, 18), gui[\onOffTheme1]);
 				
 		// the keyboard, fix bug so we don't need this scrollView
 		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(12,310+20,1020,93))
@@ -806,8 +813,12 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			.pipeFunc_{|pipe|
 				sequencer.pipeIn(pipe);     // to sequencer
 				this.toMIDIOutBuffer(pipe); // and midi out
+				if (p[91]==1) {
+					if (pipe.isNoteOn)  { api.sendND('netNoteOn',pipe.note,pipe.velocity) };
+					if (pipe.isNoteOff)  { api.sendND('netNoteOff',pipe.note,pipe.velocity) };
+				};
 			};
-				
+							
 		moogPresets.do{|string,i|
 			gui[i]=MVC_Text(gui[\preTab], Rect( 40+((i%16)*62), 30+(i.div(16)*16), 60-2, 13) )
 				.string_(string)
@@ -857,6 +868,17 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			};
 			
 			
+	}
+	
+	netNoteOn{|note, vel|
+		midi.noteOn(note,vel);
+		{keyboardView.setColor(note,Color(0.5,0.5,1),0.75);}.defer;
+	}
+				
+	
+	netNoteOff{|note, vel|
+		midi.noteOff(note,vel);
+		{keyboardView.removeColor(note);}.defer;
 	}
 	
 	// dsp stuFF for audio in /////////////////////////////////////////////////////////////////////
