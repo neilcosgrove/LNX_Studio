@@ -57,7 +57,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	}
 	
 	// an immutable list of methods available to the network
-	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn, \netNoteOn, \netNoteOff]}
+	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn, \netPipeIn]}
 
 	// MIDI patching ///////////////////////////////////////////////////////
 
@@ -115,7 +115,24 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				// api.groupCmdOD(\extProgIn, pipe.program,false);
 				^this // drop	
 			};
+		
+		// network if needed		
+		if ((p[91].isTrue) and:
+			{#[\external, \controllerKeyboard, \MIDIIn, \keyboard].includes(pipe.source)}) {
+				if (((pipe.source==\controllerKeyboard) and:{studio.isCntKeyboardNetworked}).not) 
+					{ api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}
+		};
+			
 		midiInBuffer.pipeIn(pipe); // to in Buffer. (control & progam are dropped above)
+		
+	}
+	
+	// networked midi pipes	
+	netPipeIn{|type,note,velocity|
+		switch (type.asSymbol)
+			{\noteOn } { this.pipeIn(LNX_NoteOn(note,velocity,nil,\network)) }
+			{\noteOff} { this.pipeIn(LNX_NoteOff(note,velocity,nil,\network)) }
+		;
 	}
 	
 	// set control
@@ -200,7 +217,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	///////////////////////////////////////////////////////
 
 	// the models
-	initModel {
+	initModel{
 		
 		var template=[
 
@@ -335,7 +352,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				this.setPVP(90,val,latency,send);
 			}]);
 				
-		// 91.network this
+		// 91.network keyboard
 		template = template.add([0, \switch, midiControl, 91, "Network",
 			(strings_:["N"]), {|me,val,latency,send|	this.setPVH(91,val,latency,send) }]);
 		
@@ -801,7 +818,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		};
 
 		// 91.network this
-		MVC_OnOffView(models[91], gui[\scrollView], Rect(1001, 250, 18, 18), gui[\onOffTheme1]);
+		MVC_OnOffView(models[91], gui[\scrollView], Rect(1003, 252, 18, 18), gui[\onOffTheme1]);
 				
 		// the keyboard, fix bug so we don't need this scrollView
 		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(12,310+20,1020,93))
@@ -813,10 +830,8 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			.pipeFunc_{|pipe|
 				sequencer.pipeIn(pipe);     // to sequencer
 				this.toMIDIOutBuffer(pipe); // and midi out
-				if (p[91]==1) {
-					if (pipe.isNoteOn)  { api.sendND('netNoteOn',pipe.note,pipe.velocity) };
-					if (pipe.isNoteOff)  { api.sendND('netNoteOff',pipe.note,pipe.velocity) };
-				};
+				if (p[91].isTrue) {
+					api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}; // and network
 			};
 							
 		moogPresets.do{|string,i|
@@ -869,18 +884,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			
 			
 	}
-	
-	netNoteOn{|note, vel|
-		midi.noteOn(note,vel);
-		{keyboardView.setColor(note,Color(0.5,0.5,1),0.75);}.defer;
-	}
-				
-	
-	netNoteOff{|note, vel|
-		midi.noteOff(note,vel);
-		{keyboardView.removeColor(note);}.defer;
-	}
-	
+			
 	// dsp stuFF for audio in /////////////////////////////////////////////////////////////////////
 
 	// uses same synth def as LNX_AudioIn
@@ -965,7 +969,7 @@ Sub37 {
 			  3: ["Rate", 		\knob, Rect(170, 23, 25, 25), [0,127], ], // mod 1
 			  4: ["Pitch Amt", 	\knob, Rect(170, 110, 25, 25), [0,127], ], // mod 1
 			  5: ["Time", 		\knob, Rect(96, 23, 25, 25), [0,127], ],
-			  7: ["Volume", 		\sliderH, Rect(891, 278, 206, 23), [0,127], ],
+			  7: ["Volume", 		\sliderH, Rect(876, 278, 206, 23), [0,127], ],
 			  8: ["Rate", 		\knob, Rect(304, 23, 25, 25), [0,127], ], // mod 2
 			  9: ["Wave 1", 		\knob, Rect(507, 23, 25, 25), [0,127], ],
 			 11: ["Filter Amt", 	\knob, Rect(230, 110, 25, 25), [0,127], ], // mod 1

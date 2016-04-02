@@ -132,12 +132,16 @@
 			.color_(\background, Color(6/11,42/83,29/65));
 		
 		// the keyboard
-			
+	
 		gui[\keyboardOuterView] = MVC_CompositeView(gui[\scrollView],Rect(5, 404, 640, 90));
 			
 		toFrontAction={ gui[\keyboardView].focus};
 			
 		gui[\keyboardView]=MVC_MIDIKeyboard(gui[\keyboardOuterView],Rect(0,0,640,90),6,24)
+			.pipeFunc_{|pipe|
+				if (p[24].isTrue) {
+					api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}; // and network
+			}
 			.keyDownAction_{|note|
 				this.keyboardNoteOn(note,100/127);
 				lastKeyboardNote=note;
@@ -279,6 +283,11 @@
 		MVC_RoundBounds(gui[\tabView].mvcTab(2),Rect(8, 8, 625, 335))
 			.width_(4)
 			.color_(\background, Color(6/11,42/83,29/65));
+			
+		// 24.network keyboard
+		MVC_OnOffView(models[24],
+			gui[\sampleGUIScrollView], Rect(0, 317, 18, 18), gui[\onOffTheme1])
+			.rounded_(true);
 
 		//samples //*****		
 

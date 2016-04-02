@@ -40,7 +40,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	}
 	
 	// an immutable list of methods available to the network
-	interface{^#[]} // only the standard api is needed with bn2 
+	interface{^#[\netPipeIn]} // only the standard api is needed with bn2 
 
 	// the models
 	initModel {
@@ -679,7 +679,11 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 			[\sync, {|me,val,latency,send|
 				this.setPVPModel(79,val,latency,send);
 				this.syncDelay_(val);
-			}],	
+			}],
+			
+			// 80.network keyboard
+			[0, \switch, midiControl, 80, "Network", (strings_:["N"]),
+				{|me,val,latency,send|	this.setPVH(80,val,latency,send) }],
 								
 		].generateAllModels;
 
@@ -1602,6 +1606,33 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 
 	// noteOn or noteOff events //////////////////
 	
+	iInitMIDI{ this.useMIDIPipes }
+	
+	pipeIn{|pipe|
+		// exceptions
+		if (instOnSolo.isOff)           {^this};  // drop if sequencer off
+		if (pipe.historyIncludes(this)) {^this}; // drop to prevent internal feedback loops
+		
+		if (pipe.isNoteOn) { this.noteOn(pipe.note, pipe.velocity, pipe.latency) };
+		if (pipe.isNoteOff) { this.noteOff(pipe.note, pipe.velocity, pipe.latency) };
+		
+		// network if needed		
+		if ((p[80].isTrue) and:
+			{#[\external, \controllerKeyboard, \MIDIIn, \keyboard].includes(pipe.source)}) {
+				if (((pipe.source==\controllerKeyboard) and:{studio.isCntKeyboardNetworked}).not) 
+					{ api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}
+		};
+		
+	}
+	
+	// networked midi pipes	
+	netPipeIn{|type,note,velocity|
+		switch (type.asSymbol)
+			{\noteOn } { this.pipeIn(LNX_NoteOn(note,velocity,nil,\network)) }
+			{\noteOff} { this.pipeIn(LNX_NoteOff(note,velocity,nil,\network)) }
+		;
+	}
+	
 	// stops all notes in either mono or poly mode
 	stopAllNotes{
 		voicer.releaseAllNotes(studio.actualLatency +! syncDelay +0.02);
@@ -1617,6 +1648,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	// need to add a midi out latency option for other //////////////////
 	// internal sequencers using internal midi ports
 	
+
 	// from midiIn
 	noteOn{|note, velocity,latency|
 		pianoRoll.noteOn(note,velocity/127);

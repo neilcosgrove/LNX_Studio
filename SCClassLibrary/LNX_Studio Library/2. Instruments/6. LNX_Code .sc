@@ -42,7 +42,7 @@ LNX_Code : LNX_InstrumentTemplate {
 	}
 	
 	// an immutable list of methods available to the network
-	interface{^#[\netEditString, \netSetUserModel, \netEvaluate, \netColorSystem,
+	interface{^#[\netEditString, \netSetUserModel, \netEvaluate, \netColorSystem, \netPipeIn,
 	             \netBoundsUser, \netColorUser,    \netBoundsSystem, \netChangeGUIType ]}
 
 	*studioName {^"SC Code"}
@@ -253,7 +253,11 @@ LNX_Code : LNX_InstrumentTemplate {
 			[\sync, {|me,val,latency,send|
 				this.setPVPModel(23,val,latency,send);
 				this.syncDelay_(val);
-			}],	
+			}],
+			
+			// 24.network keyboard
+			[0, \switch, midiControl, 24, "Network", (strings_:["N"]),
+				{|me,val,latency,send|	this.setPVH(24,val,latency,send) }],
 				
 		].generateAllModels;
 		
@@ -369,8 +373,38 @@ LNX_Code : LNX_InstrumentTemplate {
 		voicer.killAllNotes(studio.actualLatency +! syncDelay);
 	}
 
+	// midi stuff
+
+	iInitMIDI{ this.useMIDIPipes }
+	
+	pipeIn{|pipe|
+		// exceptions
+		if (instOnSolo.isOff)           {^this};  // drop if sequencer off
+		if (pipe.historyIncludes(this)) {^this}; // drop to prevent internal feedback loops
+		
+		if (pipe.isNoteOn) { this.noteOn(pipe.note, pipe.velocity, pipe.latency) };
+		if (pipe.isNoteOff) { this.noteOff(pipe.note, pipe.velocity, pipe.latency) };
+
+		// network if needed		
+		if ((p[24].isTrue) and:
+			{#[\external, \controllerKeyboard, \MIDIIn, \keyboard].includes(pipe.source)}) {
+				if (((pipe.source==\controllerKeyboard) and:{studio.isCntKeyboardNetworked}).not) 
+					{ api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}
+		};
+		
+	}
+	
+	// networked midi pipes	
+	netPipeIn{|type,note,velocity|
+		switch (type.asSymbol)
+			{\noteOn } { this.pipeIn(LNX_NoteOn(note,velocity,nil,\network)) }
+			{\noteOff} { this.pipeIn(LNX_NoteOff(note,velocity,nil,\network)) }
+		;
+	}
+
 	// noteOn (from MIDI in)
 	noteOn{|note, velocity, latency|	
+		
 		// need to limit this to just midi in
 		if ((note<p[7])or:{note>p[8]}) {^nil}; // drop out if out of midi range
 		velocity=velocity/127; // scale to 0-1

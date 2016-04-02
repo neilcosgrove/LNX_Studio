@@ -756,46 +756,56 @@ LNX_Studio {
 		};
 	}
 	
+	/////
+	
+	isCntKeyboardNetworked{ ^models[\networkCntKeyboard].isTrue }
+	
 	// noteOn from controller keyboard
 	noteOn{|note, vel, latency|
-		this.doNoteOn(insts.selectedInst, note.asInt, vel, latency); // do note on event
-		if (models[\networkCntKeyboard].isTrue) {
+		// do note on event
+		this.doNoteOn(insts.selectedInst, note.asInt, vel, latency, \controllerKeyboard); 
+		if (this.isCntKeyboardNetworked) {
 			api.sendOD(\netNoteOn,insts.selectedInst.id, note, vel); // and send over network
 		};
 	}
 	
 	// net version of above
-	netNoteOn{|id, note, vel| this.doNoteOn(insts[id.asInt], note.asInt, vel.asFloat) }
+	netNoteOn{|id, note, vel|
+		this.doNoteOn(insts[id.asInt], note.asInt, vel.asFloat, nil, \network)
+	}
 	
 	// do controller keyboard note On
-	doNoteOn{|inst, note, vel, latency|	
+	doNoteOn{|inst, note, vel, latency, source|	
 		if(midiCnrtLastNote[note].notNil) {
-			this.doNoteOff(midiCnrtLastNote[note], note, vel, latency); // finish last note
+			this.doNoteOff(midiCnrtLastNote[note], note, vel, latency, source);// finish last note
 		};
-		inst.pipeIn( LNX_NoteOn(note,vel,latency,\controllerKeyboard) ); // do note on
+		inst.pipeIn( LNX_NoteOn(note,vel,latency,source) ); // do note on
 		midiCnrtLastNote[note] = inst;   // and store for note off
 	}
 		
 	// noteOff from controller keyboard
 	noteOff{|note, vel, latency|
-		this.doNoteOff(insts.selectedInst, note.asInt, vel, latency); // do note off event
-		if (models[\networkCntKeyboard].isTrue) {
+		// do note off event
+		this.doNoteOff(insts.selectedInst, note.asInt, vel, latency, \controllerKeyboard); 
+		if (this.isCntKeyboardNetworked) {
 			api.sendOD(\netNoteOff,insts.selectedInst.id, note, vel); // and send over network
 		};
 	}
 	
 	// net version of above
-	netNoteOff{|id, note, vel|  this.doNoteOff(insts[id.asInt], note.asInt, vel.asFloat) }
+	netNoteOff{|id, note, vel|
+		this.doNoteOff(insts[id.asInt], note.asInt, vel.asFloat, nil, \network)
+	}
 	
 	// do controller keyboard note On
-	doNoteOff{|inst, note, vel, latency|	
+	doNoteOff{|inst, note, vel, latency, source|	
 		(midiCnrtLastNote[note] ? inst).pipeIn(
-			LNX_NoteOff(note,vel,latency,\controllerKeyboard) ); // do note on
+			LNX_NoteOff(note,vel,latency,source) ); // do note on
 		// use midiCnrtLastNote 1st
 		midiCnrtLastNote[note] = nil; // and remove from midiCnrtLastNote IdentityDictionary
 	}
 		
-	// auto map MIDI in ( to review )
+	// auto map MIDI in ( to review ) /////
 	
 	autoMap{|num,val|
 		if (autoMapOn) {

@@ -61,7 +61,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 	}
 	
 	// an immutable list of methods available to the network
-	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn]}
+	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn, \netPipeIn]}
 	
 	iInitVars{
 
@@ -162,8 +162,9 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 				this.syncDelay_(val);
 			}],		
 						
-			// 11. empty
-			[0],
+			// 11.network keyboard
+			[0, \switch, midiControl, 11, "Network",
+			(strings_:["N"]), {|me,val,latency,send|	this.setPVH(11,val,latency,send) }],
 			
 			// 12. preset
 			[0,[1,64,\lin,1], midiControl, 12, "Preset",{|me,value,latency,send,toggle|
@@ -258,7 +259,23 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 				api.groupCmdOD(\extProgIn, pipe.program+1,false); // network prog change
 				^this   // & drop	
 			};
+		
+		// network if needed		
+		if ((p[11].isTrue) and:
+			{#[\external, \controllerKeyboard, \MIDIIn, \keyboard].includes(pipe.source)}) {
+				if (((pipe.source==\controllerKeyboard) and:{studio.isCntKeyboardNetworked}).not) 
+					{ api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}
+		};
+			
 		midiInBuffer.pipeIn(pipe); // to in Buffer. (control & progam are dropped above)
+	}
+	
+	// networked midi pipes	
+	netPipeIn{|type,note,velocity|
+		switch (type.asSymbol)
+			{\noteOn } { this.pipeIn(LNX_NoteOn(note,velocity,nil,\network)) }
+			{\noteOff} { this.pipeIn(LNX_NoteOff(note,velocity,nil,\network)) }
+		;
 	}
 	
 	// sysex in from the JP08 physical MIDI Out port, not the USB MIDI port
@@ -940,6 +957,9 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			);
 		this.attachActionsToPresetGUI;	
 
+		// 11.network this
+		MVC_OnOffView(models[11], gui[\preTab], Rect(918, 295, 18, 18), gui[\onOffTheme1]);
+		
 		// the keyboard, fix bug so we don't need this scrollView
 		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(12, 330+25, 925, 93))
 			.hasHorizontalScroller_(false)
@@ -950,6 +970,8 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			.pipeFunc_{|pipe|
 				sequencer.pipeIn(pipe);     // to sequencer
 				this.toMIDIOutBuffer(pipe); // and midi out
+				if (p[11].isTrue) {
+					api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}; // and network
 			};
 		
 		// program names in a 8 x 8 grid	

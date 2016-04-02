@@ -714,6 +714,9 @@
 			.color_(\string,Color.white)
 			//.resize_(9)
 			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
+			
+		// 80.network keyboard
+		MVC_OnOffView(models[80], gui[\seqView], Rect(652, 377, 18, 18), gui[\onOffTheme1]);
 				
 		gui[\keyboardOuterView] = MVC_CompositeView(gui[\scrollView],Rect(17,444,672,90));	
 		toFrontAction={ gui[\keyboardView].focus};
@@ -721,6 +724,10 @@
 		// the keyboard
 		gui[\keyboardView]=MVC_MIDIKeyboard(gui[\keyboardOuterView],Rect(0,0,672,90),6,12)
 			.useSelect_(true)
+			.pipeFunc_{|pipe|
+				if (p[80].isTrue) {
+					api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}; // and network
+			}
 			//.stopGUIUpdate_(true)
 			.keyboardColor_(Color.blue)
 			.keyDownAction_{|note|	
