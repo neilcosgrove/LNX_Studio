@@ -682,7 +682,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 			}],
 			
 			// 80.network keyboard
-			[0, \switch, midiControl, 80, "Network", (strings_:["N"]),
+			[0, \switch, midiControl, 80, "Network", (strings_:["Net"]),
 				{|me,val,latency,send|	this.setPVH(80,val,latency,send) }],
 								
 		].generateAllModels;

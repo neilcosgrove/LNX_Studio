@@ -163,8 +163,8 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 			}],		
 						
 			// 11.network keyboard
-			[0, \switch, midiControl, 11, "Network",
-			(strings_:["N"]), {|me,val,latency,send|	this.setPVH(11,val,latency,send) }],
+			[0, \switch, midiControl, 11, "Network", (strings_:["Net"]),
+				{|me,val,latency,send|	this.setPVH(11,val,latency,send) }],
 			
 			// 12. preset
 			[0,[1,64,\lin,1], midiControl, 12, "Preset",{|me,value,latency,send,toggle|
@@ -958,7 +958,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		this.attachActionsToPresetGUI;	
 
 		// 11.network this
-		MVC_OnOffView(models[11], gui[\preTab], Rect(918, 295, 18, 18), gui[\onOffTheme1]);
+		MVC_OnOffView(models[11], gui[\preTab], Rect(903, 295, 33, 18), gui[\onOffTheme1]);
 		
 		// the keyboard, fix bug so we don't need this scrollView
 		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(12, 330+25, 925, 93))

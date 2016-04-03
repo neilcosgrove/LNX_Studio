@@ -286,7 +286,7 @@
 			
 		// 24.network keyboard
 		MVC_OnOffView(models[24],
-			gui[\sampleGUIScrollView], Rect(0, 317, 18, 18), gui[\onOffTheme1])
+			gui[\sampleGUIScrollView], Rect(0, 317, 32, 18), gui[\onOffTheme1])
 			.rounded_(true);
 
 		//samples //*****		
@@ -346,7 +346,8 @@
 			.color_(\label,Color.black);
 				
 		// 21. Sample transpose
-		MVC_MyKnob3(models[21], gui[\sampleGUIScrollView],Rect(37, 293, 28, 28),gui[\knobTheme3]);
+		MVC_MyKnob3(models[21], gui[\sampleGUIScrollView],Rect(37, 293, 28, 28),gui[\knobTheme3])
+			.numberWidth_(-20);
 		
 		// 22. Static Sample transpose
 		MVC_MyKnob3(models[22], gui[\sampleGUIScrollView],Rect(96, 293, 28, 28),gui[\knobTheme3]);

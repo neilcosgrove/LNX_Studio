@@ -716,7 +716,7 @@
 			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
 			
 		// 80.network keyboard
-		MVC_OnOffView(models[80], gui[\seqView], Rect(652, 377, 18, 18), gui[\onOffTheme1]);
+		MVC_OnOffView(models[80], gui[\seqView], Rect(637, 377, 32, 18), gui[\onOffTheme1]);
 				
 		gui[\keyboardOuterView] = MVC_CompositeView(gui[\scrollView],Rect(17,444,672,90));	
 		toFrontAction={ gui[\keyboardView].focus};

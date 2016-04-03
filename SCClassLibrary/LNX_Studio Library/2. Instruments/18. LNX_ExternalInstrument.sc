@@ -39,7 +39,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	}
 	
 	// an immutable list of methods available to the network
-	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn]}
+	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn, \netPipeIn]}
 
 	// MIDI patching ///////////////////////////////////////////////////////
 
@@ -82,7 +82,23 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				this.program(pipe.program,pipe.latency);
 				^this // drop	
 			};
+		
+		// network if needed		
+		if ((p[144].isTrue) and:
+			{#[\external, \controllerKeyboard, \MIDIIn, \keyboard].includes(pipe.source)}) {
+				if (((pipe.source==\controllerKeyboard) and:{studio.isCntKeyboardNetworked}).not) 
+					{ api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}
+		};
+			
 		if (pipe.isNote) {	 midiInBuffer.pipeIn(pipe) }; // to in Buffer
+	}
+	
+	// networked midi pipes	
+	netPipeIn{|type,note,velocity|
+		switch (type.asSymbol)
+			{\noteOn } { this.pipeIn(LNX_NoteOn(note,velocity,nil,\network)) }
+			{\noteOff} { this.pipeIn(LNX_NoteOff(note,velocity,nil,\network)) }
+		;
 	}
 	
 	// external midi setting controls (these are network methods)
@@ -257,6 +273,10 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 		template = template.add([1, \switch, midiControl, 143, "Program",
 				(strings_:["Program"]),
 				{|me,val,latency,send| this.setPVP(143,val,latency,send) }]);
+				
+		// 144.network keyboard
+		template = template.add([0, \switch, midiControl, 144, "Network", (strings_:["Net"]),
+		{|me,val,latency,send|	this.setPVH(144,val,latency,send) }]);
 		
 		
 		#models,defaults=template.generateAllModels;
@@ -598,6 +618,10 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				parentViews: [ window, gui[\masterTabs].mvcTab(1)]
 				);
 		
+		// 144.network keyboard
+		MVC_OnOffView(models[144], gui[\controlsTab], Rect(604, 269, 32, 19), gui[\onOffTheme1]);
+			
+		
 		// the keyboard, fix bug so we don't need this scrollView
 		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(12,320,653,93))
 			.hasHorizontalScroller_(false)
@@ -608,6 +632,8 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			.pipeFunc_{|pipe|
 				sequencer.pipeIn(pipe);     // to sequencer
 				this.toMIDIOutBuffer(pipe); // and midi out
+				if (p[144].isTrue) {
+					api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}; // and network
 			};
 
 	}

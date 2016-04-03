@@ -256,7 +256,7 @@ LNX_Code : LNX_InstrumentTemplate {
 			}],
 			
 			// 24.network keyboard
-			[0, \switch, midiControl, 24, "Network", (strings_:["N"]),
+			[0, \switch, midiControl, 24, "Network", (strings_:["Net"]),
 				{|me,val,latency,send|	this.setPVH(24,val,latency,send) }],
 				
 		].generateAllModels;
