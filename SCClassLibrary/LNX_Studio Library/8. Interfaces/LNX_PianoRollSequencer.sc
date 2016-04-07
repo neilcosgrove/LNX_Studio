@@ -451,10 +451,10 @@ LNX_PianoRollSequencer{
 	
 	init{|argID|
 		id     = argID;
-		api    = LNX_API.newTemp(this,id,#[\hostAddNote,\netAddNote,\hostDeleteNote,\netDeleteNote,
-								\netAdjustList, \netDur_, \netAdjustVel, \returnRequestID,
-								\netRequestIDs, \updateIDs, \hostUseAdjustments,
-								\hostDeleteNotes, \netSpeed_, \netClear ]);
+		api    = LNX_API.newTemp(this,id,#[\hostAddNote,\netAddNote,\hostDeleteNote,
+			\netDeleteNote, \netAdjustList, \netDur_, \netAdjustVel, \returnRequestID, 
+			\netRequestIDs, \updateIDs, \hostUseAdjustments, \hostDeleteNotes, \netSpeed_,
+			\netClear ]);
 		score         = LNX_Score(initialSize);
 		gui           = IdentityDictionary[];
 		colors        = IdentityDictionary[];
@@ -485,7 +485,8 @@ LNX_PianoRollSequencer{
 			};
 			// change zoom
 			if (gui[\scrollView].notNil) {
-				value=value.clip((gui[\scrollView].bounds.width)/(score.dur),inf);
+				value=value.clip((gui[\scrollView].bounds
+					.resizeBy(ScrollBars.addIfSome(13).neg).width)/(score.dur),inf);
 			};
 			this.gridW_(value);
 			me.value_(value);
@@ -501,18 +502,21 @@ LNX_PianoRollSequencer{
 			// find center y-pos before we zoom
 			if (gui[\scrollView].notNil) {
 				vo = gui[\scrollView].visibleOrigin;
-				lastMidY=(vo.y + (gui[\scrollView].bounds.height/2))/gridH;
+				lastMidY=(vo.y + (gui[\scrollView].bounds
+					.resizeBy(ScrollBars.addIfSome(13).neg).height/2))/gridH;
 			};
 			// change zoom
 			if (gui[\scrollView].notNil) {
-				value=value.clip((gui[\scrollView].bounds.height)/128,inf);
+				value=value.clip((gui[\scrollView].bounds
+					.resizeBy(ScrollBars.addIfSome(13).neg).height)/128,inf);
 			};
 			this.gridH_(value);
 			me.value_(value);
 			// re-align center y-pos
 			if (gui[\scrollView].notNil) {
 				gui[\scrollView].visibleOrigin_((vo.x)@
-					(lastMidY*gridH-(gui[\scrollView].bounds.height/2)));
+					(lastMidY*gridH-(gui[\scrollView].bounds
+						.resizeBy(ScrollBars.addIfSome(13).neg).height/2)));
 			};
 		};
 		
@@ -580,7 +584,8 @@ LNX_PianoRollSequencer{
 		if (gui[\scrollView].notNil) {
 			gui[\scrollView].visibleOrigin_((gui[\scrollView].visibleOrigin.x)@
 				((gridH*68)));
-				//(lastMidY*gridH-(gui[\scrollView].bounds.height/2)));
+				//(lastMidY*gridH-(gui[\scrollView].bounds
+				//.resizeBy(ScrollBars.addIfSome(13).neg).height/2)));
 		};
 
 	}
@@ -593,7 +598,8 @@ LNX_PianoRollSequencer{
 			score.dur_(beats);
 			gridw=gridW;
 			if (gui[\scrollView].notNil) {
-				gridw=(gui[\scrollView].bounds.width)/(score.dur);
+				gridw=(gui[\scrollView].bounds
+					.resizeBy(ScrollBars.addIfSome(13).neg).width)/(score.dur);
 			};
 			this.gridW_(gridw); // this will redreaw everything
 			models[\gridW].value_(gridw);
@@ -609,7 +615,8 @@ LNX_PianoRollSequencer{
 			gridw=gridW;
 			{
 				if (gui[\scrollView].notNil) {
-					gridw=(gui[\scrollView].bounds.width)/(score.dur);
+					gridw=(gui[\scrollView].bounds
+						.resizeBy(ScrollBars.addIfSome(13).neg).width)/(score.dur);
 				};
 				this.gridW_(gridw); // this will redreaw everything
 				models[\gridW].value_(gridw);
@@ -756,8 +763,12 @@ LNX_PianoRollSequencer{
 	
 	// set the view args of this pRoll (includes vert & horz zoom + visable origin)
 	viewArgs_{|w,h,x,y,q,b|
-		w=w.clip((gui[\scrollView].bounds.width)/(score.dur),inf); // clip to current view width
-		h=h.clip((gui[\scrollView].bounds.height)/128,inf);        // clip to current view height
+		// clip to current view width
+		w=w.clip((gui[\scrollView].bounds
+			.resizeBy(ScrollBars.addIfSome(13).neg).width)/(score.dur),inf); 
+		// clip to current view height
+		h=h.clip((gui[\scrollView].bounds
+			.resizeBy(ScrollBars.addIfSome(13).neg).height)/128,inf);        
 		gridW=w; 
 		gridH=h;
 		models[\gridW].value_(w); // set grid width model

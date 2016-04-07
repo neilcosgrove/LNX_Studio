@@ -443,7 +443,7 @@ LNX_POP {
 			// adjust gui widgets	
 			gui[\more].bounds_(Rect(47, (noPOP+3)*21+22, 19, 19));
 			gui[\less].bounds_(Rect(18, (noPOP+3)*21+22, 19, 19));
-			gui[\plainSquare].bounds_(Rect(10, (noPOP+4.5)*21+23, 1, 1));
+			gui[\plainSquare].bounds_(Rect(10, (noPOP+4.5)*21+23 + ScrollBars.addIfSome(11) , 1, 1));
 			gui[\plainSquare2].bounds_(Rect(10, (noPOP+4.5)*21+19, 1, 1));
 			gui[\program].noPOP_(noPOP);
 			studioModels[\program].controlSpec_( [-1,noPOP-1,\lin,1,1]);

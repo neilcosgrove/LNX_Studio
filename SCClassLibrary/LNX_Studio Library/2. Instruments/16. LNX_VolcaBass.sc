@@ -587,7 +587,7 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 		MVC_Scale(gui[\controlsTab],Rect(641, 11, 2, 150));
 
 		// 2. channel volume
-		MVC_SmoothSlider(gui[\controlsTab],models[2],Rect(600, 11, 27, 160-10))
+		MVC_SmoothSlider(gui[\controlsTab],models[2],Rect(600, 11, 27, 150))
 			.label_(nil)
 			.showNumberBox_(false)
 			.color_(\hilite,Color(1,1,1,0.3))

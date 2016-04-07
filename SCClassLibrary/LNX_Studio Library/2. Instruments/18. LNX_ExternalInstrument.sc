@@ -79,7 +79,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				api.sendOD(\netExtCntIn, index+14, pipe.val);// network it
 			}
 			{\program} { // program
-				this.program(pipe.program,pipe.latency);
+				midi.program(pipe.program,pipe.latency);
 				^this // drop	
 			};
 		
@@ -266,7 +266,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 		template = template.add([0,[0,127,\lin,1], midiControl, 142, "Prg",
 			{|me,value,latency,send,toggle|
 				this.setODModel(142,value,latency,send); // network must come 1st
-				this.program(p[142]);
+				midi.program(p[142]);
 			}]);
 					
 		// 143. use program in preset
@@ -325,7 +325,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	preLoadP{|tempP|
 		models[143].doLazyValueAction_(tempP[143],nil,false); // use programs in presets
 		// check send program  1st and then send
-		if (models[143].isTrue) { this.program(tempP[142]) };
+		if (models[143].isTrue) { midi.program(tempP[142]) };
 		^tempP
 	}
 	

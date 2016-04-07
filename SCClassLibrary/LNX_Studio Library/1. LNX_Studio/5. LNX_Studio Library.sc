@@ -88,9 +88,10 @@
 			.addFlowLayout(nil,1@1)
 			.autoScrolls_(false)
 			.hasVerticalScroller_(true)
+			.hasVerticalScroller_(true)
 			.color_(\background,Color(59/77,59/77,59/77))
 			.color_(\border,Color(6/11,42/83,29/65))
-			.hasHorizontalScroller_(true);
+			.hasHorizontalScroller_(false);
 	}
 	
 	// make the gui
@@ -106,11 +107,13 @@
 
 			// the expand view
 			visibleTypesGUI[typeSymbol] =
-				MVC_ExpandView( mixerGUI[\libraryScrollView], 182@((files.size)*19+18), 182@18  )
+				MVC_ExpandView( mixerGUI[\libraryScrollView], 
+				(186)@((files.size)*19+18), 
+				(186)@18)
 					.color_(\background,Color(0.88,0.88,0.88));
 			
 			// the main instrument text
-			MVC_StaticText(visibleTypesGUI[typeSymbol],Rect(0,1,125,16))
+			MVC_StaticText(visibleTypesGUI[typeSymbol],Rect(0,1,125 + ScrollBars.addIfNone(7),16))
 				.canBeHidden_(false)
 				.font_(Font("Helvetica",11))
 				.shadow_(false)
@@ -118,7 +121,7 @@
 				.string_(type.studioName.asString);
 				
 			// the main instrument add button
-			MVC_FlatButton(visibleTypesGUI[typeSymbol],Rect(127+3,0,30,17)).strings_("Add")
+			MVC_FlatButton(visibleTypesGUI[typeSymbol],Rect(128 + ScrollBars.addIfNone(7),0,30,17)).strings_("Add")
 				.canBeHidden_(false)
 				.rounded_(true)
 				.color_(\background,Color(0,0,0,0.3))
@@ -144,7 +147,8 @@
 			
 			// lib inst name
 			libraryGUI[typeSymbol][(file++"_text").asSymbol] =
-				MVC_StaticText(visibleTypesGUI[typeSymbol],Rect(15,1+((i+1)*19),110,16))
+				MVC_StaticText(visibleTypesGUI[typeSymbol],
+					Rect(15,1+((i+1)*19),110 + ScrollBars.addIfNone(7),16))
 					.font_(Font("Helvetica",11))
 					.shadow_(false)
 					.color_(\string,Color.black)
@@ -152,7 +156,8 @@
 			
 			// add / load inst from library
 			libraryGUI[typeSymbol][(file++"_button").asSymbol] =
-				MVC_FlatButton(visibleTypesGUI[typeSymbol],Rect(127+3,0+((i+1)*19),30,17))
+				MVC_FlatButton(visibleTypesGUI[typeSymbol],
+					Rect(128 + ScrollBars.addIfNone(7),0+((i+1)*19),30,17))
 					.strings_("Add")
 					.rounded_(true)
 					.color_(\background,Color(0,0,0,0.3))

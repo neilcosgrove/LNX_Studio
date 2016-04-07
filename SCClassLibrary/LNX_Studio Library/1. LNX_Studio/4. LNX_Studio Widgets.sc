@@ -52,7 +52,7 @@
 
 	// create the mixer gui
 	createMixerWindow{
-		var bounds, width=1006, height=494;
+		var bounds, width=1012- ScrollBars.addIfNone(7), height=494;
 		
 		bounds = this.savedWindowBounds ? Rect(osx,0,width,height);
 		bounds = bounds.setExtent(width,height).moveBy(0,0);
@@ -383,7 +383,8 @@
 		
 		// mixer tab
 		
-		mixerGUI[\instScrollView] = mixerGUI[\masterTabs].mvcTab(0);
+		mixerGUI[\instScrollView] = mixerGUI[\masterTabs].mvcTab(0)
+			.hasVerticalScroller_(false);
 		
 		MVC_RoundBounds(mixerWindow,Rect(220, 33, 492, 450))
 			.setResize(1,2,3,2)
@@ -394,7 +395,8 @@
 			Rect(162, 190, 174, 43)).string_("Instruments");
 			
 		// the fx scroll view
-		mixerGUI[\fxScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(732, 10, 170, 288))
+		mixerGUI[\fxScrollView] = MVC_RoundedScrollView (mixerWindow,
+				Rect(731, 10, 177 - ScrollBars.addIfNone(7), 288))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -408,13 +410,15 @@
 			.string_("Effects");	
 		
 		// the midi scroll view	
-		mixerGUI[\midiScrollView] = MVC_RoundedScrollView (mixerWindow, Rect(754, 316, 240, 167))
+		mixerGUI[\midiScrollView] = MVC_RoundedScrollView (mixerWindow,
+				Rect(753, 316, 247 - ScrollBars.addIfNone(7), 167))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
 			.color_(\background,Color(59/77,59/77,59/77))
 			.color_(\border,Color(6/11,42/83,29/65))
-			.hasVerticalScroller_(true);
+			.hasVerticalScroller_(true)
+			.hasHorizontalScroller_(false);
 			
 		mixerGUI[\midiInfoText] = MVC_StaticText(mixerGUI[\midiScrollView], mixerGUI[\textTheme],
 						Rect(65, 58, 102, 47))
@@ -422,14 +426,14 @@
 			.string_("MIDI");
 		
 		// the master levels scroll view
-		mixerGUI[\masterLevelsScrollView] = MVC_RoundedScrollView (mixerWindow, 
-												Rect(921, 10, 73, 288))
+		mixerGUI[\masterLevelsScrollView] = MVC_RoundedComView(mixerWindow, 
+								Rect(927- ScrollBars.addIfNone(7), 10, 73, 288))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
 			.color_(\background,Color(59/77,59/77,59/77))
 			.color_(\border,Color(6/11,42/83,29/65))
-			.hasVerticalScroller_(true);
+			.hasVerticalScroller_(false);
 		
 		sv = mixerGUI[\masterLevelsScrollView];
 		
@@ -670,7 +674,7 @@
 			y = (i*70);
 			
 			mixerGUI[id][\scrollView] = MVC_CompositeView(mixerGUI[\instScrollView],
-										Rect(0+y,0,72,450), hasBorder:false);
+										Rect(0+y,0,72,450-12), hasBorder:false);
 			
 			sv=mixerGUI[id][\scrollView];
 		
@@ -772,7 +776,7 @@
 //				.excludeFromVerbose_(true);
 			
 			// pan
-			MVC_MyKnob3(inst.panModel,sv,Rect(25, 344, 25, 25),mixerGUI[\knobTheme1])
+			MVC_MyKnob3(inst.panModel,sv,Rect(25, 340 + ScrollBars.addIfNone(2), 25, 25),mixerGUI[\knobTheme1])
 				.numberFont_(Font("Helvetica",10))
 				.numberFunc_(\pan)
 				.label_(nil)
@@ -804,25 +808,25 @@
 			};
 	
 			// on/off
-			MVC_OnOffView(inst.onOffModel, sv, Rect(13, 383, 20, 20),mixerGUI[\onOffTheme2])
+			MVC_OnOffView(inst.onOffModel, sv, Rect(13, 378+ScrollBars.addIfNone(3), 20, 20),mixerGUI[\onOffTheme2])
 				//.permanentStrings_(["On"])
 				.rounded_(true)
 				.canFocus_(false);
 					
 			// solo
-			MVC_OnOffView(inst.soloModel , sv, Rect(42, 383, 20, 20),mixerGUI[\soloTheme])
+			MVC_OnOffView(inst.soloModel , sv, Rect(42, 378+ScrollBars.addIfNone(3), 20, 20),mixerGUI[\soloTheme])
 				.rounded_(true)
 				.canFocus_(false);
 		
 			// out channel	
-			MVC_PopUpMenu3(inst.outChModel,sv, Rect(5, 408, 64, 16),
+			MVC_PopUpMenu3(inst.outChModel,sv, Rect(5, 401+ScrollBars.addIfNone(5), 64, 16),
 				mixerGUI[\menuTheme2])
 				.label_(nil)
 				.color_(\background, inst.mixerColor);
 			
 			// sync	
 			if (inst.syncModel.notNil) {
-				MVC_NumberBox(inst.syncModel, sv,Rect(12, 430, 50, 16),  gui[\syncTheme])
+				MVC_NumberBox(inst.syncModel, sv,Rect(12, 422+ScrollBars.addIfNone(7), 50, 16),  gui[\syncTheme])
 					.postfix_(" s")
 					.color_(\label,Color.white);
 			};
@@ -966,12 +970,12 @@
 				.color_(\background, inst.mixerColor);
 	
 			// divider
-			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(0,59,170,1))
+			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(0,59,170+7,1))
 					.color_(\on,Color(0,0,0,0.3))
 					.color_(\off,Color(0,0,0,0.3));
 	
 			// divider
-			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(0,60,170,1))
+			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(0,60,170+7,1))
 					.color_(\on,Color(1,1,1,0.4))
 					.color_(\off,Color(1,1,1,0.4));	
 			

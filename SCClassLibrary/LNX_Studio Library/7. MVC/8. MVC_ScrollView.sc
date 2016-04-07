@@ -1,4 +1,34 @@
 
+// does osx have scroll bars? useful for getting widgets aligned with or without scroll bars
+/*
+ScrollBars.systemPref.dump
+10 + ScrollBars.addIfNone(7);
+*/
+
+ScrollBars{
+	
+	classvar <systemPref, <isTrue=true, <isFalse=false;
+	
+	*addIfSome{|number| isTrue.if{^number}{^0} } // useful to increase window size to make space
+	*addIfNone{|number| isTrue.if{^0}{^number} } // useful to extend widget size to fill gap
+										   // eg. Rect(1,2,3 + ScrollBars.addIfNone(7),20)
+	*initClass {
+		systemPref = "";	
+		Platform.case(
+			\osx,{
+				// systemPref options are... "Automatic", "WhenScrolling", "Always"
+				systemPref = "defaults read -g AppleShowScrollBars"
+					.unixCmdGetStdOut.profileSafe;
+				if (systemPref=="Always")
+					{ isTrue=true; isFalse=false } 
+					{ isTrue=false; isFalse=true };
+			});
+	}
+	
+	*refresh { this.initClass }
+	
+}
+
 // there are different versions becasue of clipping issues with com view
 
 MVC_RoundedComView : MVC_RoundedScrollView {
