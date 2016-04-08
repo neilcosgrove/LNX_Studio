@@ -310,7 +310,7 @@
 			.width_(3.5)
 			.hasBorder_(true)
 			.hasVerticalScroller_(true)
-			.autohidesScrollers_(false)
+			.hasHorizontalScroller_(false)
 			.color_(\background, Color(0,0,0,0.2))
 			.color_(\border, Color(0,0,0,0.35));
 		

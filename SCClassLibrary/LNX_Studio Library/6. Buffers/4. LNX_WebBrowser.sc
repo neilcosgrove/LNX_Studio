@@ -76,6 +76,7 @@ LNX_WebBrowser{
 		var ext = url.extension;    // had to change wslib a bit
 		if (url=="") { ^this };     // exception
 		url=url.replace("%20"," "); // replace %20 with space
+		url=url.replace("%34",34.asAscii.asString); // reverse replace
 		
 		if (ext.notNil) {
 			ext=ext.toLower.asSymbol;
@@ -226,6 +227,7 @@ LNX_WebBrowser{
 			.color_(\background, Color(0,0,0,0.3))
 			.autoScrolls_(true)
 			.hasVerticalScroller_(true)
+			.hasHorizontalScroller_(false)
 			.resize_(4)
 			.hasBorder_(true);
 
@@ -550,7 +552,7 @@ LNX_WebBrowser{
 				text = userContent.collect {|str,i|
 					if (calls%modInterval==0) { 0.01.wait };
 					calls = calls + 1;
-					"<a href='%'>%</a><br/>".format( str,str.drop(7))
+					"<a href=\"%\">%</a><br/>".format( str,str.drop(7));
 				};
 				
 				size = text.size;
@@ -602,7 +604,7 @@ LNX_WebBrowser{
 				size = text.size;
 				text = text.join; 
 				
-				action.value([	"Local Files.<br/>Found ",
+				action.value(["Local Files.<br/>Found ",
 					size,
 					" sounds out of ",
 					userContent.size ,
