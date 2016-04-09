@@ -21,9 +21,19 @@ ScrollBars{
 				// systemPref options are... "Automatic", "WhenScrolling", "Always"
 				systemPref = "defaults read -g AppleShowScrollBars"
 					.unixCmdGetStdOut.profileSafe;
-				if (systemPref=="Always")
-					{ isTrue=true; isFalse=false } 
-					{ isTrue=false; isFalse=true };
+				switch (systemPref)
+					{ "Always" }       { isTrue=true; isFalse=false } 
+					{ "WhenScrolling"} { isTrue=false; isFalse=true }
+					{ "Automatic" }    {
+						if ("system_profiler SPUSBDataType"
+								.unixCmdGetStdOut.containsi("mouse"))
+						{
+							isTrue=true; isFalse=false
+						}{
+							isTrue=false; isFalse=true 
+						};
+						
+					};		
 			});
 	}
 	
