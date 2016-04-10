@@ -21,6 +21,7 @@ ScrollBars{
 				// systemPref options are... "Automatic", "WhenScrolling", "Always"
 				systemPref = "defaults read -g AppleShowScrollBars"
 					.unixCmdGetStdOut.profileSafe;
+				if (systemPref=="") { systemPref="Automatic" };
 				switch (systemPref)
 					{ "Always" }       { isTrue=true; isFalse=false } 
 					{ "WhenScrolling"} { isTrue=false; isFalse=true }
