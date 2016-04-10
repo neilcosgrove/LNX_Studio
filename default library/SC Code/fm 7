@@ -1,12 +1,12 @@
-SC Code Doc v1.4
-Template Version v1.1
+SC Code Doc v1.5
+Template Version v1.2
 LNX_Code
 fm 7
-17
-2
+24
+0
 0
 1
-2.8731295403576
+1.3027881332959
 0
 0.0150390625
 1
@@ -14,54 +14,26 @@ fm 7
 0
 127
 -1
--8.2950827628752
+-35.531294318633
 0
 3
 0
 1
 -25.133862453944
 9
-1
+0.63984949448529
 0
-2.8731295403576
-0
-0.0150390625
-1
+60
+12
 0
 0
-127
--1
--8.2950827628752
-0
-3
-1
-1
--25.133862453944
-9
-1
-0
-2.8731295403576
-0
-0.0150390625
-1
 0
 0
-127
--1
--8.2950827628752
-0
-3
-1
-1
--25.133862453944
-9
-Preset 0
-Preset 1
-1
 0
 1
 0
-*** MIDI Control Doc v1.1
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
 4441
@@ -4506,12 +4478,12 @@ Preset 1
 10
 10
 32
-3
+4
 106
 volume
 MVC_SmoothSlider
 *** MVC_View Document v1 ***
-12
+13
 0
 580
 15
@@ -4547,7 +4519,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -4561,6 +4533,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -4577,6 +4554,66 @@ focus
 0
 0
 1
+*** END MVC_View Document ***
+inAmp
+MVC_MyKnob3
+*** MVC_View Document v1 ***
+10
+0
+568
+268
+26
+26
+pin
+0
+0
+0
+1
+background
+0
+0
+0
+0.5
+numberUp
+0
+0
+0
+1
+off
+0
+0
+0
+1
+on
+1
+0.5
+0
+1
+midiLearn
+0
+1
+1
+1
+numberDown
+1
+1
+1
+1
+label
+1
+1
+1
+1
+disabled
+0.3
+0.3
+0.3
+1
+focus
+0
+0
+0
+0
 *** END MVC_View Document ***
 pan
 MVC_MyKnob3
@@ -4700,7 +4737,7 @@ focus
 *** END MVC_View Document ***
 42
 MVC_MyKnob3
-0.48283203125
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -4761,7 +4798,7 @@ focus
 *** END MVC_View Document ***
 98
 MVC_MyKnob
-0.30931640625
+-0.003515625
 *** MVC_View Document v1 ***
 9
 0
@@ -4878,7 +4915,7 @@ focus
 *** END MVC_View Document ***
 44
 MVC_MyKnob3
-0
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -4939,7 +4976,7 @@ focus
 *** END MVC_View Document ***
 37
 MVC_MyKnob3
-0.23578125
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -5000,7 +5037,7 @@ focus
 *** END MVC_View Document ***
 78
 MVC_NumberBox
-3
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -5061,7 +5098,7 @@ focus
 *** END MVC_View Document ***
 22
 MVC_MyKnob3
-0.4371875
+0.27509765625
 *** MVC_View Document v1 ***
 10
 0
@@ -5122,7 +5159,7 @@ focus
 *** END MVC_View Document ***
 75
 MVC_NumberBox
-5
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -5239,7 +5276,7 @@ focus
 *** END MVC_View Document ***
 19
 MVC_MyKnob
-0.37529296875
+0.6740625
 *** MVC_View Document v1 ***
 9
 0
@@ -5351,7 +5388,7 @@ focus
 *** END MVC_View Document ***
 64
 MVC_NumberBox
-4
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -5473,7 +5510,7 @@ focus
 *** END MVC_View Document ***
 57
 MVC_NumberBox
-2
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -5534,7 +5571,7 @@ focus
 *** END MVC_View Document ***
 67
 MVC_NumberBox
-2
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -5656,7 +5693,7 @@ focus
 *** END MVC_View Document ***
 97
 MVC_MyKnob
--0.181416015625
+-0.003515625
 *** MVC_View Document v1 ***
 9
 0
@@ -5712,9 +5749,9 @@ focus
 *** END MVC_View Document ***
 102
 MVC_SmoothSlider
-0
+0.46936446629213
 *** MVC_View Document v1 ***
-12
+13
 0
 430
 15
@@ -5750,7 +5787,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -5764,6 +5801,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -5783,7 +5825,7 @@ focus
 *** END MVC_View Document ***
 96
 MVC_MyKnob
-0.21875
+-0.003515625
 *** MVC_View Document v1 ***
 9
 0
@@ -5839,7 +5881,7 @@ focus
 *** END MVC_View Document ***
 36
 MVC_MyKnob3
-0.8159375
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -5900,7 +5942,7 @@ focus
 *** END MVC_View Document ***
 31
 MVC_MyKnob3
-0.18376953125
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -5961,9 +6003,9 @@ focus
 *** END MVC_View Document ***
 48
 MVC_SmoothSlider
-0.67986505681818
+0
 *** MVC_View Document v1 ***
-12
+13
 0
 130
 90
@@ -5999,7 +6041,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -6013,6 +6055,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -6032,7 +6079,7 @@ focus
 *** END MVC_View Document ***
 70
 MVC_NumberBox
-3
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -6093,7 +6140,7 @@ focus
 *** END MVC_View Document ***
 61
 MVC_NumberBox
-1
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -6154,7 +6201,7 @@ focus
 *** END MVC_View Document ***
 35
 MVC_MyKnob3
-0.45126953125
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -6215,7 +6262,7 @@ focus
 *** END MVC_View Document ***
 13
 MVC_MyKnob
-0.6651953125
+0.3042578125
 *** MVC_View Document v1 ***
 9
 0
@@ -6271,7 +6318,7 @@ focus
 *** END MVC_View Document ***
 16
 MVC_MyKnob
-0
+0.01021484375
 *** MVC_View Document v1 ***
 9
 0
@@ -6388,7 +6435,7 @@ focus
 *** END MVC_View Document ***
 69
 MVC_NumberBox
-3
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -6510,7 +6557,7 @@ focus
 *** END MVC_View Document ***
 90
 MVC_MyKnob
--24
+12
 *** MVC_View Document v1 ***
 9
 0
@@ -6566,7 +6613,7 @@ focus
 *** END MVC_View Document ***
 34
 MVC_MyKnob3
-0.78572265625
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -6627,7 +6674,7 @@ focus
 *** END MVC_View Document ***
 74
 MVC_NumberBox
-2
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -6688,7 +6735,7 @@ focus
 *** END MVC_View Document ***
 84
 MVC_NumberBox
-2
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -6749,7 +6796,7 @@ focus
 *** END MVC_View Document ***
 82
 MVC_NumberBox
-1
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -6810,7 +6857,7 @@ focus
 *** END MVC_View Document ***
 113
 MVC_MyKnob
-0.11234375
+-1
 *** MVC_View Document v1 ***
 9
 0
@@ -6866,7 +6913,7 @@ focus
 *** END MVC_View Document ***
 39
 MVC_MyKnob3
-0.34138671875
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -6927,9 +6974,9 @@ focus
 *** END MVC_View Document ***
 46
 MVC_SmoothSlider
-0.82936789772727
+1
 *** MVC_View Document v1 ***
-12
+13
 0
 130
 40
@@ -6965,7 +7012,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -6979,6 +7026,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -6998,9 +7050,9 @@ focus
 *** END MVC_View Document ***
 50
 MVC_SmoothSlider
-0.61683238636364
+0
 *** MVC_View Document v1 ***
-12
+13
 0
 130
 140
@@ -7036,7 +7088,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -7050,6 +7102,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -7069,9 +7126,9 @@ focus
 *** END MVC_View Document ***
 106
 MVC_SmoothSlider
-1
+0
 *** MVC_View Document v1 ***
-12
+13
 0
 530
 15
@@ -7107,7 +7164,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -7121,6 +7178,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -7140,7 +7202,7 @@ focus
 *** END MVC_View Document ***
 58
 MVC_NumberBox
-4
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -7201,7 +7263,7 @@ focus
 *** END MVC_View Document ***
 26
 MVC_MyKnob3
-0.18443359375
+0.26373046875
 *** MVC_View Document v1 ***
 10
 0
@@ -7262,7 +7324,7 @@ focus
 *** END MVC_View Document ***
 109
 MVC_NoteView
-38
+-1
 *** MVC_View Document v1 ***
 9
 0
@@ -7318,7 +7380,7 @@ focus
 *** END MVC_View Document ***
 91
 MVC_MyKnob
-0
+24
 *** MVC_View Document v1 ***
 9
 0
@@ -7374,7 +7436,7 @@ focus
 *** END MVC_View Document ***
 62
 MVC_NumberBox
-3
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -7552,7 +7614,7 @@ focus
 *** END MVC_View Document ***
 38
 MVC_MyKnob3
-0.56111328125
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -7613,7 +7675,7 @@ focus
 *** END MVC_View Document ***
 100
 MVC_MyKnob
-0.2036328125
+-0.003515625
 *** MVC_View Document v1 ***
 9
 0
@@ -7669,7 +7731,7 @@ focus
 *** END MVC_View Document ***
 27
 MVC_MyKnob3
-0.25787109375
+0.129609375
 *** MVC_View Document v1 ***
 10
 0
@@ -7730,7 +7792,7 @@ focus
 *** END MVC_View Document ***
 116
 MVC_MyKnob
--1
+0.021484375
 *** MVC_View Document v1 ***
 9
 0
@@ -7786,7 +7848,7 @@ focus
 *** END MVC_View Document ***
 23
 MVC_MyKnob3
-0.3671875
+0.76888671875
 *** MVC_View Document v1 ***
 10
 0
@@ -7847,9 +7909,9 @@ focus
 *** END MVC_View Document ***
 47
 MVC_SmoothSlider
-0.44362571022727
+0
 *** MVC_View Document v1 ***
-12
+13
 0
 130
 65
@@ -7885,7 +7947,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -7899,6 +7961,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -7918,7 +7985,7 @@ focus
 *** END MVC_View Document ***
 68
 MVC_NumberBox
-5
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -8096,7 +8163,7 @@ focus
 *** END MVC_View Document ***
 53
 MVC_NumberBox
-2
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -8157,7 +8224,7 @@ focus
 *** END MVC_View Document ***
 81
 MVC_NumberBox
-2
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -8218,7 +8285,7 @@ focus
 *** END MVC_View Document ***
 65
 MVC_NumberBox
-4
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -8279,7 +8346,7 @@ focus
 *** END MVC_View Document ***
 18
 MVC_MyKnob
-0.5160546875
+1
 *** MVC_View Document v1 ***
 9
 0
@@ -8335,7 +8402,7 @@ focus
 *** END MVC_View Document ***
 114
 MVC_MyKnob
--0.0041796875
+-0.13515625
 *** MVC_View Document v1 ***
 9
 0
@@ -8508,7 +8575,7 @@ focus
 *** END MVC_View Document ***
 60
 MVC_NumberBox
-2
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -8569,7 +8636,7 @@ focus
 *** END MVC_View Document ***
 76
 MVC_NumberBox
-3
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -8686,9 +8753,9 @@ focus
 *** END MVC_View Document ***
 103
 MVC_SmoothSlider
-0
+0.24657654494382
 *** MVC_View Document v1 ***
-12
+13
 0
 455
 15
@@ -8724,7 +8791,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -8738,6 +8805,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -8813,7 +8885,7 @@ focus
 *** END MVC_View Document ***
 55
 MVC_NumberBox
-1
+2
 *** MVC_View Document v1 ***
 10
 0
@@ -8874,7 +8946,7 @@ focus
 *** END MVC_View Document ***
 30
 MVC_MyKnob3
-0.058125
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -9118,7 +9190,7 @@ focus
 *** END MVC_View Document ***
 72
 MVC_NumberBox
-3
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -9179,7 +9251,7 @@ focus
 *** END MVC_View Document ***
 40
 MVC_MyKnob3
-0
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -9240,7 +9312,7 @@ focus
 *** END MVC_View Document ***
 99
 MVC_MyKnob
--0.1589453125
+0.048046875
 *** MVC_View Document v1 ***
 9
 0
@@ -9296,7 +9368,7 @@ focus
 *** END MVC_View Document ***
 32
 MVC_MyKnob3
-0.434140625
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -9357,7 +9429,7 @@ focus
 *** END MVC_View Document ***
 33
 MVC_MyKnob3
-0.3159765625
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -9474,7 +9546,7 @@ focus
 *** END MVC_View Document ***
 17
 MVC_MyKnob
-0.355078125
+0.876328125
 *** MVC_View Document v1 ***
 9
 0
@@ -9530,7 +9602,7 @@ focus
 *** END MVC_View Document ***
 71
 MVC_NumberBox
-4
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -9591,7 +9663,7 @@ focus
 *** END MVC_View Document ***
 79
 MVC_NumberBox
-3
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -9652,7 +9724,7 @@ focus
 *** END MVC_View Document ***
 86
 MVC_NumberBox
-2
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -9713,7 +9785,7 @@ focus
 *** END MVC_View Document ***
 66
 MVC_NumberBox
-5
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -9835,7 +9907,7 @@ focus
 *** END MVC_View Document ***
 88
 MVC_NumberBox
-2
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -9896,7 +9968,7 @@ focus
 *** END MVC_View Document ***
 89
 MVC_MyKnob
--48
+0
 *** MVC_View Document v1 ***
 9
 0
@@ -9952,9 +10024,9 @@ focus
 *** END MVC_View Document ***
 104
 MVC_SmoothSlider
-0
+0.13412921348315
 *** MVC_View Document v1 ***
-12
+13
 0
 480
 15
@@ -9990,7 +10062,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -10004,6 +10076,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -10023,7 +10100,7 @@ focus
 *** END MVC_View Document ***
 24
 MVC_MyKnob3
-0.17318359375
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -10084,9 +10161,9 @@ focus
 *** END MVC_View Document ***
 101
 MVC_SmoothSlider
-0
+0.97125175561798
 *** MVC_View Document v1 ***
-12
+13
 0
 405
 15
@@ -10122,7 +10199,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -10136,6 +10213,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -10155,7 +10237,7 @@ focus
 *** END MVC_View Document ***
 14
 MVC_MyKnob
-0.07376953125
+0.0446484375
 *** MVC_View Document v1 ***
 9
 0
@@ -10211,9 +10293,9 @@ focus
 *** END MVC_View Document ***
 45
 MVC_SmoothSlider
-0.49875710227273
+0.63787286931818
 *** MVC_View Document v1 ***
-12
+13
 0
 130
 15
@@ -10249,7 +10331,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -10263,6 +10345,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -10282,7 +10369,7 @@ focus
 *** END MVC_View Document ***
 54
 MVC_NumberBox
-0
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -10343,7 +10430,7 @@ focus
 *** END MVC_View Document ***
 73
 MVC_NumberBox
-2
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -10404,9 +10491,9 @@ focus
 *** END MVC_View Document ***
 49
 MVC_SmoothSlider
-0.67986505681818
+0
 *** MVC_View Document v1 ***
-12
+13
 0
 130
 115
@@ -10442,7 +10529,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -10456,6 +10543,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -10475,7 +10567,7 @@ focus
 *** END MVC_View Document ***
 92
 MVC_MyKnob
-12
+36
 *** MVC_View Document v1 ***
 9
 0
@@ -10531,7 +10623,7 @@ focus
 *** END MVC_View Document ***
 93
 MVC_MyKnob
-12
+0
 *** MVC_View Document v1 ***
 9
 0
@@ -10587,7 +10679,7 @@ focus
 *** END MVC_View Document ***
 115
 MVC_MyKnob
--0.197890625
+-0.0501171875
 *** MVC_View Document v1 ***
 9
 0
@@ -10643,7 +10735,7 @@ focus
 *** END MVC_View Document ***
 15
 MVC_MyKnob
-7.8742815189907
+5.4203014126522
 *** MVC_View Document v1 ***
 9
 0
@@ -10760,7 +10852,7 @@ focus
 *** END MVC_View Document ***
 95
 MVC_MyKnob
--0.18625
+-0.086640625
 *** MVC_View Document v1 ***
 9
 0
@@ -10816,7 +10908,7 @@ focus
 *** END MVC_View Document ***
 28
 MVC_MyKnob3
-0.52205078125
+0.0184375
 *** MVC_View Document v1 ***
 10
 0
@@ -10877,7 +10969,7 @@ focus
 *** END MVC_View Document ***
 59
 MVC_NumberBox
-1
+0
 *** MVC_View Document v1 ***
 10
 0
@@ -10938,7 +11030,7 @@ focus
 *** END MVC_View Document ***
 43
 MVC_MyKnob3
-0.676015625
+1
 *** MVC_View Document v1 ***
 10
 0
@@ -10999,9 +11091,9 @@ focus
 *** END MVC_View Document ***
 105
 MVC_SmoothSlider
-0.18146484375
+1
 *** MVC_View Document v1 ***
-12
+13
 0
 505
 15
@@ -11037,7 +11129,7 @@ knob
 0.73934108527132
 0.90988372093023
 1
-border
+knobBorder
 0
 0
 0
@@ -11051,6 +11143,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -11070,7 +11167,7 @@ focus
 *** END MVC_View Document ***
 51
 MVC_MyKnob3
-0.31132095193217
+1.3187972614361
 *** MVC_View Document v1 ***
 10
 0
@@ -11130,9 +11227,9 @@ focus
 0
 *** END MVC_View Document ***
 LNX PRSeq DOC v1.2
-2
+0
 LNX Score DOC v1.4
-11
+0
 0
 128
 4.703125
@@ -11142,604 +11239,10 @@ LNX Score DOC v1.4
 1
 16
 1
-64
-0
-3
-0.78740157480315
-52
-4
-4
-0.78740157480315
-64
-12
-4
-0.78740157480315
-52
-20
-6
-0.78740157480315
-62
-32
-3
-0.78740157480315
-53
-36
-3
-0.78740157480315
-50
-60
-3
-0.82391138392857
-65
-64
-3
-0.78740157480315
-50
-68
-4
-0.78740157480315
-64
-96
-3
-0.78740157480315
-52
-100
-5
-0.78740157480315
-*** END Score DOC ***
-LNX Score DOC v1.4
-11
-0
-128
-4.703125
-8
-0
-425
-1
-16
-1
-64
-0
-3
-0.78740157480315
-52
-4
-4
-0.78740157480315
-64
-12
-4
-0.78740157480315
-52
-20
-6
-0.78740157480315
-62
-32
-3
-0.78740157480315
-53
-36
-3
-0.78740157480315
-50
-60
-3
-0.82391138392857
-65
-64
-3
-0.78740157480315
-50
-68
-4
-0.78740157480315
-64
-96
-3
-0.78740157480315
-52
-100
-5
-0.78740157480315
-*** END Score DOC ***
-LNX Score DOC v1.4
-16
-0
-128
-4.703125
-8
-0
-480
-4
-16
-1
-64
-0
-4
-0.78740157480315
-48
-0
-4
-0.78740157480315
-48
-12
-4
-0.78740157480315
-64
-12
-4
-0.78740157480315
-64
-32
-8
-0.78740157480315
-48
-32
-8
-0.78740157480315
-62
-44
-4
-0.78740157480315
-48
-44
-8
-0.78740157480315
-64
-64
-8
-0.78740157480315
-43
-64
-8
-0.78740157480315
-62
-76
-12
-0.78740157480315
-43
-76
-16
-0.78740157480315
-62
-96
-8
-0.78740157480315
-43
-96
-8
-0.78740157480315
-43
-108
-12
-0.78740157480315
-59
-108
-12
-0.78740157480315
 *** END Score DOC ***
 *** END PRSeq DOC ***
-105
-105
-e63
+SC URL Bank Doc v1.1
+
 0
-u4
-0.30931640625
-d2
-0.18443359375
-e12
-0
-v3
-0
-a3
-0
-e13
-1
-lfoFreq
-7.8742815189907
-mod
-0.31132095193217
-f6
--1
-e41
-4
-v2
-0
-v6
-1
-e24
-3
-e34
-5
-e15
-2
-d4
-0.78572265625
-m5
-0.67986505681818
-s4
-0.45126953125
-f2
--1
-r3
-0.434140625
-a4
-0.3159765625
-e45
-5
-d3
-0.058125
-e31
-4
-e62
-2
-f1
--1
-e32
-5
-e14
-0
-p5
-1
-t3
-0
-e46
-3
-s2
-0.25787109375
-r1
-0.17318359375
-a5
-0.23578125
-r6
-0
-m6
-0.61683238636364
-p1
-0.11234375
-e33
-2
-dur
-0.6651953125
-s6
-0.676015625
-e53
-3
-v5
-0.18146484375
-t5
-12
-e16
-4
-u1
--0.18625
-a6
-0
-lfoAmp
-0.07376953125
-f4
--1
-d1
-0.4371875
-e66
-2
-e11
-2
-e52
-3
-t1
--48
-u2
-0.21875
-a1
-0
-r2
-0.52205078125
-e56
-1
-e54
-0
-e26
-4
-p3
--0.197890625
-d6
-0.48283203125
-r5
-0
-p2
--0.0041796875
-e64
-2
-s3
-0.18376953125
-a2
-0
-e21
-1
-e44
-2
-e36
-3
-s5
-0.34138671875
-e51
-0
-e61
-0
-m2
-0.82936789772727
-e23
-1
-d
-0.355078125
-r
-0.37529296875
-v4
-0
-trans
-0
-r4
-0.8159375
-s
-0.5160546875
-e43
-2
-e65
-0
-e35
-3
-m4
-0.67986505681818
-m3
-0.44362571022727
-u6
-0.2036328125
-e55
-2
-s1
-0.3671875
-p4
--1
-e25
-0
-e22
-2
-t2
--24
-m1
-0.49875710227273
-t4
-12
-e42
-3
-d5
-0.56111328125
-f5
--1
-u3
--0.181416015625
-t6
-0
-p6
--0.0183984375
-v1
-0
-a
-0
-u5
--0.1589453125
-f3
-38
-e63
-0
-u4
-0.30931640625
-d2
-0.18443359375
-e12
-0
-v3
-0
-a3
-0
-e13
-1
-lfoFreq
-7.8742815189907
-mod
-0.31132095193217
-f6
--1
-e41
-4
-v2
-0
-v6
-1
-e24
-3
-e34
-5
-e15
-2
-d4
-0.78572265625
-m5
-0.67986505681818
-s4
-0.45126953125
-f2
--1
-r3
-0.434140625
-a4
-0.3159765625
-e45
-5
-d3
-0.058125
-e31
-4
-e62
-2
-f1
--1
-e32
-5
-e14
-0
-p5
-1
-t3
-0
-e46
-3
-s2
-0.25787109375
-r1
-0.17318359375
-a5
-0.23578125
-r6
-0
-m6
-0.61683238636364
-p1
-0.11234375
-e33
-2
-dur
-0.6651953125
-s6
-0.676015625
-e53
-3
-v5
-0.18146484375
-t5
-12
-e16
-4
-u1
--0.18625
-a6
-0
-lfoAmp
-0.07376953125
-f4
--1
-d1
-0.4371875
-e66
-2
-e11
-2
-e52
-3
-t1
--48
-u2
-0.21875
-a1
-0
-r2
-0.52205078125
-e56
-1
-e54
-0
-e26
-4
-p3
--0.197890625
-d6
-0.48283203125
-r5
-0
-p2
--0.0041796875
-e64
-2
-s3
-0.18376953125
-a2
-0
-e21
-1
-e44
-2
-e36
-3
-s5
-0.34138671875
-e51
-0
-e61
-0
-m2
-0.82936789772727
-e23
-1
-d
-0.355078125
-r
-0.37529296875
-v4
-0
-trans
-0
-r4
-0.8159375
-s
-0.5160546875
-e43
-2
-e65
-0
-e35
-3
-m4
-0.67986505681818
-m3
-0.44362571022727
-u6
-0.2036328125
-e55
-2
-s1
-0.3671875
-p4
--1
-e25
-0
-e22
-2
-t2
--24
-m1
-0.49875710227273
-t4
-12
-e42
-3
-d5
-0.56111328125
-f5
--1
-u3
--0.181416015625
-t6
-0
-p6
--0.0183984375
-v1
-0
-a
-0
-u5
--0.1589453125
-f3
-38
+*** END URL Bank Doc ***
 *** END INSTRUMENT DOC ***

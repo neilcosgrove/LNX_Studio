@@ -1,4 +1,47 @@
 
+// does osx have scroll bars? useful for getting widgets aligned with or without scroll bars
+/*
+ScrollBars.systemPref.dump
+10 + ScrollBars.addIfNone(7);
+
+10 + ScrollBars.addIfSome(13);
+*/
+
+ScrollBars{
+	
+	classvar <systemPref, <isTrue=true, <isFalse=false;
+	
+	*addIfSome{|number| isTrue.if{^number}{^0} } // useful to increase window size to make space
+	*addIfNone{|number| isTrue.if{^0}{^number} } // useful to extend widget size to fill gap
+										   // eg. Rect(1,2,3 + ScrollBars.addIfNone(7),20)
+	*initClass {
+		systemPref = "";	
+		Platform.case(
+			\osx,{
+				// systemPref options are... "Automatic", "WhenScrolling", "Always"
+				systemPref = "defaults read -g AppleShowScrollBars"
+					.unixCmdGetStdOut.profileSafe;
+				if (systemPref=="") { systemPref="Automatic" };
+				switch (systemPref)
+					{ "Always" }       { isTrue=true; isFalse=false } 
+					{ "WhenScrolling"} { isTrue=false; isFalse=true }
+					{ "Automatic" }    {
+						if ("system_profiler SPUSBDataType"
+								.unixCmdGetStdOut.containsi("mouse"))
+						{
+							isTrue=true; isFalse=false
+						}{
+							isTrue=false; isFalse=true 
+						};
+						
+					};		
+			});
+	}
+	
+	*refresh { this.initClass }
+	
+}
+
 // there are different versions becasue of clipping issues with com view
 
 MVC_RoundedComView : MVC_RoundedScrollView {
@@ -22,7 +65,7 @@ MVC_RoundedComView : MVC_RoundedScrollView {
 
 MVC_RoundedScrollView : MVC_ScrollView {
 	
-	var <>width=6, <views, <>resizeList; // in future might need resizeList_{|array| ...
+	var <>width=6, <views, <resizeList; // in future might need resizeList_{|array| ...
 	
 	refreshOthers{ if (view.notClosed) {views.do(_.refresh)} }
 	
@@ -37,6 +80,16 @@ MVC_RoundedScrollView : MVC_ScrollView {
 		views=IdentityDictionary[];
 	}
 	
+	resizeList_{|list|
+		resizeList = list;
+		if (view.notNil) {
+			view.resize_(resizeList[0]);
+			views[\left].resize_(resizeList[1]);
+			views[\top].resize_(resizeList[2]);
+			views[\right].resize_(resizeList[3]);
+			views[\bottom].resize_(resizeList[4]);
+		};
+	}
 	
 	bounds_{|argRect|
 		var l,t,w,h;
@@ -200,7 +253,7 @@ MVC_RoundedScrollView : MVC_ScrollView {
 
 MVC_ScrollView {
 
-	var	<parent,		<>window, 	<rect,	<view;
+	var	<parent,		<>window, 	<rect,	<view, <parentViews;
 		
 	var	<hasBorder=true,
 		<autoScrolls=false,			<autohidesScrollers=true,
@@ -258,6 +311,8 @@ MVC_ScrollView {
 		visibleOrigin=0@0;
 		
 		myGUI=IdentityDictionary[];
+		
+		if (parent.notNil) { parentViews = parent.parentViews };
 		
 		this.postInit;
 		
@@ -317,7 +372,8 @@ MVC_ScrollView {
 	isOpen { ^this.notClosed }
 	
 	bounds { if (view.notClosed) {^view.bounds} {^rect} }
-	visibleOrigin { if (view.notClosed) {^visibleOrigin=view.visibleOrigin} { visibleOrigin=0@0 } }
+	visibleOrigin { if (view.notClosed)
+		{^visibleOrigin=view.visibleOrigin} { ^visibleOrigin=0@0 } }
 	
 	focus { if (this.isOpen) {view.focus} }
 	
@@ -333,6 +389,12 @@ MVC_ScrollView {
 		visibleOrigin=point;
 		if (view.notClosed) { view.visibleOrigin_(point) }
 	}
+	
+	// is this window visable i.e. open and not hidden
+	isVisible{
+		^((view.notNil) && visible and:{view.isClosed.not})
+	}
+	
 	
 	// boarder
 	hasBorder_{|bool|

@@ -201,23 +201,37 @@ MVC_MyKnob2 : MVC_View {
 	
 	addControls{
 		
+		var toggle;
+		
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-			startX=x;
-			startY=y;
+			toggle = false;
+			startX = x;
+			startY = y;
 			if (editMode||viewEditMode) { lw=lh=nil; view.bounds.postln };
 			if (y>w) {buttonNumber=1}; // numbers
+			
 			if (modifiers==524576) {buttonNumber=1};
 			if (modifiers==262401) {clickCount=2};
 			buttonPressed=buttonNumber;
+
 			if (buttonPressed==1) {
 				if (controlSpec2.notNil)
 					{ startVal=controlSpec2.unmap(value2) }
 					{ startVal=value2};
 			}{
 				if (controlSpec.notNil) { startVal=controlSpec.unmap(value) }{ startVal=value};
+				
+				
+				if (hasMIDIcontrol) {
+					if ((clickCount>1)&&doubleClickLearn){ toggle = true };
+					if (modifiers==262401) { toggle = true  };
+					if (buttonNumber>=1  ) { toggle = true  };
+					if (toggle) { this.toggleMIDIactive };
+				};
+				
 			};
-			if (clickCount==2) { this.toggleMIDIactive };
+
 		};
 		
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
@@ -226,26 +240,29 @@ MVC_MyKnob2 : MVC_View {
 			if (editMode||viewEditMode) {
 				this.moveBy(x-startX,y-startY)
 			}{
-				if (buttonPressed!=1) {
-					// set value 1
-					val=(startVal+((startY-y)/resoultion/200/(buttonPressed*6+1))).clip(0,1);
-					if (controlSpec.notNil) { val=controlSpec.map(val) };
-					if (val!=value) { this.viewValueAction_(val,nil,true,false) };
-				}{
-					// set value 2
-					val=(startVal+((startY-y)/resoultion/25/(buttonPressed*6+1))).clip(0,1);
-					if (controlSpec2.notNil) { val=controlSpec2.map(val) };
-					if (val!=value2) {
-						// this is normally done in viewValueAction_
-						value2=val;
-						this.refresh;
-						action2.value(this,nil,true,false);
-						if (rangeView.notNil) {
-							rangeView.viewValueAction_(val,nil,true,false);
-						};
-					}
-				
-				};
+				if (toggle.not) {
+					if (buttonPressed!=1) {
+						// set value 1
+						val=(startVal+
+								((startY-y)/resoultion/200/(buttonPressed*6+1))).clip(0,1);
+						if (controlSpec.notNil) { val=controlSpec.map(val) };
+						if (val!=value) { this.viewValueAction_(val,nil,true,false) };
+					}{
+						// set value 2
+						val=(startVal+((startY-y)/resoultion/25/(buttonPressed*6+1))).clip(0,1);
+						if (controlSpec2.notNil) { val=controlSpec2.map(val) };
+						if (val!=value2) {
+							// this is normally done in viewValueAction_
+							value2=val;
+							this.refresh;
+							action2.value(this,nil,true,false);
+							if (rangeView.notNil) {
+								rangeView.viewValueAction_(val,nil,true,false);
+							};
+						}
+					
+					};	
+				}
 			};
 		};
 	
@@ -308,9 +325,6 @@ MVC_MyKnob2 : MVC_View {
 			numberGUI.refresh;
 		}
 	}
-
-	
-	
 	
 	toggleMIDIactive{
 		if (hasMIDIcontrol && hasMIDIcontrol2) {

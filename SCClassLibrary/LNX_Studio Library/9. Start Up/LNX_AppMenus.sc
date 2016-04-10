@@ -12,14 +12,23 @@ LNX_AppMenus {
 		var tools  = SCMenuGroup.new(nil, "Tools",9);
 		
 		// add LNX Help menu
-		SCMenuItem('Help',"LNX_Studio Help", 0).setShortCut("b").action_{studio.openHelp};
+		SCMenuItem('Help',"LNX_Studio Help", 0).setShortCut("d").action_{studio.openHelp};
 		
 		SCMenuItem.new(tools,  "Save").setShortCut("s").action_({ studio.saveDialog });
 		SCMenuItem.new(tools,  "Open...").setShortCut("o").action_({ studio.loadDialog });
 		SCMenuItem.new(tools,  "Network").setShortCut("n").action_({ studio.network.guiConnect });
+		
+		SCMenuSeparator.new(tools);
+		
 		SCMenuItem.new(tools,  "Add preset to all instruments")
-			.setShortCut("p")
 			.action_{studio.guiAllInstsAddPreset};
+			
+		SCMenuItem.new(tools,  "Add all to POP")
+			.action_{studio.guiAllToPOP};
+			
+		SCMenuItem.new(tools,  "Add all to POP (no FX)")
+			.setShortCut("p")
+			.action_{studio.guiAllToPOP(false)};
 		
 		SCMenuSeparator.new(tools);
 		
@@ -47,16 +56,23 @@ LNX_AppMenus {
 		SCMenuItem.new(tools,  "Clear All Automation").action_({
 			studio.freeAllAutomation;
 		});
-			
-		SCMenuSeparator.new(tools);
-		SCMenuItem.new(tools,  "Master EQ").action_({MasterEQ.new});
-		
+//			
+//		SCMenuSeparator.new(tools);
+//		SCMenuItem.new(tools,  "Master EQ").action_({MasterEQ.new});
+//		
 		SCMenuSeparator.new(tools);
 		SCMenuItem.new(tools,  "Backup Library to Desktop").action_{studio.backupLibrary};
 		SCMenuItem.new(tools,  "Restore Library Defaults").action_{studio.restoreLibraryDefaults};
 		SCMenuItem.new(tools,  "Check For Library Updates").action_{studio.checkForLibraryUpdates};
 		SCMenuItem.new(tools,  "Open Library in Finder").action_{
-			("open" + (LNX_File.prefDir++"Library").quote ).systemCmd};	
+			("open" + (LNX_Studio.libraryFolder).quote ).systemCmd};
+			
+//		SCMenuSeparator.new(tools);
+//		SCMenuItem.new(tools, "Quit LNX_Studio").setShortCut("q").action_{
+//			studio.server.quit;
+//			MIDIClient.disposeClient;
+//			{0.exit}.defer(0.5);
+//		};	
 	}
 
 	// application menus for the developer mode
@@ -175,11 +191,7 @@ if (studio.batchOn) {
 			.color_(\focus,Color(1,1,1,0.5))
 			.colorizeOnOpen_(true)
 			.autoColorize_(true);
-			
-
-		
-		// add LNX Help menu
-		SCMenuItem('Help',"LNX_Studio Help", 0).setShortCut("d").action_{studio.openHelp};
+	
 //		
 //		
 //		SCMenuItem.new(tools,  "Close Post Window")
@@ -329,7 +341,7 @@ if (studio.batchOn) {
 			studio.network.otherUsers.do{|user|
 				var g=user.commonTimePings.flop.reverse;
 				if (g[0].size>0) {
-					g.plot2("Latency & Delta ("++(user.name)++")").specs_(
+					g.plot("Latency & Delta ("++(user.name)++")").specs_(
 						[[0,g[0].last,\lin,0,0,"s"].asSpec,
 						[g[1].copy.sort.first,g[1].copy.sort.last,\lin,0,0,"s"].asSpec]
 					).plotMode_(\points)

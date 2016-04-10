@@ -76,18 +76,16 @@ MVC_SmoothSlider : MVC_View {
 		{ if (view.notNil) { view.view.canFocus_(false) } }.defer(0.1); // fix
 	}
 	
-	addControls{		
+	addControls{	
+		
+		var toggle;
+			
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-			var val;
-			
+			var val;			
+			toggle = false;
 			w = me.view.bounds.width;
-			
-			if (editMode||viewEditMode) { view.bounds.postln};
-			
-			if (modifiers==524576) { buttonNumber=1  };
-			if (modifiers==262401) { clickCount=2  };
-			buttonPressed=buttonNumber;
+				
 			if (modifiers.asBinaryDigits[4]==0) {  // if apple not pressed because of drag
 				mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 				if (editMode||viewEditMode) {
@@ -95,20 +93,29 @@ MVC_SmoothSlider : MVC_View {
 					startX=x;
 					startY=y;
 					if (verbose) {view.bounds.postln};
+					if (modifiers==524576) { buttonNumber = 1  };
+					buttonPressed=buttonNumber;	
 				}{
-					x=x+l;
-					y=y+t-1;
-					evaluateAction=true;
-					if (buttonPressed==1) {
-						seqItems.do({|i,j|	
-							if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) {
-								lastItem=j;  // draw a line !!!
-							}
-						});
+					if (hasMIDIcontrol) {
+						if ((clickCount>1)&&doubleClickLearn){ toggle = true };
+						if (modifiers==262401) { toggle = true  };
+						if (buttonNumber>=1  ) { toggle = true  };
+						if (toggle) { this.toggleMIDIactive };
 					};
-					if ((clickCount==2)and:{hasMIDIcontrol}) {
-						this.toggleMIDIactive;
-					}{
+					
+					if (toggle.not) {
+						if (modifiers==524576) { buttonNumber = 1  };
+						buttonPressed=buttonNumber;	
+						x=x+l;
+						y=y+t-1;
+						evaluateAction=true;
+						if (buttonPressed==1) {
+							seqItems.do({|i,j|	
+								if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) {
+									lastItem=j;  // draw a line !!!
+								}
+							});
+						};
 						if (direction==\vertical) {
 							val=(1-((y-t-3)/(h-6))).clip(0,1);
 						}{
@@ -130,58 +137,62 @@ MVC_SmoothSlider : MVC_View {
 			w = me.view.bounds.width;
 			
 			if (editMode||viewEditMode) {
-				this.moveBy(x-startX,y-startY,buttonPressed)
+				this.moveBy(x-startX,y-startY,buttonPressed.postln)
 			}{
-				x=x+l;
-				y=y+t-1;
-				if (direction==\vertical) {
-					thisValue=(1-((y-t-3)/(h-6))).clip(0,1);
-				}{
-					thisValue=((x-l-3)/(w-6)).clip(0,1);
-				};
-				if (controlSpec.notNil) { thisValue=controlSpec.map(thisValue) };
-				if ((buttonPressed==1)and:{seqItems.notNil}) {
-					seqItems.do({|i,j|	if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) { thisItem=j } });
-					if (x<seqItems[0].l) { thisItem=0 }; // catch the 1st and last
-					if (x>seqItems[seqItems.size-1].l) { thisItem=seqItems.size-1 };
-					if (thisItem.isNil) { thisItem=lastItem };
-					if (thisItem==lastItem) {
-						if (seqItems[thisItem].value!=thisValue) {
-							seqItems[thisItem].viewValueAction_(
-								thisValue,nil,true,false,buttonPressed)
-								.refreshValue;
-						};
-					}{ // draw a line
-						if (thisItem>lastItem) {
-							lastValue=seqItems[lastItem].value;
-							size=thisItem-lastItem+1;
-							size.do({|i|
-								val=((i/(size-1))*thisValue)+(1-(i/(size-1))*lastValue);
-								if (seqItems[i+lastItem].value!=val) {
-									seqItems[i+lastItem].viewValueAction_(
-										val,nil,true,false,buttonPressed)
-										.refreshValue;
-								};
-							});
-						}{
-							lastValue=seqItems[lastItem].value;
-							size=lastItem-thisItem+1;
-							size.do({|i|
-								val=((i/(size-1))*lastValue)+(1-(i/(size-1))*thisValue);
-								if (seqItems[i+thisItem]!=val) {
-									seqItems[i+thisItem].viewValueAction_(
-										val,nil,true,false,buttonPressed)
-										.refreshValue;
-								};
-							});
-						};
+				if (toggle.not) {
+					x=x+l;
+					y=y+t-1;
+					if (direction==\vertical) {
+						thisValue=(1-((y-t-3)/(h-6))).clip(0,1);
+					}{
+						thisValue=((x-l-3)/(w-6)).clip(0,1);
 					};
-					lastItem=thisItem;
-				}{	
-					if (buttonPressed!=2) {
-						if (thisValue!=value) {this.viewValueAction_(
-								thisValue,nil,true,false,buttonPressed)};
-						this.refreshValue;
+					if (controlSpec.notNil) { thisValue=controlSpec.map(thisValue) };
+					if ((buttonPressed==1)and:{seqItems.notNil}) {
+						seqItems.do{|i,j|
+							if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) { thisItem=j }
+						};
+						if (x<seqItems[0].l) { thisItem=0 }; // catch the 1st and last
+						if (x>seqItems[seqItems.size-1].l) { thisItem=seqItems.size-1 };
+						if (thisItem.isNil) { thisItem=lastItem };
+						if (thisItem==lastItem) {
+							if (seqItems[thisItem].value!=thisValue) {
+								seqItems[thisItem].viewValueAction_(
+									thisValue,nil,true,false,buttonPressed)
+									.refreshValue;
+							};
+						}{ // draw a line
+							if (thisItem>lastItem) {
+								lastValue=seqItems[lastItem].value;
+								size=thisItem-lastItem+1;
+								size.do({|i|
+									val=((i/(size-1))*thisValue)+(1-(i/(size-1))*lastValue);
+									if (seqItems[i+lastItem].value!=val) {
+										seqItems[i+lastItem].viewValueAction_(
+											val,nil,true,false,buttonPressed)
+											.refreshValue;
+									};
+								});
+							}{
+								lastValue=seqItems[lastItem].value;
+								size=lastItem-thisItem+1;
+								size.do({|i|
+									val=((i/(size-1))*lastValue)+(1-(i/(size-1))*thisValue);
+									if (seqItems[i+thisItem]!=val) {
+										seqItems[i+thisItem].viewValueAction_(
+											val,nil,true,false,buttonPressed)
+											.refreshValue;
+									};
+								});
+							};
+						};
+						lastItem=thisItem;
+					}{	
+						if (buttonPressed!=2) {
+							if (thisValue!=value) {this.viewValueAction_(
+									thisValue,nil,true,false,buttonPressed)};
+							this.refreshValue;
+						};
 					};
 				};
 			};
@@ -248,7 +259,7 @@ MVC_SmoothSlider : MVC_View {
 		if (value!=val) {
 			value=val;
 			this.refreshValue;
-			this.refresh;
+			//this.refresh;
 		};
 	}
 	
@@ -272,23 +283,29 @@ MVC_SmoothSlider : MVC_View {
 	// set the colour in the Dictionary
 	// need to do disable here
 	color_{|key,color|
+		var visible = this.parentsVisible;
+			
 		if (colors.includesKey(key).not) {^this}; // drop out
 		colors[key]=color;
 		if (key=='focus'      ) { {if (view.notClosed) { view.focusColor_(
-				colors[\focus]) } }.defer };
+				colors[\focus],visible) } }.defer };
+				
 		if (key=='knob'       ) { {if (view.notClosed) { view.knobColor_ (
-				colors[midiLearn.if(\midiLearn,enabled.if(\knob,\knobDisabled))]) } }.defer };
+				colors[midiLearn.if(\midiLearn,enabled.if(\knob,\knobDisabled))],visible ) } }.defer };
+				
 		if (key=='hilite'	 ) { {if (view.notClosed) { view.hiliteColor_(
-				colors[enabled.if(\hilite,\backgroundDisabled)]) } }.defer };
+				colors[enabled.if(\hilite,\backgroundDisabled)],visible) } }.defer };
+		
 		if (key=='background' ) { {if (view.notClosed) { view.background_(
-				colors[enabled.if(\background,\backgroundDisabled)]) } }.defer };
+				colors[enabled.if(\background,\backgroundDisabled)],visible) } }.defer };
+		
 		if (key=='border'     ) { {if (view.notClosed) { view.borderColor_(
-				colors[midiLearn.if(\midiLearn,\border)]) } }.defer };
+				colors[midiLearn.if(\midiLearn,\border)],visible) } }.defer };
+		
 		if (key=='label') { {labelGUI.do(_.refresh)}.defer };
-	
 		
 		if (key=='knobBorder') { {if (view.notClosed) {
-				view.knobBorder_(colors[\knobBorder])
+				view.knobBorder_(colors[\knobBorder],visible)
 		} }.defer };
 		
 		if (key=='numberUp') { { if (numberGUI.notClosed) { numberGUI.refresh } }.defer; };
@@ -318,34 +335,40 @@ MVC_SmoothSlider : MVC_View {
 	
 	// fresh the Slider Value
 	refreshValue{
-		
-		// this some how needs to stop updating when..
-		
-		
+		var parentsVisible = this.parentsVisible;
 		if (view.notClosed) {
 			if (controlSpec.notNil) {
-				if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) {
-					view.valueNoRefresh_(controlSpec.unmap(value))
+				if (parentsVisible) {
+					view.value_(controlSpec.unmap(value));
+					if (numberGUI.notNil) { numberGUI.refresh }
 				}{
-					view.value_(controlSpec.unmap(value))
+					view.valueNoRefresh_(controlSpec.unmap(value))
 				}
 			}{
-				if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) {
-					view.valueNoRefresh_(value);
-				}{
+				if ( parentsVisible) {
 					view.value_(value);
+					if (numberGUI.notNil) { numberGUI.refresh };
+				}{
+					view.valueNoRefresh_(value);
 				}
 			};
 		}
 	}
 	
-	// unlike SCView there is no refresh needed with SCSlider
-	// this is not true, valueAction_ calls this and so value does need updating. Changed!
+	parentsVisible{
+		parentViews.do{|view| if (view.isVisible.not) { ^false }};
+		^true;
+	}
+	
+	// you can't use System clock to call refresh
 	refresh{
-		if ((view.notClosed) and: { (numberGUI.notNil) }) {
-			if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) { ^this };
-			numberGUI.refresh;
-			this.refreshValue;
+		if (view.notClosed) {
+			// drop of if tab is hiddden			
+			//if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) { ^this };
+			parentViews.do{|view| if (view.isVisible.not) { ^this }};
+			// else
+			view.refresh;
+			if (numberGUI.notNil) { numberGUI.refresh }
 		}
 	}
 
@@ -354,6 +377,32 @@ MVC_SmoothSlider : MVC_View {
 SmoothSliderAjusted : SmoothSlider {
 	
 	var <>drawNegative=true;
+		
+	focusColor_ { |newColor,refresh=true|
+		focusColor = newColor;
+		if (refresh) {this.parent.refresh}
+	}
+	knobColor_ { |newColor,refresh=true| 
+		color[3] = newColor; 
+		if (refresh) {this.refresh}
+	}
+	hilightColor_ { |newColor,refresh=true|
+		color[1] = newColor;
+		if (refresh) {this.refresh}
+	}
+	background_ { |newColor,refresh=true|
+		color[0] = newColor;
+		if (refresh) {this.refresh}
+	}
+	borderColor_ { |newColor,refresh=true|
+		color[2] = newColor;
+		if (refresh) {this.refresh}
+	}
+	
+	knobBorder_{|color,refresh=true|
+		knobBorder=color;
+		if (refresh) {this.refresh}
+	}
 	
 	*initClass{ RoundView.focusRingSize_(0) }
 	mouseDown{}
@@ -394,9 +443,8 @@ SmoothSliderAjusted : SmoothSlider {
 		var rect, drawBounds, radius;
 		var baseRect, knobRect;
 		var center, strOri;
-		
 		var bnds; // used with string
-		
+
 		Pen.use {
 			
 			rect = this.drawBounds;

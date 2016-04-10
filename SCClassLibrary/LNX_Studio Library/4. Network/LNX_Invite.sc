@@ -74,11 +74,16 @@ LNX_Invite{
 		var string="";
 		string=string++hostName.asString;
 		string=string++" wants to start a ";
-		string=string++(roomList[3]);
-		string=string++" collaboration in\nRoom: ";
-		string=string++(roomList[1]);
-		string=string++" @ ";
-		string=string++(roomList[0]);
+		if (network.isLAN) {
+			string=string++" LAN collaboration in\nRoom: ";
+			string=string++(roomList[1]);
+		}{
+			string=string++(roomList[3]);
+			string=string++" collaboration in\nRoom: ";
+			string=string++(roomList[1]);
+			string=string++" @ ";
+			string=string++(roomList[0]);
+		};
 		^string; 
 	}
 	

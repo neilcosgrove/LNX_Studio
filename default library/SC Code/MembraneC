@@ -1,8 +1,8 @@
-SC Code Doc v1.4
-Template Version v1.1
+SC Code Doc v1.5
+Template Version v1.2
 LNX_Code
 MembraneC
-17
+24
 0
 0
 1
@@ -21,14 +21,22 @@ MembraneC
 1
 -inf
 9
-1
+0.70794578438414
+0
+60
+12
+0
+0
+0
+0
 0
 1
 0
-*** MIDI Control Doc v1.1
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
-736
+733
 47
 47
 32
@@ -234,11 +242,6 @@ MembraneC
 97
 108
 59
-10
-9
-10
-9
-32
 10
 9
 118
@@ -583,6 +586,8 @@ MembraneC
 97
 109
 112
+42
+50
 44
 32
 112
@@ -770,7 +775,7 @@ MembraneC
 volume
 MVC_SmoothSlider
 *** MVC_View Document v1 ***
-12
+13
 0
 567
 20
@@ -806,7 +811,7 @@ knob
 0.5
 0
 1
-border
+knobBorder
 0
 0
 0
@@ -820,6 +825,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -1075,7 +1085,7 @@ focus
 *** END MVC_View Document ***
 17
 MVC_MyKnob
-1
+1.021953125
 *** MVC_View Document v1 ***
 9
 0
@@ -1131,7 +1141,7 @@ focus
 *** END MVC_View Document ***
 19
 MVC_MyKnob
-0.99995285230655
+0.99993573291278
 *** MVC_View Document v1 ***
 9
 0
@@ -1187,7 +1197,7 @@ focus
 *** END MVC_View Document ***
 15
 MVC_MyKnob
-4133.9196101915
+20000
 *** MVC_View Document v1 ***
 9
 0
@@ -1243,7 +1253,7 @@ focus
 *** END MVC_View Document ***
 18
 MVC_MyKnob
-0.048949609375
+0.0326669921875
 *** MVC_View Document v1 ***
 9
 0
@@ -1300,36 +1310,20 @@ focus
 LNX PRSeq DOC v1.2
 0
 LNX Score DOC v1.4
-5
+0
 0
 32
-18.8125
+19.21875
 15
 0
 1020
 1
 16
 1
-51
-0
-10
-0.78740157480315
-49
-4
-10
-0.78740157480315
-48
-18
-10
-0.78740157480315
-45
-24
-10
-0.78740157480315
-43
-28
-10
-0.78740157480315
 *** END Score DOC ***
 *** END PRSeq DOC ***
+SC URL Bank Doc v1.1
+
+0
+*** END URL Bank Doc ***
 *** END INSTRUMENT DOC ***

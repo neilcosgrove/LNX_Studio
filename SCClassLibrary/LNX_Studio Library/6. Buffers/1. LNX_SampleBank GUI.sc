@@ -48,10 +48,10 @@
 	}
 
 	// used to update the sample name list in GSRhythm
-	updateList{|send=true| itemAction.value(this,this.names,send) }
+	updateList{|send=true, updateBank=true| itemAction.value(this,this.names,send,updateBank) }
 		 
 	// this is called by putLoadListURL
-	updateGUI{ this.updateList(false) }
+	updateGUI{|updateBank=true| this.updateList(false,updateBank) }
 	
 	// swap samples i & j (this is really move not swap!)
 	guiSwap{|i,j| api.groupCmdOD(\netSwap,i,j) }
@@ -432,7 +432,7 @@
 	allInterfacesSelect{|i,send=false|
 		this.selectSample(i,send);
 		this.updateSelectedSample(i);
-		selectSampleFuncs.do{|func| func.value(i) };	
+		selectSampleFuncs.do{|func| func.value(i) };	// this is a problem
 	}
 	
 	
@@ -665,9 +665,9 @@
 			.shadow_(false)
 			.align_(\center)
 			.color_(\string,Color.black)
-			//.color_(\stringDown, Color.white)
 			.font_(Font("Helvetica", 10))
-			.mouseUpAction_{ this.path(i).revealInFinder };
+			.mouseDownAction_{ gui[\path].color_(\string,Color.white) }
+			.mouseUpAction_{  gui[\path].color_(\string,Color.black);this.path(i).revealInFinder};
 		
 		// search the web button	
 		if (search) {

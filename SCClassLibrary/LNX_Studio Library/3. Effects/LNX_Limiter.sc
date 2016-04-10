@@ -1,8 +1,43 @@
 
+ // ************* this instrument is depreciated ************ ///
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // ************* this instrument is depreciated ************ ///
+
 LNX_Limiter : LNX_InstrumentTemplate {
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Limiter"}
@@ -10,6 +45,8 @@ LNX_Limiter : LNX_InstrumentTemplate {
 	isFX{^true}
 	isInstrument{^false}
 	canTurnOnOff{^false}
+	
+	*isVisible{^false} // this instrument is depreciated 
 	
 	mixerColor{^Color(0.77,0.6,1,0.3)} // colour in mixer
 	
@@ -23,6 +60,11 @@ LNX_Limiter : LNX_InstrumentTemplate {
 	// will just insert the missing models for you.
 	// if you reduce the size of this list it will cause problems when loading older versions.
 	// the only 2 items i'm going for fix are 0.solo & 1.onOff
+	
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
 
 	inModel{^models[2]}
 	inChModel{^models[10]}
@@ -34,7 +76,11 @@ LNX_Limiter : LNX_InstrumentTemplate {
 		
 		var template=[
 			0, // 0.solo
-			1, // 1.onOff
+			
+			// 1.onOff
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
+				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
+				
 			
 			0.5,  // 2. in
 			0.5,  // 3. limit
@@ -80,7 +126,7 @@ LNX_Limiter : LNX_InstrumentTemplate {
 	// return the volume model
 	volumeModel{^models[4] }
 	
-	*thisWidth  {^220+22}
+	*thisWidth  {^262}
 	*thisHeight {^95+26+22}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
@@ -124,10 +170,6 @@ LNX_Limiter : LNX_InstrumentTemplate {
 		
 		// 11.out
 		MVC_PopUpMenu3(models[11],gui[\scrollView] ,Rect(138,7,70,17),gui[\menuTheme  ]);
-		
-//		// knob com view
-//		gui[\ksv] = MVC_CompositeView(gui[\scrollView], Rect(3,30,thisWidth-28,62),true)
-//			.color_(\background,Color(0.478,0.525,0.613));
 		
 		// knobs
 		3.do{|i| gui[i]=

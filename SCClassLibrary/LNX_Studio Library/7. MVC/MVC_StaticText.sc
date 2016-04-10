@@ -287,11 +287,27 @@ MVC_StaticText : MVC_View {
 	}
 	
 	dragControls{
+		
 		// what i send
-		view.beginDragAction_{|me|
-			me.dragLabel_(string); // the drag label
-			string
+		if (beginDragAction.notNil) {
+			view.beginDragAction_(beginDragAction); 
+		}{	
+			view.beginDragAction_{|me|
+				//me.dragLabel_(string); // the drag label
+				string
+			};
 		};
+		
+		// what can i recieve
+		if (canReceiveDragHandler.notNil) {
+			view.canReceiveDragHandler_(canReceiveDragHandler);
+		};
+		
+		// what i get passed
+		if (receiveDragHandler.notNil) {
+			view.receiveDragHandler_(receiveDragHandler);
+		};
+		
 		// these wouldn't normally be created with staticText
 		if (numberGUI.notNil) { numberGUI.beginDragAction_(view.beginDragAction) };
 		labelGUI.do{|labelView| labelView.beginDragAction_(view.beginDragAction) };

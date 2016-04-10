@@ -1,17 +1,22 @@
 
 LNX_Delay : LNX_InstrumentTemplate {
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Delay"}
 	*sortOrder{^3}
 	isFX{^true}
 	isInstrument{^false}
-	canTurnOnOff{^false}
+	canTurnOnOff{^true}
 	
 	mixerColor{^Color(0.77,0.6,1,0.3)} // colour in mixer
+		
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
 	
 	inModel{^models[2]}
 	inChModel{^models[10]}
@@ -37,7 +42,10 @@ LNX_Delay : LNX_InstrumentTemplate {
 		
 		var template=[
 			0, // 0.solo
-			1, // 1.onOff
+			
+			// 1.onOff
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
+				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
 				
 			1,   // 2. in
 			1,    // 3.mix
@@ -45,6 +53,7 @@ LNX_Delay : LNX_InstrumentTemplate {
 			0.5, // 5.decay
 			1,  // 6.out
 			0,0,0, // 7-9. knob controls
+			
 			// 10. in channels
 			[0, [0,LNX_AudioDevices.defaultFXBusChannels/2-1,\linear,1],
 				midiControl, 10, "In Channel",
@@ -65,14 +74,15 @@ LNX_Delay : LNX_InstrumentTemplate {
 			
 			// 12. beats=1, time=0
 			[1, \switch, midiControl, 12, "Beats/Time", (strings_:["Time","Beats"]),
-				{|me,val,latency,send| this.setDelayScale(val,latency,send) }]
-		
+				{|me,val,latency,send| this.setDelayScale(val,latency,send) }],
+				
 		];
 					
 		["IN","mix","time","decay","OUT"].do{|text,i|
 			template[i+2] = [ template[i+2], \unipolar, midiControl, i+2, text,
 				(\label_:text,\numberFunc_:\float2),
-				{|me,val,latency,send| this.setSynthArgVP(i+2,val,
+				{|me,val,latency,send| 
+					this.setSynthArgVP(i+2,val,
 							[\inAmp,\mix,\delayTime,\decay,\outAmp][i],val,latency,send)}]
 		};
 	
@@ -92,8 +102,8 @@ LNX_Delay : LNX_InstrumentTemplate {
 	// return the volume model
 	volumeModel{^models[6] }
 	
-	*thisWidth  {^220+22}
-	*thisHeight {^110+7+22+5}
+	*thisWidth  {^260}
+	*thisHeight {^144}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color(0,1/103,9/77,65/77)) }
 	
@@ -126,24 +136,26 @@ LNX_Delay : LNX_InstrumentTemplate {
 	
 		gui[\scrollView] = MVC_RoundedComView(window,
 							Rect(11,11,thisWidth-22,thisHeight-23), gui[\scrollTheme]);
-			
-		// midi control button			
-		gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(85, 6, 43, 19),"Cntrl",gui[\midiTheme])
-			.action_{ LNX_MIDIControl.editControls(this).front };
 	
 		// 10.in
 		gui[\in]= MVC_PopUpMenu3(models[10], gui[\scrollView], Rect(  7,7,70,17),gui[\menuTheme]);
 		
 		// 11.out
-		gui[\out]=MVC_PopUpMenu3(models[11], gui[\scrollView] ,Rect(138,7,70,17),gui[\menuTheme]);
+		gui[\out]=MVC_PopUpMenu3(models[11], gui[\scrollView] ,Rect(158,7,70,17),gui[\menuTheme]);
+					
+		// 1.onOff				
+		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(83, 6, 22, 19),gui[\onOffTheme1])
+			.color_(\on, Color(0.25,1,0.25) )
+			.color_(\off, Color(0.4,0.4,0.4) )
+			.rounded_(true);
 		
-		// knob com view
-//		gui[\ksv] = MVC_CompositeView(gui[\scrollView], Rect(4,31,thisWidth-30,60),true)
-//			.color_(\background,Color(0.50602409638554, 0.44615384615385, 0.63636363636364));
-//		
+		// midi control button
+		gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(109, 6, 43, 19),"Cntrl", gui[\midiTheme])
+			.action_{ LNX_MIDIControl.editControls(this).front };
+		
 		// knobs
 		5.do{|i| gui[i]=
-			MVC_MyKnob3(models[i+2], gui[\scrollView], Rect(10+(i*40),48,30,30), gui[\knobTheme])
+			MVC_MyKnob3(models[i+2], gui[\scrollView], Rect(10+(i*45),48,30,30), gui[\knobTheme])
 		};
 		
 		// 12 Beats/time 
@@ -153,7 +165,7 @@ LNX_Delay : LNX_InstrumentTemplate {
 			.font_(Font("Helvetica",11));
 			
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(gui[\scrollView], 									47@(gui[\scrollView].bounds.height-23),72,
+		presetView=MVC_PresetMenuInterface(gui[\scrollView], 									47@(gui[\scrollView].bounds.height-23),92,
 			Color(0.74, 0.74, 0.88)*0.6,
 			Color.black,
 			Color(0.74, 0.74, 0.88),
@@ -183,45 +195,22 @@ LNX_Delay : LNX_InstrumentTemplate {
 				mix=1,
 				delayTime=0.5,
 				decay=0.5,
-				outAmp=1
+				outAmp=1, on=1
 			|
 			var in, out;
+			
 			in  = In.ar(inputChannels, 2)*inAmp;
+			out = SelectX.ar(on.lag,[Silent.ar,in]);
+			
 			delayTime=delayTime.clip(0.0074,3);
-			//mix
-			out = AllpassL.ar(in,3,
+			out = AllpassL.ar(out,3,
 					Lag.ar(delayTime.asAudioRateInput,0.66),(decay*(-1.73))**2*(delayTime+1));
 			out = (((mix*outAmp)*out)+(((1-mix)*outAmp)*in));
+			
+			out = SelectX.ar(on.lag,[in,out]);
 			Out.ar(outputChannels,out);
 		}).send(s);
 		
-		// this is not a bad delay, nice feedback, needs work, less feedback on shorter delays
-//
-//		SynthDef(\LNX_Delay_FX, {|
-//				outputChannels=0,
-//				inputChannels=4,
-//				pan=0,
-//				inAmp=1,
-//				mix=1,
-//				delayTime=0.5,
-//				decay=0.5,
-//				outAmp=1|
-//			var local, inSig, maxdelay=10;
-//			inSig = In.ar(inputChannels,2)*10;
-//			outAmp = Amplitude.kr(Mix.ar(inSig));
-//			inSig = inSig * (outAmp > 0.02); // noise gate
-//			local = LocalIn.ar(2) * decay;
-//			local = OnePole.ar(local, 0.4);
-//			local = OnePole.ar(local, -0.08);
-//			local = Rotate2.ar(local[0], local[1], 0.2);
-//			local = CombC.ar(local, maxdelay, Lag.kr(delayTime/2, 1));
-//			local = LeakDC.ar(local);  
-//			local = ((local + inSig) * 1.25).softclip;
-//			LocalOut.ar(local);
-//			Out.ar(outputChannels, local * 0.1);
-//		}).add;
-//
-
 	}
 	
 	getDelayTime{|scale,value|
@@ -274,14 +263,16 @@ LNX_Delay : LNX_InstrumentTemplate {
 	updateDSP{|oldP,latency|
 		var in  = LNX_AudioDevices.firstFXBus+(p[10]*2);
 		var out = (p[11]>=0).if(p[11]*2,LNX_AudioDevices.firstFXBus+(p[11].neg*2-2));
+		
 		server.sendBundle(latency,
-			["/n_set", node, \inAmp          ,p[2]],
-			["/n_set", node, \mix            ,p[3]],
-			["/n_set", node, \delayTime      ,this.getDelayTime(p[12],p[4])],
-			["/n_set", node, \decay          ,p[5]],
-			["/n_set", node, \outAmp         ,p[6]],
-			["/n_set", node, \inputChannels  ,in  ],
-			["/n_set", node, \outputChannels ,out ]
+			[\n_set, node, \inAmp          ,p[2]],
+			[\n_set, node, \mix            ,p[3]],
+			[\n_set, node, \delayTime      ,this.getDelayTime(p[12],p[4])],
+			[\n_set, node, \decay          ,p[5]],
+			[\n_set, node, \outAmp         ,p[6]],
+			[\n_set, node, \inputChannels  ,in  ],
+			[\n_set, node, \outputChannels ,out ],
+			[\n_set, node, \on             ,p[1]]
 		);
 		this.updateDelayNumberFunc;	// not best place for this
 	}

@@ -23,6 +23,8 @@ MVC_Window {
 	var <>helpAction;
 	var <>keepClosed=false;
 	
+	var <parentViews;
+	
 	*initClass { windows = [] }
 		
 	// new only creates an instance of MVC_Window
@@ -33,13 +35,23 @@ MVC_Window {
 	init {|argName, argBounds, argResizable, argBorder, argScroll|
 		windows=windows.add(this);
 		name=argName;
-		bounds=argBounds ?? {Rect(128, 64, 400, 400)};
+		// stops crash on cocoa
+		if (argBounds.isKindOf(Rect)) {
+			bounds = Rect(argBounds.left.clip(0,inf), argBounds.top.clip(0,inf), argBounds.width,
+			 argBounds.height);
+		}{
+			bounds=Rect(128, 64, 400, 400);
+		};
+		
 		resizable=argResizable;
 		border=argBorder;
 		scroll=argScroll;
 		colors=IdentityDictionary[];
 		gui=[];
 		helpAction={true};
+		
+		parentViews = [this];
+		
 	}
 
 	// add or remove an MVC_View to the view, all views will be created this scrollView
@@ -311,8 +323,10 @@ MVC_Window {
 	}
 	
 	// set the bounds
-	bounds_{ arg argBounds;
-		bounds=argBounds;
+	bounds_{ arg argBounds;	
+		// stops crash on cocoa
+		bounds = Rect(argBounds.left.clip(0,inf), argBounds.top.clip(0,inf), argBounds.width,
+			 argBounds.height);
 		if (this.notClosed) {
 			view.bounds_(bounds.convert);
 		};
@@ -431,6 +445,8 @@ MVC_Window {
 		});
 		^false;
 	}
+	
+	a{|...a| this.labelWithNumbers(*a)}
 	
 	labelWithNumbers{|snap=1,v|
 		var gui=(), ps=[0@0], move, size=16;

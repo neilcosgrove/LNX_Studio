@@ -41,6 +41,8 @@ LNX_MIDIPipe {
 	isNote{^false}
 	isProgram{^false}
 
+	addLatency{|value| latency=latency +! value} // see bottom for +! operator
+
 	// add a tag to the pipe
 	tag_{|key,value|
 		tag = tag ?? {IdentityDictionary[]};
@@ -337,8 +339,12 @@ LNX_MIDIBuffer{
 	}
 	
 	// release everything
-	releaseAll{
-		notesOn.do{|pipe| midiPipeOutFunc.value(pipe.asNoteOff) };
+	releaseAll{|latency|
+		if (latency.notNil) {
+			notesOn.do{|pipe| midiPipeOutFunc.value(pipe.asNoteOff.latency_(latency)) };
+		}{
+			notesOn.do{|pipe| midiPipeOutFunc.value(pipe.asNoteOff) };
+		};
 		notesOn.clear;
 	}
 	
@@ -371,6 +377,8 @@ LNX_MIDIBuffer{
 			};
 		};
 	}
+	
+	free{ notesOn = midiPipeOutFunc = models = nil }
 	
 }
 
@@ -1196,6 +1204,8 @@ LNX_Arpeggiator{
 			
 	}
 	
+	free{ notesOn = midiPipeOutFunc = sortedNotes = models = nil }
+	
 	releaseAll{ } // notes have already been sched for NoteOff
 	
 	bang{|velocity,latency,beat,beatNo,absTime,dur| this.clockIn2(beatNo,latency,absTime,dur) }
@@ -1780,4 +1790,18 @@ LNX_MultiPipeOut{
 	autoSize{ gui[\userView].bounds_(Rect(0,0,w,this.internalHeight)) }
 	
 }
+
+// used to not add latency to nil
+/*
+1 +! 1   // = 2
+nil +! 1 // = nil
+*/
+
++ Nil {
+	+! {^this}
+}
+
++ Number {
+	+!{|item| ^this + item }
+} 
 

@@ -130,6 +130,9 @@ LNX_Instruments : IdentityDictionary {
 	// return effects ( list is in order of execution )
 	effects{ ^visualOrder.select(_.isFX) }
 	
+	// return everything that is not an effect ( list is in order of execution )
+	notEffect{ ^visualOrder.reject(_.isFX) }
+	
 	// note to self (am i just moving everything from studio to instruemts now)
 	effectSynths { ^this.effects.collect(_.synth) }
 	

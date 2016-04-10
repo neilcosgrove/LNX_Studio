@@ -5,7 +5,7 @@
 		
 MVC_TabbedView {
 
-	var	<parent,		<>window, 		<rect,		<view;
+	var	<parent,		<>window, 		<rect,		<view,     <parentViews;
 		
 	var	<gui, 		<colors,			<>font;	
 	
@@ -45,14 +45,21 @@ MVC_TabbedView {
 				window=nil;
 				rect=bounds;
 				argView.addView(this);
+				if (argView.parentViews.notNil)
+					{ parentViews = argView.parentViews };
+			
 			}
 			{argView.isKindOf(MVC_ScrollView)} {
 				window=nil;
+				parent = argView;
 				rect=bounds;
 				argView.addView(this);
+				if (argView.parentViews.notNil)
+					{ parentViews = argView.parentViews};
 			}
 			{argView.isKindOf(SCWindow)} {
 				window=argView;  // else is view or window
+				parent = argView;
 				rect=bounds;
 			};
 		
@@ -262,7 +269,9 @@ MVC_TabbedView {
 		
 MVC_TabView {
 
-	var <parent, <tabIndex, <gui;
+	var <parent, <tabIndex, <gui, <parentViews;
+	
+	var <>hasHorizontalScroller, <>hasVerticalScroller;
 
 	*new {|tabbedView,tabIndex| ^super.new.init(tabbedView,tabIndex) }
 		
@@ -271,6 +280,8 @@ MVC_TabView {
 		tabIndex=argTabIndex;
 		gui=[];
 		//if (window.notNil) { this.create(window) }
+		
+		parentViews = parent.parentViews ++ [this];
 	}
 	
 	// the actual view
@@ -278,6 +289,9 @@ MVC_TabView {
 	
 	// i should really store bounds on close, will i ever want this?
 	bounds { if (parent.notClosed) {^this.view.bounds} {^Rect(0,0,0,0)} }
+	
+	
+	isVisible{ ^parent.notClosed && (parent.tabIsHidden(tabIndex).not) }
 	
 	isHidden{ ^parent.tabIsHidden(tabIndex) } // very useful to stop updates from other tabs
 	
@@ -301,6 +315,15 @@ MVC_TabView {
 	createView{
 		var view;
 		view=this.view;
+		
+		if (hasHorizontalScroller.notNil) {
+			this.view.hasHorizontalScroller_(hasHorizontalScroller)
+		};
+			
+		if (hasVerticalScroller.notNil) {
+			this.view.hasVerticalScroller_(hasVerticalScroller)
+		};
+		
 		gui.do{|item| item.do(_.create(view)) }; // now make all views inside the views
 	}
 	
@@ -342,5 +365,5 @@ MVC_TabView {
 		});
 		^false;
 	}
-
+	
 }

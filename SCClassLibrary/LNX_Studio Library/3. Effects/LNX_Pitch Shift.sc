@@ -3,15 +3,15 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 
 	var lastSize;
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Pitch Shift"}
 	*sortOrder{^3}
 	isFX{^true}
 	isInstrument{^false}
-	canTurnOnOff{^false}
+	canTurnOnOff{^true}
 	
 	mixerColor{^Color(0.77,0.6,1,0.3)} // colour in mixer
 	
@@ -26,6 +26,11 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 	// if you reduce the size of this list it will cause problems when loading older versions.
 	// the only 2 items i'm going for fix are 0.solo & 1.onOff
 
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
+	
 	inModel{^models[2]}
 	inChModel{^models[10]}
 	outModel{^models[7]}
@@ -36,14 +41,16 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 	
 		var template = [
 			0, // 0.solo
-			1, // 1.onOff
-				
+			
+			// 1.onOff
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
+				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
+			
 			1,   // 2. in
 			0,    // 3.pitch
 			0,   // 4. rand pitch
 			0,  // 5. rand time
 			0.5, // 6. size
-			
 			1, // 7.out
 			0, // 8.
 			0, // 9. knob controls
@@ -98,8 +105,8 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 	// return the volume model
 	volumeModel{^models[7] }
 	
-	*thisWidth  {^252+22}
-	*thisHeight {^95+26+22}
+	*thisWidth  {^274}
+	*thisHeight {^143}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
 
@@ -132,21 +139,22 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 				
 		gui[\scrollView] = MVC_RoundedComView(window,
 							Rect(11,11,thisWidth-22,thisHeight-22-1), gui[\scrollTheme]);
-			
-		// midi control button
-		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(105, 6, 43, 19),"Cntrl", gui[\midiTheme])
-			.action_{ LNX_MIDIControl.editControls(this).front };
-	
+
 		// 10.in
-		MVC_PopUpMenu3(models[10],gui[\scrollView],Rect(27,7,70,17),gui[\menuTheme]);
+		MVC_PopUpMenu3(models[10],gui[\scrollView],Rect(7,7,70,17),gui[\menuTheme]);
 		
 		// 11.out
-		MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(158,7,70,17),gui[\menuTheme]);
+		MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(172,7,70,17),gui[\menuTheme]);
 		
-//		// knob com view
-//		gui[\ksv] = MVC_CompositeView(gui[\scrollView], Rect(3,30,thisWidth-28,62),true)
-//			.color_(\background,Color(0.478,0.525,0.613));
-		
+		// 1.onOff				
+		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(87, 6, 22, 19),gui[\onOffTheme1])
+			.color_(\on, Color(0.25,1,0.25) )
+			.color_(\off, Color(0.4,0.4,0.4) )
+			.rounded_(true);
+				
+		// midi control button
+		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(117, 6, 43, 19),"Cntrl", gui[\midiTheme])
+			.action_{ LNX_MIDIControl.editControls(this).front };		
 		// knobs
 		6.do{|i| gui[i]=
 			MVC_MyKnob3(models[i+2],gui[\scrollView],Rect(10+(i*40),48,30,30), gui[\knobTheme])
@@ -183,13 +191,13 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 				mix=1,
 				room=0.5,
 				damp=0.5,
-				outAmp=1
+				outAmp=1,
+				on=1
 			|
-			var out;	
-			
-			out = In.ar(inputChannels, 2)*inAmp;
-			out[0]=PitchShift.ar(out[0], size, pitch, randP, randT);
-			out[1]=PitchShift.ar(out[1], size, pitch, randP, randT);
+			var in, out;	
+			in  = In.ar(inputChannels, 2)*inAmp;
+			out = PitchShift.ar(in, size, pitch, randP, randT);
+			out = SelectX.ar(on.lag,[in,out]);
 			out = out * outAmp;
 			Out.ar(outputChannels,out);
 		}).send(s);
@@ -203,7 +211,7 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 	}
 		
 	stopDSP{
-		server.sendBundle(nil, [11, node]);
+		if (node.notNil) {server.sendBundle(nil, [11, node]) };
 		synth.free;
 		lastSize=nil;
 	}
@@ -221,13 +229,15 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 			out=(p[11]>=0).if(p[11]*2,LNX_AudioDevices.firstFXBus+(p[11].neg*2-2));
 			in=LNX_AudioDevices.firstFXBus+(p[10]*2);
 			
-			server.sendBundle(latency,["/n_set", node, \inAmp ,p[2]]);
-			server.sendBundle(latency,["/n_set", node, \pitch ,((60+p[3]).midicps)/(60.midicps)]);
-			server.sendBundle(latency,["/n_set", node, \randP ,p[4]]);
-			server.sendBundle(latency,["/n_set", node, \randT ,p[5]]);
-			server.sendBundle(latency,["/n_set", node, \outAmp,p[7]]);
-			server.sendBundle(latency,["/n_set", node, \outputChannels,out]);
-			server.sendBundle(latency,["/n_set", node, \inputChannels,in]);
+			server.sendBundle(latency,
+				[\n_set, node, \inAmp ,p[2]],
+				[\n_set, node, \pitch ,((60+p[3]).midicps)/(60.midicps)],
+				[\n_set, node, \randP ,p[4]],
+				[\n_set, node, \randT ,p[5]],
+				[\n_set, node, \outAmp,p[7]],
+				[\n_set, node, \outputChannels,out],
+				[\n_set, node, \inputChannels,in],
+				[\n_set, node, \on,p[1]]);
 		}
 		
 	}
@@ -252,22 +262,10 @@ LNX_PitchShift : LNX_InstrumentTemplate {
 			\size, lastSize,
 			\outAmp,p[7],
 			\outputChannels,out,
-			\inputChannels,in
+			\inputChannels,in,
+			\on, p[1]
 		]));
 	
-//		synth = Synth.replace(synth.nodeID,"LNX_PitchShift_FX",[
-//			\inAmp ,p[2],
-//			\pitch ,((60+p[3]).midicps)/(60.midicps),
-//			\randP ,p[4],
-//			\randT ,p[5],
-//			\size, lastSize,
-//			\outAmp,p[7],
-//			\outputChannels,out,
-//			\inputChannels,in
-//		]);
-//		
-//		node  = synth.nodeID; // need to update node
-
 	}
 	
 }

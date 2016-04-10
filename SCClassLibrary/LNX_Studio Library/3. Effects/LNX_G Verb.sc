@@ -6,8 +6,8 @@ LNX_GVerb : LNX_InstrumentTemplate {
 
 	var lastRoom, lastSpread;
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"G Verb"}
@@ -15,7 +15,7 @@ LNX_GVerb : LNX_InstrumentTemplate {
 	
 	isFX{^true}
 	isInstrument{^false}
-	canTurnOnOff{^false}
+	canTurnOnOff{^true}
 	
 	mixerColor{^Color(0.3,0.3,0.8,0.2)} // colour in mixer
 	
@@ -30,6 +30,11 @@ LNX_GVerb : LNX_InstrumentTemplate {
 	// if you reduce the size of this list it will cause problems when loading older versions.
 	// the only 2 items i'm going for fix are 0.solo & 1.onOff
 	
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
+	
 	inModel{^models[4]}
 	inChModel{^models[2]}
 	outModel{^models[13]}
@@ -40,7 +45,11 @@ LNX_GVerb : LNX_InstrumentTemplate {
 	
 		var template = [
 			0, // 0.solo
-			1, // 1.onOff
+			
+			// 1.onOff
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
+				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
+				
 								
 			// 2. in channels
 			[0,[0,LNX_AudioDevices.defaultFXBusChannels/2-1,\linear,1],
@@ -65,24 +74,35 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			0.5,   // 6. time
 			0.4,  // 7. damp
 			0.2,  // 8. dampIn
-			
 			0.5, // 9. spread
 			0, // 10. dry
 			0.5, // 11. early
 			0.5, // 12. taillevel
-			1 // 13. out
+			1, // 13. out
+			20, // 14. hp freq
+			0, // 15. left delay
+			0, // 16. right delay
 	
 		];
 			
-		["IN","room","time","damp","dampIn","spread","dry","early","tail","OUT"].do{|text,i|
+		["IN","room","time","damp","dampIn","spread","dry","early","tail","OUT",
+			"highPass", "delayL", "delayR"
+		
+		].do{|text,i|
 			template[i+4] = [ template[i+4], \unipolar, midiControl, i+4, text,
 				(\label_:text,\numberFunc_:\float2),
 				{|me,val,latency,send| this.setSynthArgVP(i+4,val,
-				[\inAmp,\room,\time,\damp,\dampIn,\spread,\dry,\early,\taillevel,\outAmp][i],
+				[\inAmp,\room,\time,\damp,\dampIn,\spread,\dry,\early,\taillevel,\outAmp,
+					\highPass, \delayL, \delayR
+				][i],
 				val,latency,send)}]
 		};
 	
 		#models,defaults=template.generateAllModels;
+		
+		models[14].controlSpec_(\freq);
+		models[15].controlSpec_([0,0.2,1]);
+		models[16].controlSpec_([0,0.2,1]);
 		
 		// room & spread
 		models[5].action_{|me,val,latency,send| this.setPReplaceVP(5,val,latency,send) };
@@ -97,8 +117,8 @@ LNX_GVerb : LNX_InstrumentTemplate {
 		// return the volume model
 	volumeModel{^models[13] }
 	
-	*thisWidth  {^215+22}
-	*thisHeight {^155+26+22}
+	*thisWidth  {^257}
+	*thisHeight {^203+60}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
 
@@ -132,32 +152,45 @@ LNX_GVerb : LNX_InstrumentTemplate {
 		gui[\scrollView] = MVC_RoundedComView(window,
 								Rect(11,11,thisWidth-22,thisHeight-22-1),gui[\scrollTheme]);
 	
-		// midi control button
-		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(85, 6, 43, 19),"Cntrl", gui[\midiTheme])
-			.action_{ LNX_MIDIControl.editControls(this).front };
+
 	
 		// 10.in
 		gui[\in] = MVC_PopUpMenu3(models[2],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);
 		
 		// 11.out
-		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(138,7,70,17),gui[\menuTheme]);
-	
-//				
-//		// knob com view
-//		gui[\ksv] = MVC_CompositeView(gui[\scrollView], Rect(3,30,thisWidth-28,62+60),true)
-//			.color_(\background,Color(0.478,0.525,0.613));
-//	
+		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(158,7,70,17),gui[\menuTheme]);
+		
+		// 1.onOff				
+		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(83, 6, 22, 19),gui[\onOffTheme1])
+			.color_(\on, Color(0.25,1,0.25) )
+			.color_(\off, Color(0.4,0.4,0.4) )
+			.rounded_(true);
+		
+		// midi control button
+		gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(109, 6, 43, 19),"Cntrl", gui[\midiTheme])
+			.action_{ LNX_MIDIControl.editControls(this).front };
+		
 		// knobs
-		10.do{|i|
+		13.do{|i|
 			gui[i] = MVC_MyKnob3(
-					models[i+4],gui[\scrollView],Rect(10+((i%5)*40),48+((i/5).asInt*60),30,30),
-					gui[\knobTheme]
-				)
+				models[i+4],gui[\scrollView],
+				Rect((i<10).if( 10+((i%5)*45),  40+((i%5)*60)),48+((i/5).asInt*60),30,30),
+				gui[\knobTheme]
+			);
 		};
+		
+		gui[10].numberFunc_(\freq);
+		gui[10].numberWidth_(0);
+		
+		gui[1].color_(\on,Color(173/277,1,1));
+		gui[5].color_(\on,Color(173/277,1,1));
+		gui[11].color_(\on,Color.white);
+		gui[12].color_(\on,Color.white);
+		
 		
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],
-									17@(gui[\scrollView].bounds.height-23),80,
+									17@(gui[\scrollView].bounds.height-23),100,
 			Color(0.74, 0.74, 0.88)*0.6,
 			Color.black,
 			Color(0.74, 0.74, 0.88),
@@ -187,19 +220,18 @@ LNX_GVerb : LNX_InstrumentTemplate {
 				spread=15,
 				dry=0,
 				early=0.5,
-				taillevel=0.5
+				taillevel=0.5,
+				on=1,
+				highPass=20, delayL=0, delayR=0
 				
 			|
-			var out;
-
+			var in, out;
 			time=(time*4)**2;
 			damp=1-damp;
-			dampIn=dampIn;
-			dry=dry;
-			early=early;
-			taillevel=taillevel;
+			in  = In.ar(inputChannels, 2)*inAmp;	
+			out = SelectX.ar(on.lag,[Silent.ar,in]);
 			
-			out = In.ar(inputChannels, 2)*inAmp;
+			out = HPF.ar(out,highPass.lag(0.2));
 			out = GVerb.ar(out[0]+out[1], 			
 					room,
 					Lag.kr(time,0.5),
@@ -211,6 +243,9 @@ LNX_GVerb : LNX_InstrumentTemplate {
 					taillevel,
 					room+1
 					);
+			out = DelayN.ar(out, 0.2, [delayL.lag,delayR.lag]);
+			
+			out = SelectX.ar(on.lag,[in,out]);
 			out = out * outAmp;
 			Out.ar(outputChannels,out);
 		}).send(s);
@@ -224,7 +259,7 @@ LNX_GVerb : LNX_InstrumentTemplate {
 	}
 		
 	stopDSP{
-		server.sendBundle(nil, [11, node]);
+		if (node.notNil) { server.sendBundle(nil, [11, node]) };
 		synth.free;
 		lastRoom = lastSpread = nil;	
 	}
@@ -243,16 +278,21 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			out=(p[3]>=0).if(p[3]*2,LNX_AudioDevices.firstFXBus+(p[3].neg*2-2));
 			in=LNX_AudioDevices.firstFXBus+(p[2]*2);
 					
-			server.sendBundle(latency,["/n_set", node, \inAmp     ,p[4]]);
-			server.sendBundle(latency,["/n_set", node, \time      ,p[6]]);
-			server.sendBundle(latency,["/n_set", node, \damp      ,p[7]]);
-			server.sendBundle(latency,["/n_set", node, \dampIn    ,p[8]]);
-			server.sendBundle(latency,["/n_set", node, \dry       ,p[10]]);
-			server.sendBundle(latency,["/n_set", node, \early     ,p[11]]);
-			server.sendBundle(latency,["/n_set", node, \taillevel ,p[12]]);
-			server.sendBundle(latency,["/n_set", node, \outAmp    ,p[13]]);
-			server.sendBundle(latency,["/n_set", node, \outputChannels,out]);
-			server.sendBundle(latency,["/n_set", node, \inputChannels,in]);
+			server.sendBundle(latency,
+				[\n_set, node, \inAmp     ,p[4]],
+				[\n_set, node, \time      ,p[6]],
+				[\n_set, node, \damp      ,p[7]],
+				[\n_set, node, \dampIn    ,p[8]],
+				[\n_set, node, \dry       ,p[10]],
+				[\n_set, node, \early     ,p[11]],
+				[\n_set, node, \taillevel ,p[12]],
+				[\n_set, node, \outAmp    ,p[13]],
+				[\n_set, node, \outputChannels,out],
+				[\n_set, node, \inputChannels,in],
+				[\n_set, node, \on        ,p[1]],
+				[\n_set, node, \highPass  ,p[14]],
+				[\n_set, node, \delayL    ,p[15]],
+				[\n_set, node, \delayR    ,p[16]]);
 		}
 	}
 	
@@ -281,7 +321,11 @@ LNX_GVerb : LNX_InstrumentTemplate {
 			\taillevel ,p[12],
 			\outAmp    ,p[13],
 			\outputChannels,out,
-			\inputChannels,in
+			\inputChannels,in,
+			\on        ,p[1],
+			\highPass  ,p[14],
+			\delayL    ,p[15],
+			\delayR    ,p[16]
 		]));
 	
 	}

@@ -4,7 +4,7 @@
 + LNX_CodeFX {
 	
 	*thisWidth  {^263}
-	*thisHeight {^302-12}
+	*thisHeight {^290}
 	
 	createWindow{|bounds|
 		this.createTemplateWindow(bounds,Color(3/77,1/103,0,65/77), resizable:true);
@@ -51,7 +51,7 @@
 		
 		
 		gui[\scrollView] = MVC_RoundedComView(window,
-									Rect(11,11,thisWidth-22,thisHeight-22-1))
+									Rect(11,11,thisWidth-22,thisHeight-23))
 			.color_(\background,Color(59/77,59/77,59/77))
 			.color_(\border, Color(6/11,42/83,29/65))
 			.resize_(5);
@@ -109,9 +109,8 @@
 		
 		// the tab view
 		
-			
 		gui[\userGUIScrollView] = MVC_ScrollView(window,
-												Rect(14,50,thisWidth-28,thisHeight-90))
+												Rect(14,50+3,thisWidth-28,thisHeight-90))
 			.color_(\background,Color(6/11,42/83,29/65))
 			.resize_(5)
 			.hasBorder_(false)
@@ -154,7 +153,6 @@
 		// 3.output channels
 		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(161,5,70,17),gui[\menuTheme  ]);
 
-		
 		MVC_PlainSquare(gui[\scrollView],Rect(84,5,70,17))
 			.color_(\on,Color(0,0,0,0.2))
 			.color_(\off,Color(0,0,0,0.2));		
@@ -163,15 +161,23 @@
 		gui[\sendOut] =
 			MVC_PopUpMenu3(models[9],gui[\scrollView],Rect(84,5,70,17),gui[\menuTheme  ]);
 
-
 		// 11. in	
 		gui[\in] =
 			MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(7,5,70,17),gui[\menuTheme  ]);
-
+			
 		///////////
 
+		// 1.onOff				
+		gui[\on] = MVC_OnOffView(models[1],gui[\scrollView] ,
+			Rect(151, thisHeight-45, 22, 19),gui[\onOffTheme1])
+			.font_(Font("Helvetica-Bold", 12))
+			.resize_(7)
+			.color_(\on, Color(0.25,1,0.25) )
+			.color_(\off, Color(0.4,0.4,0.4) )
+			.rounded_(true);
+
 		// MIDI Control
- 		gui[\midi] = MVC_FlatButton(gui[\scrollView],Rect(6, thisHeight-47, 43, 19),"Cntrl")
+ 		gui[\midi] = MVC_FlatButton(gui[\scrollView],Rect(177, thisHeight-45, 37, 19),"Cntrl")
 			.rounded_(true)
 			.resize_(7)
 			.shadow_(true)
@@ -182,7 +188,7 @@
 			.action_{  LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front  };
 		
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(gui[\scrollView],(54)@(thisHeight-46),62,
+		presetView=MVC_PresetMenuInterface(gui[\scrollView],(3)@(thisHeight-44),52,
 				Color(6/11,42/83,29/65),
 				Color.black,
 				Color(6/11,42/83,29/65),
@@ -192,11 +198,10 @@
 			);
 		this.attachActionsToPresetGUI;
 			
-		
 		// code tab //////////////////
 		
 		// edit
-		gui[\edit]=MVC_FlatButton(gui[\scrollView],Rect(215, thisHeight-46, 19+2, 18),"+")
+		gui[\edit]=MVC_FlatButton(gui[\scrollView],Rect(218, thisHeight-46+2, 20, 18),"+")
 			.mode_(\icon)
 			.rounded_(true)
 			.resize_(7)
@@ -260,7 +265,7 @@
 							var string = gui[\codeWindowText].string;
 							codeModel.string_(string);
 							this.editString(string);
-							this.guiEvaluate;
+							if (this.guiEvaluate) { this.startDSP };
 						};
 						
 					// auto build button
@@ -289,16 +294,20 @@
 						};	
 					
 					gui[\codeWindow].helpAction_{
-						var string=gui[\codeWindowText].selectedString.split($.)[0];
-						if (string.asSymbol.asClass.isNil) {
-							"How to program LNX_Studio".help
+						var string;
+						if (gui.notNil) {
+							string=gui[\codeWindowText].selectedString.split($.)[0];
+							if (string.asSymbol.asClass.isNil) {
+								"How to program LNX_Studio".help
+							}{
+								string.help
+							};
+							false; // don't open studio help
 						}{
-							string.help
-						};
-						false; // don't open studio help
+							true	
+						}
 					};
 						
-					
 					// ugen help button
 					MVC_FlatButton(gui[\codeWindow],Rect(465+38-65-43, 322, 58, 18),"UGens")
 						.rounded_(true)

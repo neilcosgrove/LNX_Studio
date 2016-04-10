@@ -45,6 +45,13 @@
 			("networkMasterVolume".loadPref?[true])[0].isTrue.if(1,0), \switch,
 			{|me,val| [val.isTrue].savePref("networkMasterVolume") }].asModel;
 
+
+		// network Controller Keyboard
+		models[\networkCntKeyboard] = [
+			("networkCntKeyboard".loadPref?[true])[0].isTrue.if(1,0), \switch,
+			{|me,val| [val.isTrue].savePref("networkCntKeyboard") }].asModel;
+
+
 		// peak level
 		models[\peakLevel]=[1, \unipolar,  midiControl, 12, "Peak Level",
 				{|me,val,latency,send=true| this.setPVP(\peakLevel,val,nil,send) }].asModel;
@@ -70,6 +77,16 @@
 		// stop
 		models[\stop]=[\switch, midiControl, 4, "Stop", {|me,val| this.guiStop}].asModel
 			.automationActive_(false);
+					
+		// clock fowards
+		models[\fowards]=[\switch, midiControl, -2, "Forwards", {
+			 this.guiJumpTo((beat+(MVC_Automation.barLength*6)).clip(0,inf)); }].asModel
+			.automationActive_(false);
+
+		// clock rewind
+		models[\rewind]=[\switch, midiControl, -3, "Rewind", {
+			 this.guiJumpTo((beat-(MVC_Automation.barLength*6)).clip(0,inf)); }].asModel
+			.automationActive_(false);		
 
 		// record
 		models[\record]=[\switch, midiControl, 2, "Record", (strings_:["Rec","Stop"]),
@@ -131,7 +148,7 @@
 			.automationActive_(false);
 
 		// tempo
-		models[\tempo]=[bpm,[1,999], midiControl, 7, "Tempo", (moveRound_:1,resoultion_:10),
+		models[\tempo]=[bpm,[10,1000], midiControl, 7, "Tempo", (moveRound_:1,resoultion_:10),
 			{|me,val| this.guiSetBPM(val) }].asModel;
 
 		// tap
@@ -150,6 +167,12 @@
 				this.setPVP(\mute,val,nil,send);
 			}].asModel;
 
+		models[\preAmp] = [ \db6, midiControl, 69, "PreAmp",
+			{|me,val,latency,send=true,toggle|
+				this.setPVP(\preAmp,val,nil,send);
+				this.setPreAmp;
+			}].asModel;
+	
 		// set range of volume
 		server.volume.setVolumeRange(-inf, 0);
 
@@ -282,8 +305,11 @@
 			// automation playing back
 			models[\autoOn]=[1,\switch, midiControl, 14, "Automation",
 				{|me,val,latency,send=true,toggle|
-					this.groupCmdSync(\netSetAuto,val)
-					
+					if (network.isConnected) {
+						this.groupCmdSync(\netSetAuto,val)
+					}{
+						this.netSetAuto(val);
+					};
 				}].asModel.automationActive_(false);
 			
 			// automation recording
@@ -307,7 +333,7 @@
 	netSetAuto{|value|
 		value = value.asInt;
 		MVC_Automation.isPlaying_(value.isTrue);
-		if (value.isFalse) { models[\autoRecord].lazyValueAction_(0) };
+		if (value.isFalse) { models[\autoRecord].lazyValueAction_(0)};
 		models[\autoOn].lazyValue_(value,false);
 	}
 	
@@ -439,7 +465,7 @@
 		w=thisWidth-12;
 
 		// scroll view for network dialog
-		gui[\netScrollView] = MVC_RoundedScrollView(mixerWindow, Rect(11,319+30,w-10,h-25))
+		gui[\netScrollView] = MVC_RoundedScrollView(mixerWindow, Rect(11,349+25,w-10,h-25))
 			.resizeList_([1,1,1,1,1]) //  0:view 1:left 2:top 3:right 4:bottom
 			.color_(\background,Color(59/77,59/77,59/77))
 			.color_(\border,Color(6/11,42/83,29/65))
@@ -457,7 +483,7 @@
 		this.addTextToDialog("",false,true);
 		this.addTextToDialog("                  LNX_Studio",false,true);
 		this.addTextToDialog("",false,true);
-		this.addTextToDialog("                 "+(version.drop(1))+"alpha",false,true);
+		this.addTextToDialog("                       "+(version.drop(1))+"",false,true);
 		this.addTextToDialog("",false,true);
 
 		// user dialog input
@@ -503,8 +529,8 @@
 	autoSizeGUI{
 		var h;
 		h=network.collaboration.autoSizeGUI;
-		mixerGUI[\libraryScrollView].bounds_(Rect(11, 33, 190, 269-h+8+30));
-		gui[\netScrollView].bounds_(Rect(11,319+30-h+8,190,105));
+		mixerGUI[\libraryScrollView].bounds_(Rect(11, 33, 190, 269+15-h+8+30));
+		gui[\netScrollView].bounds_(Rect(11,319+30+15-h+8,190,105));
 	}
 
 
@@ -628,10 +654,8 @@
 
 			midiWin = MVC_ModalWindow(
 				(mixerWindow.isVisible).if(mixerWindow.view,window.view),
-				(420)@(415));
+				(420)@(468));
 			scrollView = midiWin.scrollView.view;
-
-
 
 			MVC_StaticText(scrollView, Rect(10, 10, 170, 18),gui[\labelTheme])
 			.string_("LNX_Studio Preferences");
@@ -652,7 +676,7 @@
 			LNX_POP.midi.createInGUIB (scrollView, (330-25)@(222-2), false, false);
 			LNX_POP.midi.action_{|me| LNX_POP.saveMIDIPrefs };
 			LNX_POP.midi.portInGUI
-				.label_("Preset MIDI controller In")
+				.label_("Program Launchpad In")
 				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black);
@@ -665,24 +689,6 @@
 				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black);
-
-			// internal midi buses
-			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 300, 70, 17))
-				.items_(["None","1 Bus","2 Buses","3 Buses"
-						 ,"4 Buses","5 Buses","6 Buses","7 Buses","8 Buses"
-						 ,"9 Buses","10 Buses","11 Buses","12 Buses","13 Buses"
-						 ,"14 Buses","15 Buses","16 Buses"])
-				.color_(\background,Color.ndcMenuBG)
-				.label_("No. of Internal MIDI Buses")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black)
-				.action_{|me|
-					this.guiNoInternalBuses_(me.value);
-					this.saveMIDIprefs;
-				}
-				.value_(noInternalBuses)
-				.font_(Font("Arial", 10));
 
 			// midi clock
 			midiClock.createInGUIA (scrollView, (170-25)@(168-2), false);
@@ -726,23 +732,24 @@
 				  \colors_     : (\background : Color.ndcMenuBG, \label : Color.black ))
 			);
 			
-			// Ok
-			MVC_FlatButton(scrollView,Rect(332, 362, 50, 20),"Ok",gui[\buttonTheme])
-				.canFocus_(true)
-				.color_(\up,Color.white)
-				.action_{	 midiWin.close };
 
-			// scan for new midi equipment
-			MVC_FlatButton(scrollView,Rect(240 ,362, 70, 20),"Scan MIDI",gui[\buttonTheme])
-				.canFocus_(false)
-				.action_{ LNX_MIDIPatch.refreshPorts };
 
-			// network master volume changes
-			MVC_OnOffView(models[\networkMaterVolume],scrollView,Rect(170, 328, 70, 19),
-				"Volume", ( \font_		: Font("Helvetica", 11),
+			// network networkCntKeyboard
+			MVC_OnOffView(models[\networkCntKeyboard],scrollView,Rect(170, 299, 70, 19),
+				"Network", ( \font_		: Font("Helvetica", 11),
 								 \colors_     : (\on : Color.orange+0.25,
 						 					   \off : Color.grey/2)))
-				.label_("Network")
+				.label_("Controller Keyboard")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
+				
+			// network master volume changes
+			MVC_OnOffView(models[\networkMaterVolume],scrollView,Rect(170, 328, 70, 19),
+				"Network", ( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.label_("Master Volume & Mute")
 				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black);
@@ -777,6 +784,22 @@
 					this.recreateLibraryGUI;
 				};
 						 					   
+				
+			// roland is visible
+			MVC_OnOffView(scrollView,Rect(311, 357, 72, 19), "JP-08",
+								( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.value_(LNX_RolandJP08.isVisiblePref.asInt)
+				.label_("Roland")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					LNX_RolandJP08.isVisiblePref_(me.value.isTrue).saveIsVisiblePref;
+					this.recreateLibraryGUI;
+				};
+				
 			// midi sync latency
 			MVC_SmoothSlider(scrollView, Rect(170, 139,150, 16),gui[\sliderTheme])
 				.numberFunc_(\float3Sign)
@@ -791,6 +814,66 @@
 					LNX_MIDIPatch.midiSyncLatency_(midiSyncLatency);
 					[midiSyncLatency].savePref("MIDI Sync Latency");
 				};
+				
+				
+			// doubleClickLearn
+			MVC_OnOffView(scrollView,Rect(170, 357, 70, 19), "On",
+								( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.value_(MVC_View.doubleClickLearn.asInt)
+				.label_("Double Click to MIDI Learn")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					MVC_View.doubleClickLearn_(me.value.isTrue);
+				};
+				
+				
+			// internal midi buses
+			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 386, 70, 17))
+				.items_(["None","1 Bus","2 Buses","3 Buses"
+						 ,"4 Buses","5 Buses","6 Buses","7 Buses","8 Buses"
+						 ,"9 Buses","10 Buses","11 Buses","12 Buses","13 Buses"
+						 ,"14 Buses","15 Buses","16 Buses"])
+				.color_(\background,Color.ndcMenuBG)
+				.label_("No. of Internal MIDI Buses")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					this.guiNoInternalBuses_(me.value);
+					this.saveMIDIprefs;
+				}
+				.value_(noInternalBuses)
+				.font_(Font("Arial", 10));
+			
+			// MacOS MIDI Fix
+			MVC_OnOffView(scrollView,Rect(311, 386, 72, 19), "MIDI Fix",
+								( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.value_(("midiBugFix".loadPref ? [false])[0].isTrue.asInt)
+				.label_("MacOS")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					[me.value.isTrue].savePref("midiBugFix");
+				};
+					
+			// scan for new midi equipment
+			MVC_FlatButton(scrollView,Rect(240 ,415, 70, 20),"Scan MIDI",gui[\buttonTheme])
+				.canFocus_(false)
+				.action_{ LNX_MIDIPatch.refreshPorts };
+				
+				
+			// Ok
+			MVC_FlatButton(scrollView,Rect(332, 415, 50, 20),"Ok",gui[\buttonTheme])
+				.canFocus_(true)
+				.color_(\up,Color.white)
+				.action_{	 midiWin.close };
 						 					   
 		}{
 			midiWin.front;

@@ -7,8 +7,8 @@ LNX_Controllers : LNX_InstrumentTemplate {
 	
 	var launchPadNotes;
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Keyboard & Controls"}
@@ -106,7 +106,6 @@ LNX_Controllers : LNX_InstrumentTemplate {
 				.color_(\border,  Color(59/108,65/103,505/692)  )
 				.color_(\border2, Color(0,1/103,9/77))
 				.color_(\background, Color(59/77,43/54,9/11)*1.1 );
-	
 	
 		// 19 net 
 		MVC_OnOffView(models[19],gui[\compositeView],Rect(10, 10, 28, 18),gui[\soloTheme  ])

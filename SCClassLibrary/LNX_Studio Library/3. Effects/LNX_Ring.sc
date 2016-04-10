@@ -1,15 +1,15 @@
 
 LNX_Ring : LNX_InstrumentTemplate {
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Ring Mod"}
 	*sortOrder{^3}
 	isFX{^true}
 	isInstrument{^false}
-	canTurnOnOff{^false}
+	canTurnOnOff{^true}
 	
 	mixerColor{^Color(0.77,0.6,1,0.3)} // colour in mixer
 	
@@ -24,6 +24,11 @@ LNX_Ring : LNX_InstrumentTemplate {
 	// if you reduce the size of this list it will cause problems when loading older versions.
 	// the only 2 items i'm going for fix are 0.solo & 1.onOff
 
+	// fake onOff model
+	onOffModel{^fxFakeOnOffModel }
+	// and the real one
+	fxOnOffModel{^models[1]}
+
 	inModel{^models[3]}
 	inChModel{^models[10]}
 	outModel{^models[4]}
@@ -34,14 +39,13 @@ LNX_Ring : LNX_InstrumentTemplate {
 		
 		var template=[
 			0, // 0.solo
-			1, // 1.onOff
 			
+			// 1.onOff
+			[1, \switch, midiControl, 1, "On", (\strings_:((this.instNo+1).asString)),
+				{|me,val,latency,send| this.setSynthArgVP(1,val,\on,val,latency,send)}],
+				
 			60,  // 2. freq
-			
-			
 			0,  // 3. mix
-			
-			
 			0,    // 4. out dbs
 			
 			0,0,0,0,0, // 5-9. knob controls
@@ -86,7 +90,7 @@ LNX_Ring : LNX_InstrumentTemplate {
 	// return the volume model
 	volumeModel{^models[4] }
 	
-	*thisWidth  {^220+22}
+	*thisWidth  {^262}
 	*thisHeight {^95+26+22}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
@@ -109,7 +113,7 @@ LNX_Ring : LNX_InstrumentTemplate {
 										\string	: Color.white));
 										
 		gui[\knobTheme]=( \labelShadow_	: false,
-						\numberWidth_	: (-20), 
+						\numberWidth_	: (0), 
 						\numberFont_	: Font("Helvetica",10),
 						\colors_		: (	\on		: Color(0.875, 0.852, 1),
 										\label	: Color.black,
@@ -120,31 +124,33 @@ LNX_Ring : LNX_InstrumentTemplate {
 		
 		gui[\scrollView] = MVC_RoundedComView(window,
 							Rect(11,11,thisWidth-22,thisHeight-22-1), gui[\scrollTheme]);
-	
-		// midi control button
-		 gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(85, 6, 43, 19),"Cntrl", gui[\midiTheme])
-			.action_{ LNX_MIDIControl.editControls(this).front };
-
+							
 		// 10.in
 		MVC_PopUpMenu3(models[10],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);
 		
 		// 11.out
-		MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(138,7,70,17),gui[\menuTheme]);
-//		
-//		// knob com view
-//		gui[\ksv] = MVC_CompositeView(gui[\scrollView], Rect(3,30,thisWidth-28,62),true)
-//			.color_(\background,Color(0.478,0.525,0.613));
+		MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(158,7,70,17),gui[\menuTheme]);
+		
+		// 1.onOff				
+		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(83, 6, 22, 19),gui[\onOffTheme1])
+			.color_(\on, Color(0.25,1,0.25) )
+			.color_(\off, Color(0.4,0.4,0.4) )
+			.rounded_(true);
+		
+		// midi control button
+		gui[\midi]=MVC_FlatButton(gui[\scrollView],Rect(109, 6, 43, 19),"Cntrl", gui[\midiTheme])
+			.action_{ LNX_MIDIControl.editControls(this).front };
 		
 		// knobs
 		3.do{|i| gui[i]=
-			MVC_MyKnob3(models[i+2],gui[\scrollView],Rect(40+(i*50),48,30,30), gui[\knobTheme])
+			MVC_MyKnob3(models[i+2],gui[\scrollView],Rect(47+(i*55),48,30,30), gui[\knobTheme])
 		};
 		
 		models[3].dependantsPerform(\zeroValue_,0);
 		
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],
-												17@(gui[\scrollView].bounds.height-23),88,
+												17@(gui[\scrollView].bounds.height-23),108,
 			Color(0.74, 0.74, 0.88)*0.6,
 			Color.black,
 			Color(0.74, 0.74, 0.88),
@@ -166,12 +172,19 @@ LNX_Ring : LNX_InstrumentTemplate {
 				inputChannels=4,
 				freq=60,
 				mix=0,
-				outAmp=1
+				outAmp=1,
+				on=1
 			|
-			var out, ring;
-			out = In.ar(inputChannels, 2);
-			ring = out * SinOsc.ar(freq);
-			out = XFade2.ar(ring,out,mix,outAmp.dbamp);
+			var in, out, ring;
+			
+			in = In.ar(inputChannels, 2);
+			
+			ring = in * SinOsc.ar(freq);
+			
+			out = XFade2.ar(ring,in,mix,outAmp.dbamp);
+			
+			out = SelectX.ar(on.lag,[in,out]);
+			
 			Out.ar(outputChannels,out);
 		}).send(s);
 
@@ -189,11 +202,11 @@ LNX_Ring : LNX_InstrumentTemplate {
 		var out = (p[11]>=0).if(p[11]*2,LNX_AudioDevices.firstFXBus+(p[11].neg*2-2));
 		
 		server.sendBundle(latency,
-			["/n_set", node, \freq ,p[2]],
-			["/n_set", node, \mix ,p[3]],
-			["/n_set", node, \outAmp,p[4]],
-			["/n_set", node, \inputChannels,in],
-			["/n_set", node, \outputChannels,out]
+			[\n_set, node, \freq ,p[2]],
+			[\n_set, node, \mix ,p[3]],
+			[\n_set, node, \outAmp,p[4]],
+			[\n_set, node, \inputChannels,in],
+			[\n_set, node, \outputChannels,out]
 		);
 	}
 	

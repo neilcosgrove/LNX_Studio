@@ -73,19 +73,21 @@ LNX_WebBrowser{
 
 	// a url link was clicked on
 	onLink_{|url|
-		var ext = url.extension; // had to change wslib a bit
-		url=url.replace("%20"," ");
+		var ext = url.extension;    // had to change wslib a bit
+		if (url=="") { ^this };     // exception
+		url=url.replace("%20"," "); // replace %20 with space
+		url=url.replace("%34",34.asAscii.asString); // reverse replace
+		
 		if (ext.notNil) {
 			ext=ext.toLower.asSymbol;
-			// is recognised audio
-			if (formats.includes(ext)) {
-				gui[\urlView].string_(url); // download
-				this.download(url);	
+			if (formats.includes(ext)) {      // is recognised audio
+				gui[\urlView].string_(url);  // set gui string
+				this.download(url);          // & download
 			}{
-				gui[\webView].url_(url); // webview
+				gui[\webView].url_(url);     // webview
 			}
 		}{
-			gui[\webView].url_(url); // webview
+			gui[\webView].url_(url);          // webview
 		}
 	}
 	
@@ -225,6 +227,7 @@ LNX_WebBrowser{
 			.color_(\background, Color(0,0,0,0.3))
 			.autoScrolls_(true)
 			.hasVerticalScroller_(true)
+			.hasHorizontalScroller_(false)
 			.resize_(4)
 			.hasBorder_(true);
 
@@ -480,15 +483,18 @@ LNX_WebBrowser{
 					
 					text = [
 						"<h1>",prefix,"</h1>",
+						userFiles,
+						
+						"<br/>",
+							
+						
 						"The Cashe.<br/>Found ",
 						size,
 						" sounds out of ",
 						cashe.size ,
 						" in the cashe… ",
 				"<a href='http://***LNX_DeleteCashe.mp3'>[Delete all cashe files]</a><br/><br/>",
-							text,
-							"<br/><br/>",
-							userFiles
+							text
 					].join;
 		
 					gui[\webView].html_(text);
@@ -504,35 +510,31 @@ LNX_WebBrowser{
 	showCasheHTMLNoFilter{|prefix=""|
 		var calls = 1, modInterval=600;
 		var text, size;
-		
 		{
-		
 			LNX_BufferProxy.fetchEasyCashe{|cashe|
-			
 				text = cashe.collect {|str|
-				
 					if (calls%modInterval==0) { 0.01.wait };
 					calls = calls + 1;
 					"<a href='%'>%</a><br/>".format( str,str)
 					
 				};
-				
 				size = text.size;
 				text = text.join;
-			
 				text = [
 					"<h1>",prefix,"</h1>",
+										
+					userFilesText,
+					"<br/>",
+					
 					"The Cashe.<br/>There are ",
 					size,
 					" sounds available in the cashe… ",
 			"<a href='http://***LNX_DeleteCashe.mp3'>[Delete all cashe files]</a><br/><br/>",
-					text,
-					"<br/><br/>",
-					userFilesText
+					text
+
 				].join;
-						
 				gui[\webView].html_(text);
-			
+				
 			};
 		
 		}.fork;
@@ -550,7 +552,7 @@ LNX_WebBrowser{
 				text = userContent.collect {|str,i|
 					if (calls%modInterval==0) { 0.01.wait };
 					calls = calls + 1;
-					"<a href='%'>%</a><br/>".format( str,str.drop(7))
+					"<a href=\"%\">%</a><br/>".format( str,str.drop(7));
 				};
 				
 				size = text.size;
@@ -602,7 +604,7 @@ LNX_WebBrowser{
 				size = text.size;
 				text = text.join; 
 				
-				action.value([	"Local Files.<br/>Found ",
+				action.value(["Local Files.<br/>Found ",
 					size,
 					" sounds out of ",
 					userContent.size ,
@@ -632,7 +634,7 @@ LNX_WebBrowser{
 		favourites = ("Browser Favourites".loadPref ?? {[
 			"https://www.google.com",
 			"http://www.findsounds.com/types.html",
-			"http://www.freesound.org/",
+			//"http://www.freesound.org/",
 			"https://www.youtube.com/",
 			"http://anything2mp3.com/",
 			"http://www.soundjay.com/",
@@ -659,7 +661,9 @@ LNX_WebBrowser{
 		favourites.do{|s| guiMenuFuncs = guiMenuFuncs.add({|me,gui| gui[\webView].url_(s) }) };
 		
 		guiMenuItems = guiMenuItems++["-", "Add to Favourites",
-			"Manage Favourites","-","Set Current Page as Home","-","Free Sound - API Key"];
+			"Manage Favourites","-","Set Current Page as Home",
+//			"-","Free Sound - API Key"
+		];
 	
 		guiMenuFuncs = guiMenuFuncs.add(nil);
 		
@@ -688,12 +692,12 @@ LNX_WebBrowser{
 			this.saveHomePage;
 		});
 		
-		guiMenuFuncs = guiMenuFuncs.add(nil);
-
-		// Free Sound - API Key
-		guiMenuFuncs = guiMenuFuncs.add({|me,gui,browser|
-			this.freeSoundAPIKey(me,gui,browser)
-		});
+//		guiMenuFuncs = guiMenuFuncs.add(nil);
+//
+//		// Free Sound - API Key
+//		guiMenuFuncs = guiMenuFuncs.add({|me,gui,browser|
+//			this.freeSoundAPIKey(me,gui,browser)
+//		});
 		
 	}
 	
@@ -865,7 +869,7 @@ LNX_WebBrowser{
 			.color_(\off,Color(1,1,1,0.5))
 			.action_{	
 				var url=gui[\text].string;
-				favourites=favourites.add(url.postln);
+				favourites=favourites.add(url);
 				this.makeMenus;
 				this.updateMenus;
 				this.saveFavourites;

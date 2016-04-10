@@ -241,7 +241,7 @@ MVC_Automation {
 			if (gui.notNil) {
 				gui[\seqIndex] = beat;
 				if (models[\follow].value.isTrue) {
-					models[\offset].valueAction_((beat/duration).clip(0,1));
+					models[\offset].lazyValueAction_((beat/duration).clip(0,1));
 				}{
 					this.refreshPointer;
 				};
@@ -296,7 +296,7 @@ MVC_Automation {
 	}
 
 	// clock 3 in form LNX_Studio
-	*clockIn3{|beat,absTime,latency|
+	*clockIn3{|beat,absTime,latency,absBeat|
 		
 		this.updateBeatRef(beat,absTime); // update beat ref if needed
 		beat     = beat.asInt;            // asInt to make sure identity in a dictionary
@@ -332,7 +332,7 @@ MVC_Automation {
 				if (gui.notNil) {
 					gui[\seqIndex] = beat;
 					if (models[\follow].value.isTrue && mouseUp) {
-						models[\offset].valueAction_((beat/duration).clip(0,1));
+						models[\offset].lazyValueAction_((beat/duration).clip(0,1));
 					}{
 						this.refreshPointer;
 					};
@@ -510,19 +510,45 @@ MVC_Automation {
 		}
 	}
 	
-	// (class) all Automations jump to beat in song
-	*jumpTo{|beat|
-		if (isPlaying) { allAutomations.do{|automation| automation.jumpTo(beat) } };
+	// new style jump, do events in order on time line
+	*jumpToEventsInOrder{|beat|
+		var events =[];
+		allAutomations.do{|automation|
+			var event = automation.collectEventBefore(beat);
+			if (event.notNil) { events=events.add(event) };
+		};
+		
+		events = events.sort{|a, b| a.beat <= b.beat };
+		
+		events.do{|event| event.bang(refAbsTime?0,\jumpTo) };
+		
 	}
 	
-	// jump to beat in song
+	// get the event but don't bang it unless a start event
+	collectEventBefore{|beat|
+		var event = this.findEventBefore(beat);
+		if (event==(-1)) {
+			this.reset;
+			^nil
+		}{
+			^event
+		};
+	}
+	
+	// (class) all Automations jump to beat in song
+	*jumpTo{|beat|
+		this.jumpToEventsInOrder(beat);
+		//if (isPlaying) { allAutomations.do{|automation| automation.jumpTo(beat) } };
+	}
+	
+	// jump to beat in song (this is not used now)
 	jumpTo{|beat|
 		var event = this.findEventBefore(beat);
 		overwrite = false; // stop overwrite	
 		if (event==(-1)) {
 			this.reset;
 		}{
-			event.bang(refAbsTime,\jumpTo);
+			event.bang(refAbsTime?0,\jumpTo);
 		};
 	}
 	
@@ -537,6 +563,22 @@ MVC_Automation {
 			}
 		};
 		^jumpTo
+	}
+	
+	// jump when to transport stopped
+	*jumpWhileStopped{|beat|
+		this.jumpToEventsInOrder(beat);
+		this.clearRef;
+		{
+			if (gui.notNil) {
+				gui[\seqIndex] = beat;
+				if (models[\follow].value.isTrue && mouseUp) {
+					models[\offset].lazyValueAction_((beat/duration).clip(0,1));
+				}{
+					this.refreshPointer;
+				};
+			}
+		}.defer;
 	}
 	
 	// GUI Widgets /////////////////////////////////////////////////////////////////////////////
@@ -668,7 +710,7 @@ MVC_Automation {
 		models[\zoom]      = [1,[1,inf],{gui[\graph].refresh}].asModel;  // zoom
 		models[\offset]    = [0,[0,1]  ,{MVC_Automation.lazyRefreshGUI}].asModel;  // offset
 		models[\quant]     = [0,[0,128,\lin,1], (label_:"Quantise:")].asModel;  // quantise
-		models[\penMode]   = [1,[0,3,\lin,1], (label_:"Pen Mode:")].asModel; // write or erase
+		models[\penMode]   = [2,[0,3,\lin,1], (label_:"Pen Mode:")].asModel; // write or erase
 		models[\follow]    = [0,\switch].asModel;
 		models[\barLength] = [32,[1,128,\lin,1],{gui[\graph].refresh},
 												(label_:"Bar (steps):")].asModel;
@@ -793,7 +835,7 @@ MVC_Automation {
 				};
 			
 		// offset
-		gui[\offset] = MVC_SmoothSlider(gui[\window],models[\offset],Rect(135, 405, 343, 20))
+		gui[\offset] = MVC_SmoothSlider(gui[\window],models[\offset],Rect(135, 405+15, 343, 20))
 			.thumbSizeAsRatio_(1)
 			.resize_(5)
 			.color_(\knob,Color(1,1,1,86/125))
@@ -811,14 +853,14 @@ MVC_Automation {
 			.action_{|me| if (selA.notNil) { studio.guiJumpTo( selA ) }};
 			
 		// follow
-		MVC_OnOffView(models[\follow], gui[\window],Rect(10, 405, 45, 20))
+		MVC_OnOffView(models[\follow], gui[\window],Rect(10, 405+15, 45, 20))
 			.strings_(["Follow"])
 			.rounded_(true)  
 			.color_(\on,Color(0.7,0.7,1,0.7))
 			.color_(\off,Color(0,0,0,0.5));
 		
 		// zoom out
-		MVC_OnOffView(gui[\window],Rect(60, 405, 20, 20),"-")
+		MVC_OnOffView(gui[\window],Rect(60, 405+15, 20, 20),"-")
 			.rounded_(true)  
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
@@ -828,7 +870,7 @@ MVC_Automation {
 			};
 			
 		// zoom in
-		MVC_OnOffView(gui[\window],Rect(85, 405, 20, 20),"+")
+		MVC_OnOffView(gui[\window],Rect(85, 405+15, 20, 20),"+")
 			.rounded_(true)  
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
@@ -843,7 +885,7 @@ MVC_Automation {
 			};
 		
 		// fit to window
-		MVC_OnOffView(gui[\window],Rect(110, 405, 20, 20),"=")
+		MVC_OnOffView(gui[\window],Rect(110, 405+15, 20, 20),"=")
 			.rounded_(true)  
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
@@ -852,7 +894,7 @@ MVC_Automation {
 				gui[\offset].thumbSizeAsRatio_(1/(models[\zoom].value));
 			};
 		
-		gui[\graph] = MVC_UserView(gui[\window], Rect(10, 120, 468, 280) )
+		gui[\graph] = MVC_UserView(gui[\window], Rect(10, 120, 468, 280+15) )
 		
 		// 0.0625 is max resoultion we would need when drawing
 		
@@ -867,19 +909,15 @@ MVC_Automation {
 					// if is same
 					gui[\automation].guiRemoveRangeMouse(lastMouseBeat,lastMouseBeat); 
 					if ((models[\penMode]==1)||(models[\penMode]==3)) {
-						lastMouseX = x;
-						
+						lastMouseX = x;			
 						lastY = ((h-y+4)/h).clip(0,1);
-						
 						lastMouseValue = controlSpec.map(lastY);
-						
-														
 						if (models[\penMode]==3) {
 							lastMouseValue=models[\aValue].value;
+							if (gui[\automation].model.isProgramModel) {
+								lastMouseValue=lastMouseValue-1
+							};
 						};
-							
-						
-						
 						gui[\automation].addEventMouse(lastMouseBeat,lastMouseValue);
 					}{
 						gui[\graph].refresh;
@@ -909,9 +947,11 @@ MVC_Automation {
 						if (models[\penMode]==3) {
 							stepSize=0;
 							thisMouseValue=models[\aValue].value;
+							if (gui[\automation].model.isProgramModel) {
+								thisMouseValue=thisMouseValue-1
+							};
 						};
-								
-								
+										
 						if ( ((x-lastMouseX)==0) or: {thisMouseValue==lastMouseValue}
 							or: {stepSize==0} or:{ models[\quant]>0 }) {
 							// add single event
@@ -938,7 +978,7 @@ MVC_Automation {
 			w=gui[\graph].view.bounds.width;
 			h=gui[\graph].bounds.height;
 			h2= h/2;
-			
+
 			Pen.use{
 
 				// background & horizontal ruler
@@ -1011,7 +1051,6 @@ MVC_Automation {
 							Pen.fillRect(Rect(x,1,w1,h-1));
 						};
 					};
-					
 					
 					if (low.asInt.odd) {
 						Pen.fillColor_(Color(1,1,1,0.3))
@@ -1250,5 +1289,71 @@ MVC_Automation {
 	}
 
 }
+
+// this silences .autoIn_ bug. bad neil you should find what is going on!
++ Nil { autoIn_{} } // why does nil get called with autoIn_ ?
+
+/*
+
+ERROR: Message 'autoIn_' not understood.
+RECEIVER:
+   nil
+ARGS:
+   nil
+CALL STACK:
+	DoesNotUnderstandError:reportError   0x13368e5e8
+		arg this = <instance of DoesNotUnderstandError>
+		var s = "ERROR: Message 'autoIn_' not..."
+	< closed FunctionDef >   0x133692c58
+		arg error = <instance of DoesNotUnderstandError>
+	Integer:forBy   0x179487e98
+		arg this = 0
+		arg endval = 52
+		arg stepval = 2
+		arg function = <instance of Function>
+		var i = 42
+		var j = 21
+	SequenceableCollection:pairsDo   0x18381a2d8
+		arg this = [*54]
+		arg function = <instance of Function>
+	Scheduler:seconds_   0x1a158b338
+		arg this = <instance of Scheduler>
+		arg newSeconds = 373.544973445
+	Meta_AppClock:tick   0x14fb81888
+		arg this = <instance of Meta_AppClock>
+		var saveClock = <instance of Meta_SystemClock>
+	Process:tick   0x180649508
+		arg this = <instance of Main>
+ERROR: Message 'autoIn_' not understood.
+RECEIVER:
+   nil
+ARGS:
+   nil
+CALL STACK:
+	DoesNotUnderstandError:reportError   0x1336d9e88
+		arg this = <instance of DoesNotUnderstandError>
+		var s = "ERROR: Message 'autoIn_' not..."
+	< closed FunctionDef >   0x1336d7bd8
+		arg error = <instance of DoesNotUnderstandError>
+	Integer:forBy   0x179487e98
+		arg this = 0
+		arg endval = 52
+		arg stepval = 2
+		arg function = <instance of Function>
+		var i = 44
+		var j = 22
+	SequenceableCollection:pairsDo   0x18381a2d8
+		arg this = [*54]
+		arg function = <instance of Function>
+	Scheduler:seconds_   0x1a158b338
+		arg this = <instance of Scheduler>
+		arg newSeconds = 373.544973445
+	Meta_AppClock:tick   0x14fb81888
+		arg this = <instance of Meta_AppClock>
+		var saveClock = <instance of Meta_SystemClock>
+	Process:tick   0x180649508
+		arg this = <instance of Main>
+
+*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

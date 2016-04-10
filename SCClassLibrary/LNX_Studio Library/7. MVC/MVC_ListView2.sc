@@ -1,8 +1,9 @@
 /*
 (
-w=MVC_Window().create;
+w=MVC_Window().setInnerExtent(170,320).color_(\background, Color.grey(0.2)).create;
 v=MVC_ListView2(w,Rect(10,10,150,300))
-	.items_(["a","b","c"]);
+	.items_(["a","b","c"])
+	.actions_(\upDoubleClickAction,{|val| val.postln; w.close})
 )
 
 v.hilite_(0,Color.red);
@@ -162,11 +163,13 @@ MVC_ListView2 : MVC_View {
 	}
 
 	addControls{
-		var val, val2;
+		var val, val2, clickCounts;
 
 		view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 			
 			var updateValue=true;
+			
+			clickCounts=clickCount;
 			
 			if (modifiers==524576) { buttonNumber=1 };
 			if (modifiers==262401) { buttonNumber=2 };
@@ -203,6 +206,25 @@ MVC_ListView2 : MVC_View {
 		};
 		view.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			if (editMode) { this.moveBy(x-startX,y-startY) };
+		};
+		
+		view.mouseUpAction_{|me,x, y, modifiers, buttonNumber, clickCount|
+
+			if (clickCounts==1) {
+				this.valueActions(\upSingleClickAction, this);
+				if (model.notNil) { model.valueActions(\upSingleClickAction,this) };
+			};
+						
+			if (clickCounts==2) {
+				this.valueActions(\upDoubleClickAction, this);
+				if (model.notNil) { model.valueActions(\upDoubleClickAction,this) };
+			};
+			
+			if (clickCounts==3) {
+				this.valueActions(\upTripleClickAction, this);
+				if (model.notNil) { model.valueActions(\upTripleClickAction,this) };
+			};
+			
 		};
 		
 		view.keyDownAction_{|me, char, modifiers, unicode|

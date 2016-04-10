@@ -24,7 +24,6 @@ MVC_PinSeqView : MVC_View {
 		view=SCUserView.new(window,rect)
 			.drawFunc={|me|
 				var w2,h2, rect2, x2;
-				
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					

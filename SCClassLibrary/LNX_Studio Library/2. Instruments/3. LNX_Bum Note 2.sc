@@ -21,8 +21,8 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 		<voicer,				<monoSynth, 		<monoSynthNode,
 		<phase=1,				<noteID=0,		<noteIDServer=0;
 	
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Bum Note 2"}
@@ -40,12 +40,12 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	}
 	
 	// an immutable list of methods available to the network
-	interface{^#[]} // only the standard api is needed with bn2 
+	interface{^#[\netPipeIn]} // only the standard api is needed with bn2 
 
 	// the models
 	initModel {
 		writeIndexModel = [0,[0,inf,\lin,1]].asModel;
-		lfoModelA       = [0,[0,2]].asModel.fps_(20); // the 4 models below are the visual feedback
+		lfoModelA       = [0,[0,2]].asModel.fps_(20); // the 4 models below r the visual feedback
 		lfoModelB       = [0,[0,2]].asModel.fps_(20); // from the server to sclang for the 2 lfos
 		lowModel        = \freq.asModel.fps_(20);     // and the two filters
 		highModel       = \freq.asModel.fps_(20);
@@ -66,7 +66,8 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 					var note;
 					if (instOnSolo.isOn) {
 						this.ampGateOn(studio.actualLatency); // turn the gate on
-						if (p[55].isTrue) { this.filterGateOn(studio.actualLatency) }; // filter
+						// filter
+						if (p[55].isTrue) { this.filterGateOn(studio.actualLatency) };
 						note=lastNotePlayedBySeq; // because note below is in a defer
 						
 						if ((p[38].isTrue)and:{lastNotePlayedByMIDI.notNil}) {
@@ -625,7 +626,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(72,val,latency,send);
 					voicer.poly_(val);
-					voicer.limitPoly(latency ? studio.actualLatency,0);
+					voicer.limitPoly( (latency ? studio.actualLatency)+! syncDelay,0);
 				}],
 				
 			// 73. MIDI NoteOn Velocity > Velocity
@@ -636,12 +637,60 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 			[1, \unipolar, (\label_:"Vel", zeroValue_:1), midiControl, 74, "Velocity to Amp",
 				{|me,val,latency,send| this.setSynthArgVP(74,val,\velAmp,val,latency,send) }],
 					
+			// 75. SyncOnLfoA	- lfoSyncOnA
+			[0, \switch, midiControl, 75, "LFO A Sync",(\strings_:["S","S"]),
+				{|me,val,latency,send|
+					this.setLFOArgVP(75,val,\lfoSyncOnA,val,latency,send);
+					if (val.isTrue) {
+						gui[\lfoKnobA].model_(models[76])
+					}{
+						gui[\lfoKnobA].model_(models[6])
+					};		
+				}],
+					
+			// 76. SyncBeatLfoA -> lfoSyncDurA
+			[2, [32,1,\linear,1], midiControl, 76, "LFO A Sync Speed",
+				(\label_:"Speed",\numberFunc_:\int),
+				{|me,val,latency,send|
+					this.setLFOArgVP(76,val,\lfoSyncDurA, 60*val/bpm/8 ,latency,send)
+				}],
+				
+			///////// 
+				
+			// 77. SyncOnLfoB	- lfoSyncOnB
+			[0, \switch, midiControl, 77, "LFO B Sync",(\strings_:["S","S"]),
+				{|me,val,latency,send|
+					this.setLFOArgVP(77,val,\lfoSyncOnB,val,latency,send);
+					if (val.isTrue) {
+						gui[\lfoKnobB].model_(models[78])
+					}{
+						gui[\lfoKnobB].model_(models[64])
+					};		
+				}],
+						
+			// 78. SyncBeatLfoB -> lfoSyncDurB
+			[2, [32,1,\linear,1], midiControl, 78, "LFO B Sync Speed",
+				(\label_:"Speed",\numberFunc_:\int),
+				{|me,val,latency,send|
+					this.setLFOArgVP(78,val,\lfoSyncDurB, 60*val/bpm/8 ,latency,send)
+				}],
+				
+			// 79. syncDelay
+			[\sync, {|me,val,latency,send|
+				this.setPVPModel(79,val,latency,send);
+				this.syncDelay_(val);
+			}],
+			
+			// 80.network keyboard
+			[0, \switch, midiControl, 80, "Network", (strings_:["Net"]),
+				{|me,val,latency,send|	this.setPVH(80,val,latency,send) }],
+								
 		].generateAllModels;
 
 		// list all parameters you want exluded from a preset change
-		presetExclusion=[0,1,40,58,59];
-		randomExclusion=[0,1,2,11,12,27,28,29,30,40,44,58,59];
-		autoExclusion=[];
+		presetExclusion=[0,1,40,58,59,79];
+		randomExclusion=[0,1,2,11,12,27,28,29,30,40,44,58,59,79];
+		autoExclusion=[79];
 		
 		// networked pianoRoll
 		pianoRoll = LNX_PianoRollSequencer(id++\pR)
@@ -651,9 +700,9 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 			.offAction_{|note,velocity,latency|
 				this.noteOff2(note, velocity*127,latency);
 			}
-			.releaseAllAction_{ voicer.releaseAllNotes(studio.actualLatency) }
+			.releaseAllAction_{ voicer.releaseAllNotes(studio.actualLatency +! syncDelay) }
 			.keyDownAction_{|me, char, modifiers, unicode, keycode|
-				gui[\keyboardView].view.keyDownAction.value(me,char, modifiers, unicode, keycode)
+			    gui[\keyboardView].view.keyDownAction.value(me,char, modifiers, unicode, keycode)
 			}
 			.keyUpAction_{|me, char, modifiers, unicode, keycode|
 				gui[\keyboardView].view.keyUpAction.value(me, char, modifiers, unicode, keycode)
@@ -664,23 +713,18 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 
 	}
 	
-	// is the synth isn mono or poly mode
-	isMono{^p[71].isFalse}
-	isPoly{^p[71].isTrue}
-	
-	// peak / target volume model
-	peakModel{^models[44]}
-	
-	// return the volume model
-	volumeModel{^models[2] }
-	outChModel{^models[29]}
-	
-	soloModel{^models[0]}
-	onOffModel{^models[1]}
-	panModel{^models[26]}
-	
-	sendChModel{^models[30]}
+	// access to models
+	isMono      {^p[71].isFalse}
+	isPoly      {^p[71].isTrue}
+	peakModel   {^models[44]}
+	volumeModel {^models[2] }
+	outChModel  {^models[29]}
+	soloModel   {^models[0]}
+	onOffModel  {^models[1]}
+	panModel    {^models[26]}
+	sendChModel {^models[30]}
 	sendAmpModel{^models[31]}
+	syncModel   {^models[79]}
 	
 	// your own vars
 	iInitVars{
@@ -714,9 +758,8 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	setLFOArgVP{|index,value,synthArg,argValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-
-		server.sendBundle(latency,[\n_set, node, synthArg, argValue]);
-
+		if (node.notNil) { server.sendBundle(latency +! syncDelay,
+			[\n_set, node, synthArg, argValue]) };
 		if ((network.isConnected)and:{send}) {
 			api.sendVP((id+""++index).asSymbol,\netSynthArg,index,value,synthArg,argValue);
 		};
@@ -726,15 +769,17 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	setSynthArgVP{|index,value,synthArg,argValue,latency,send|
 		send = send ? true;
 		p[index]=value;
-		
 		if (this.isMono) {
-			server.sendBundle(latency,[\n_set, monoSynthNode, synthArg, argValue]);
+			if (monoSynthNode.notNil) {
+				server.sendBundle(latency +! syncDelay,
+					[\n_set, monoSynthNode, synthArg, argValue]);
+			};
 		}{
 			voicer.allNodes.do{|voicerNode|
-				server.sendBundle(latency,[\n_set, voicerNode.node, synthArg, argValue]);
+				server.sendBundle(latency +! syncDelay,
+					[\n_set, voicerNode.node, synthArg, argValue]);
 			};	
 		};
-		
 		if ((network.isConnected)and:{send}) {
 			api.sendVP((id+""++index).asSymbol,\netSynthArg,index,value,synthArg,argValue);
 		};
@@ -746,7 +791,9 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 			p[index]=value;
 			models[index].lazyValue_(value,false);
 			if (this.isMono) {
-				server.sendBundle(nil,[\n_set, monoSynthNode, synthArg, argValue]);
+				if (monoSynthNode.notNil) {
+					server.sendBundle(nil,[\n_set, monoSynthNode, synthArg, argValue]);
+				};
 			}{
 				voicer.allNodes.do{|voicerNode|
 					server.sendBundle(nil,[\n_set, voicerNode.node, synthArg, argValue]);
@@ -758,10 +805,14 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	// called from the models to update synth arguments
 	updateSynthArg{|synthArg,argValue,latency|
 		if (this.isMono) {
-			server.sendBundle(latency,[\n_set, monoSynthNode, synthArg, argValue]);
+			if (monoSynthNode.notNil) {
+				server.sendBundle(latency +! syncDelay,
+					[\n_set, monoSynthNode, synthArg, argValue]);
+			};
 		}{
 			voicer.allNodes.do{|voicerNode|
-				server.sendBundle(latency,[\n_set, voicerNode.node, synthArg, argValue]);
+				server.sendBundle(latency +! syncDelay,
+					[\n_set, voicerNode.node, synthArg, argValue]);
 			};	
 		};
 	}
@@ -769,17 +820,24 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	// set main body args, no network here
 	updateSynthArgN{|synthArg,list,latency|
 		if (this.isMono) {
-			server.sendBundle(latency,[\n_setn, monoSynthNode, synthArg] ++ list);
+			if (monoSynthNode.notNil) {
+				server.sendBundle(latency +! syncDelay,
+					[\n_setn, monoSynthNode, synthArg] ++ list);
+			};
 		}{
 			voicer.allNodes.do{|voicerNode|
-				server.sendBundle(latency,[\n_setn, voicerNode.node, synthArg] ++ list);
+				server.sendBundle(latency +! syncDelay,
+					[\n_setn, voicerNode.node, synthArg] ++ list);
 			};	
 		};	
 	}
 	
 	// called from the models to update synth arguments
 	updateLFOArg{|synthArg,val,latency|
-		server.sendBundle(studio.actualLatency,[\n_set,node,synthArg,val]);
+		if (node.notNil) {
+			server.sendBundle(studio.actualLatency +! syncDelay,
+				[\n_set,node,synthArg,val]);
+		};
 	}
 	
 	///////////////////////////
@@ -871,12 +929,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	}
 	
 	// anything else that needs doing after a load. all paramemters will be loaded by here
-	iPostLoad{
-		// temp fix to use the right filter
-		this.stopDSP;
-		this.startDSP;
-		this.updateDSP;
-	}
+	iPostLoad{}
 	
 	iPostInit{}
 	
@@ -933,12 +986,20 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 			arg	lfoFreqA=1, 		lfoSlopeA=1,		lfoWaveA=0,
 				lfoSandHA=0,		lfoFreqB=1, 		lfoSlopeB=1,
 				lfoWaveB=0,		lfoSandHB=0,		clockIn,
-				lfoOutChannel,	id;
+				lfoOutChannel,	id,
+				
+				lfoSyncOnA, 		lfoSyncDurA=1, 	lfoSyncGateA=0,
+				
+				lfoSyncOnB, 		lfoSyncDurB=1, 	lfoSyncGateB=0;
 			
-			var	lfoOutA,	lfoOutB;
+			var	lfoOutA,	lfoOutB, sig;
 			
-			// LFO A			
-			lfoOutA = LFSaw.ar(lfoFreqA); 		// ar!!
+			// LFO A				
+			lfoOutA = Select.ar(lfoSyncOnA, [
+				LFSaw.ar(lfoFreqA) ,
+				EnvGen.ar( Env([-1,-1,1],[0,1]) ,lfoSyncGateA,1,0,lfoSyncDurA,0)
+			]);
+			
 			lfoOutA = (lfoOutA.abs**lfoSlopeA) * (lfoOutA.sign); // slope
 			lfoOutA = Select.ar(lfoWaveA, [
 				sin (lfoOutA + 1 * (0.5 * 2pi)),	// sine
@@ -954,8 +1015,12 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 				Latch.ar(lfoOutA, Slope.kr((clockIn/ (lfoSandHA.clip(1,9999)) ).floor)) 
 			]);
 						
-			// LFO B
-			lfoOutB = LFSaw.ar(lfoFreqB); 		// ar!!
+			// LFO B	
+			lfoOutB = Select.ar(lfoSyncOnB, [
+				LFSaw.ar(lfoFreqB),
+				EnvGen.ar( Env([-1,-1,1],[0,1]) ,lfoSyncGateB,1,0,lfoSyncDurB,0)
+			]);
+			
 			lfoOutB = (lfoOutB.abs**lfoSlopeB) * (lfoOutB.sign); // slope
 			lfoOutB = Select.ar(lfoWaveB, [
 				sin (lfoOutB + 1 * (0.5 * 2pi)),	// sine
@@ -1058,7 +1123,8 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 						* (fmAmp.dbamp / pi * 0.835);                              
 						
 			// mix it all together
-			out  = (out1 + out2 + outPink + outFM) * (AmpComp.ar(pitch + lfoPitch).clip(0,2))*0.2;
+			out  = (out1 + out2 + outPink + outFM)
+					* (AmpComp.ar(pitch + lfoPitch).clip(0,2))*0.2;
 			
 			// and leak any dc to stop filter noise (from pulse)
 			out = LeakDC.ar(out);
@@ -1094,7 +1160,8 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 			out = Select.ar(eqHi,[out, BHiShelf.ar (out, 3905, 1, 12)]);
 						
 			// and the amp env
-			out = out * ampEnv * Lag.kr(velocity.linlin(0,1,velAmp,1) * ((q+1) * (qAmp*amp*7.5)));
+			out = out * ampEnv * Lag.kr(
+						velocity.linlin(0,1,velAmp,1) * ((q+1) * (qAmp*amp*7.5)));
 			
 			// phase flips from 1 to -1 for alternate notes, this helps removes phase spikes
 			// and easily doubles the dynamic range when multiple notes are played together
@@ -1191,7 +1258,8 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 						* (fmAmp.dbamp / pi * 0.835);                              
 						
 			// mix it all together
-			out  = (out1 + out2 + outPink + outFM) * (AmpComp.ar(pitch + lfoPitch).clip(0,2))*0.2;
+			out  = (out1 + out2 + outPink + outFM)
+					* (AmpComp.ar(pitch + lfoPitch).clip(0,2))*0.2;
 			
 			// and leak any dc to stop filter noise (from pulse)
 			out = LeakDC.ar(out);
@@ -1227,7 +1295,8 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 			out = Select.ar(eqHi,[out, BHiShelf.ar (out, 3905, 1, 12)]);
 						
 			// and the amp env
-			out = out * ampEnv * Lag.kr(velocity.linlin(0,1,velAmp,1) * ((q+1) * (qAmp*amp*7.5)));
+			out = out * ampEnv * Lag.kr(
+						velocity.linlin(0,1,velAmp,1) * ((q+1) * (qAmp*amp*7.5)));
 
 			// now send out
 			Out.ar(outputChannels,Pan2.ar(out,pan));
@@ -1245,8 +1314,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	// start the synth
 	startDSP{
 		lfoBus = Bus.audio(server,2); 
-		synth  = Synth.head(groups[\lfo ], "BumNote_LFO",
-			[\lfoOutChannel, lfoBus.index, \id, id] );
+		synth  = Synth.head(groups[\lfo ],"BumNote_LFO", [\lfoOutChannel, lfoBus.index, \id, id]);
 		node   = synth.nodeID;
 		this.switchPoly;
 	}
@@ -1254,8 +1322,8 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	// used to update when switching between between mono and poly
 	switchPoly{
 		if (this.isMono) {
-			voicer.releaseAllNotes(studio.actualLatency); // and any poly notes
-			voicer.killAllNotes(studio.actualLatency);
+			voicer.releaseAllNotes(studio.actualLatency +! syncDelay); // and any poly notes
+			voicer.killAllNotes(studio.actualLatency +! syncDelay);
 			// start the monoSynth
 			monoSynth = Synth.head(groups[\inst], "BumNote_MonoBody",
 				[\lfoOutChannel, lfoBus.index, \gate, 0, \id, id, \noteID, 0] );
@@ -1272,8 +1340,9 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	stopDSP{
 		synth.free;
 		monoSynth.free;
-		voicer.releaseAllNotes(studio.actualLatency);
-		voicer.killAllNotes(studio.actualLatency);
+		//lfoBus.free;
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
+		voicer.killAllNotes(studio.actualLatency +! syncDelay);
 	}
 	
 	// get the args for the synth body
@@ -1333,6 +1402,10 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 		[\lfoFreqB,      p[64]             ],
 		[\lfoSlopeB,     p[65]             ],
 		[\lfoSandHB,     p[66]             ],
+		[\lfoSyncOnA,    p[75]             ],
+		[\lfoSyncDurA,   60*p[76]/bpm/8    ],
+		[\lfoSyncOnB,    p[77]             ],
+		[\lfoSyncDurB,   60*p[78]/bpm/8    ],
 	]}
 	
 	
@@ -1348,24 +1421,27 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 		#amp,val=this.getQandAmp(val); // filter q and amp adjust for filter q
 		
 		// lfo stuff
-		server.sendBundle(latency, *this.getLFOArgs.collect{|i| [\n_set, node]++i } );
+		server.sendBundle(latency +! syncDelay, *this.getLFOArgs.collect{|i| [\n_set, node]++i } );
 		
 		if (this.isMono) {
 			// mono body update
-			server.sendBundle(latency,
+			server.sendBundle(latency +! syncDelay,
 				*this.getSynthArgs.collect{|i| [\n_set, monoSynthNode]++i } );
 			// ADSR, LP & HP envs
-			server.sendBundle(latency,[\n_setn, monoSynthNode, \newAmpEnv     ] ++
+			server.sendBundle(latency +! syncDelay,[\n_setn, monoSynthNode, \newAmpEnv     ] ++
 				(this.getAmpEnvList));
-			server.sendBundle(latency,[\n_setn, monoSynthNode, \newFilterEnv  ] ++
+			server.sendBundle(latency +! syncDelay,[\n_setn, monoSynthNode, \newFilterEnv  ] ++
 				(this.getLPEnvList));
-			server.sendBundle(latency,[\n_setn, monoSynthNode, \newFilterEnvHP] ++
+			server.sendBundle(latency +! syncDelay,[\n_setn, monoSynthNode, \newFilterEnvHP] ++
 				(this.getHPEnvList));
 		}{
 			// ADSR, LP & HP envs
-			server.sendBundle(latency,[\n_setn, node, \newAmpEnv     ] ++ (this.getAmpEnvList));
-			server.sendBundle(latency,[\n_setn, node, \newFilterEnv  ] ++ (this.getLPEnvList));
-			server.sendBundle(latency,[\n_setn, node, \newFilterEnvHP] ++ (this.getHPEnvList));
+			server.sendBundle(latency +! syncDelay,
+				[\n_setn, node, \newAmpEnv     ] ++ (this.getAmpEnvList));
+			server.sendBundle(latency +! syncDelay,
+				[\n_setn, node, \newFilterEnv  ] ++ (this.getLPEnvList));
+			server.sendBundle(latency +! syncDelay,
+				[\n_setn, node, \newFilterEnvHP] ++ (this.getHPEnvList));
 			
 		};
 
@@ -1378,6 +1454,10 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 
 	}
 	
+	updateOut{|latency|	
+		this.instOutChannel_(LNX_AudioDevices.getOutChannelIndex(p[29]),latency);
+	}
+	
 	// play a poly note
 	polyNoteOn{|note,velocity,latency|
 		var voicerNode;
@@ -1386,7 +1466,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 		if ((instOnSolo.isOff)or:{this.isMono}or:(note<p[27])or:{note>p[28]}) {^nil};
 		
 		// get the next next node from the voicer
-		voicerNode = voicer.noteOn(note, velocity, latency); // create a voicer node
+		voicerNode = voicer.noteOn(note, velocity, latency +! syncDelay); // create a voicer node
 		
 		noteIDServer=noteIDServer+1;          // we have a seperate holder for nodeID
 		{noteID=noteID+1;nil}.sched(latency); // to sync with the server
@@ -1394,7 +1474,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 		phase=phase.neg; // flip phase to prevent phase spikes when multiple notes are played
 		                 // this really helps increase the dynamic range of the poly synth					 
 		// send the synth to the server
-		server.sendBundle(latency,
+		server.sendBundle(latency +! syncDelay,
 			[\s_new, "BumNote_PolyBody", voicerNode.node, 0, groups[\inst].nodeID] ++
 			[\pitch , this.getNote(note), \gate, 1, \id, id, \filterGate, p[55], \phase, phase,
 			\velocity, velocity, \noteID, noteIDServer] 
@@ -1416,15 +1496,17 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 		// drop if off, mono or out of range 
 		if ((instOnSolo.isOff)or:{this.isMono}or:(note<p[27])or:{note>p[28]}) {^nil};
 		// get the voicer to release it
-		voicer.releaseNote(note,latency);
+		voicer.releaseNote(note,latency +! syncDelay);
 		this.setKeyColorOffPoly(note,latency);
 	}
 	
 	// the internal sequenced paramemters, this is going out to the server
 			
-	// trigger the amplitude envelope
+	// trigger the amplitude envelope 
 	ampGateOn{|latency|
-		server.sendBundle(latency,[\n_set, monoSynthNode, \gate, 1]);
+		if (monoSynthNode.notNil) {
+			server.sendBundle(latency +! syncDelay,[\n_set, monoSynthNode, \gate, 1]);
+		};
 		{gui[\noteOnLamp].on}.defer(latency);
 		this.setKeyColorOn(notePlaying,latency);
 		ampGateOpen=true;
@@ -1433,7 +1515,9 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	// close the amplitude envelope
 	ampGateOff{|latency|
 		// slightly early before next noteOn event from seq
-		server.sendBundle(latency,[\n_set, monoSynthNode, \gate, 0]);
+		if (monoSynthNode.notNil) {
+			server.sendBundle(latency +! syncDelay,[\n_set, monoSynthNode, \gate, 0]);
+		};
 		{gui[\noteOnLamp].off}.defer(latency);
 		this.setKeyColorOff(latency);
 		ampGateOpen=false;
@@ -1441,8 +1525,12 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	
 	// trigger the filter envelope
 	filterGateOn{|latency|
-		server.sendBundle(latency,[\n_set, monoSynthNode, \filterGate, 1]);
-		{server.sendBundle(latency,[\n_set, monoSynthNode, \filterGate, 0]);nil;}.sched(0.01);
+		if (monoSynthNode.notNil) {
+			server.sendBundle(latency +! syncDelay,
+				[\n_set, monoSynthNode, \filterGate, 1]);
+			{server.sendBundle(latency +! syncDelay,
+				[\n_set,monoSynthNode, \filterGate, 0]);nil;}.sched(0.01);
+		};
 		{
 			gui[\filtEnvLamp1].on;
 			gui[\filtEnvLamp2].on;
@@ -1468,14 +1556,20 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	
 	// sends new note to synth (mono)
 	setPitch{|pitch=60,slide=0,latency|
-		server.sendBundle(latency,
-			[\n_set, monoSynthNode, \pitch , pitch], [\n_set, monoSynthNode, \slide , p[19]*slide]
-		);
+		if (monoSynthNode.notNil) {
+			server.sendBundle(latency +! syncDelay,
+				[\n_set, monoSynthNode, \pitch, pitch],
+				[\n_set, monoSynthNode, \slide, p[19]*slide]
+			);
+		};
 	}
 	
 	// set the filter pitch, this is called by the velocity step sequencer
 	setVelocity{|velocity|
-		server.sendBundle(studio.actualLatency,[\n_set, monoSynthNode, \velocity, velocity]);
+		if (monoSynthNode.notNil) {
+			server.sendBundle(studio.actualLatency +! syncDelay,
+				[\n_set, monoSynthNode, \velocity, velocity]);
+		};
 	}
 	
 	// only allows 1 coloured key at a time
@@ -1512,9 +1606,36 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 
 	// noteOn or noteOff events //////////////////
 	
+	iInitMIDI{ this.useMIDIPipes }
+	
+	pipeIn{|pipe|
+		// exceptions
+		if (instOnSolo.isOff)           {^this};  // drop if sequencer off
+		if (pipe.historyIncludes(this)) {^this}; // drop to prevent internal feedback loops
+		
+		if (pipe.isNoteOn) { this.noteOn(pipe.note, pipe.velocity, pipe.latency) };
+		if (pipe.isNoteOff) { this.noteOff(pipe.note, pipe.velocity, pipe.latency) };
+		
+		// network if needed		
+		if ((p[80].isTrue) and:
+			{#[\external, \controllerKeyboard, \MIDIIn, \keyboard].includes(pipe.source)}) {
+				if (((pipe.source==\controllerKeyboard) and:{studio.isCntKeyboardNetworked}).not) 
+					{ api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}
+		};
+		
+	}
+	
+	// networked midi pipes	
+	netPipeIn{|type,note,velocity|
+		switch (type.asSymbol)
+			{\noteOn } { this.pipeIn(LNX_NoteOn(note,velocity,nil,\network)) }
+			{\noteOff} { this.pipeIn(LNX_NoteOff(note,velocity,nil,\network)) }
+		;
+	}
+	
 	// stops all notes in either mono or poly mode
 	stopAllNotes{
-		voicer.releaseAllNotes(studio.actualLatency+0.02);
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay +0.02);
 		//voicer.killAllNotes(studio.actualLatency); // this doesn't always kill, why?
 		notesOn=[];	
 		this.ampGateOff(studio.actualLatency+0.02); // slightly later to catch all
@@ -1527,6 +1648,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	// need to add a midi out latency option for other //////////////////
 	// internal sequencers using internal midi ports
 	
+
 	// from midiIn
 	noteOn{|note, velocity,latency|
 		pianoRoll.noteOn(note,velocity/127);
@@ -1564,9 +1686,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	// actual monoNoteON method from midi and gui keyboard
 	monoNoteON{|note, velocity,latency,setColor=true|
 		var x,index;
-
 		var recIndex;
-
 
 		if ((latency.notNil)and:{latency>0}) {
 			recIndex = studio.beat.div(3);
@@ -1674,6 +1794,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 				
 			}{
 				// if MIDI NoteOn > Env gate
+				if (latency.isNumber) { latency=latency-0.02 };
 				if (p[35].isTrue) { this.ampGateOff(latency) };
 			};
 		};
@@ -1688,35 +1809,89 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	
 	//clockIn is the clock pulse, with the current song pointer in beats
 	clockIn{|beat,latency|	
-		sequencers.do{|seq,n|
+		sequencers[0..5].do{|seq,n|
 			if ((((n>=3)and:{n<=5})and:{p[60].isTrue}).not) {
 				seq.clockIn(beat,latency);
 			};			
+		};		
+		if (node.notNil) { server.sendBundle(latency +! syncDelay,
+			[\n_set, node, \clockIn, beat]) };
+		if (this.isRecording) { {recordIndex=beat;nil}.sched(latency) };
+		
+		// synced lfos
+		if ( (beat%p[76])==0 ) {
+			if (node.notNil) { server.sendBundle(latency +! syncDelay,
+				[\n_set, node, \lfoSyncGateA, 1]) };
+			{
+				if (node.notNil) { server.sendBundle(latency+! syncDelay,
+					[\n_set, node, \lfoSyncGateA, 0])};
+				nil;
+			}.sched(0.01);
 		};
-		server.sendBundle(latency,[\n_set, node, \clockIn, beat]);
-		if (this.isRecording) {
-			{recordIndex=beat;nil}.sched(latency);
-		};
+
+		if ( (beat%p[78])==0 ) {
+			if (node.notNil) { server.sendBundle(latency +! syncDelay,
+				[\n_set, node, \lfoSyncGateB, 1]) };
+			{
+				if (node.notNil) { server.sendBundle(latency +! syncDelay,
+					[\n_set, node, \lfoSyncGateB, 0])};
+				nil;
+			}.sched(0.01);
+		};		
+		
 	}	
 	
 	// midi clock in (this is at MIDIClock rate)
-	clockIn3 {|beat,absTime,latency| pianoRoll.clockIn3(beat,absTime,latency) }
+	clockIn3 {|beat,absTime,latency,absBeat| pianoRoll.clockIn3(beat,absTime,latency,absBeat) }
 	
 	// this clock is playing when a song is not playing, used in lfos 
 	clockOff{|beat,latency|
-		server.sendBundle(latency,[\n_set, node, \clockIn, beat]);
+		if (node.notNil) { server.sendBundle(latency +! syncDelay,
+			[\n_set, node, \clockIn, beat]) };
+		
+		// synced lfos
+		if ( (beat%p[76])==0 ) {
+			if (node.notNil) { server.sendBundle(latency +! syncDelay,
+				[\n_set, node, \lfoSyncGateA, 1]) };
+			{
+				if (node.notNil) { server.sendBundle(latency +! syncDelay,
+					[\n_set, node, \lfoSyncGateA, 0])};
+				nil;
+			}.sched(0.01);
+		};
+
+		if ( (beat%p[78])==0 ) {
+			if (node.notNil) { server.sendBundle(latency +! syncDelay,
+				[\n_set, node, \lfoSyncGateB, 1]) };
+			{
+				if (node.notNil) { server.sendBundle(latency +! syncDelay,
+					[\n_set, node, \lfoSyncGateB, 0])};
+				nil;
+			}.sched(0.01);
+		};
+		
 	} 
+	
+	// called from a studio bpm change
+	bpmChange{
+		if (node.notNil) {
+			server.sendBundle(studio.actualLatency +! syncDelay,
+				[\n_set, node, \lfoSyncDurA, 60*p[76]/bpm/8]);
+			server.sendBundle(studio.actualLatency +! syncDelay,
+				[\n_set, node, \lfoSyncDurB, 60*p[78]/bpm/8]);
+		};
+	}
 	
 	clockPlay{ }		//play and stop are called from both the internal and extrnal clock
 	clockStop{
 		pianoRoll.clockStop(studio.actualLatency);
-		voicer.killAllNotes(studio.actualLatency);
+		voicer.killAllNotes(studio.actualLatency +! syncDelay);
 		sequencers.do(_.clockStop(studio.actualLatency));
 		this.stopAllNotes;
 	}	
 	clockPause{
 		pianoRoll.clockPause(studio.actualLatency);
-		voicer.releaseAllNotes(studio.actualLatency);
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
 		sequencers.do(_.clockPause(studio.actualLatency));
 		this.stopAllNotes;
 	}		// pause only comes the internal clock
@@ -1724,11 +1899,11 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	// when pop resets beat
 	clockReset{|latency|
 		pianoRoll.clockPause(studio.actualLatency);
-		voicer.releaseAllNotes(studio.actualLatency);
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
 		sequencers.do(_.clockPause(studio.actualLatency));
 		
 		
-		voicer.releaseAllNotes(studio.actualLatency);
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
 		notesOn=[];	
 		this.ampGateOff(studio.actualLatency-0.002); // slightly early
 		{

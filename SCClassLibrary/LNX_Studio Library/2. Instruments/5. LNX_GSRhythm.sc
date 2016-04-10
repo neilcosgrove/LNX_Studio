@@ -43,8 +43,8 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		};
 	}
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"GS Rhythm"}
@@ -75,10 +75,19 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 					models[100+i].doValueAction_(13,send:send);
 					models[108+i].doValueAction_(v,send:send);
 				}
-				.itemAction_{|bank,items,send=false| // i don't think send is needed here
-					// when a sample is added or removed from the bank
+				// i don't think send is needed here
+				.itemAction_{|bank,items,send=false,updateBank=true| 					// when a sample is added or removed from the bank
 					this.updateSampleControlSpec(i);
-					models[100+i].doValueAction_(13,send:send);// send was true
+					if (updateBank) {
+						models[100+i].doValueAction_(13,send:send);// send was true
+					};				
+					{
+						models[108+i]
+							.dependantsPerform(\items_,bank.names)
+							.dependantsPerform(\value_,p[108+i])
+							.dependantsPerform(\freshAdaptor);
+					}.defer;
+					
 				}
 				.title_("User: "++((i+1).asString))
 		} ! defaultChannels;
@@ -301,13 +310,13 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	
 	// for your own loading
 	iPutLoadList{|l,noPre,loadVersion,templateLoadVersion|
-		var channels;		
+		var channels;
 		channels=l.popI; // not really used yet 
 		sequencers.do{|s| s.putLoadList(l.popEND("*** END OBJECT DOC ***")) };
 		modSequencers.do{|s| s.putLoadList(l.popEND("*** END OBJECT DOC ***")) };
 		if (loadVersion>=1.5) {
 			userBanks.do{|bank,i|
-				bank.putLoadListURL( l.popEND("*** END URL Bank Doc ***") );
+				bank.putLoadListURL( l.popEND("*** END URL Bank Doc ***"), updateBank:false );
 			}		
 		};
 	}
@@ -525,7 +534,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		sequencers.do(_.clockIn(beat,latency));	 // the bundles are then made here
 	
 		// then play the bundles so choke has a chance to work on the other channels
-		voicer.playAll(latency, {|channel,velocity|
+		voicer.playAll(latency +! syncDelay, {|channel,velocity|
 			this.bangMIDI(channel,velocity,latency);
 			{gui[\lamps][channel].value_(chokeLamp[channel][0],0.1)}.defer(chokeLamp[channel][1]);
 		});
@@ -533,6 +542,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	}
 	
 	// temp to hook up volca beats
+	// now used to send midi out
 	bangMIDI{|channel,velocity, latency, volume=1|
 		midi.noteOn(channel+44, velocity*127, latency);
 		{
@@ -543,6 +553,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	
 	// reset sequencers posViews
 	clockStop {
+		voicer.releaseAll;
 		sequencers.do(_.clockStop(studio.actualLatency));
 		modSequencers.do(_.clockStop(studio.actualLatency));
 	}
@@ -623,7 +634,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		masterSendAmp      = this.getSynthArg(\masterSendAmp,i);
 		masterSendChannels = this.getSynthArg(\masterSendChannels,i);
 
-		voicer.killChannelNow(i,latency); // kill previous if it exists (mono)
+		voicer.killChannelNow(i,latency +! syncDelay); // kill previous if it exists (mono)
 		
 		// am i a grain player?
 		isGrainPlayer=(p[148+i]==1);	
@@ -699,16 +710,16 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		
 		};
 				
-		voicer.choke(i,latency); // choke other channels as needed
+		voicer.choke(i,latency +! syncDelay); // choke other channels as needed
 		
 		// play it if not from this internal sequencer, else play it from clockIn
 		if (internalSeq.not) {
 			if (latency.isNil) {
-				voicer.play(i,latency); // if from gui or extrnal midi
+				voicer.play(i,latency +! syncDelay); // if from gui or extrnal midi
 			}{
 				// else from another internal sequencer (use slight delay method to allow choke)
 				{
-					voicer.play(i,latency-0.001);
+					voicer.play(i,latency +! syncDelay -0.001);
 					nil;
 				}.sched(0.001);
 			};
@@ -790,7 +801,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		var value=synthArgFuncs[synthArg].value(i);
 		if (value!=synthArgValues[i][synthArg]) {
 			synthArgValues[i][synthArg]=value;	
-			voicer.setArg(i,\samplePlayer, synthArg, value, latency);
+			voicer.setArg(i,\samplePlayer, synthArg, value, latency +! syncDelay);
 		}
 	}
 	
@@ -853,7 +864,9 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	
 	// will these need latency... prob espically with syncs now!!
 	setFilterArg{|synthArg,i,val,latency|
-		server.sendBundle(latency, [\n_set, filterNodes[i], synthArg, val ] )
+		if (filterNodes.notNil) {
+			server.sendBundle(latency, [\n_set, filterNodes[i], synthArg, val ] )
+		}
 	}
 	
 	
@@ -879,7 +892,9 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		if (filterOn) {
 			filterOffTasks[i].stop; // stop the turn off filter task
 			filterOffTasks[i]=nil;
-			server.sendBundle(latency, [12, filterNodes[i],1]); // unpause filter
+			if (filterNodes.notNil) {
+				server.sendBundle(latency, [12, filterNodes[i],1]); // unpause filter
+			};
 			this.updateFilterArg(\drive,i,latency); 
 			this.updateFilterArg(\filtFreq,i,latency);
 			this.updateFilterArg(\filtRes,i,latency);
@@ -889,12 +904,16 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 			if (timeRemaining.notNil) {
 				filterOffTasks[i]={
 					timeRemaining.wait;  // pause the filter after time remaining is up
-					server.sendBundle(latency, [12, filterNodes[i],0]); // pause filter
+					if (filterNodes.notNil) {
+						server.sendBundle(latency, [12, filterNodes[i],0]); // pause filter
+					};
 					filterOffTasks[i]=nil;
 				}.fork(AppClock); 
 					
 			}{
-				server.sendBundle(latency, [12, filterNodes[i],0]); // else pause filter now
+				if (filterNodes.notNil) {
+					server.sendBundle(latency, [12, filterNodes[i],0]); // else pause filter now
+				};
 			}
 		}
 	}
@@ -920,7 +939,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	// called from the models to update synth arguments, no testing
 	// currently set only for \samplePlayer
 	setSynths{|synthArg,i,value,latency|
-		voicer.setArg(i,\samplePlayer, synthArg, value, latency);
+		voicer.setArg(i,\samplePlayer, synthArg, value, latency +! syncDelay);
 	}
 	
 } // end ////////////////////////////////////

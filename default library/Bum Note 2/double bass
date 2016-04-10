@@ -1,8 +1,8 @@
-SC BumNote2 Doc v1.4
+SC BumNote2 Doc v1.6
 Template Version v1.2
 LNX_BumNote2
-06
-71
+double bass
+80
 0
 0
 1
@@ -34,7 +34,7 @@ LNX_BumNote2
 0
 127
 0
-6
+-5
 -inf
 0.23474609375
 0.0808984375
@@ -45,7 +45,7 @@ LNX_BumNote2
 0
 -1.16015625
 0
-1
+0
 0
 1
 0.46395335477941
@@ -62,7 +62,7 @@ LNX_BumNote2
 1
 1
 0
-0
+1
 38
 0
 0
@@ -75,11 +75,21 @@ LNX_BumNote2
 0
 0
 0
+0
+8
 1
+1
+0
+2
+0
+2
+0
+0
 0
 1
 0
-*** MIDI Control Doc v1.1
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
 6
@@ -359,4 +369,19 @@ LNX StepSequencer Doc v1.1
 0
 0
 *** END OBJECT DOC ***
+LNX PRSeq DOC v1.2
+0
+LNX Score DOC v1.4
+0
+0
+64
+10.3125
+15
+0
+1020
+1
+16
+1
+*** END Score DOC ***
+*** END PRSeq DOC ***
 *** END INSTRUMENT DOC ***

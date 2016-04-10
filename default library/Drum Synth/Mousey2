@@ -1,8 +1,8 @@
-SC DrumSynth Doc v1.3
+SC DrumSynth Doc v1.4
 Template Version v1.2
 LNX_DrumSynth
 Mousey2
-134
+135
 0
 0
 1
@@ -129,7 +129,7 @@ Mousey2
 1
 1
 1
-6
+0.5062357907709
 0
 2.046946015434
 6
@@ -138,7 +138,8 @@ Mousey2
 0.7
 -1
 -inf
-1
+0
+0
 0
 1
 0

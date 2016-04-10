@@ -8,8 +8,8 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	*initClass{ Class.initClassTree(LNX_VolcaBeats) }
 	*isVisible{ ^true }
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName      {^"External Instrument"}
@@ -30,6 +30,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	panModel    {^models[5]}
 	sendChModel {^models[7]}
 	sendAmpModel{^models[8]}
+	syncModel   {^models[10]}
 
 	header { 
 		// define your document header details
@@ -38,7 +39,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	}
 	
 	// an immutable list of methods available to the network
-	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn]}
+	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn, \netPipeIn]}
 
 	// MIDI patching ///////////////////////////////////////////////////////
 
@@ -48,7 +49,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			.pipeOutAction_{|pipe|
 				if (((p[11]>0)&&(this.isOff)).not) {seqOutBuffer.pipeIn(pipe)};
 			}
-			.releaseAllAction_{ seqOutBuffer.releaseAll }
+			.releaseAllAction_{ seqOutBuffer.releaseAll(studio.actualLatency) }
 			.keyDownAction_{|me, char, modifiers, unicode, keycode|
 				keyboardView.view.keyDownAction.value(me,char, modifiers, unicode, keycode)
 			}
@@ -75,13 +76,29 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				var index = pipe.num.asInt;			
 				models[index+14].lazyValue_(pipe.val, true); // set model, no action
 				p[index+14]=pipe.val;                        // set p[]
-				api.sendOD(\netExtCntIn, index+14, pipe.val);   // network it
+				api.sendOD(\netExtCntIn, index+14, pipe.val);// network it
 			}
 			{\program} { // program
-				this.program(pipe.program,pipe.latency);
+				midi.program(pipe.program,pipe.latency);
 				^this // drop	
 			};
+		
+		// network if needed		
+		if ((p[144].isTrue) and:
+			{#[\external, \controllerKeyboard, \MIDIIn, \keyboard].includes(pipe.source)}) {
+				if (((pipe.source==\controllerKeyboard) and:{studio.isCntKeyboardNetworked}).not) 
+					{ api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}
+		};
+			
 		if (pipe.isNote) {	 midiInBuffer.pipeIn(pipe) }; // to in Buffer
+	}
+	
+	// networked midi pipes	
+	netPipeIn{|type,note,velocity|
+		switch (type.asSymbol)
+			{\noteOn } { this.pipeIn(LNX_NoteOn(note,velocity,nil,\network)) }
+			{\noteOff} { this.pipeIn(LNX_NoteOff(note,velocity,nil,\network)) }
+		;
 	}
 	
 	// external midi setting controls (these are network methods)
@@ -115,14 +132,14 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	
 	// and finally to the midi out
 	toMIDIPipeOut{|pipe|
-		midi.pipeIn(pipe.addToHistory(this));          // add this to its history
+		midi.pipeIn(pipe.addToHistory(this).addLatency(syncDelay)); // add this to its history
 	}
 
 	// release all played notes, uses midi Buffer
 	stopAllNotes{ 
-		midiInBuffer.releaseAll;
-		seqOutBuffer.releaseAll;
-		midiOutBuffer.releaseAll;
+		midiInBuffer.releaseAll(studio.actualLatency);
+		seqOutBuffer.releaseAll(studio.actualLatency); 
+		midiOutBuffer.releaseAll(studio.actualLatency); 
 		{keyboardView.clear}.defer(studio.actualLatency);
 	}
 	
@@ -135,25 +152,13 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 
 			// 0.solo
 			[0, \switch, (\strings_:"S"), midiControl, 0, "Solo",
-				{|me,val,latency,send,toggle|
-					this.solo(val,latency,send,toggle);
-					server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
-				},
-				\action2_ -> {|me|
-					this.soloAlt(me.value);
-					server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
-				 }],
+				{|me,val,latency,send,toggle| this.solo(val,latency,send,toggle) },
+				\action2_ -> {|me| this.soloAlt(me.value) }],
 			
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
-				{|me,val,latency,send,toggle|
-					this.onOff(val,latency,send,toggle);
-					server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
-				},
-				\action2_ -> {|me|	
-					this.onOffAlt(me.value);
-					server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
-				}],
+				{|me,val,latency,send,toggle| this.onOff(val,latency,send,toggle) },
+				\action2_ -> {|me|	this.onOffAlt(me.value) }],
 					
 			// 2.master amp
 			[\db6,midiControl, 2, "Master volume",
@@ -206,19 +211,17 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				}], 		
 				
 			// 9. channelSetup
-			[0,[0,3,\lin,1], midiControl, 9, "Channel Setup",
-				(\items_:["Left & Right","Left + Right","Left","Right"]),
+			[0,[0,4,\lin,1], midiControl, 9, "Channel Setup",
+				(\items_:["Left & Right","Left + Right","Left","Right","No Audio"]),
 				{|me,val,latency,send|
 					this.setSynthArgVH(9,val,\channelSetup,val,latency,send);
 				}],
 				
 			// 10. syncDelay
-			[[-1,1,\lin,0.001,0], midiControl, 10, "Sync",
-				(label_:"Sync", zeroValue_:0),
-				{|me,val,latency,send|
-					this.setPVP(10,val,latency,send);
-					this.syncDelay_(val.clip(-inf,0).abs); // this will update delay as well
-				}],
+			[\sync, {|me,val,latency,send|
+				this.setPVPModel(10,val,latency,send);
+				this.syncDelay_(val);
+			}],
 			
 			// 11. onSolo turns audioIn, seq or both on/off
 			[1, [0,2,\lin,1],  midiControl, 11, "On/Off Model",
@@ -230,16 +233,19 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			
 			// 12. midi clock out
 			[1, \switch, midiControl, 12, "MIDI Clock", (strings_:["MIDI Clock"]),
-				{|me,val,latency,send| this.setPVP(12,val,latency,send) }],
+				{|me,val,latency,send|
+					this.setPVPModel(12,val,latency,send);
+					if (val.isFalse) { midi.stop(latency +! syncDelay)};
+				}],
 				
 			// 13. use controls in presets
 			[0, \switch, midiControl, 13, "Controls Preset", (strings_:["Controls"]),
 				{|me,val,latency,send|	
-					this.setPVP(13,val,latency,send);
+					this.setPVPModel(13,val,latency,send);
 					if (val.isTrue) {
-						presetExclusion=[0,1];
+						presetExclusion=[0,1,10,12];
 					}{
-						presetExclusion=[0,1]++(14..141);
+						presetExclusion=[0,1,10,12]++(14..141);
 					}	
 				}],
 		];
@@ -250,49 +256,60 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				[0, \midi, midiControl, 14+i, "CC"++(i+1),
 					(\label_:(i+1).asString , \numberFunc_:'int'),
 					{|me,val,latency,send,toggle|
-						this.setPVPModel(i, val, latency, send); // network this
-						midi.control(i, val, latency);           // send midi control data
+						this.setPVPModel(i, val, latency, send);    // network this
+						midi.control(i, val, latency +! syncDelay); // send midi control data
 					}],	
 			);
 		};
 		
+		// 142. program
+		template = template.add([0,[0,127,\lin,1], midiControl, 142, "Prg",
+			{|me,value,latency,send,toggle|
+				this.setODModel(142,value,latency,send); // network must come 1st
+				midi.program(p[142]);
+			}]);
+					
+		// 143. use program in preset
+		template = template.add([1, \switch, midiControl, 143, "Program",
+				(strings_:["Program"]),
+				{|me,val,latency,send| this.setPVP(143,val,latency,send) }]);
+				
+		// 144.network keyboard
+		template = template.add([0, \switch, midiControl, 144, "Network", (strings_:["Net"]),
+		{|me,val,latency,send|	this.setPVH(144,val,latency,send) }]);
+		
+		
 		#models,defaults=template.generateAllModels;
 
-		presetExclusion=(0..1)++(14..141);
-		randomExclusion=(0..1);
-		autoExclusion=[];
+		presetExclusion=[0,1,10,12]++(14..141);
+		randomExclusion=[0.1,10,12];
+		autoExclusion=[10];
 
 	}
 
-	// sync stuff ///////////////////////////
-	
-	delayTime{^(this.mySyncDelay.clip(0,inf))+(p[10].clip(0,inf))  }
-	iSyncDelayChanged{ this.setDelay }
-	setDelay{ server.sendBundle(nil,[\n_set, node, \delay, this.delayTime]) }
-	
 	// clock in //////////////////////////////
 	
 	// clock in for pRoll sequencer
-	clockIn3{|beat,absTime,latency| sequencer.do(_.clockIn3(beat,absTime,latency)) }
+	clockIn3{|beat,absTime,latency,absBeat| sequencer.do(_.clockIn3(beat,absTime,latency,absBeat))}
 	
 	// reset sequencers posViews
 	clockStop {
 		sequencer.do(_.clockStop(studio.actualLatency));
-		seqOutBuffer.releaseAll;
+		seqOutBuffer.releaseAll(studio.actualLatency);
 	}
 	
 	// remove any clock hilites
 	clockPause{
 		sequencer.do(_.clockPause(studio.actualLatency));
-		seqOutBuffer.releaseAll;	
+		seqOutBuffer.releaseAll(studio.actualLatency);
 	}
 	
 	// clock in for midi out clock methods
-	midiSongPtr{|songPtr,latency| if (p[12].isTrue) { midi.songPtr(songPtr,latency) } } 
-	midiStart{|latency| if (p[12].isTrue) { midi.start(latency) } }
-	midiClock{|latency| if (p[12].isTrue) { midi.midiClock(latency) } }
-	midiContinue{|latency| if (p[12].isTrue) { midi.continue(latency) } }
-	midiStop{|latency| if (p[12].isTrue) { midi.stop(latency) } }
+	midiSongPtr{|songPtr,latency| if (p[12].isTrue) { midi.songPtr(songPtr,latency +! syncDelay) }} 
+	midiStart{|latency|           if (p[12].isTrue) { midi.start(latency +! syncDelay) } }
+	midiClock{|latency|           if (p[12].isTrue) { midi.midiClock(latency +! syncDelay) } }
+	midiContinue{|latency|        if (p[12].isTrue) { midi.continue(latency +! syncDelay) } }
+	midiStop{|latency|            if (p[12].isTrue) { midi.stop(latency +! syncDelay) } }
 	
 	// disk i/o ///////////////////////////////
 		
@@ -302,6 +319,14 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	// for your own loading
 	iPutLoadList{|l,noPre,loadVersion,templateLoadVersion|
 		sequencer.putLoadList(l.popEND("*** END OBJECT DOC ***"));
+	}
+	
+	// anything else that needs doing before a load
+	preLoadP{|tempP|
+		models[143].doLazyValueAction_(tempP[143],nil,false); // use programs in presets
+		// check send program  1st and then send
+		if (models[143].isTrue) { midi.program(tempP[142]) };
+		^tempP
 	}
 	
 	//iFreeAutomation{ sequencer.freeAutomation }
@@ -343,8 +368,16 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 		// 13.use controls
 		models[13].lazyValueAction_(presetToLoad[13],latency,false);
 
+		// 143.use program
+		models[143].lazyValueAction_(presetToLoad[143],latency,false);
+		
 		// exclude these parameters
 		presetExclusion.do{|i| presetToLoad[i]=p[i]};
+		
+		// check send program  1st and then send
+		if (models[143].isTrue) {
+			models[142].lazyValueAction_(presetToLoad[142],latency,false);
+		};
 		
 		// update models
 		presetToLoad.do({|v,j|	
@@ -403,6 +436,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 									   \disabled:Color.black,
 									   \label:Color.white),
 						\labelShadow_ : true,
+						\numberWidth_	: (-20),
 						\numberFont_  : Font("Helvetica",10),
 						\labelFont_	: Font("Helvetica",11)
 						);
@@ -435,26 +469,26 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 	
 		// widgets
+		
+		// 1. channel onOff	
+		MVC_OnOffView(models[1], window,Rect(10, 5, 26, 18),gui[\onOffTheme1])
+			.rounded_(true)
+			.permanentStrings_(["On","On"]);
+		
+		// 0. channel solo
+		MVC_OnOffView(models[0], window, Rect(40, 5, 26, 18),gui[\soloTheme])
+			.rounded_(true);
+		
 						
 		// 3. in	
-		MVC_PopUpMenu3(models[3],window,Rect(5,5,70,17), gui[\menuTheme ] );
+		MVC_PopUpMenu3(models[3],window,Rect(80,5,70,17), gui[\menuTheme ] );
 	
 		// 9. channelSetup
-		MVC_PopUpMenu3(models[9],window,Rect(85,5,75,17), gui[\menuTheme ] );
+		MVC_PopUpMenu3(models[9],window,Rect(160,5,75,17), gui[\menuTheme ] );
 		
-		// 10. syncDelay
-		MVC_NumberBox(models[10], window,Rect(194, 30-25, 40, 18),  gui[\theme2])
-			.labelShadow_(false)
-			.color_(\label,Color.white);
-			
-		MVC_StaticText(Rect(100+140,30-25, 40, 18), window,)
-			.string_("sec(s)")
-			.font_(Font("Helvetica",10))
-			.shadow_(false)
-			.color_(\string,Color.white);
 		
 		// MIDI Settings
- 		MVC_FlatButton(window,Rect(277, 4, 43, 19),"MIDI")
+ 		MVC_FlatButton(window,Rect(250, 4, 43, 19),"MIDI")
 			.rounded_(true)
 			.canFocus_(false)
 			.shadow_(true)
@@ -465,7 +499,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			.action_{ this.createMIDIInOutModelWindow(window) };
 			
 		// MIDI Control
- 		MVC_FlatButton(window,Rect(327, 4, 43, 19),"Cntrl")
+ 		MVC_FlatButton(window,Rect(300, 4, 43, 19),"Cntrl")
 			.rounded_(true)
 			.canFocus_(false)
 			.shadow_(true)
@@ -512,46 +546,55 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			.hasVerticalScroller_(false)
 			.autohidesScrollers_(false);
 
-
 		// levels
-		MVC_FlatDisplay(this.peakLeftModel,gui[\controlsTab],Rect(5+630-18, 9, 6, 160));
-		MVC_FlatDisplay(this.peakRightModel,gui[\controlsTab],Rect(13+630-18, 9, 6, 160));
-		MVC_Scale(gui[\controlsTab],Rect(11+630-18, 9, 2, 160));
+		MVC_FlatDisplay(this.peakLeftModel,gui[\controlsTab],Rect(5+630-18-10, 9, 6, 160-24));
+		MVC_FlatDisplay(this.peakRightModel,gui[\controlsTab],Rect(13+630-18-10, 9, 6, 160-24));
+		MVC_Scale(gui[\controlsTab],Rect(11+630-18-10, 9, 2, 160-24));
 
 		// 2. channel volume
-		MVC_SmoothSlider(gui[\controlsTab],models[2],Rect(587, 9, 27, 160))
+		MVC_SmoothSlider(gui[\controlsTab],models[2],Rect(587-10, 9, 27, 160-24))
 			.label_(nil)
 			.showNumberBox_(false)
 			.color_(\hilite,Color(1,1,1,0.3))
 			.color_(\knob,Color.orange);	
 			
-		// 1. channel onOff	
-		MVC_OnOffView(models[1], gui[\controlsTab],Rect(583, 177, 26, 18),gui[\onOffTheme1])
-			.rounded_(true)
-			.permanentStrings_(["On","On"]);
-		
-		// 0. channel solo
-		MVC_OnOffView(models[0], gui[\controlsTab], Rect(616, 177, 26, 18),gui[\soloTheme])
-			.rounded_(true);
 
 		// 11. onSolo turns audioIn, seq or both on/off
-		MVC_PopUpMenu3(models[11], gui[\controlsTab] ,Rect(576, 202, 70, 16), gui[\menuTheme] );
+		MVC_PopUpMenu3(models[11], gui[\controlsTab] ,Rect(566, 158-4, 70, 16), gui[\menuTheme] );
 
 		// 11. midi clock out
-		MVC_OnOffView(models[12], gui[\controlsTab], Rect(575, 223, 73, 19),gui[\onOffTheme3]);
+		MVC_OnOffView(models[12], gui[\controlsTab], Rect(565, 176-2, 73, 19),gui[\onOffTheme3]);
 
 		// 13. use controls in presets
-		MVC_OnOffView(models[13], gui[\controlsTab], Rect(575, 245, 73, 19),gui[\onOffTheme3]);
+		MVC_OnOffView(models[13], gui[\controlsTab], Rect(565, 204-8, 73, 19),gui[\onOffTheme3]);
+
+	
+		// program
+		MVC_NumberBox(models[142],gui[\controlsTab],Rect(606, 220, 28, 19))
+				.labelFont_(Font("AvenirNext-Bold",12))
+				.orientation_(\horiz)
+				.label_("Prog")
+				.color_(\background,Color(0.25,0.25,0.25))
+				.color_(\typing,Color.orange)
+				.color_(\string,Color.white)
+				.numberWidth_(-24);
+		
+
+		// 13. use prog in presets
+		MVC_OnOffView(models[143], gui[\controlsTab], Rect(565, 245, 73, 19),gui[\onOffTheme3]);
+
+	
+
 
 		// 14..141   all 127 midi controls
 		(0..127).do{|i|
 			MVC_MyKnob3(models[14+i], gui[\controlsTab],gui[\knobTheme2],
-				Rect(10+(i%16*35), 20+(i.div(16)*53), 25, 25)
+				Rect(10+(i%16*34), 20+(i.div(16)*53), 25, 25)
 			);
 		};
 	
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(window,380@5,50,
+		presetView=MVC_PresetMenuInterface(window,350@5,80,
 				Color(0.7,0.65,0.65)/1.6,
 				Color(0.7,0.65,0.65)/3,
 				Color(0.7,0.65,0.65)/1.5,
@@ -571,8 +614,13 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				 \noteBGS:    Color.orange*1.5,
 				 \noteBS:     Color.black,
 				 \velocitySel: Color.orange*1.5
-				)
+				),
+				parentViews: [ window, gui[\masterTabs].mvcTab(1)]
 				);
+		
+		// 144.network keyboard
+		MVC_OnOffView(models[144], gui[\controlsTab], Rect(604, 269, 32, 19), gui[\onOffTheme1]);
+			
 		
 		// the keyboard, fix bug so we don't need this scrollView
 		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(12,320,653,93))
@@ -584,6 +632,8 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			.pipeFunc_{|pipe|
 				sequencer.pipeIn(pipe);     // to sequencer
 				this.toMIDIOutBuffer(pipe); // and midi out
+				if (p[144].isTrue) {
+					api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}; // and network
 			};
 
 	}
@@ -601,24 +651,27 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	
 	// used for noteOff in sequencers
 	// efficiency issue: this is called 3 times in alt_solo over a network
-	stopNotesIfNeeded{
-		this.updateOnSolo;
+	stopNotesIfNeeded{|latency|
+		this.updateOnSolo(latency);
 	}
 	
-	updateOnSolo{
+	updateOnSolo{|latency|
 		switch (p[11].asInt)
 			{0} {
 				// "Audio In"
-				server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+				if (node.notNil) { server.sendBundle(latency +! syncDelay,
+					[\n_set, node, \on, this.isOn]) };
 			}
 			{1} {
 				// "Sequencer"
-				server.sendBundle(nil,[\n_set, node, \on, true]);
+				if (node.notNil) { server.sendBundle(latency +! syncDelay,
+					[\n_set, node, \on, true]) };
 				if (this.isOff) {this.stopAllNotes};
 			}
 			{2} {
 				// "Both"
-				server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+				if (node.notNil) { server.sendBundle(latency +! syncDelay,
+					[\n_set, node, \on, this.isOn]) };
 				if (this.isOff) {this.stopAllNotes};
 			};		
 	}
@@ -642,9 +695,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			[\n_set, node, \on, on],
 			[\n_set, node, \sendChannels,LNX_AudioDevices.getOutChannelIndex(p[7])],
 			[\n_set, node, \sendAmp, p[8].dbamp],
-			[\n_set, node, \channelSetup, p[9]],
-			[\n_set, node, \delay, this.delayTime ]
-			
+			[\n_set, node, \channelSetup, p[9]]
 		);
 	}
 

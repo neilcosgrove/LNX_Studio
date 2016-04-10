@@ -7,8 +7,8 @@
 
 	// var myVars;
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new.init(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new.init(server,studio,instNo,bounds,open,id,loadList)
 	// remove this   ^  init when creating your own instruments
 	}
 
@@ -71,6 +71,7 @@
 	
 	// onOff model
 	onOffModel{^models[1] }
+	fxOnOffModel{^nil}
 
 	panModel{^nil}
 
@@ -80,9 +81,6 @@
 	// in models (fx's)
 	inModel{^nil}
 	inChModel{^nil}
-	
-	// latency & sync
-	iSyncDelayChanged{}
 
 	// your own vars
 	iInitVars{}
@@ -191,6 +189,7 @@
 	bend 	{|bend     , latency|}		// bend
 	touch	{|pressure , latency|}		// pressure
 	program	{|program  , latency|}      // and program (the selectProgram method is called 1st
+	sysex	{|data     , latency|}
 	midiInternal{|command,arg1,arg2| }   // internal comms via midi (not used yet)
 
 	// midi in to midi clock out methods
@@ -204,7 +203,7 @@
 	stopAllNotes{} 			// used for noteOff when stopping sequencers & midi Devices
 							// also called by onOff & solo buttons
 							
-	updateOnSolo{}  // onSolo has changed
+	updateOnSolo{|latency|}  // onSolo has changed
 		
 	popItems{^[]}
 		
@@ -234,7 +233,7 @@
 	/// clock in ////////////////////////////////////////
 	
 	clockIn{|beat|} //clockIn is the clock pulse, with the current song pointer in beats
-	clockIn3{|beat,absTime,latency|} // same as clcokIn but with x3 the resolution
+	clockIn3{|beat,absTime,latency,absBeat|} // same as clcokIn but with x3 the resolution
 	clockOff{|beat,latency|} // this clock is playing when a song is not playing, used in lfos 
 	clockPlay{|latency| }		//play and stop are called from both the internal and extrnal clock
 	clockStop{|latency| }

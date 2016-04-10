@@ -16,7 +16,7 @@ MVC_ProgramChangeMoog : MVC_View {
 	
 	createView{
 		
-		view=SCUserView(window,Rect(rect.left,rect.top,16*20,1*18))
+		view=SCUserView(window,Rect(rect.left,rect.top,((controlSpec.maxval.asInt+1))*20,1*18))
 			.drawFunc_{|me|	
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
@@ -26,7 +26,7 @@ MVC_ProgramChangeMoog : MVC_View {
 					Pen.font_(font);
 					Pen.smoothing_(false);
 					Pen.strokeColor_(Color.black);
-					16.do{|x|
+					(controlSpec.maxval.asInt+1).do{|x|
 						1.do{|y|
 							if (x==value) {
 								(colors[\on]+0.2/10).set;
@@ -44,7 +44,7 @@ MVC_ProgramChangeMoog : MVC_View {
 					};
 					Pen.fillColor_(colors[\on]+0.2);
 					Pen.smoothing_(true);
-					16.do{|x|
+					(controlSpec.maxval.asInt+1).do{|x|
 						1.do{|y|
 							if ((y*16+x)==value) {
 								Pen.fillColor_(Color.white);
@@ -79,7 +79,7 @@ MVC_ProgramChangeMoog : MVC_View {
 					if (buttonNumber==2) {
 						this.toggleMIDIactive
 					}{
-						val=((x/20).asInt.clip(0,15));
+						val=((x/20).asInt.clip(0,controlSpec.maxval.asInt));
 						// if (val!=value) { // no checking for inequality
 						this.viewDoValueAction_(val,nil,true,false);
 					}

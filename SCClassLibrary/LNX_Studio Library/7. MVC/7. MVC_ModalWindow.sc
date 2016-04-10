@@ -10,12 +10,12 @@
 
 MVC_ModalWindow{
 	
-	var <parent, <window, <pointSize, <scrollView, <>onClose;
+	var <parent, <window, <pointSize, <scrollView, <>onClose, <parentViews;
 
 
 	*new{|parent,pointSize,colors| ^super.new.init(parent,pointSize,colors) }	
 	init{|argParent,argPointSize,colors|
-		
+		parentViews = [this];
 		parent=argParent;
 		pointSize=argPointSize;
 		colors = (

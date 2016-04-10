@@ -16,13 +16,13 @@
 
 MVC_View {
 
-	classvar	<>editMode=false,		<>grid=1,		
-			<>editResize=true,		<>verbose=false,
-			<>labelActivatesMIDI=true, <>showLabelBackground=false;
-		
+	classvar	<>editMode=false,		<>grid=1,	 		<>labelActivatesMIDI=true;
+	classvar 	<>verbose=false,		<>editResize=true,	<>showLabelBackground=false;
+	classvar <doubleClickLearn;
+	
 	var	<model;
 	
-	var	<parent,		<>window, 	<rect,
+	var	<parent,		<>window, 	<rect,	<parentViews,
 		<l, 			<t, 			<w, 		<h,
 		<view,		<enabled=true,<canFocus=false,
 		<string,		<>onClose,	<strings,
@@ -58,6 +58,19 @@ MVC_View {
 	
 	var <>locked = false, <>numberOffset = 0;
 	
+	var <beginDragAction, <canReceiveDragHandler, <receiveDragHandler;
+	
+	
+	*initClass{
+		Class.initClassTree(LNX_File);
+		doubleClickLearn = ("doubleClickLearn".loadPref ? [true])[0].isTrue;
+	}
+	
+	*doubleClickLearn_{|val| 
+		doubleClickLearn = val;
+		[doubleClickLearn].savePref("doubleClickLearn");
+	}
+	
 	// you can supply a MVC_Model, MVC_TabView, a SCWindow, a MVC_Window, a MVU_ScrollView, a Rect
 	// or a themeMethod Dict in any order
 	
@@ -72,14 +85,17 @@ MVC_View {
 		rect    = args.findKindOf(Rect) ? Rect(); // temp fix for ColorAdaptor & FuncAdaptor
 		model   = args.findKindOf(MVC_Model       );
 		window  = args.findKindOf(MVC_Window      )  ??
-		         {args.findKindOf(MVC_TabbedView  )  ?? 
+		         {args.findKindOf(MVC_TabbedView  )} ?? 
 		         {args.findKindOf(MVC_TabView     )} ??
 		         {args.findKindOf(MVC_ExpandView  )} ??
-		         {args.findKindOf(MVC_ScrollView) }};
+		         {args.findKindOf(MVC_ScrollView  )};
 		strings = args.select(_.isKindOf(String));
 		
 		// register this MVC_item with the parent
 		if (window.notNil) {
+					
+			parentViews = window.parentViews;
+			
 			window.addView(this);	// add so this view can be created with the MVC_ScrollView
 			parent=window; // parent will be the mvc window view & window the view
 			// the follow will add view if MVC_Window/MVC_TabbedView/MVC_ScrollView is open
@@ -189,28 +205,66 @@ MVC_View {
 	
 	// override this if needed + also add for label (there are refs that need to be removed here)
 	dragControls{
+			
 		// what i send
-		view.beginDragAction_{|me|
-			var val;
-			if (numberFunc.isNil) {
-				val=value.asString
-			}{
-				val=numberFunc.value(value).asString;
+		if (beginDragAction.notNil) {
+			view.beginDragAction_(beginDragAction); 
+		}{
+			view.beginDragAction_{|me|
+				
+// dragLabel_ causes crash in Cocoa
+//				var val;
+//				if (numberFunc.isNil) {
+//					val=value.asString
+//				}{
+//					val=numberFunc.value(value).asString;
+//				};
+//				if ((controlSpec.notNil) && (showUnits)) { val=val+(controlSpec.units) };
+//				// +units
+//				me.dragLabel_(value.asString); // the drag label
+				value.asFloat;
 			};
-			if ((controlSpec.notNil) && (showUnits)) { val=val+(controlSpec.units) }; // +units
-			me.dragLabel_(val); // the drag label
-			value.asFloat;
 		};
+		
 		// what can i recieve
-		view.canReceiveDragHandler_{ SCView.currentDrag.isNumber };
-		// what i get passed
-		view.receiveDragHandler_{
-			this.valueAction_(SCView.currentDrag, send:true);
-			this.refreshValue;	
+		if (canReceiveDragHandler.notNil) {
+			view.canReceiveDragHandler_(canReceiveDragHandler);
+		}{
+			view.canReceiveDragHandler_{ SCView.currentDrag.isNumber };
 		};
+		
+		// what i get passed
+		if (receiveDragHandler.notNil) {
+			view.receiveDragHandler_(receiveDragHandler);
+		}{		
+			view.receiveDragHandler_{
+				this.valueAction_(SCView.currentDrag, send:true);
+				this.refreshValue;	
+			};
+		};
+				
 		// just add begin to number box
 		if (numberGUI.notNil) { numberGUI.beginDragAction_(view.beginDragAction) };
 		labelGUI.do{|labelView| labelView.beginDragAction_(view.beginDragAction) };
+	}
+	
+	// what i send
+	beginDragAction_{|func|
+		beginDragAction=func;
+		if (view.notClosed) { view.beginDragAction_(func) }
+	}
+	
+	
+	// what can i recieve
+	canReceiveDragHandler_{|func|
+		canReceiveDragHandler=func;
+		if (view.notClosed) { view.canReceiveDragHandler_(func) }
+	}
+	
+	// what i get passed
+	receiveDragHandler_{|func|
+		receiveDragHandler=func;
+		if (view.notClosed) { view.receiveDragHandler_(func) }
 	}
 	
 	// override to do anything after creation
@@ -436,7 +490,6 @@ MVC_View {
 
 	// set the colour in the Dictionary 
 	color_{|key,color,forceAdd=false|
-		
 		if  ((forceAdd.not)and:{ (colors.includesKey(key).not)}) {^this}; // drop out
 		colors[key]=color;
 		if (key=='focus') {
@@ -563,7 +616,8 @@ MVC_View {
 	refresh{
 		if (view.notClosed) {
 			// drop of if tab is hiddden			
-			if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) { ^this };
+			//if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) { ^this };
+			parentViews.do{|view| if (view.isVisible.not) { ^this }};
 			// else
 			view.refresh;
 			if (numberGUI.notNil) { numberGUI.refresh }

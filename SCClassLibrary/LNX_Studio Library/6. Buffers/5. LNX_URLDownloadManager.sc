@@ -5,7 +5,7 @@
 
 LNX_URLDownloadManager {
 	
-	classvar <downloads, <failed, <succeeded, <task, <>verbose=false;	
+	classvar >studio, <downloads, <failed, <succeeded, <task, <downLoading=false, <>verbose=false;	
 	// register all new downloads with the download manager
 	// there could be another download trying to get the same file
 
@@ -34,7 +34,12 @@ LNX_URLDownloadManager {
 				(0.25/6).wait;
 				if (downloads.isEmpty) {
 					this.stopChecking
-				}{			
+				}{	
+					if (downLoading.not) {
+						downLoading = true;
+						studio.addTextToDialog("Downloading samples...",false,true);
+					};
+							
 					downloads.do{|download|			
 						if (download.status==\connecting) {
 							if (verbose) { 
@@ -108,8 +113,16 @@ LNX_URLDownloadManager {
 	
 	// PRIVATE: for updating verbose & GUI
 	*cmdPeriod{this.startChecking}
-	*startChecking{ task.start }
-	*stopChecking { task.stop  }
+	*startChecking{ 
+		task.start;
+	}
+	*stopChecking {	
+		task.stop;
+		if ((downloads.isEmpty)&&downLoading) {
+			downLoading = false;
+			studio.addTextToDialog("Finished.",false,true);
+		};
+	}
 	
 	// cancel all active downloads
 	*cancelAllDownLoads{

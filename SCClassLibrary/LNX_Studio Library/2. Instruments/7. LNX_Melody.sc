@@ -6,25 +6,22 @@ LNX_Melody : LNX_InstrumentTemplate {
 	var <musicMod, <storeChordsMod, <sequencer, <chordQuantiserMod, <arpeggiatorMod;
 	var <midiBuffer1, <midiBuffer2, <midiBuffer3, <midiBuffer4, <midiBuffer5, <midiBuffer6;
 	var <lastKeyboardNote, <arpegSequencer, <multiPipeOut;	
-	*new {arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new {arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
-	*studioName {^"Melody Maker"}
-	*sortOrder{^2}
-	
-	mixerColor{^Color(1,0.75,1,0.4)} // colour in mixer
-	
-	isMIDI{^true}
-	
+	*studioName   {^"Melody Maker"}
+	*sortOrder    {^2}
+	mixerColor    {^Color(1,0.75,1,0.4)} // colour in mixer
+	isMIDI        {^true}
 	canBeSequenced{^true}
-	
-	isInstrument{^true}
-	onColor{^Color(0.5,0.7,1)} 
-	clockPriority{^4}
-	alwaysOnModel{^models[23]}
-	alwaysOn{^models[23].isTrue} // am i? used by melody maker to change onOff widgets
-	canAlwaysOn{^true} // can i?
+	isInstrument  {^true}
+	onColor       {^Color(0.5,0.7,1)} 
+	clockPriority {^4}
+	alwaysOnModel {^models[23]}
+	alwaysOn      {^models[23].isTrue} // am i? used by melody maker to change onOff widgets
+	canAlwaysOn   {^true} // can i?
+	syncModel     {^models[31]}
 	
 	// an immutable list of methods available to the network
 	interface{^#[\netMIDI] }
@@ -251,13 +248,19 @@ LNX_Melody : LNX_InstrumentTemplate {
 			// 30. Allow midi program change in
 			[0, \switch, (\strings_:"Prg"), midiControl, 30, "MIDI Program Change",
 				{|me,val,latency,send,toggle| this.setPVPModel(30,val,latency,send) }],
+				
+			// 31. syncDelay
+			[\sync, {|me,val,latency,send|
+				this.setPVPModel(31,val,latency,send);
+				this.syncDelay_(val);
+			}],	
 			
 		].generateAllModels;
 
 		// list all parameters you want exluded from a preset change
-		presetExclusion=[0,1,30];
-		randomExclusion=[0,1,30];	
-		autoExclusion=[];
+		presetExclusion=[0,1,30,31];
+		randomExclusion=[0,1,30,31];	
+		autoExclusion=[31];
 		
 		models[5].constrain_(false); // stop controlSpec constraint for chord selected
 		
@@ -525,7 +528,7 @@ LNX_Melody : LNX_InstrumentTemplate {
 			.color_(\border, border )
 			.width_(6);
 			
-		MVC_PlainSquare(gui[\scrollView],Rect(649, 445, 128, 6))
+		MVC_PlainSquare(gui[\scrollView],Rect(649, 479, 128, 6))
 			.color_(\off,border);
 		
 		// out
@@ -540,7 +543,6 @@ LNX_Melody : LNX_InstrumentTemplate {
 			
 		MVC_PlainSquare(gui[\scrollView],Rect(766, 64, 11, 6))
 			.color_(\off,border);
-			
 			
 		// piano roll
 
@@ -562,7 +564,10 @@ LNX_Melody : LNX_InstrumentTemplate {
 						 \noteBS:     Color(1,1,1),
 						 \velocity:   Color(0.45,0.7,1),
 						 \velocitySel: Color.white
-						), 25);
+						), 25,
+						parentViews:[window]
+						
+						);
 
 		// MIDI In Lamp
 		gui[\pianoRollLamp] = MVC_PipeLampView(gui[\rcv7],Rect(236,7,10,10));
@@ -583,7 +588,7 @@ LNX_Melody : LNX_InstrumentTemplate {
 		
 		// the arpget sequencer
 		arpegSequencer.createButtonWidgets(gui[\rcv7], Rect(-58, 308, 652, 250),
-			controls:false );
+			controls:false, showName:false );
 		
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],(710+30)@(7),85-30,
@@ -596,13 +601,20 @@ LNX_Melody : LNX_InstrumentTemplate {
 		this.attachActionsToPresetGUI;
 		
 		// 27. steps per octave (spo)
-		MVC_NumberBox(models[27],gui[\scrollView], Rect(717, 416, 43, 19))
+		MVC_NumberBox(models[27],gui[\scrollView], Rect(717, 436, 43, 17))
 			.labelShadow_(false)
 			.orientation_(\horizontal)
 			.color_(\label,Color.black);
 			
+		// 31. sync
+		MVC_NumberBox(models[31],gui[\scrollView], Rect(717, 457, 43, 17))
+			.labelShadow_(false)
+			.label_("Sync")
+			.orientation_(\horizontal)
+			.color_(\label,Color.black);
+			
 		// melody maker text
-		MVC_Text(gui[\scrollView],Rect(654, 454, 118, 34))
+		MVC_Text(gui[\scrollView],Rect(654, 411, 118, 23))
 				.align_(\center)
 				.shadow_(false)
 				.penShadow_(true)

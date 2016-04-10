@@ -351,7 +351,7 @@ LNX_BufferProxy {
 		var list=[];	
 		var nonUserContent = this.nonUserContent; // just a few folders here
 		var done = 1 ! (nonUserContent.size);
-		
+		if (nonUserContent.size==0) { action.value(list); ^this };
 		nonUserContent.do{|folder,i|
 			FolderContents.fetchFolderContents(folder,inf,{|contents|
 				list = list ++ (contents.select(_.isLNXSoundFile));
@@ -373,7 +373,7 @@ LNX_BufferProxy {
 					calls = calls + 1;
 					s = s[size..].split;
 					s[0] = s[0] ++ ":/";
-					s.join($/);
+					s.join($/).replace("\"","%34");
 				};
 				action.value(cashe);
 			}	
@@ -396,7 +396,11 @@ LNX_BufferProxy {
 					calls = calls + 1;
 					s = s[size..].split;
 					s[0] = s[0] ++ ":/";
-					s.join($/);
+					s.join($/).replace("\"","%34");
+					
+					//s.join($/).replace("'","%39");
+					// 		//s.replace("'","%39"); // problems with "'".ascii
+					
 				};
 				action.value(cashe);
 			}	
@@ -412,7 +416,6 @@ LNX_BufferProxy {
 	
 	*cashe{
 		var list=[];
-		
 		this.nonUserContent.do{|folder|
 			list=list++(folder.folderContents.select(_.isLNXSoundFile))
 		};
@@ -425,7 +428,7 @@ LNX_BufferProxy {
 		^this.cashe.collect{|s|
 			s = s[size..].split;
 			s[0] = s[0] ++ ":/";
-			s.join($/);
+			s.join($/).replace("\"","%34");
 		}
 	}
 	
@@ -440,7 +443,7 @@ LNX_BufferProxy {
 		^this.userContent.collect{|s|
 			s = s[size..].split;
 			s[0] = s[0] ++ ":/";
-			s.join($/);
+			s.join($/).replace("\"","%34");
 		}
 	}
 	

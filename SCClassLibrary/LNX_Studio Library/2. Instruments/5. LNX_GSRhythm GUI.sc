@@ -5,8 +5,8 @@
 
 	// GUI ////////////////////////////////////////////////////////////////////////////////
 	
-	*thisWidth  {^769+10}
-	*thisHeight {^520+8}
+	*thisWidth  {^779}
+	*thisHeight {^528}
 	
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color(0,1/103,9/77,65/77),false)}
 	
@@ -15,13 +15,10 @@
 			window.setInnerExtent(thisWidth,thisHeight);
 		}{
 			window.setInnerExtent(thisWidth-486,thisHeight-298-8);
-			
 			if (window.isClosed) {
-			
 				gui[\compositeView].bounds_(
-					Rect(11,11,this.thisWidth-22-486,this.thisHeight-22-298-8));
+					Rect(11,11,this.thisWidth-508,this.thisHeight-328));
 			};
-			
 		};
 	}
 
@@ -86,7 +83,6 @@
 		gui[\comTheme]= (	\border	:   Color(0.1725, 0.184, 0.307),
 						\background : Color(33/74,48/97,57/86,28/51));
 						
-	
 		// the border and composite view
 		gui[\compositeView] = MVC_RoundedComView(window,
 				Rect(11,11,this.thisWidth-22,this.thisHeight-22))
@@ -145,9 +141,9 @@
 		// sequencers
 		sequencers.do{|s,i|
 			
-			s.createButtonWidgets(sv , Rect(28+6+30,20+(i*26)-5, 652, 250));
+			s.createButtonWidgets(sv , Rect(64,15+(i*26), 652, 250));
 			
-			MVC_FlatButton(sv ,Rect(4+3, 30+(i*26)-5 , 20, 20),"search")
+			MVC_FlatButton(sv ,Rect(7, 25+(i*26) , 20, 20),"search")
 				.color_(\up,background/3 )
 				.color_(\down,background/3 )
 				.color_(\string,Color.white)
@@ -156,7 +152,7 @@
 				.attachedDown_(s.nameWidget)
 				.action_{ webBrowsers[i].open };
 
-			MVC_FlatButton(sv ,Rect(4+3+30-5, 30+(i*26)-5 , 20, 20),"sine")
+			MVC_FlatButton(sv ,Rect(32, 25+(i*26), 20, 20),"sine")
 				.color_(\up,background/3 )
 				.color_(\down,background/3 )
 				.color_(\string,Color.white)
@@ -358,47 +354,35 @@
 			
 		// 3.output channels
 		MVC_PopUpMenu3(models[3],tab,Rect(395,2,70,17),gui[\menuTheme  ]);
-		
-		
-		
-		
-		
-		
-				
+					
 		// 9.master bp adjust (-1,1)
 		MVC_MyKnob3(models[9],tab, Rect(185, 173, 28, 28),gui[\knobTheme1])
 			.showNumberBox_(false);
 		
-
-//		MVC_NumberBox(models[9], tab, Rect(185, 173, 28, 22), gui[\theme2])
-//			.orientation_(\horizontal)
-//			.moveRound_(0.01);
+		// master pitch, dur, send ////////////////////////////////////////////////////
 		
-		
-		
-		sv = MVC_RoundedComView(tab, Rect(16-2,33, 140, 60), gui[\comTheme] );
+		sv = MVC_RoundedComView(tab, Rect(12,33, 144, 60), gui[\comTheme] );
 		
 		// 6.master pitch
-		MVC_MyKnob3(models[6],sv, Rect(5+(50*0), 17, 28, 28),gui[\knobTheme1]);
+		MVC_MyKnob3(models[6],sv, Rect(10, 17, 28, 28),gui[\knobTheme1]);
 		
 		// 5.master duration
-		MVC_MyKnob3(models[5],sv, Rect(5+(50*1),17, 28, 28),gui[\knobTheme1]);
+		MVC_MyKnob3(models[5],sv, Rect(58,17, 28, 28),gui[\knobTheme1]);
 
 		// 288. master send amp
-		MVC_MyKnob3(models[288],sv, Rect(5+(50*2),17, 28, 28),gui[\knobTheme1]);
+		MVC_MyKnob3(models[288],sv, Rect(106,17, 28, 28),gui[\knobTheme1]);
 		
-		
-		///////////
+		// Kits & mutate //////////////////////////////////////////////////////////////
 		
 		MVC_PlainSquare(tab,Rect(79, 99, 7, 16))
 				.color_(\off, Color(0.1725, 0.184, 0.307));
 
 		// the border and composite view
-		sv = MVC_RoundedComView(tab, Rect(16-2,115, 140, 80), gui[\comTheme] );
+		sv = MVC_RoundedComView(tab, Rect(12,115, 144, 80), gui[\comTheme] );
 			
 		// set Drum Kit buttons 
 		['505','606','707','808','909','Rand'].do{|s,i|
-			MVC_FlatButton(sv,Rect(7+(44*(i%3)), 3+(27*((i/3).asInt)), 39, 19),
+			MVC_FlatButton(sv,Rect(7+(45*(i%3)), 3+(27*((i/3).asInt)), 39, 19),
 								 s.asString)
 				.rounded_(true)
 				.canFocus_(false)
@@ -410,7 +394,7 @@
 		};
 		
 		// mutate
- 		MVC_FlatButton(sv,Rect(24, 56, 47, 19),"Mutate")
+ 		MVC_FlatButton(sv,Rect(26, 56, 47, 19),"Mutate")
 			.rounded_(true)
 			.canFocus_(false)
 			.color_(\up,background/3 )
@@ -420,15 +404,50 @@
 			.action_{  this.mutate   };
 				
 		// mutate amount
-		MVC_NumberCircle(mutateModel, sv, Rect(78, 54, 25, 23), gui[\theme2]);
+		MVC_NumberCircle(mutateModel, sv, Rect(80, 54, 25, 23), gui[\theme2]);
 		
+		// Master grains  //////////////////////////////////////////////////////////////////
+		
+		MVC_PlainSquare(tab,Rect(162, 59, 7, 6))
+			.color_(\off, Color(0.1725, 0.184, 0.307));
+		
+		// master grain scroll view	
+		sv = MVC_RoundedComView(tab, Rect(175, 33, 159, 115), gui[\comTheme] );
+		
+		// 228. Master grain on/off
+		MVC_OnOffView(models[228], sv,Rect(5, 20, 48, 18),gui[\onOffTheme2])
+			.rounded_(true);
+		
+		// enabled adaptor for master grain on/off
+		MVC_FuncAdaptor(models[228])
+			.func_{|me,value|
+				value=(value==1);
+				models[229].enabled_(value);
+				models[230].enabled_(value);
+				models[231].enabled_(value);
+				models[260].enabled_(value);
+			}
+			.freshAdaptor;
+		
+		// 229. Master grain stretch
+		MVC_MyKnob3(models[229], sv, Rect(15, 73, 28, 28),gui[\knobTheme1]);
+		
+		// 230. Master grain density
+		MVC_MyKnob3(models[230], sv, Rect(70, 73, 28, 28),gui[\knobTheme1]);
+		
+		// 231. Master grain random
+		MVC_MyKnob3(models[231], sv, Rect(70, 16, 28, 28),gui[\knobTheme1]);
+		
+		// 260. Master grain overlap
+		MVC_MyKnob3(models[260], sv, Rect(120,73,28,28),gui[\knobTheme1]);
+			
 		// Master Filter //////////////////////////////////////////////////////////////////
 		
-		MVC_PlainSquare(tab,Rect(337, 85, 11, 6))
+		MVC_PlainSquare(tab,Rect(340, 85, 7, 6))
 			.color_(\off, Color(0.1725, 0.184, 0.307));
 				
 		// the border and composite view
-		sv = MVC_RoundedComView(tab, Rect(355-2, 33, 110, 115), gui[\comTheme] );
+		sv = MVC_RoundedComView(tab, Rect(353, 33, 110, 115), gui[\comTheme] );
 				
 		// 11. Master filter on/off	
 		MVC_OnOffView(models[11], sv,Rect(5,10, 40, 18),gui[\onOffTheme2])
@@ -471,43 +490,7 @@
 				};
 			}
 			.freshAdaptor;
-	
-		// Master grains  //////////////////////////////////////////////////////////////////
-		
-		MVC_PlainSquare(tab,Rect(157, 59, 11, 6))
-			.color_(\off, Color(0.1725, 0.184, 0.307));
-		
-		// master grain scroll view	
-		sv = MVC_RoundedComView(tab, Rect(176-2, 33, 159, 115), gui[\comTheme] );
-		
-		// 228. Master grain on/off
-		MVC_OnOffView(models[228], sv,Rect(5, 20, 48, 18),gui[\onOffTheme2])
-			.rounded_(true);
-		
-		// enabled adaptor for master grain on/off
-		MVC_FuncAdaptor(models[228])
-			.func_{|me,value|
-				value=(value==1);
-				models[229].enabled_(value);
-				models[230].enabled_(value);
-				models[231].enabled_(value);
-				models[260].enabled_(value);
-			}
-			.freshAdaptor;
-		
-		// 229. Master grain stretch
-		MVC_MyKnob3(models[229], sv, Rect(15, 73, 28, 28),gui[\knobTheme1]);
-		
-		// 230. Master grain density
-		MVC_MyKnob3(models[230], sv, Rect(70, 73, 28, 28),gui[\knobTheme1]);
-		
-		// 231. Master grain random
-		MVC_MyKnob3(models[231], sv, Rect(70, 16, 28, 28),gui[\knobTheme1]);
-		
-		// 260. Master grain overlap
-		MVC_MyKnob3(models[260], sv, Rect(120,73,28,28),gui[\knobTheme1]);
-			
-			
+				
 		// channel tabs & mixer ////////////////////////////////////////////////
 		
 		channels.do{|i|
@@ -544,29 +527,12 @@
 			tab =  gui[\tabView2].mvcTab(i);
 
 			// tab2 labels
-			gui[\text][i] = MVC_StaticText(gui[(\sv++i).asSymbol],Rect(302, 5, 340, 21),"")
+			gui[\text][i] = MVC_StaticText(gui[(\sv++i).asSymbol],Rect(302, 5, 315, 21),"")
 				.align_(\left)	
 				.font_(SCFont("Arial", 14))
 				.shadowDown_(false)
 				.color_(\stringDown,Color.black)
 				.action_{webBrowsers[i].open };	
-			
-			
-//			
-//			// back
-//			MVC_FlatButton(gui[(\sv++i).asSymbol] ,Rect(60, 8 , 20, 20),"back")
-//				.color_(\up,background/3 )
-//				.color_(\down,background/3 )
-//				.color_(\string,Color.white)
-//				.rounded_(true)
-//				.mode_(\icon)
-//				.attachedDown_(gui[\text][i])
-//				.action_{
-//					gui[\tabView].value_(8);
-//					gui[\tabView2].value_(8);
-//				};	
-//			
-			
 			
 			// search the web button
 			MVC_FlatButton(gui[(\sv++i).asSymbol] ,Rect(250, 8 , 20, 20),"search")
@@ -577,8 +543,7 @@
 				.mode_(\icon)
 				.attachedDown_(gui[\text][i])
 				.action_{ webBrowsers[i].open };		
-				
-				
+							
 			// metadata editor
 			MVC_FlatButton(gui[(\sv++i).asSymbol] ,Rect(275, 8 , 20, 20),"sine")
 				.mode_(\icon)
@@ -601,7 +566,7 @@
 				};
 					
 			// time of sample
-			gui[\textTime][i]  = MVC_StaticText(gui[(\sv++i).asSymbol],Rect(588, 5, 100, 21),"")
+			gui[\textTime][i]  = MVC_StaticText(gui[(\sv++i).asSymbol],Rect(617, 5, 77, 21),"")
 				.align_(\right)
 				.shadow_(false)
 				.color_(\string,Color.black)
@@ -626,24 +591,15 @@
 			MVC_PopUpMenu3(tab, Rect(75, 2, 112, 17),gui[\menuTheme  ])
 				.items_(channelBanks[i][p[100+i]].names)
 				.model_(models[108+i]);	
-				
-							
+									
 			// 116-123. channel bp on/off
 			MVC_OnOffView(models[116+i], tab, Rect(219, 1, 19, 19),gui[\onOffTheme2])
 				.rounded_(true);	
-				
-				
-				
-							
+									
 			// 289-296. static or random sample
 			MVC_OnOffView(models[289+i], tab, Rect(193, 1, 19, 19),gui[\onOffTheme2])
 				.rounded_(true);	
-				
-				
-				
-				
-				
-			
+	
 			MVC_FuncAdaptor(models[108+i])
 				.func_{|me,value|
 					var text = channelBanks[i][p[100+i]].names.wrapAt(value)??{""};
@@ -674,128 +630,51 @@
 			// 36-43. channel out channel (master vs individual)
 			MVC_PopUpMenu3(models[36+i],tab, Rect(395, 2, 70, 17),gui[\menuTheme  ])
 				.orientation_(\horizontal);	
-
-				
-			
-				
+					
 			// 92-99. channel choke
 			MVC_NumberCircle(models[92+i], tab, Rect(290-15+10, 0, 22, 22), gui[\theme2])
 				.orientation_(\horizontal)
-				.resoultion_(0.5);	
+				.resoultion_(0.5);				
 				
-				
-				
-			// sample control scroll view	
-			
+			// sample control scroll view ////////////////////////////////////////////////////
+								
+			sv = MVC_RoundedComView(tab,Rect(12, 33,144, 162), gui[\comTheme]);
 						
-						
-			sv = MVC_RoundedComView(tab,Rect(16-2, 33,140, 162), gui[\comTheme]);
-					
-			
-				
-				
 			// 68-75. channel pitch
-			MVC_MyKnob3(models[68+i], sv, Rect(5, 17, 28, 28),gui[\knobTheme1]);
+			MVC_MyKnob3(models[68+i], sv, Rect(10, 17, 28, 28),gui[\knobTheme1]);
 			
 			// 196-203. channel mod : pitch
-			MVC_MyKnob3(models[196+i], sv, Rect(9, 131, 20, 20),gui[\knobTheme2]);
+			MVC_MyKnob3(models[196+i], sv, Rect(14, 131, 20, 20),gui[\knobTheme2]);
 			
 			// 52-59. channel duration
-			MVC_MyKnob3(models[52+i], sv, Rect(55, 17, 28, 28),gui[\knobTheme1]);
+			MVC_MyKnob3(models[52+i], sv, Rect(58, 17, 28, 28),gui[\knobTheme1]);
 			
 			// 204-211. channel mod : duration
-			MVC_MyKnob3(models[204+i], sv, Rect(59, 131, 20, 20),gui[\knobTheme2]);
+			MVC_MyKnob3(models[204+i], sv, Rect(62, 131, 20, 20),gui[\knobTheme2]);
 
 			// 277-84. channel attack
-			MVC_MyKnob3(models[277+i], sv, Rect(9, 74, 28, 28),gui[\knobTheme1]);
+			MVC_MyKnob3(models[277+i], sv, Rect(10, 74, 28, 28),gui[\knobTheme1]);
 
-			
 			// 60-67. channel decay
-			MVC_MyKnob3(models[60+i], sv, Rect(55, 74, 28, 28),gui[\knobTheme1]);
+			MVC_MyKnob3(models[60+i], sv, Rect(58, 74, 28, 28),gui[\knobTheme1]);
 			
 			// 252-275. channel velocity
-			MVC_MyKnob3(models[252+i], sv, Rect(105, 74, 28, 28),gui[\knobTheme1]);
-			
-
+			MVC_MyKnob3(models[252+i], sv, Rect(106, 74, 28, 28),gui[\knobTheme1]);
 			
 			// 84-91. channel send amps
-			MVC_MyKnob3(models[84+i], sv, Rect(105, 17, 28, 28),gui[\knobTheme1]);
+			MVC_MyKnob3(models[84+i], sv, Rect(106, 17, 28, 28),gui[\knobTheme1]);
 			
 			// 212-219. channel mod : send
-			MVC_MyKnob3(models[212+i], sv, Rect(109, 131, 20, 20),gui[\knobTheme2]);
-			
-			
-			
-			// CHANNEL FILTER scroll view ////////////////////////////////////////////////////
-			
-			MVC_PlainSquare(tab,Rect(337, 116, 11, 6))
-				.color_(\off, Color(0.1725, 0.184, 0.307));
-					
-			// filter scroll view			
-			sv = MVC_RoundedComView(tab,Rect(355-2, 33, 110, 162), gui[\comTheme]);
-								
-		
-			// 236-243. channel filter on/off
-			MVC_OnOffView(models[236+i], sv,Rect(5, 10, 40, 18),gui[\onOffTheme2])
-				.rounded_(true);
-				
-			// 188-195. channel type 0=lp, 1=hp
-			MVC_OnOffView(models[188+i], sv,Rect(10, 35, 28, 16),gui[\onOffTheme2])
-				.rounded_(true);
-				
-			// 124-131. channel filt freq
-			MVC_MyKnob3(models[124+i], sv, Rect(12, 73, 28, 28),
-				gui[\knobTheme1]);
-				
-			// 132-139. channel filt res
-			MVC_MyKnob3(models[132+i], sv, Rect(65, 73, 28, 28),
-				gui[\knobTheme1]);	
-			// 140-147. channel filter Drive
-			MVC_MyKnob3(models[140+i], sv, Rect(65, 16, 28, 28),
-				gui[\knobTheme1]);
-			
-			// 244-251. channel mod : filter freq
-			MVC_MyKnob3(models[244+i], sv, Rect(17, 130, 20, 20),
-				gui[\knobTheme2]);
-				
-				
-				
-			
-			// enabled adaptor for master filter on/off
-			MVC_FuncAdaptor(models[236+i])
-				.func_{|me,value|
-					value=(value==1);
-					models[188+i].enabled_(value);
-					models[124+i].enabled_(value);
-					models[132+i].enabled_(value);
-					models[140+i].enabled_(value);
-					models[244+i].enabled_(value);
-					//models[277+i].enabled_(value);
-				}
-				.freshAdaptor;
-			
-			// enabled adaptor for master grain on/off
-			MVC_FuncAdaptor(models[188+i])
-				.func_{|me,value|
-					if (value==0) {
-						models[124+i].dependantsPerform(\zeroValue_,20);
-					}{
-						models[124+i].dependantsPerform(\zeroValue_,20000);
-					};
-				}
-				.freshAdaptor;
+			MVC_MyKnob3(models[212+i], sv, Rect(110, 131, 20, 20),gui[\knobTheme2]);
 			
 			// CHANNEL GRAINS  ////////////////////////////////////////////////////////////////
 			
 			// grain scroll view				
 	
-			MVC_PlainSquare(tab,Rect(157, 116, 11, 6))
-				.color_(\off, Color(0.1725, 0.184, 0.307));
+			MVC_PlainSquare(tab,Rect(162, 116, 7, 6)).color_(\off, Color(0.1725, 0.184, 0.307));
 	
-			sv = MVC_RoundedComView(tab,Rect(176-2, 33, 159, 162), gui[\comTheme]);
+			sv = MVC_RoundedComView(tab,Rect(175, 33, 159, 162), gui[\comTheme]);
 					
-			
-			
 			// 148-155. channel grain on/off
 			MVC_OnOffView(models[148+i], sv, Rect(5, 20, 48, 18), gui[\onOffTheme2])
 				.rounded_(true);
@@ -833,8 +712,62 @@
 			MVC_MyKnob3(models[261+i], sv, Rect(120,73,28,28),gui[\knobTheme1]);
 			
 			// 269-276.  channel mod : grain overlap
-			MVC_MyKnob3(models[269+i], sv, Rect(124, 130, 20, 20), gui[\knobTheme2]);	
-		
+			MVC_MyKnob3(models[269+i], sv, Rect(124, 130, 20, 20), gui[\knobTheme2]);
+			
+			// CHANNEL FILTER scroll view ////////////////////////////////////////////////////
+			
+			MVC_PlainSquare(tab,Rect(340, 116, 7, 6)).color_(\off, Color(0.1725, 0.184, 0.307));
+					
+			// filter scroll view			
+			sv = MVC_RoundedComView(tab,Rect(353, 33, 110, 162), gui[\comTheme]);
+								
+			// 236-243. channel filter on/off
+			MVC_OnOffView(models[236+i], sv,Rect(5, 10, 40, 18),gui[\onOffTheme2])
+				.rounded_(true);
+				
+			// 188-195. channel type 0=lp, 1=hp
+			MVC_OnOffView(models[188+i], sv,Rect(10, 35, 28, 16),gui[\onOffTheme2])
+				.rounded_(true);
+				
+			// 124-131. channel filt freq
+			MVC_MyKnob3(models[124+i], sv, Rect(12, 73, 28, 28),
+				gui[\knobTheme1]);
+				
+			// 132-139. channel filt res
+			MVC_MyKnob3(models[132+i], sv, Rect(65, 73, 28, 28),
+				gui[\knobTheme1]);	
+			// 140-147. channel filter Drive
+			MVC_MyKnob3(models[140+i], sv, Rect(65, 16, 28, 28),
+				gui[\knobTheme1]);
+			
+			// 244-251. channel mod : filter freq
+			MVC_MyKnob3(models[244+i], sv, Rect(17, 130, 20, 20),
+				gui[\knobTheme2]);
+				
+			// enabled adaptor for master filter on/off
+			MVC_FuncAdaptor(models[236+i])
+				.func_{|me,value|
+					value=(value==1);
+					models[188+i].enabled_(value);
+					models[124+i].enabled_(value);
+					models[132+i].enabled_(value);
+					models[140+i].enabled_(value);
+					models[244+i].enabled_(value);
+					//models[277+i].enabled_(value);
+				}
+				.freshAdaptor;
+			
+			// enabled adaptor for master grain on/off
+			MVC_FuncAdaptor(models[188+i])
+				.func_{|me,value|
+					if (value==0) {
+						models[124+i].dependantsPerform(\zeroValue_,20);
+					}{
+						models[124+i].dependantsPerform(\zeroValue_,20000);
+					};
+				}
+				.freshAdaptor;
+					
 		};
 		
 	}

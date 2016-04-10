@@ -4,7 +4,7 @@
 /*
 (
 w=MVC_Window();
-MVC_FlatSlider(w,Rect(10,10,200,20))
+MVC_Scale(w,Rect(10,10,20,200));
 w.create;
 )
 */

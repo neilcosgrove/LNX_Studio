@@ -101,23 +101,21 @@
 				
 		];
 			
-		template=template.extend(289+8,0); // extend the list to add the channel parameters
+		template=template.extend(297+1,0); // extend the list to add the channel parameters
 			
 	// MASTER FILTER ///////////////////////////////////////////////////////////////////////
 						
 		// 11. Master filter on/off		
 		template[11]=[0,\switch,midiControl, 11, "Master Filter On/Off", (\strings_:["Filter"]), 
 			{|me,val,latency,send,toggle|
-				this.setPVP(11,val,latency,send);
-				
+				this.setPVPModel(11,val,latency,send);
 				this.updateAllFilterOnOff(latency);
-				
 			}];
 							
 		// 232. Master filter type 0=lp, 1=hp
 		template[232]=[0,\switch,midiControl, 232, "Master Filter type", (\strings_:["LP","HP"]),
 			{|me,val,latency,send,toggle|
-				this.setPVP(232,val,latency,send);
+				this.setPVPModel(232,val,latency,send);
 				this.setAllFilterArgs(\type,latency); // new
 				
 			}];
@@ -126,7 +124,7 @@
 		template[233]=[20000,\freq,midiControl, 233, "Master Filt Freq",
 			(\label_:"Freq" , \numberFunc_:\freq),
 			{|me,val,latency,send,toggle|
-				this.setPVP(233,val,latency,send);
+				this.setPVPModel(233,val,latency,send);
 				//channels.do{|i| this.updateSynthArg(\filtFreq,i,latency)};
 				
 				this.setAllFilterArgs(\filtFreq,latency); // new
@@ -137,7 +135,7 @@
 		template[234]=[0,[0,1,\lin],midiControl, 234, "Master Res",
 			(\label_:"Res" , \numberFunc_:\float2),
 			{|me,val,latency,send,toggle|
-				this.setPVP(234,val,latency,send);
+				this.setPVPModel(234,val,latency,send);
 				//channels.do{|i| this.updateSynthArg(\filtRes,i,latency)};
 				
 				this.setAllFilterArgs(\filtRes,latency); // new
@@ -148,7 +146,7 @@
 		template[235]=[0.5,[0.5,4,\lin],midiControl, 235, "Master Drive",
 			(\label_:"Drive",\numberFunc_:'float2'),
 			{|me,val,latency,send,toggle|
-				this.setPVP(235,val,latency,send);
+				this.setPVPModel(235,val,latency,send);
 				//channels.do{|i| this.updateSynthArg(\drive,i,latency)};
 				
 				this.setAllFilterArgs(\drive,latency); // new
@@ -166,7 +164,7 @@
 		template[229]=[0.5,\unipolar,midiControl, 229, "Master Stretch",
 			(\label_:"Stretch",\numberFunc_:'stretch',\zeroValue_:0.5),
 			{|me,val,latency,send,toggle|
-				this.setPVP(229,val,latency,send);
+				this.setPVPModel(229,val,latency,send);
 				if (p[228]==1) {
 					channels.do{|i|
 						this.updateSynthArg(\posRate,i,latency)
@@ -178,7 +176,7 @@
 		template[230]=[60,[15,200,\exp,0,60," Hz"],midiControl, 230, "Master Density",
 			(\label_:"Density",\numberFunc_:'freq'),
 			{|me,val,latency,send,toggle|
-				this.setPVP(230,val,latency,send);
+				this.setPVPModel(230,val,latency,send);
 				if (p[228]==1) {
 					channels.do{|i|
 						this.updateSynthArg(\density,i,latency)
@@ -190,7 +188,7 @@
 		template[231]=[\unipolar,midiControl, 231, "Master Rand",
 			(\label_:"Rand",\numberFunc_:'float2'),
 			{|me,val,latency,send,toggle|
-				this.setPVP(231,val,latency,send);
+				this.setPVPModel(231,val,latency,send);
 				if (p[228]==1) {
 					channels.do{|i|
 						this.updateSynthArg(\rand,i,latency)
@@ -205,7 +203,7 @@
 				\numberFunc_:'float2'
 			),
 			{|me,val,latency,send,toggle|
-				this.setPVP(260,val,latency,send);
+				this.setPVPModel(260,val,latency,send);
 				if (p[228]==1) {
 					channels.do{|i|
 						this.updateSynthArg(\overlap,i,latency)
@@ -230,7 +228,13 @@
 				{|me,val,latency,send|
 					this.setPVPModel(288,val,latency,send);
 					this.setAllBoth(\masterSendAmp,latency);
-				}];		
+				}];
+				
+		// 297. syncDelay
+		template[297]=[\sync, {|me,val,latency,send|
+			this.setPVPModel(297,val,latency,send);
+			this.syncDelay_(val);
+		}];
 		
 	// channels parameters // * * * * * * * * * * * * * * * * * * *//////////////////////
 						
@@ -352,7 +356,7 @@
 			template[124+i]=[20000,\freq,midiControl, 124+i, "Filt Freq"+(i+1),
 				(\label_:"Freq" , \numberFunc_:\freq),
 				{|me,val,latency,send,toggle|
-					this.setPVP(124+i,val,latency,send);
+					this.setPVPModel(124+i,val,latency,send);
 					this.updateFilterArg(\filtFreq,i,latency); // new
 				}];
 			
@@ -360,7 +364,7 @@
 			template[132+i]=[0,[0,1, \lin ],midiControl, 132+i, "Res"+(i+1),
 				(\label_:"Res" , \numberFunc_:\float2),
 				{|me,val,latency,send,toggle|
-					this.setPVP(132+i,val,latency,send);
+					this.setPVPModel(132+i,val,latency,send);
 					this.updateFilterArg(\filtRes,i,latency); // new
 				}];
 			
@@ -368,7 +372,7 @@
 			template[140+i]=[0.5,[0.5,4,\lin],midiControl, 140+i, "Drive"+(i+1),
 				(\label_:"Drive",\numberFunc_:'float2'),
 				{|me,val,latency,send,toggle|
-					this.setPVP(140+i,val,latency,send);
+					this.setPVPModel(140+i,val,latency,send);
 					this.updateFilterArg(\drive,i,latency); // new
 				}];
 					
@@ -381,7 +385,7 @@
 			template[156+i]=[0.5,\unipolar,midiControl, 156+i, "Stretch"+(i+1),
 				(\label_:"Stretch",\numberFunc_:'stretch',\zeroValue_:0.5),
 				{|me,val,latency,send,toggle|
-					this.setPVP(156+i,val,latency,send);
+					this.setPVPModel(156+i,val,latency,send);
 					this.updateSynthArg(\posRate,i,latency)
 				}];
 			
@@ -389,7 +393,7 @@
 			template[164+i]=[60,[15,200,\exp,0,60," Hz"],midiControl, 164+i, "Density"+(i+1),
 				(\label_:"Density",\numberFunc_:'freq'),
 				{|me,val,latency,send,toggle|
-					this.setPVP(164+i,val,latency,send);
+					this.setPVPModel(164+i,val,latency,send);
 					this.updateSynthArg(\density,i,latency)
 				}];
 			
@@ -397,7 +401,7 @@
 			template[172+i]=[\bipolar,midiControl, 172+i, "Denity Mod"+(i+1),
 				(\label_:"Density",\numberFunc_:'float2Sign', \zeroValue_:0),
 				{|me,val,latency,send,toggle|
-					this.setPVP(172+i,val,latency,send);
+					this.setPVPModel(172+i,val,latency,send);
 					this.updateSynthArg(\density,i,latency)
 				}];
 			
@@ -405,7 +409,7 @@
 			template[180+i]=[\unipolar,midiControl, 180+i, "Rand"+(i+1),
 				(\label_:"Rand",\numberFunc_:'float2'),
 				{|me,val,latency,send,toggle|
-					this.setPVP(180+i,val,latency,send);
+					this.setPVPModel(180+i,val,latency,send);
 					this.updateSynthArg(\rand,i,latency)
 				}];
 			
@@ -413,7 +417,7 @@
 			template[188+i]=[0,\switch,midiControl, 188+i, "Filter type"+(i+1),
 				(\strings_:["LP","HP"]), // ["Off","LP","HP"]
 				{|me,val,latency,send,toggle|
-					this.setPVP(188+i,val,latency,send);
+					this.setPVPModel(188+i,val,latency,send);
 					this.updateFilterArg(\type,i,latency); // new
 				}];
 				
@@ -434,7 +438,7 @@
 			template[212+i]=[-inf,\db2,midiControl, 212+i, "Send Mod"+(i+1),
 				(\label_:"Send" , \numberFunc_:'db'),
 				{|me,val,latency,send,toggle|
-					this.setPVP(212+i,val,latency,send);
+					this.setPVPModel(212+i,val,latency,send);
 					this.updateSynthArg(\sendAmp,i,latency);
 				}];
 			
@@ -442,7 +446,7 @@
 			template[220+i]=[0.5,\unipolar,midiControl, 220+i, "Stretch Mod"+(i+1),
 				(\label_:"Stretch",\numberFunc_:'stretch',\zeroValue_:0.5),
 				{|me,val,latency,send,toggle|
-					this.setPVP(220+i,val,latency,send);
+					this.setPVPModel(220+i,val,latency,send);
 					this.updateSynthArg(\posRate,i,latency)
 				}];
 			
@@ -452,7 +456,7 @@
 			template[236+i]=[0,\switch,midiControl, 236+i, "Filter On/Off"+(i+1),
 				(\strings_:["Filter"]), 
 				{|me,val,latency,send,toggle|
-					this.setPVP(236+i,val,latency,send);
+					this.setPVPModel(236+i,val,latency,send);
 					this.updateFilterOnOff(i,latency); // new
 				}];
 			
@@ -460,7 +464,7 @@
 			template[244+i]=[\bipolar,midiControl, 244+i, "Filt Freq Mod"+(i+1),
 				(\label_:"Freq",\numberFunc_:'float2Sign', \zeroValue_:0),
 				{|me,val,latency,send,toggle|
-					this.setPVP(244+i,val,latency,send);
+					this.setPVPModel(244+i,val,latency,send);
 					this.updateSynthArg(\filtFreq,i,latency)
 				}];
 				
@@ -475,7 +479,7 @@
 				\label_:"Overlap",
 				\numberFunc_:'float2'),
 				{|me,val,latency,send,toggle|
-					this.setPVP(261+i,val,latency,send);
+					this.setPVPModel(261+i,val,latency,send);
 					this.updateSynthArg(\overlap,i,latency)
 				}];
 							
@@ -483,7 +487,7 @@
 			template[269+i]=[\bipolar,midiControl, 269+i, "Overlap Mod"+(i+1),
 				(\label_:"Overlap",\numberFunc_:'float2Sign', \zeroValue_:0),
 				{|me,val,latency,send,toggle|
-					this.setPVP(269+i,val,latency,send);
+					this.setPVPModel(269+i,val,latency,send);
 					this.updateSynthArg(\overlap,i,latency)
 				}];
 	
@@ -496,17 +500,17 @@
 			template[289+i]=[0,\switch,midiControl, 289+i, "Rand Smp"+(i+1),
 				(\strings_:["R"]),
 				{|me,val,latency,send,toggle| this.setPVP(289+i,val,latency,send) }];
-	
+					
 		};
 		
 		#models,defaults=template.generateAllModels;
 
 		// list all parameters you want exluded from a preset change
-		presetExclusion=#[0,1,10];
+		presetExclusion=#[0,1,10,297];
 		randomExclusion=#[0,1,2,3,4,7,8,10,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,
 						29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,76,77,78,79,80,81,82,83,
-						5,6,52,53,54,55,56,57,58,59,68,69,70,71,72,73,74,75,286];
-		autoExclusion=#[10];
+						5,6,52,53,54,55,56,57,58,59,68,69,70,71,72,73,74,75,286,297];
+		autoExclusion=#[10,297];
 						
 		defaultChannels.do{|i| models[108+i].constrain_(false) }; // this may not work
 		
@@ -518,18 +522,16 @@
 	}
 	
 	// peak / target volume model
-	peakModel{^models[286]}
-	
+	peakModel   {^models[286]}
 	// return the volume model
-	volumeModel{^models[2] }
-	outChModel{^models[3]}
-	
-	soloModel{^models[0]}
-	onOffModel{^models[1]}
-	panModel{^models[4]}
-	
-	sendChModel{^models[287]}
+	volumeModel {^models[2]}
+	outChModel  {^models[3]}
+	soloModel   {^models[0]}
+	onOffModel  {^models[1]}
+	panModel    {^models[4]}
+	sendChModel {^models[287]}
 	sendAmpModel{^models[288]}
+	syncModel   {^models[297]}
 	
 }
 

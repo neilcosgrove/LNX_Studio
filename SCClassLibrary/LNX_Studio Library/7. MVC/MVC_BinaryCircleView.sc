@@ -4,6 +4,9 @@
 MVC_BinaryCircleView : MVC_View {
 
 	var <>down = false;
+	
+	var <>permanentStrings; // used primarily in studio_inst onOff button to stop its string changing 
+
 
 	// set your default colours
 	initView{
@@ -47,9 +50,9 @@ MVC_BinaryCircleView : MVC_View {
 				Pen.fillColor_((value==1).if(colors[\stringOn],colors[\stringOff]));
 				Pen.smoothing_(true);
 				if (value==1) {
-					Pen.stringCenteredIn(strings@0,Rect(0,0,w,h));
+					Pen.stringCenteredIn((permanentStrings?strings)@0,Rect(0,0,w,h));
 				}{
-					Pen.stringCenteredIn(strings@@1,Rect(0,0,w,h));
+					Pen.stringCenteredIn((permanentStrings?strings)@@1,Rect(0,0,w,h));
 				};
 			}; // end.pen
 		};		

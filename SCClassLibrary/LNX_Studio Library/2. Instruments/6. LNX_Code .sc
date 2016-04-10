@@ -27,7 +27,38 @@ LNX_Code : LNX_InstrumentTemplate {
 	var pollResponder;
 	var <userBank, <webBrowser;
 
-   	// anything thats needed before the models are made
+	*initClass {
+		guiTypes=#[\MVC_MyKnob, \MVC_MyKnob3, \MVC_SmoothSlider, \MVC_Slider, \MVC_FlatSlider,
+		           \MVC_OnOffView, \MVC_OnOffRoundedView, \MVC_NoteView, \MVC_PinSeqView,
+		           \MVC_NumberBox, \MVC_NumberCircle];
+		           
+		guiTypesNames=#["Knob", "Dial", "Smooth Slider", "Slider", "Flat Slider",
+					"OnOff Switch", "OnOff Rounded", "MIDI Note", "Circle Switch",
+					"Number Box", "Number Circle" ];
+	}
+
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
+	}
+	
+	// an immutable list of methods available to the network
+	interface{^#[\netEditString, \netSetUserModel, \netEvaluate, \netColorSystem, \netPipeIn,
+	             \netBoundsUser, \netColorUser,    \netBoundsSystem, \netChangeGUIType ]}
+
+	*studioName {^"SC Code"}
+	*sortOrder{^0}
+	isInstrument{^true}
+	canBeSequenced{^true}
+	isMixerInstrument{^true}
+	hasLevelsOut{^true}
+
+	header { 
+		// define your document header details
+		instrumentHeaderType="SC Code Doc";
+		version="v1.5";		
+	}
+	
+	// anything thats needed before the models are made
 	initPreModel{
 		
 		// user content !!!!!!!		
@@ -51,37 +82,6 @@ LNX_Code : LNX_InstrumentTemplate {
 		// the webBrowsers used to search for new sounds!
 		webBrowser = LNX_WebBrowser(server,userBank);
 		
-	}
-
-	*initClass {
-		guiTypes=#[\MVC_MyKnob, \MVC_MyKnob3, \MVC_SmoothSlider, \MVC_Slider, \MVC_FlatSlider,
-		           \MVC_OnOffView, \MVC_OnOffRoundedView, \MVC_NoteView, \MVC_PinSeqView,
-		           \MVC_NumberBox, \MVC_NumberCircle];
-		           
-		guiTypesNames=#["Knob", "Dial", "Smooth Slider", "Slider", "Flat Slider",
-					"OnOff Switch", "OnOff Rounded", "MIDI Note", "Circle Switch",
-					"Number Box", "Number Circle" ];
-	}
-
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
-	}
-	
-	// an immutable list of methods available to the network
-	interface{^#[\netEditString, \netSetUserModel, \netEvaluate, \netColorSystem,
-	             \netBoundsUser, \netColorUser,    \netBoundsSystem, \netChangeGUIType ]}
-
-	*studioName {^"SC Code"}
-	*sortOrder{^0}
-	isInstrument{^true}
-	canBeSequenced{^true}
-	isMixerInstrument{^true}
-	hasLevelsOut{^true}
-
-	header { 
-		// define your document header details
-		instrumentHeaderType="SC Code Doc";
-		version="v1.5";		
 	}
 
 	// the models
@@ -193,7 +193,7 @@ LNX_Code : LNX_InstrumentTemplate {
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(12,val,latency,send);
 					voicer.poly_(val);
-					voicer.limitPoly(latency ? studio.actualLatency,0);
+					voicer.limitPoly((latency ? studio.actualLatency) +! syncDelay,0);
 				}],
 				
 			// 13. tab
@@ -249,7 +249,16 @@ LNX_Code : LNX_InstrumentTemplate {
 				(\label_:"Static",\numberFunc_:'intSign','zeroValue_':0),
 				{|me,val,latency,send,toggle| this.setPVPModel(22,val,latency,send)}],
 				
-		
+			// 23. syncDelay
+			[\sync, {|me,val,latency,send|
+				this.setPVPModel(23,val,latency,send);
+				this.syncDelay_(val);
+			}],
+			
+			// 24.network keyboard
+			[0, \switch, midiControl, 24, "Network", (strings_:["Net"]),
+				{|me,val,latency,send|	this.setPVH(24,val,latency,send) }],
+				
 		].generateAllModels;
 		
 		// networked pianoRoll
@@ -257,7 +266,7 @@ LNX_Code : LNX_InstrumentTemplate {
 			.action_   {|note,velocity,latency| this.seqNoteOn(note,velocity,latency) }
 			.offAction_{|note,velocity,latency| this.seqNoteOff(note,velocity*127,latency) }
 			.releaseAllAction_{
-				voicer.releaseAllNotes(studio.actualLatency);
+				voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
 				{gui[\keyboardView].clear}.defer(studio.actualLatency);
 			}
 			.keyDownAction_{|me, char, modifiers, unicode, keycode|
@@ -285,9 +294,9 @@ LNX_Code : LNX_InstrumentTemplate {
 		errorModel = "".asModel;
 
 		// list all parameters you want exluded from a preset change
-		presetExclusion=[0,1,13];
-		randomExclusion=[0,1,2,3,7,8,13,9,11,14,16,17];
-		autoExclusion=[];
+		presetExclusion=[0,1,13,23];
+		randomExclusion=[0,1,2,3,7,8,13,9,11,14,16,17,23];
+		autoExclusion=[23];
 		
 		// unique id for this instrument to use in SynthDef name
 		sythDefID = LNX_SynthDefID.next;
@@ -309,20 +318,16 @@ LNX_Code : LNX_InstrumentTemplate {
 		
 	}
 	
-	// peak / target volume model
-	peakModel{^models[17]}
-	
-	// return the volume model
-	volumeModel{^models[2] }
-	outChModel{^models[3]}
-	
-	soloModel{^models[0]}
-	onOffModel{^models[1]}
-	
-	panModel{^models[4]}
-	
-	sendChModel{^models[9]}
+	// return the models
+	peakModel   {^models[17]}
+	volumeModel {^models[2]}
+	outChModel  {^models[3]}
+	soloModel   {^models[0]}
+	onOffModel  {^models[1]}
+	panModel    {^models[4]}
+	sendChModel {^models[9]}
 	sendAmpModel{^models[10]}
+	syncModel   {^models[23]}
 	
 	// MIDI and synth control ////////////////////////////////////////////////////////////
 	
@@ -334,7 +339,7 @@ LNX_Code : LNX_InstrumentTemplate {
 	}
 	
 	// midi clock in (this is at MIDIClock rate)
-	clockIn3 {|beat,absTime,latency| sequencer.clockIn3(beat,absTime,latency) }
+	clockIn3 {|beat,absTime,latency,absBeat| sequencer.clockIn3(beat,absTime,latency,absBeat) }
 	
 	bpmChange{|latency|
 		if (systemIndices[\bpm].notNil) {
@@ -345,7 +350,7 @@ LNX_Code : LNX_InstrumentTemplate {
 	// reset sequencers posViews
 	clockStop {
 		sequencer.clockStop(studio.actualLatency);
-		voicer.killAllNotes(studio.actualLatency);
+		voicer.killAllNotes(studio.actualLatency +! syncDelay);
 		{if (gui[\keyboardView].notNil) {gui[\keyboardView].clear};}.defer(studio.actualLatency);
 		lastClockBeat=0;
 	}
@@ -353,23 +358,53 @@ LNX_Code : LNX_InstrumentTemplate {
 	// remove any clock hilites
 	clockPause{
 		sequencer.clockPause(studio.actualLatency);
-		voicer.releaseAllNotes(studio.actualLatency);
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
 		{if (gui[\keyboardView].notNil) {gui[\keyboardView].clear};}.defer(studio.actualLatency)
 	}
 	
 	// called from onSolo funcs
 	stopAllNotes{
-		voicer.releaseAllNotes(studio.actualLatency);
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
 		{if (gui[\keyboardView].notNil) {gui[\keyboardView].clear};}.defer(studio.actualLatency);	
 	}
 	
 	stopDSP{
-		voicer.releaseAllNotes(studio.actualLatency);
-		voicer.killAllNotes(studio.actualLatency);
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
+		voicer.killAllNotes(studio.actualLatency +! syncDelay);
+	}
+
+	// midi stuff
+
+	iInitMIDI{ this.useMIDIPipes }
+	
+	pipeIn{|pipe|
+		// exceptions
+		if (instOnSolo.isOff)           {^this};  // drop if sequencer off
+		if (pipe.historyIncludes(this)) {^this}; // drop to prevent internal feedback loops
+		
+		if (pipe.isNoteOn) { this.noteOn(pipe.note, pipe.velocity, pipe.latency) };
+		if (pipe.isNoteOff) { this.noteOff(pipe.note, pipe.velocity, pipe.latency) };
+
+		// network if needed		
+		if ((p[24].isTrue) and:
+			{#[\external, \controllerKeyboard, \MIDIIn, \keyboard].includes(pipe.source)}) {
+				if (((pipe.source==\controllerKeyboard) and:{studio.isCntKeyboardNetworked}).not) 
+					{ api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}
+		};
+		
+	}
+	
+	// networked midi pipes	
+	netPipeIn{|type,note,velocity|
+		switch (type.asSymbol)
+			{\noteOn } { this.pipeIn(LNX_NoteOn(note,velocity,nil,\network)) }
+			{\noteOff} { this.pipeIn(LNX_NoteOff(note,velocity,nil,\network)) }
+		;
 	}
 
 	// noteOn (from MIDI in)
 	noteOn{|note, velocity, latency|	
+		
 		// need to limit this to just midi in
 		if ((note<p[7])or:{note>p[8]}) {^nil}; // drop out if out of midi range
 		velocity=velocity/127; // scale to 0-1
@@ -403,8 +438,9 @@ LNX_Code : LNX_InstrumentTemplate {
 		var voicerNode;
 		if (valid) {  // this is test to see if synthDef is valid
 			if (instOnSolo.onOff==0) {^nil}; // drop out if instrument onSolo is off
-			voicerNode = voicer.noteOn(note, velocity, latency); // create a voicer node
-			server.sendBundle(latency,[\s_new, synthDef.name, voicerNode.node, 0, scCodeGroupID]++
+			voicerNode = voicer.noteOn(note, velocity, latency +! syncDelay); // create a voicer node
+			server.sendBundle(latency +! syncDelay,
+				[\s_new, synthDef.name, voicerNode.node, 0, scCodeGroupID]++
 					(this.getSystemMsg(note,velocity))++(this.getUserMsg));
 		};
 	}
@@ -441,7 +477,7 @@ LNX_Code : LNX_InstrumentTemplate {
 	
 	// stop note (called by noteOn, seqNoteOff & keyboard)
 	stopNote{|note, velocity, latency|
-		voicer.releaseNote(note,latency);
+		voicer.releaseNote(note,latency +! syncDelay);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////
@@ -726,10 +762,10 @@ LNX_Code : LNX_InstrumentTemplate {
 		userPresets={ IdentityDictionary[] } ! noPre;
 		
 		if (loadVersion>=1.4) {
-			userPresetSizes = l.popNI(noPre); // pop the sizes
+			userPresetSizes = l.popNI(noPre);        // pop the sizes
 			userPresetSizes.do{|size,i|
 				size.do{
-					var symbol = l.pop.asSymbol; // get the key value pair
+					var symbol = l.pop.asSymbol;    // get the key value pair
 					var value  = l.popF;
 					userPresets[i][symbol] = value; // and put in user preset dict
 				};
@@ -737,46 +773,34 @@ LNX_Code : LNX_InstrumentTemplate {
 		};
 		
 		// the samples
-		if (loadVersion>=1.5) {
-			userBank.putLoadListURL( l.popEND("*** END URL Bank Doc ***") );
-		};
+		if (loadVersion>=1.5) { userBank.putLoadListURL( l.popEND("*** END URL Bank Doc ***") ) };
 		
-	}
-	
-	// anything that needs doing after a load
-	iPostLoad{
+		 // evaluate code	
+		this.guiEvaluate(false);
 		
-		
-		
-		this.guiEvaluate(false); // evaluate code 1st
-		
-		
-		{
-		
-		userBank.adjustViews; // wierd alignment bug in sampleBank fixed by this
-		
+		// wierd alignment bug in sampleBank fixed by this
+		userBank.adjustViews;
 		if (userBank.size>0) { userBank.allInterfacesSelect(0) };
-		
 		
 		// put in system views
 		loadingSystemViews.pairsDo{|indices,list|
-			var class=list[0];	
+			var class=list[0].asSymbol.asClass;
 			var loadList = list.drop(1);
 			var oldView, newView;
 		
 			oldView = systemViews[indices];	// the old view
 			
 			// make the new view, with the old model and actions
-			newView = class.asSymbol.asClass.new(false,oldView.model,gui[\userGUIScrollView], 
+			newView = class.new(false,oldView.model,gui[\userGUIScrollView], 
 												  Rect(),gui[\userGUI])
 					.boundsAction_(oldView.boundsAction)
 					.mouseDownAction_(oldView.mouseDownAction)
 					.colorAction_(oldView.colorAction)
-					.putLoadList(loadList); // put in the load data
+					.putLoadList(loadList);                        // put in the load data
 			
-			newView.create;                  // now make it
-			systemViews[indices]=newView;    // store it
-			oldView.remove.removeModel.free; // and get rid of the old one
+			if (gui[\userGUIScrollView].isOpen) { newView.create }; // now make it
+			systemViews[indices]=newView;                           // store it
+			oldView.remove.removeModel.free;                        // and get rid of the old one
 			
 		};
 		
@@ -785,24 +809,28 @@ LNX_Code : LNX_InstrumentTemplate {
 		
 		// put in user views	
 		loadingUserViews.pairsDo{|indices,list|
-			var class=list[0];	
+			var class=list[0].asSymbol.asClass;	
 			var modelValue = list[1].asFloat;
 			var loadList = list.drop(2);
 			var oldView, newView;
 			
 			// make the new view, with the old model and actions
 			oldView = userViews[indices];
-			newView = class.asSymbol.asClass.new(false,oldView.model,gui[\userGUIScrollView], 
+			newView = class.new(false,oldView.model,gui[\userGUIScrollView], 
 												  Rect(),gui[\userGUI])
 					.boundsAction_(oldView.boundsAction)
 					.mouseDownAction_(oldView.mouseDownAction)
 					.colorAction_(oldView.colorAction)
-					.putLoadList(loadList); // put in the load data
+					.putLoadList(loadList);                        // put in the load data
+					
+			if ((class==MVC_OnOffView) || (class==MVC_OnOffRoundedView)) {
+				newView.showNumberBox_(false);	
+			};
 
-			newView.create;                   // now make it
-			userViews[indices]=newView;       // store it
-			newView.valueAction_(modelValue,nil,false,false); // update the value
-			oldView.remove.removeModel.free;  // and get rid of the old one
+			if (gui[\userGUIScrollView].isOpen) { newView.create }; // now make it
+			userViews[indices]=newView;                             // store it
+			newView.valueAction_(modelValue,nil,false,false);       // update the value
+			oldView.remove.removeModel.free;                        // and get rid of the old one
 		};
 		
 		loadingSystemViews.clear;
@@ -813,8 +841,6 @@ LNX_Code : LNX_InstrumentTemplate {
 		if (lastTemplateLoadVersion<1.2) {
 			this.setAsPeakLevel; // part of myHack
 		};
-		
-		}.defer(0.05); // this defer looks annoying, need to rethink, maybe .newFrom(list)
 		
 	}
 	
@@ -851,7 +877,8 @@ LNX_Code : LNX_InstrumentTemplate {
 	updateSynthArg{|synthArg,val,latency|
 		voicer.allNodes.do{|voicerNode|
 			// i have decided to go with studioLatency to stop wrong values on userModel changes
-			server.sendBundle(studio.actualLatency,[\n_set,voicerNode.node,synthArg,val]);
+			server.sendBundle(studio.actualLatency +! syncDelay,
+				[\n_set,voicerNode.node,synthArg,val]);
 		};
 	}
 	
@@ -902,7 +929,7 @@ LNX_Code : LNX_InstrumentTemplate {
 	
 	// code //////////////////////////////////////////////////////////////////////
 	
-	iPostNew{
+	noPutList{
 		this.guiEvaluate(false);
 		{
 			sequencer.resizeToWindow;
@@ -1244,7 +1271,7 @@ LNX_Code : LNX_InstrumentTemplate {
 									
 					voicer.allNodes.do{|voicerNode|
 						
-						server.sendBundle(latency,
+						server.sendBundle(latency +! syncDelay,
 							[\n_set,voicerNode.node,synthDefControl.index,val]);
 					};
 					
@@ -1364,7 +1391,7 @@ LNX_Code : LNX_InstrumentTemplate {
 	// change the type of gui, called from menu in this (but ColorPicker window)
 	netChangeGUIType{|i,netSelectedIndex,netSelectedType,uid,l,t,w,h|
 		
-		var newView, oldView, selectedCollection, selectedBounds = Rect(l,t,w,h);
+		var newView, oldView, selectedCollection, selectedBounds = Rect(l,t,w,h), class;
 		
 		if (netSelectedType==\system) {
 			netSelectedIndex = netSelectedIndex.asSymbol;
@@ -1378,13 +1405,19 @@ LNX_Code : LNX_InstrumentTemplate {
 			oldView = userViews[netSelectedIndex]
 		};
 
+		class = guiTypes[i].asClass;
+
 		// make the new view
-		newView = guiTypes[i].asClass.new(false,oldView.model,gui[\userGUIScrollView], 
+		newView = class.new(false,oldView.model,gui[\userGUIScrollView], 
 											  selectedBounds,gui[\userGUI])
 				.colors_(oldView.colors)
 				.boundsAction_(oldView.boundsAction)
 				.mouseDownAction_(oldView.mouseDownAction)
 				.colorAction_(oldView.colorAction);
+				
+		if ((class==MVC_OnOffView) || (class==MVC_OnOffRoundedView)) {
+			newView.showNumberBox_(false);	
+		};
 		
 		newView.create;
 		oldView.remove.removeModel.free;

@@ -230,13 +230,7 @@
 		MVC_RoundBounds(gui[\masterTabs].mvcTab(2),Rect(6, 6, 671, 396))
 			.width_(6)
 			.color_(\background, darkBorder);
-			
-			
-		
-		
-		
-		
-		
+
 		pianoRoll.createWidgets(gui[\pianoView],Rect(7, 12, 660, 380),
 				(\selectRect: Color.white,
 				 \background: Color(42/83,42/83,6.5/11)*0.9,
@@ -248,11 +242,10 @@
 				 \noteBS:     Color(1,1,1),
 				 \velocity:   Color(0.45,0.7,1),
 				 \velocitySel: Color.white
-				), 0);
-		
-		
-		
-			
+				), 0,
+				parentViews: [ window, gui[\masterTabs].mvcTab(2)]
+				
+				);
 
 		// lines ////////////////////////////////////////////////////////////////////
 				
@@ -292,8 +285,7 @@
 				.penShadow_(true)
 				.font_(Font("AvenirNext-Heavy",16))
 				.string_("Bum Note 2");
-			
-					
+						
 		// the high pass filter ///////////////////////////////////////////////////////////////////
 			
 		MVC_StaticText(gui[\controlsView], Rect(215, 11, 81, 18),gui[\labelTheme])
@@ -303,23 +295,24 @@
 			.color_(\background, background1 )
 			.color_(\border, border )
 			.width_(6);
-			
-		MVC_UserView(gui[\filterViewHP], Rect(66+12,25+4,98-24,70-7))
-			.drawFunc_{|me|
-				Pen.use{
-					var w = me.bounds.width;
-					var h = me.bounds.height-3;
-					Color(1,1,1,0.25).set;
-					Pen.width_(3);
-					SCPen.lineDash_(FloatArray[2,3]);
-					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
-					Pen.stroke;
-					Color(1,1,1,0.15).set;
-					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
-					Pen.fill;
-				};
-			};
-					
+//			
+//		MVC_UserView(gui[\filterViewHP], Rect(66+12,25+4,98-24,70-7))
+//			.parent_(gui[\masterTabs].mvcTab(0))
+//			.drawFunc_{|me|
+//				Pen.use{
+//					var w = me.bounds.width;
+//					var h = me.bounds.height-3;
+//					Color(1,1,1,0.25).set;
+//					Pen.width_(3);
+//					SCPen.lineDash_(FloatArray[2,3]);
+//					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
+//					Pen.stroke;
+//					Color(1,1,1,0.15).set;
+//					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
+//					Pen.fill;
+//				};
+//			};
+//					
 		// filter response HP
 		MVC_FlatDisplay(gui[\filterViewHP],highModel,Rect(5, 3, 7, 114)).invert_(true)
 			.color_(\slider,Color(0.25,0.75,1)*1.5);
@@ -345,7 +338,7 @@
 		// 53. filter curve
 		MVC_MyKnob3(models[53],gui[\filterViewHP],Rect(105, 79,20,20),gui[\knob2Theme ]);
 		// 54.velocity > filter
-		MVC_MyKnob3(models[54],gui[\filterViewHP],Rect(176, 79, 20, 20),gui[\knob2Theme ]);
+		MVC_MyKnob3(models[54],gui[\filterViewHP],Rect(177, 79, 20, 20),gui[\knob2Theme ]);
 		
 		// 67.filterHP lfo A or B	
 		MVC_OnOffView(models[67],gui[\controlsView  ],Rect(362, 5, 21, 21),gui[\onOffTheme2]);
@@ -363,22 +356,23 @@
 			.color_(\background, background1 )
 			.color_(\border, border )
 			.width_(6);
-			
-		MVC_UserView(gui[\filterView], Rect(66+12,25+4,98-24,70-7))
-			.drawFunc_{|me|
-				Pen.use{
-					var w = me.bounds.width;
-					var h = me.bounds.height-3;
-					Pen.width_(3);
-					Color(1,1,1,0.25).set;
-					SCPen.lineDash_(FloatArray[2,3]);
-					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
-					Pen.stroke;
-					Color(1,1,1,0.15).set;
-					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
-					Pen.fill;
-				};
-			};
+//			
+//		MVC_UserView(gui[\filterView], Rect(66+12,25+4,98-24,70-7))
+//			.parent_(gui[\masterTabs].mvcTab(0)) 
+//			.drawFunc_{|me|
+//				Pen.use{
+//					var w = me.bounds.width;
+//					var h = me.bounds.height-3;
+//					Pen.width_(3);
+//					Color(1,1,1,0.25).set;
+//					SCPen.lineDash_(FloatArray[2,3]);
+//					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
+//					Pen.stroke;
+//					Color(1,1,1,0.15).set;
+//					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
+//					Pen.fill;
+//				};
+//			};
 			
 		// filter response LP
 		MVC_FlatDisplay(gui[\filterView],lowModel,Rect(5, 3, 7, 114))
@@ -405,7 +399,7 @@
 		// 39. filter curve
 		MVC_MyKnob3(models[39],gui[\filterView],Rect(105, 79,20,20),gui[\knob2Theme ]);
 		// 33.velocity > filter
-		MVC_MyKnob3(models[33],gui[\filterView],Rect(176, 79, 20, 20),gui[\knob2Theme ]);
+		MVC_MyKnob3(models[33],gui[\filterView],Rect(177, 79, 20, 20),gui[\knob2Theme ]);
 		
 		// 68.filterLP lfo A or B	
 		MVC_OnOffView(models[68],gui[\controlsView  ],Rect(362, 171, 21, 21),gui[\onOffTheme2]);
@@ -431,12 +425,17 @@
 			.color_(\border, border )
 			.width_(6);
 		
+		// 75. SyncOnLfoA	- lfoSyncOnA
+		MVC_OnOffView(models[75],gui[\lfoView ],Rect(6, 3, 20, 20),gui[\onOffTheme1]);
+	
 		// 57. lfo wave	
-		MVC_PopUpMenu3(models[57],gui[\lfoView  ],Rect(11,5,80,16),gui[\menuTheme2]);
+		MVC_PopUpMenu3(models[57],gui[\lfoView  ],Rect(31,5,67,16),gui[\menuTheme2]);
 		// 6.lfo freq
-		MVC_MyKnob3(models[ 6],gui[\lfoView   ],Rect(11,40,26,26),gui[\knob1Theme ]);
+		gui[\lfoKnobA] =
+			MVC_MyKnob3(models[ 6],gui[\lfoView   ],Rect(11,40,26,26),gui[\knob1Theme ]);
+			
 		// the lfo lamp
-		MVC_PipeLampView(lfoModelA, gui[\lfoView   ], Rect(97, 8, 10, 10))
+		MVC_PipeLampView(lfoModelA, gui[\lfoView   ], Rect(105, 8, 10, 10))
 			.color_(\on,Color.red); 
 		// 56. lfo slope
 		MVC_MyKnob3(models[ 56],gui[\lfoView   ],Rect( 52,40,26,26),gui[\knob1Theme ]);
@@ -454,12 +453,18 @@
 			.color_(\border, border )
 			.width_(6);
 		
+		// 77. SyncOnLfoA	- lfoSyncOnA
+		MVC_OnOffView(models[77],gui[\lfoView ],Rect(6, 3, 20, 20),gui[\onOffTheme1]);
+	
 		// 63. lfo wave	
-		MVC_PopUpMenu3(models[63],gui[\lfoView  ],Rect(11,5,80,16),gui[\menuTheme2]);
+		MVC_PopUpMenu3(models[63],gui[\lfoView  ],Rect(31,5,67,16),gui[\menuTheme2]);
+		
 		// 64.lfo freq
-		MVC_MyKnob3(models[64],gui[\lfoView   ],Rect(11,40,26,26),gui[\knob1Theme ]);
+		gui[\lfoKnobB] =
+			MVC_MyKnob3(models[64],gui[\lfoView   ],Rect(11,40,26,26),gui[\knob1Theme ]);
+		
 		// the lfo lamp
-		MVC_PipeLampView(lfoModelB, gui[\lfoView   ],  Rect(97, 8, 10, 10))
+		MVC_PipeLampView(lfoModelB, gui[\lfoView   ],  Rect(105, 8, 10, 10))
 			.color_(\on,Color.red); 
 		// 65. lfo slope
 		MVC_MyKnob3(models[65],gui[\lfoView   ],Rect( 52,40,26,26),gui[\knob1Theme ]);
@@ -674,14 +679,10 @@
 		MVC_OnOffView(models[1],gui[\scrollView]     ,Rect( 210,6,19,19),gui[\onOffTheme1])
 			.color_(\on,Color.green);
 		
-		
-		
 		// 11.steps per octave
 		MVC_PopUpMenu3(models[11],gui[\seqView] ,Rect(607, 293, 48, 17), gui[\menuTheme2  ]);
 		// 12.SPO root
 		MVC_NumberBox(models[12],gui[\seqView] ,Rect(618, 345, 26, 17),gui[\boxTheme   ]);
-
-
 
 		// 29.output channels
 		MVC_PopUpMenu3(models[29],gui[\scrollView]    ,Rect(619,6,70,18),gui[\menuTheme2  ]);
@@ -713,6 +714,9 @@
 			.color_(\string,Color.white)
 			//.resize_(9)
 			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
+			
+		// 80.network keyboard
+		MVC_OnOffView(models[80], gui[\seqView], Rect(637, 377, 32, 18), gui[\onOffTheme1]);
 				
 		gui[\keyboardOuterView] = MVC_CompositeView(gui[\scrollView],Rect(17,444,672,90));	
 		toFrontAction={ gui[\keyboardView].focus};
@@ -720,6 +724,10 @@
 		// the keyboard
 		gui[\keyboardView]=MVC_MIDIKeyboard(gui[\keyboardOuterView],Rect(0,0,672,90),6,12)
 			.useSelect_(true)
+			.pipeFunc_{|pipe|
+				if (p[80].isTrue) {
+					api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}; // and network
+			}
 			//.stopGUIUpdate_(true)
 			.keyboardColor_(Color.blue)
 			.keyDownAction_{|note|	

@@ -17,8 +17,13 @@ LNX_NoteID {
 
 LNX_Note{
 	
-	var <id, <>note, <>start, >dur, <vel, <>enabled=true, <>durAdj;
+	var <>id, <>note, <>start, >dur, <vel, <>enabled=true, <>durAdj;
 	
+	// for inClock3	
+	start3{ ^start*3 }
+	dur3{ ^this.dur*3 }
+	end3{ ^ this.end*3 }
+
 	*new{|id,note,start,dur,vel| ^super.newCopyArgs(id,note,start,dur,vel) }
 	
  	copyToNew{|id| ^LNX_Note(id,note,start,dur,vel) } // make a new note from this one, with new ID
@@ -45,7 +50,7 @@ LNX_Note{
 	end_{|value| dur = value - start }
 	
 	// the end of the note including adjustments
-	dur{ if (durAdj.notNil) {^durAdj} {^dur} }
+	dur{ ^durAdj ? dur }
 	
 	// set the adjusted end point (usally because we have moved notes over this one)
 	endAdj_{|value| durAdj= value - start }
@@ -101,11 +106,14 @@ LNX_Note{
 // i'm also manually clumping velocity updates @350, ideally will need to develop a clumpedVP
 
 LNX_Score{
-
+	
 	var <notes, <notesDict, <adjusted;
 	var <>start=0, <>dur=32;
 	var <gridW=22, <gridH=15, <visibleOriginX=0, <visibleOriginY=0; // this may not be a good idea
 	var <>quantiseStep=1, <>bars=16, <>speed=1;
+	
+	
+	dur3{^dur*3}
 	
 	*new{|dur=32| ^super.new.init(dur) }
 	
@@ -180,6 +188,19 @@ LNX_Score{
 			}
 		}
 	}
+			
+	// only used when syncing collaborations. Host could have different ids so they are all reset
+	// to start from 1001
+	resetAllNoteIDs{
+		var id=1000;
+		notes.do{|note|
+			notesDict[note.id]=nil;
+			id=id+1;
+			note.id_(id);
+			notesDict[id] = note;
+		};
+		^id
+	}	
 	
 	// the view args for the piano roll are stored here
 	// its easier to store the last view with the score if a bit lazy
@@ -398,10 +419,13 @@ LNX_Score{
 }
 
 // a piano roll sequencer ///////////////////////////////////////////////////////////////
+/*
+a.a.sequencer.score.notes.postList
+*/
 
 LNX_PianoRollSequencer{
 	
-	classvar <clipboard, >studio;
+	classvar <clipboard, >studio, allPianoRolls;
 	
 	var <id, <score, <api, <noteIDObject;
 	var <>snapToGrid=true, <quantiseStep=1, <bars=16;
@@ -421,16 +445,16 @@ LNX_PianoRollSequencer{
 	var <marker=0;
 	var <>spoModel;
 	
-	spo{^spoModel.value?12}
-	
+	*initClass{ allPianoRolls = [] } // all pRolls kept in allPianoRolls
+
 	*new{|id| ^super.new.init(id) }
 	
 	init{|argID|
 		id     = argID;
-		api    = LNX_API.newTemp(this,id,#[\hostAddNote,\netAddNote,\hostDeleteNote,\netDeleteNote,
-								\netAdjustList, \netDur_, \netAdjustVel, \returnRequestID,
-								\netRequestIDs, \updateIDs, \hostUseAdjustments,
-								\hostDeleteNotes, \netSpeed_, \netClear ]);
+		api    = LNX_API.newTemp(this,id,#[\hostAddNote,\netAddNote,\hostDeleteNote,
+			\netDeleteNote, \netAdjustList, \netDur_, \netAdjustVel, \returnRequestID, 
+			\netRequestIDs, \updateIDs, \hostUseAdjustments, \hostDeleteNotes, \netSpeed_,
+			\netClear ]);
 		score         = LNX_Score(initialSize);
 		gui           = IdentityDictionary[];
 		colors        = IdentityDictionary[];
@@ -440,17 +464,19 @@ LNX_PianoRollSequencer{
 		notesOff      = IdentityDictionary[];
 		models        = IdentityDictionary[];
 		
+		allPianoRolls = allPianoRolls.add(this);
+		
 		lastVelocity=100/127;
 		scores=[];
 
 		// the duration of the score
-		models[\dur] = [initialSize,[1,1024*2,\lin,1]].asModel.action_{|me,value|
+		models[\dur] = [initialSize,[1,8192,\lin,1]].asModel.action_{|me,value|
 			this.dur_(value);		
 			api.sendVP(\dur,\netDur_,value);
 		};
 		
 		// model for the width of 1 beat in pixels (used as horizontal a zoom)
-		models[\gridW] = [gridW,[0,40,\lin,0]].asModel.action_{|me,value|
+		models[\gridW] = [gridW,[0,80,\lin,0]].asModel.action_{|me,value|
 			var lastMidX, vo;
 			// find center y-pos before we zoom
 			if (gui[\scrollView].notNil) {
@@ -459,7 +485,8 @@ LNX_PianoRollSequencer{
 			};
 			// change zoom
 			if (gui[\scrollView].notNil) {
-				value=value.clip((gui[\scrollView].bounds.width)/(score.dur),inf);
+				value=value.clip((gui[\scrollView].bounds
+					.resizeBy(ScrollBars.addIfSome(13).neg).width)/(score.dur),inf);
 			};
 			this.gridW_(value);
 			me.value_(value);
@@ -470,23 +497,26 @@ LNX_PianoRollSequencer{
 		};
 		
 		// model for the height of 1 note in pixels (used as vertical a zoom)
-		models[\gridH] = [gridH,[2,30,\lin,1]].asModel.action_{|me,value|
+		models[\gridH] = [gridH,[2,60,\lin,1]].asModel.action_{|me,value|
 			var lastMidY, vo;
 			// find center y-pos before we zoom
 			if (gui[\scrollView].notNil) {
 				vo = gui[\scrollView].visibleOrigin;
-				lastMidY=(vo.y + (gui[\scrollView].bounds.height/2))/gridH;
+				lastMidY=(vo.y + (gui[\scrollView].bounds
+					.resizeBy(ScrollBars.addIfSome(13).neg).height/2))/gridH;
 			};
 			// change zoom
 			if (gui[\scrollView].notNil) {
-				value=value.clip((gui[\scrollView].bounds.height)/128,inf);
+				value=value.clip((gui[\scrollView].bounds
+					.resizeBy(ScrollBars.addIfSome(13).neg).height)/128,inf);
 			};
 			this.gridH_(value);
 			me.value_(value);
 			// re-align center y-pos
 			if (gui[\scrollView].notNil) {
 				gui[\scrollView].visibleOrigin_((vo.x)@
-					(lastMidY*gridH-(gui[\scrollView].bounds.height/2)));
+					(lastMidY*gridH-(gui[\scrollView].bounds
+						.resizeBy(ScrollBars.addIfSome(13).neg).height/2)));
 			};
 		};
 		
@@ -526,7 +556,20 @@ LNX_PianoRollSequencer{
 			}].asModel;
 			
 	}
-
+	
+	// only used when syncing collaborations. Host could have different ids so they are all reset
+	// to start from 1001
+	*resetAllNoteIDs{ allPianoRolls.do(_.resetAllNoteIDs) } // for class
+	
+	// above for instance
+	resetAllNoteIDs{
+		var maxID = [];
+		maxID = maxID.add(score.resetAllNoteIDs);           // reset and get last id
+		maxID = maxID ++ scores.collect(_.resetAllNoteIDs); // reset and get last id
+		noteIDObject.id_(maxID.sort.last); // find largest id and set next id to be that
+		this.calcNoteRects;                // we need to recalc note rect because ids have changed
+	}
+	
 	// zoom out so seq fits to window
 	fitToWindow{
 		models[\gridW].multipyValueAction_(0);
@@ -541,7 +584,8 @@ LNX_PianoRollSequencer{
 		if (gui[\scrollView].notNil) {
 			gui[\scrollView].visibleOrigin_((gui[\scrollView].visibleOrigin.x)@
 				((gridH*68)));
-				//(lastMidY*gridH-(gui[\scrollView].bounds.height/2)));
+				//(lastMidY*gridH-(gui[\scrollView].bounds
+				//.resizeBy(ScrollBars.addIfSome(13).neg).height/2)));
 		};
 
 	}
@@ -554,7 +598,8 @@ LNX_PianoRollSequencer{
 			score.dur_(beats);
 			gridw=gridW;
 			if (gui[\scrollView].notNil) {
-				gridw=(gui[\scrollView].bounds.width)/(score.dur);
+				gridw=(gui[\scrollView].bounds
+					.resizeBy(ScrollBars.addIfSome(13).neg).width)/(score.dur);
 			};
 			this.gridW_(gridw); // this will redreaw everything
 			models[\gridW].value_(gridw);
@@ -570,7 +615,8 @@ LNX_PianoRollSequencer{
 			gridw=gridW;
 			{
 				if (gui[\scrollView].notNil) {
-					gridw=(gui[\scrollView].bounds.width)/(score.dur);
+					gridw=(gui[\scrollView].bounds
+						.resizeBy(ScrollBars.addIfSome(13).neg).width)/(score.dur);
 				};
 				this.gridW_(gridw); // this will redreaw everything
 				models[\gridW].value_(gridw);
@@ -581,6 +627,8 @@ LNX_PianoRollSequencer{
 	
 	// duration of the current score		
 	dur{^score.dur}
+	
+	dur3{^score.dur3}
 	
 	// net change the speed
 	netSpeed_{|value|
@@ -635,16 +683,18 @@ LNX_PianoRollSequencer{
 	
 	// for your own load preset
 	iLoadPreset{|i|
+		var viewArgs;
 		score.free;
 		score = scores[i].deepCopy;
+		viewArgs = score.viewArgs;
 		this.clearGUIEditing;
 		models[\dur].value_(score.dur); // update the dur model
 		
 		models[\speed].valueAction_( 6-(log(score.speed*8)/log(2)) );
 			// coverts [8,4,2,1,0.5,0.25,0.125] to (0..6) 
 		{
-		this.viewArgs_(*score.viewArgs); // update view position
-		this.refresh;
+			this.viewArgs_(*viewArgs); // update view position
+			this.refresh;
 		}.defer;
 	}
 	
@@ -713,18 +763,23 @@ LNX_PianoRollSequencer{
 	
 	// set the view args of this pRoll (includes vert & horz zoom + visable origin)
 	viewArgs_{|w,h,x,y,q,b|
-		gridW=w;
+		// clip to current view width
+		w=w.clip((gui[\scrollView].bounds
+			.resizeBy(ScrollBars.addIfSome(13).neg).width)/(score.dur),inf); 
+		// clip to current view height
+		h=h.clip((gui[\scrollView].bounds
+			.resizeBy(ScrollBars.addIfSome(13).neg).height)/128,inf);        
+		gridW=w; 
 		gridH=h;
-		models[\gridW].value_(w);
-		models[\gridH].value_(h);
+		models[\gridW].value_(w); // set grid width model
+		models[\gridH].value_(h); // set grid height model
 		quantiseStep=q;
 		bars=b;
-		models[\quantiseStep].value_(q);
-		models[\bars].value_(b);
-		
+		models[\quantiseStep].value_(q); // set the quant step
+		models[\bars].value_(b);         // set the bar length
 		if (gui[\scrollView].notNil) {
-			this.refreshSeqBounds;
-			gui[\scrollView].visibleOrigin_(x@y);
+			this.refreshSeqBounds;                // update view bounds for new size
+			gui[\scrollView].visibleOrigin_(x@y); // set the visible origin
 		};
 	}
 	
@@ -733,6 +788,8 @@ LNX_PianoRollSequencer{
 	
 	// free this object
 	free{
+		allPianoRolls.remove(this);
+		score.free;
 		scores.do(_.free);
 		id = score = api = noteIDObject = snapToGrid = quantiseStep =
 		gui = colors = notesSelected = gridW = gridH = noteRects =
@@ -740,6 +797,8 @@ LNX_PianoRollSequencer{
 	}
 	
 	freeAutomation{} // there is none, but just incase it gets called
+	
+	spo{^spoModel.value?12}
 	
 	// adding deleteing notes ///////////////////////////
 	
@@ -946,67 +1005,81 @@ LNX_PianoRollSequencer{
 		this.useAdjustments;
 	}
 		
+
 	// MIDI clock in /////////////////////////////////////////////
-	
-	// clock in 3 is faster than the normal instrument clockIn, which results in fast tempo updates
-	clockIn3   {|beat,argAbsTime,latency|	
-		var now,then,i,endIndex, speed=score.speed;
+
+	// 3rd attempt
+
+	clockIn3{|beat,argAbsTime,latency,beatAbs|	
 		
+		var now, then, endIndex, speed = score.speed;
 		
-		//[beat,argAbsTime,latency,beat.species,argAbsTime.species,latency.species].postln;
-		
-		// NB: F is Fast, S is Slow
-		isPlaying=true;
-		absTime=argAbsTime;  // F is time of 1/3  of normal beat
-		// for recording
-		lastBeat = beat;     //  F beat x3 = 1 normal beat
-		lastTime = SystemClock.now;
+		isPlaying   = true;
+		absTime     = argAbsTime; 
+		lastBeat    = beat;        
+		lastTime    = SystemClock.now;
 		lastLatency = latency;
-		// the current beat wrapped to score duration
-		beat = beat % (score.dur*3*speed);  // F
-		// now and the next beat
-		now = beat/3;       // S
-		then = (beat+1)/3;  // S
+		beat        = beat % (score.dur3*speed); // the current beat wrapped to score duration
+		now         = beat;                      // now
+		then        = beat+1;                    // and the next beat
 		
-		// stop any notes as needed 1st
-		if (notesOff[beat].notNil) {
-			notesOff[beat].do{|l|
-				{this.seqNoteOff(l[1],latency); nil;}.sched(l[0]*absTime*3)
+		// stop any notes as needed 1st, these have been scheduled to be released here
+		if (notesOff[beatAbs].notNil) {			
+			notesOff[beatAbs.asInt].do{|l|
+				{ this.seqNoteOff(l[1],latency); nil; }.sched(l[0]*absTime-0.0001)
+				// slightly early
 			};
 			notesOff[beat]=nil;	
 		};
+		
 		// go through the score
 		score.notes.do{|note|
-			var pitch = note.note;	
+			
+			var pitch = note.note;
+			var start = note.start3 * speed;
+			
 			// if the note starts between now and the next midi tick
-			if (((note.start*speed)>=now)&&((note.start*speed)<then)) {
+			if ((start>=now)&&(start<then)) {
 				{
 					if (note.enabled) {
+						
+						var dur = note.dur3 * speed;
+						var end = note.end3 * speed;
 						
 						this.seqNoteOn(pitch,note.vel,latency); // play it
 						
 						// clip end to shortest time allowed
-						if ((note.end*speed)<then) {
-							{this.seqNoteOff(pitch,latency); nil;}.sched(
-								(note.dur*3*speed)*(absTime*3))
+						if (end<then) {
+							
+							{
+								this.seqNoteOff(pitch,latency);
+								nil;
+							}.sched( dur * absTime - 0.0001); // slightly early
+							
 						}{
-							endIndex = (note.end*3*speed).asInt%(score.dur*3*speed);
-							// this will add to nil
-							notesOff[endIndex]=notesOff[endIndex].add(
-								[(note.end*3*speed).frac,pitch]);
+							
+							// this will add to notesOff in future on beatAbs timeline
+							// work out end time beat
+							endIndex = (beatAbs + (start.frac) + dur);
+							
+							// add the fractional part to sched when beat happens
+							notesOff[endIndex.asInt] = 
+								notesOff[endIndex.asInt].add([end.frac, pitch]);
+												
 						};
 					};
+					
 					nil;
-				}.sched( ((note.start*3*speed)-beat)*(absTime*3)*0.99999);
+					
+				}.sched( (start-beat) * absTime * 0.99999); // slightly early
 				//sched it to the correct time
 			}
 		};
-		// update the gui pos
 		
-		{this.pos_(now/speed)}.defer(latency);
+		{this.pos_(now/speed/3)}.defer(latency); // update the gui pos
 		
 	}
-	
+
 	releaseAll{ notesOff=IdentityDictionary[] } // no actual release, done via buffer
 	
 	seqNoteOn{|note,velocity,latency|

@@ -30,7 +30,7 @@ q.samples
 LNX_SampleBank{
 
 	classvar	>network, <sampleBanks, <masterMeta, <masterMetaKeys;
-	classvar >updateFuncs, >selectSampleFuncs, >clipboard, >studio;
+	classvar >updateFuncs, >clipboard, >studio;
 	classvar <waitingToEmptyTrash = false;
 	
 	var <api, <id;
@@ -40,7 +40,7 @@ LNX_SampleBank{
 	    <>title="",	<isLoading=false;
 	
 	var <window, <guiList, <selectedSampleNo=0, <lastSynth,
-	    <task, <lastModel, follow, iModel;
+	    <task, <lastModel, follow, iModel, >selectSampleFuncs;
 	
 	var <>window2,  <zeroBuffer, <>speakerIcon,
 	    <>selectedAction, <>itemAction, <>loadedAction, <>selectMeFunc;
@@ -49,7 +49,7 @@ LNX_SampleBank{
 	*initClass {
 		sampleBanks=Set[];
 		updateFuncs=Set[];       // update sample func for each gui (loading)
-		selectSampleFuncs=Set[]; // select sample func for each gui
+		
 		
 		// do not add to this metadata without changing the saveList
 		masterMeta = (
@@ -259,6 +259,7 @@ LNX_SampleBank{
 		metaModels  = [];
 		otherModels = [];
 		guiList     = [];
+		selectSampleFuncs=Set[]; // select sample func for each gui
 	}
 
 	////////////// load ///////////////////
@@ -448,7 +449,7 @@ LNX_SampleBank{
 				}; // play when finished downloading
 				{
 					selectMeFunc.value(i);
-					// used only is scCode at mo
+					// used only in scCode at mo
 					if (window2.notNil) {
 						selectSampleFuncs.do{|func| func.value(selectedSampleNo) }
 					};		
@@ -456,7 +457,7 @@ LNX_SampleBank{
 			};
 			{
 				this.selectSample(i,false,false);
-				// used only is scCode at mo
+				// used only in scCode at mo
 				if (window2.notNil) {
 					selectSampleFuncs.do{|func| func.value(selectedSampleNo) }
 				};	
@@ -466,7 +467,7 @@ LNX_SampleBank{
 	}
 	
 	// add a url as a buffer. We maybe offline or it may not exist or not be in the cashe
-	addURL{|url,action,select=true|  // select sample
+	addURL{|url,action,select=true,updateBank=true|  // select sample
 
 		var buffer, path, metadata, metaModel, alreadyExists=false;
 
@@ -489,7 +490,7 @@ LNX_SampleBank{
 			metaModel       = this.addMetaModel; 
 			metaModel[\name].string_(path.basename);
 
-			this.updateList(false); // add to list
+			this.updateList(false,updateBank); // add to list
 			if (select) {
 				this.selectSample(samples.size-1,false,false); // select in...
 				selectMeFunc.value(samples.size-1); // select in...
@@ -530,7 +531,7 @@ LNX_SampleBank{
 	
 
 	// put the load list from the new style URL SampleBank
-	putLoadListURL{|l,clear=true|
+	putLoadListURL{|l,clear=true,updateBank=true|
 		var n,p, version, versionString;	
 		l=l.reverse;
 		
@@ -539,11 +540,16 @@ LNX_SampleBank{
 		
 		if (versionString[..14]=="SC URL Bank Doc") {
 			isLoading=true;
+			
+			
 			if (clear) { this.removeAllSamples }; // carefull with this
+			
+			
+			
 			this.title_(l.popS);
 			n=l.popI;
 			if ((n>0)and:{freed.not}) {
-				this.recursiveLoadURL(n,0,l,version);
+				this.recursiveLoadURL(n,0,l,version,updateBank);
 			}{
 				this.finishedLoading;
 			};
@@ -552,13 +558,13 @@ LNX_SampleBank{
 	}
 	
 	// recursive add each url sample
-	recursiveLoadURL{|n,i,l,version|
+	recursiveLoadURL{|n,i,l,version,updateBank=true|
 		
 		var metadata, metaModel;
 
 		studio.flashServerIcon; // gui
 		
-		this.addURL(l.popS,{},false); // add this URL
+		this.addURL(l.popS,{},false,updateBank); // add this URL
 
 		metaModel = metaModels.last;  // its the last one added in addURL
 		
@@ -586,18 +592,20 @@ LNX_SampleBank{
 		
 		// recursive add each buffer to reduce load on cpu
 		{	
-			if ((i+1)<n) {
-				{
-					if (freed.not) { 
-						this.recursiveLoadURL(n,i+1,l,version)
-					}{				
-						this.finishedLoading;
-					};
-				}.defer; // add one by one
-			}{
-				this.finishedLoading; // notLoading so can play now
-				selectedSampleNo=0;  // what about loading???
-				this.updateGUI;	 // and update GUI
+			if (freed.not) {
+				if ((i+1)<n) {
+					{
+						if (freed.not) { 
+							this.recursiveLoadURL(n,i+1,l,version,updateBank)
+						}{				
+							this.finishedLoading;
+						};
+					}.defer; // add one by one
+				}{
+					this.finishedLoading; // notLoading so can play now
+					selectedSampleNo=0;  // what about loading???
+					this.updateGUI(updateBank);	 // and update GUI
+				};
 			};
 		}.defer( studio.isPlaying.if(0.025,0.005)); // use different rates depending on isPlaying
 			
@@ -683,6 +691,7 @@ LNX_SampleBank{
 		this.removeAllSamples;
 		sampleBanks.remove(this);
 		if (this.isOpen) { window.parent.close };
+		this.finishedLoading;
 		//gui.postln.do(_.free); // this will cause a crash, should find out why at some point
 	}
 	 	

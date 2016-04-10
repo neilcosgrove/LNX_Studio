@@ -3,8 +3,8 @@
 
 LNX_AudioIn : LNX_InstrumentTemplate {
 
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id;
-		^super.new(server,studio,instNo,bounds,open,id)
+	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
 	*studioName {^"Audio In"}
@@ -24,6 +24,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 	panModel    {^models[5]}
 	sendChModel {^models[7]}
 	sendAmpModel{^models[8]}
+	syncModel   {^models[10]}
 
 	header { 
 		// define your document header details
@@ -39,22 +40,22 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			[0, \switch, (\strings_:"S"), midiControl, 0, "Solo",
 				{|me,val,latency,send,toggle|
 					this.solo(val,latency,send,toggle);
-					server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
 				},
 				\action2_ -> {|me|
 					this.soloAlt(me.value);
-					server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 				 }],
 			
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
 				{|me,val,latency,send,toggle|
 					this.onOff(val,latency,send,toggle);
-					server.sendBundle(latency,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
 				},
 				\action2_ -> {|me|	
 					this.onOffAlt(me.value);
-					server.sendBundle(nil,[\n_set, node, \on, this.isOn]);
+					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 				}],
 					
 			// 2.master amp
@@ -86,7 +87,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			[\pan, midiControl, 5, "Pan",
 				(\numberFunc_:\pan, \zeroValue_:0),
 				{|me,val,latency,send,toggle|
-					this.setSynthArgVH(5,val,\pan,val,latency,send);
+					this.setSynthArgVP(5,val,\pan,val,latency,send);
 				}],
 				
 			// 6. peak level
@@ -115,27 +116,19 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 				}],
 				
 			// 10. syncDelay
-			[[-1,1,\lin,0.001,0], midiControl, 10, "Sync",
-				(label_:"Sync", zeroValue_:0),
+			[\syncTime, midiControl, 10, "Sync",
 				{|me,val,latency,send|
-					this.setPVP(10,val,latency,send);
-					this.syncDelay_(val.clip(-inf,0).abs); // this will update delay as well
+					this.setSynthArgVP(10,val,\delay,val,latency,send);
 				}],
 		
 		].generateAllModels;
 
 		// list all parameters you want exluded from a preset change
 		presetExclusion=(0..9);
-		randomExclusion=(0..9);
+		randomExclusion=(0..10);
 		autoExclusion=[];
 
 	}
-	
-	delayTime{^(this.mySyncDelay.clip(0,inf))+(p[10].clip(0,inf))  }
-
-	iSyncDelayChanged{ this.setDelay }
-
-	setDelay{ server.sendBundle(nil,[\n_set, node, \delay, this.delayTime]) }
 
 	// GUI
 	
@@ -167,12 +160,8 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 										\label	: Color.black,
 										\numberUp	: Color.black,
 										\numberDown : Color.white));
-										
-		
-								
-		gui[\theme2]=(	//\layout_       : \reversed,
-		
-						\orientation_  : \horiz,
+						
+		gui[\theme2]=(	\orientation_  : \horiz,
 						\resoultion_	 : 3,
 						\visualRound_  : 0.001,
 						\rounded_      : true,
@@ -185,7 +174,6 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 										\string : Color.black,
 										\focus : Color(0,0,0,0)));
 		
-	
 		// widgets
 		
 		gui[\scrollView] = MVC_RoundedComView(window,
@@ -200,6 +188,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 		// 10. syncDelay
 		MVC_NumberBox(models[10], gui[\scrollView],Rect(59, 30, 40, 18),  gui[\theme2])
 			.labelShadow_(false)
+			.label_("Sync")
 			.color_(\label,Color.black);
 			
 		MVC_StaticText(Rect(100,30, 40, 18), gui[\scrollView],)
@@ -216,7 +205,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 	
 		if (verbose) { "SynthDef loaded: Audio In".postln; };
 	
-		SynthDef("LNX_AudioIn", {
+		SynthDef("LNX_AudioIn+Delay", {
 			|outputChannels=0, inputChannels=2, pan=0, amp=0, delay=0, channelSetup=0, on=1,
 			sendChannels=4, sendAmp=0 |
 			
@@ -224,7 +213,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			
 			var signalL, signalR;
 			
-			signal  = DelayN.ar(signal, 2, delay);
+			signal  = DelayN.ar(signal, \syncTime.asSpec.maxval, delay);
 			signal  = signal * Lag.kr(amp*on);
 			pan     = Lag.kr(pan*2);
 			sendAmp = Lag.kr(sendAmp);
@@ -246,17 +235,47 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			Out.ar(  sendChannels,[signal[0]*sendAmp,signal[1]*sendAmp]);
 			
 		}).send(s);
+	
+		SynthDef("LNX_AudioIn", {
+			|outputChannels=0, inputChannels=2, pan=0, amp=0, channelSetup=0, on=1,
+			sendChannels=4, sendAmp=0 |
+			
+			var signal = In.ar(inputChannels, 2);
+			
+			var signalL, signalR;
+			
+			signal  = signal * Lag.kr(amp*on);
+			pan     = Lag.kr(pan*2);
+			sendAmp = Lag.kr(sendAmp);
+			              
+			signalL = Select.ar(channelSetup,[
+				signal[0], signal[0]+signal[1], signal[0], signal[1], Silent.ar]);
+				
+			signalR = Select.ar(channelSetup,[
+				signal[1], signal[0]+signal[1], signal[0], signal[1], Silent.ar]);
+				
+				
+			signal = LinPan2.ar(signalL, (pan-1).clip(-1,1))
+			       + LinPan2.ar(signalR, (pan+1).clip(-1,1));
+
+			Out.ar(outputChannels,signal);
+						
+			Out.ar(  sendChannels,[signal[0]*sendAmp,signal[1]*sendAmp]);
+			
+		}).send(s);
 
 	}
 		
 	startDSP{
-		synth = Synth.tail(instGroup,"LNX_AudioIn");
+		synth = Synth.tail(instGroup,"LNX_AudioIn+Delay");
 		node  = synth.nodeID;	
 	}
 		
 	stopDSP{ synth.free }
 	
-	updateOnSolo{  server.sendBundle(nil,[\n_set, node, \on, this.isOn])  }
+	updateOnSolo{|latency|
+		if (node.notNil) {server.sendBundle(latency +! syncDelay, [\n_set, node, \on, this.isOn])} 
+	}
 	
 	updateDSP{|oldP,latency|
 		var in  = LNX_AudioDevices.firstInputBus+(p[3]*2);
@@ -277,8 +296,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			[\n_set, node, \sendChannels,LNX_AudioDevices.getOutChannelIndex(p[7])],
 			[\n_set, node, \sendAmp, p[8].dbamp],
 			[\n_set, node, \channelSetup, p[9]],
-			[\n_set, node, \delay, this.delayTime ]
-			
+			[\n_set, node, \delay, p[10] ]
 		);
 	}
 
