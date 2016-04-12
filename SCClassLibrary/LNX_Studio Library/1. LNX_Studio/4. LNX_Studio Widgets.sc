@@ -144,7 +144,7 @@
 					
 		// file menu 10
 		MVC_PopUpMenu2(mixerWindow,Rect(7, 3, 74, 22))
-			.items_(["  File","Open...","Add Song","Open Last Song",
+			.items_(["  File","Open...","Open Last Song",
 						"-","Save ","Save As...",
 						(this.isStandalone && LNX_Mode.isSafe).if("(","")++
 						"Add Instrument to Library",
@@ -153,14 +153,13 @@
 			.action_{|me,val|
 				switch (me.value.asInt)
 				 {0}  {this.loadDialog		    }
-				 {1}  {this.addDialog		    }
-				 {2}  {this.quickLoad           }
-				 {4}  {this.saveDialog		    }
-				 {5}  {this.saveAsDialog        }
-				 {6}  {this.guiSaveInstToLibrary}
-				 {8}  {this.guiCloseStudio      }
-				 {10} {network.guiConnect       }
-				 {11} {this.preferences		    }
+				 {1}  {this.quickLoad           }
+				 {3}  {this.saveDialog		    }
+				 {4}  {this.saveAsDialog        }
+				 {5}  {this.guiSaveInstToLibrary}
+				 {7}  {this.guiCloseStudio      }
+				 {9}  {network.guiConnect       }
+				 {10} {this.preferences		    }
 				;
 			};
 		

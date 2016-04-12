@@ -872,8 +872,6 @@ LNX_Studio {
 				this.netAddInst(class,id,userID,userIsListening,0, autoAdd, autoBeat,loadList);
 			};	
 			
-			
-			
 			// put the load list if there is one (this only happens with duplicate i believe)
 			{
 				if (loadList.size>0) {
@@ -968,7 +966,6 @@ LNX_Studio {
 	addInst{|type,bounds,open=true,id,onOff=1, autoAdd=false, autoBeat, loadList|
 		var i,inst;
 		
-		
 		if (type.isNumber) { type=visibleTypes[type] };  // convert index to class
 		if (type.species==Symbol) { type=type.asClass };
 		i=insts.size;
@@ -976,22 +973,11 @@ LNX_Studio {
 												  //work out bounds
 		bounds=bounds ? Rect((i*25)+thisWidth+osx+3,i*23+50,type.thisWidth,type.thisHeight);
 		
-		
-		
 		// this is the only place a new inst is created
-		
 		inst=type.new(server, this, i, bounds, open,id, loadList); // make the instrument
 		
-		
-		
-		// insts.addInst(inst,id); 	                     // add to instruments
-		
-		// this.createMixerInstWidgets(inst);			  // make the mixer widgets
-		
 		this.refreshOnOffEnabled;					  // update solo gui enabled/not enabled
-		
-		//inst.studioLatency_(this.actualLatency);         // update latency (old don't use)
-		
+
 		// do onSolo stuff
 		if (onOff==0) {
 			inst.onOff_(0);
@@ -1079,16 +1065,10 @@ LNX_Studio {
 				inst.free;
 				this.selectInst(insts.selectedID); // selectInst changes with removeInst
 				insts.visualOrder.do({|inst,index| inst.instNo_(index) }); // change numbers
-				//mixerGUI[id][\scrollView].remove; // remove mixerGUI;
-				
 				mixerGUI[id].do(_.remove);
-				
 				this.alignInstGUI; // re-align gui here
-				
 				MVC_Automation.updateDurationAndGUI; // temp
-				
 				this.checkSyncDelay;
-				
 			};
 		}
 	}
@@ -1724,7 +1704,7 @@ LNX_Studio {
 						this.dialog1("Finished loading.",Color.white);
 						{
 							this.dialog1("Studio"+version);
-							this.dialog2("January 2015 - l n x");
+							this.dialog2("April 2016 - l n x");
 							isLoading=false;
 																			// maybe move this here?
 							// insts.do(_.postSongLoad); // after all insts added. 
@@ -1770,7 +1750,7 @@ LNX_Studio {
 						this.dialog1("Finished loading.",Color.white);
 						{
 							this.dialog1("Studio"+version);
-							this.dialog2("January 2015 - l n x");
+							this.dialog2("April 2016 - l n x");
 							isLoading=false;
 						}.defer(1);
 					}{
@@ -1784,7 +1764,6 @@ LNX_Studio {
 						if (header.subVersion>=2) {
 							LNX_POP.putLoadList(l.popEND("***EOD of POP Doc***"));
 						};
-						
 						
 					};
 				}.defer(this.actualLatency+0.1);
@@ -1828,9 +1807,7 @@ LNX_Studio {
 			);
 			// changed;
 		};
-			
-	
-			
+					
 		if (i<(noInst - 1)) {
 			this.recursiveLoad(i+1,l,noInst,loadVersion,ids);
 		}{
@@ -1840,102 +1817,6 @@ LNX_Studio {
 		
 	}
 	
-	//// add studio user dialog ////
-
-	addDialog{
-		if ((server.serverRunning) and: {isLoading.not} and: {network.isConnecting.not}) {
-			CocoaDialog.getPaths({ arg path;
-				var g,l,i;
-				path=path@0;	
-				g = File(path,"r");
-				l=[g.getLine];
-				if (l[0].documentType=="SC Studio Doc") {
-					//Studio.saveLastFileName(path);
-					i = g.getLine;
-					while ( { (i.notNil)&&(i!="*** END STUDIO DOC ***")  }, { 
-						l=l.add(i); 
-						i = g.getLine;
-					});
-					this.addLoadList(l);
-					//api.sendClumpedList(\netAddLoadList,l.collect(_.asString));
-					api.sendClumpedList(\netAddLoadList,l);
-					// this needs to be synced !!!!
-				};
-				g.close;
-			});
-		}
-	}
-	
-	netAddLoadList{|l| this.addLoadList(l) }
-	
-	// 'add studio to current song' - similar to putLoadList but slighty different.
-	
-	addLoadList{|l|
-		var noInst,ti,instType,header,loadVersion,midiLoadVersion;
-		var startSize=insts.size;
-		l=l.reverse;
-		header=l.popS;						
-		if (((header.documentType)=="SC Studio Doc")&&(isLoading.not)) {
-			loadVersion=header.version;
-			network.stopTimeOut;
-			// some house keeping
-			isLoading=true;
-			this.dialog1("Adding...");
-			loadedAction={
-				{
-					this.selectInst(insts.visualAt(insts.size-noInst).id);
-					network.startTimeOut;
-				}.defer;
-				this.dialog1("Finished adding.",Color.white);
-				{
-					this.dialog1("Studio"+version);
-					this.dialog2("January 2013 - l n x");
-					isLoading=false;
-				}.defer(1);
-			};	
-			if (loadVersion>1.0) {
-				l.pop; // ignore audio device
-				l.pop; // ignore extInt clock
-				l.pop; // ingore bpm 
-				l.pop; // ignore latecy
-				l.pop; // ingnore studio volume
-			};		
-			if (loadVersion>1.1) { l.pop }; // ignore 2nd audio device in version 1.2
-			l.pop; // ignore title
-			// let pull the rest of it in then
-			noInst=l.popI;
-			this.noInternalBuses_(noInternalBuses.max(l.popI));
-			
-			// use subversion to add bar length to save (ignore here)
-			if (header.subVersion>0) { l.popI };
-			
-			// use subversion to add bar length to save
-			//if (header.subVersion>=1) { MVC_Automation.barLength_(l.popI)};
-			
-			l.popNS(noInst); // ignore for later versions
-			midiLoadVersion=l.popS.version;
-			midiControl.putLoadList(l.popEND("*** End MIDI Control Doc ***"),midiLoadVersion);
-			if (noInst==0) {
-				loadedAction=nil;
-				this.dialog1("Finished loading.",Color.white);
-				{
-					this.dialog1("Studio"+version);
-					this.dialog2("January 2013 - l n x");
-					isLoading=false;
-				}.defer(1);
-			}{
-				this.recursiveLoad(insts.size,l,insts.size+noInst,loadVersion);
-				// after all insts added. (this will affect things)
-				insts.do(_.postSongLoad(startSize));
-				
-				if (header.subVersion>=2) {
-					LNX_POP.addLoadList(l.popEND("***EOD of POP Doc***"));
-				};
-			};
-			LNX_MIDIControl.createGUI;
-		};
-	}
-
 	// onSolo methods.. //////////////////////////////////////////////////////////
 
 	// alt onOff for studio and inst
