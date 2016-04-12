@@ -100,7 +100,7 @@ LNX_Studio {
 		
 	//// gui stuff
 	var	<gui,			<models,
-		<>frontWindow,	<show1=false, 	<showNone=false,
+		<>frontWindow,	<show1=true, 		<showNone=false,
 		<visibleTypesGUI,	<libraryGUI,		<alwaysOnTop=false,
 		<mixerWindow,		<mixerGUI;
 		
@@ -266,6 +266,8 @@ LNX_Studio {
 		LNX_URLDownloadManager.studio_(this); // for "Downloading samples..." & "Finished." Dialog
 		
 		//insts.addDependant(LNX_POP); // for updating gui positions
+		
+		#show1, showNone = (("show1 showNone").loadPref?[true,false]).collect(_.isTrue);
 		
 	}
 	
@@ -1691,7 +1693,7 @@ LNX_Studio {
 				}.defer(this.actualLatency+0.05); 
 				
 				{
-					this.clearShowWindowsOptions; // show all instrument windows
+					// this.clearShowWindowsOptions; // show all instrument windows
 					// close midi
 					if (LNX_MIDIControl.window.notNil) {LNX_MIDIControl.window.close};
 
@@ -1754,21 +1756,26 @@ LNX_Studio {
 							isLoading=false;
 						}.defer(1);
 					}{
-				
 						this.recursiveLoad(0,l,noInst,loadVersion,ids);
-						
 						insts.do(_.postSongLoad); // after all insts added. 
-						
 						insts.orderEffects; // fix: some effects start in the wrong order
-						
 						if (header.subVersion>=2) {
 							LNX_POP.putLoadList(l.popEND("***EOD of POP Doc***"));
 						};
-						
 					};
+					
+					// leave inst windows open or close
+					if (showNone) {
+						{ models[\showNone].doValueAction_(1,nil,false) }.defer(0.1);
+					}{
+						if (show1) {
+							{ models[\show1].doValueAction_(1,nil,false) }.defer(0.1);
+						}
+					};
+					
 				}.defer(this.actualLatency+0.1);
 				// if you change this defer value update value in netSyncCollaboration
-				
+		
 			};
 			
 		}{

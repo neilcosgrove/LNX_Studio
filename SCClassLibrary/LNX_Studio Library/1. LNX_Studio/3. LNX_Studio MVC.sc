@@ -5,7 +5,6 @@
 
 	/////// server controls & studio transport models //////////////////////////////////////////
 
-
 	makeBatch{
 	
 		if (batchOn && (lastBatchFolder.notNil)) {
@@ -232,12 +231,13 @@
 		server.startAliveThread;
 
 		// show 1 inst or show all
-		models[\show1]=[\switch, midiControl, 11, "All or 1",
+		models[\show1]=[show1.asInt, \switch, midiControl, 11, "All or 1",
 			{|me,val|
 				transmitInstChange=false; // stop this from going over the net
 				showNone=false;
 				models[\showNone].value_(0);
 				show1=val.booleanValue;
+				[show1,showNone].savePref("show1 showNone");
 				if ((insts.size>0) and: {insts.selectedInst.notNil}) {
 					if (show1) {
 						insts.pairsDo{|id,inst|
@@ -253,9 +253,10 @@
 			}].asModel.automationActive_(false);
 
 		// hide all instruments
-		models[\showNone]=[\switch, midiControl, 10, "Hide All",
+		models[\showNone]=[showNone.asInt, \switch, midiControl, 10, "Hide All",
 			{|me,val|
 				showNone=me.value.booleanValue;
+				[show1,showNone].savePref("show1 showNone");
 				transmitInstChange=false; // stop this from going over the net
 				if (insts.size>0) {
 					if (showNone) {
