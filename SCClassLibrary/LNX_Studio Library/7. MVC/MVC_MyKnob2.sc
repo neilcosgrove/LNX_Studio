@@ -210,22 +210,28 @@ MVC_MyKnob2 : MVC_View {
 			startY = y;
 			if (editMode||viewEditMode) { lw=lh=nil; view.bounds.postln };
 			if (y>w) {buttonNumber=1}; // numbers
+			
 			if (modifiers==524576) {buttonNumber=1};
 			if (modifiers==262401) {clickCount=2};
 			buttonPressed=buttonNumber;
+
 			if (buttonPressed==1) {
 				if (controlSpec2.notNil)
 					{ startVal=controlSpec2.unmap(value2) }
 					{ startVal=value2};
 			}{
 				if (controlSpec.notNil) { startVal=controlSpec.unmap(value) }{ startVal=value};
+				
+				
+				if (hasMIDIcontrol) {
+					if ((clickCount>1)&&doubleClickLearn){ toggle = true };
+					if (modifiers==262401) { toggle = true  };
+					if (buttonNumber>=1  ) { toggle = true  };
+					if (toggle) { this.toggleMIDIactive };
+				};
+				
 			};
-			if (hasMIDIcontrol) {
-				if ((clickCount>1)&&doubleClickLearn){ toggle = true };
-				if (modifiers==262401) { toggle = true  };
-				if (buttonNumber>=1  ) { toggle = true  };
-				if (toggle) { this.toggleMIDIactive };
-			};
+
 		};
 		
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|

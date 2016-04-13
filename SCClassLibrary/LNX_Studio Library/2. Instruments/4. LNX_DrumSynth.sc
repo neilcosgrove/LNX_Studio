@@ -403,7 +403,7 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 				
 			// 134. syncDelay
 			[\sync, {|me,val,latency,send|
-				this.setPVP(134,val,latency,send);
+				this.setPVPModel(134,val,latency,send);
 				this.syncDelay_(val);
 			}],
 				

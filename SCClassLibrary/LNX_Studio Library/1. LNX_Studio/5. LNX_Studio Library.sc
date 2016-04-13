@@ -2,111 +2,20 @@
 // the instrument library
 
 + LNX_Studio {
-	
-	checkForLibraryUpdates{
-		var internetLibraryIndex, getInetLib, onGetInetLib, attempts = 0;
-		// try 3 times to get internet_library_index
-		if (LNX_Mode.isSafe.not) {
-			(Platform.lnxResourceDir+/+"internet_library_index").removeFile(false,false,true);
-			onGetInetLib = {
-				{
-					this.dialog2("Connected",Color.white);
-					"Connected".postln;
-					this.downLoadUpdates(internetLibraryIndex.drop(1));
-				}.defer;
-			};
-			getInetLib = {
-				var dots = "...";
-				if (attempts == 2) {
-					this.dialog1(
-						"Failed connecting to http://lnxstudio.sourceforge.net",
-						Color.white);
-					this.dialog2("",Color.white);
-				} {
-					attempts.do {
-						dots = dots ++ "...";
-					};
-					this.dialog1("Checking"++dots,Color.white);
-					("Checking"++dots).postln;
-					this.dialog2("",Color.white);
-					Platform.getURL(
-						"http://lnxstudio.sourceforge.net/default_library/index",
-						Platform.lnxResourceDir+/+"internet_library_index",
-						{|status|
-							if (status == 0) {
-								internetLibraryIndex = (Platform.lnxResourceDir+/+
-									"internet_library_index").loadList;
-								if (internetLibraryIndex[0]=="*** LNX Library Index ***") {
-									onGetInetLib.();
-								} {
-									attempts = attempts + 1;
-									getInetLib.();
-								};
-							} {
-								attempts = attempts + 1;
-								getInetLib.();
-							};
-						}
-					);
-				};
-			};
-			// start the recursion
-			getInetLib.();
-		}
-	}
-	
-	// comment this neil!!
-	downLoadUpdates{|internetLibraryIndex|	
-		var folder = Platform.lnxResourceDir++"/default library".absolutePath;
-		{
-			internetLibraryIndex.collect{|file|
-				if ((folder+/+file).pathExists(false).not) {
-					this.dialog1("Downloading... ",Color.white);
-					("Downloading "++file).postln;
-					this.dialog2(file,Color.white);
-					Platform.getURL("http://lnxstudio.sourceforge.net/default_library/"
-						++ (file.replace(" ", "%20")),
-						folder+/+file
-					);
-					(0.25/4).wait;		
-				};
-			};
-			this.dialog1("Installing... ",Color.white);
-			this.dialog2("",Color.white);
-			"Installing...".postln;
-			1.wait;
-			this.restoreLibraryDefaults;
-			this.dialog1("Finished",Color.white);
-			"Finished".postln;
-		}.fork(AppClock);
-	}
-	
-	backupLibrary{
-		// desktop folder
-		var folder = Platform.userHomeDir +/+ "Desktop/default_library" + (Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2));
-		// library paths
-		var paths  = instLibraryFileNames.select{|i| i.size>0 }
-					.collect{|i,k| i.collect{|p| k.asString+/+p}}.asList.flatNoString;
-		// create folder
-		if (folder.pathExists(false).not) {folder.makeDir(true)};
-		// save index
-		(["*** LNX Library Index ***"]++paths).saveList(folder +/+ "index");
-		// copy files
-		LNX_Studio.instLibraryFileNames.select{|i| i.size>0 }.keys.do{|instFolder|
-			(LNX_File.prefDir++"Library"+/+instFolder++"/").folderContents(1).select(_.isFile)
-				.do{|file|
-					file.copyToDir(folder+/+instFolder,silent:true,overwrite:false)
-				}
-		};
-		"Library backed-up".postln;
-	}
-	
 	// make all the folders for the instrument library ////////////////////////////////////////////
 	
 	initLibrary{|forceRestore=false|
 		// master
 		var masterDir = Platform.lnxResourceDir++"/default library/".absolutePath;
 		if (masterDir.pathExists(false).not) { masterDir.makeDir };
+		
+		// ******************************************
+		// vvvv The user library folder *************
+		
+		libraryFolder = Platform.userHomeDir+/+"Music/LNX_Studio Library";
+		
+		// ^^^^ The user library folder **************
+		// ******************************************
 		
 		visibleTypes.collect(_.studioName).do{|name|
 			// the directory
@@ -120,7 +29,7 @@
 		visibleTypes.collect(_.studioName).do{|name|
 			
 			// the directory
-			var dir = LNX_File.prefDir++"Library"+/+name++"/";
+			var dir = libraryFolder+/+name++"/";
 			
 			// create & copy from master if absent
 			if ((dir.pathExists(false).not)||forceRestore) {
@@ -148,7 +57,7 @@
 		instTypes.collect(_.studioName).do{|name|
 						
 			// the directory
-			var dir = LNX_File.prefDir++"Library"+/+name++"/";
+			var dir = libraryFolder+/+name++"/";
 			
 			// get all files in that dir
 			instLibraryFileNames[name.asSymbol] =
@@ -172,16 +81,16 @@
 	// scroll view for library widgets
 	createLibraryScrollView{
 		// the library scroll view
-		mixerGUI[\libraryScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(11, 34+menuGap.y, 190, 294))
-
+		mixerGUI[\libraryScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(11, 34+menuGap.y, 190, 324))
 			.resizeList_([1,1,1,1,1]) //  0:view 1:left 2:top 3:right 4:bottom
 			.hasBorder_(false)
 			.addFlowLayout(nil,1@1)
 			.autoScrolls_(false)
 			.hasVerticalScroller_(true)
+			.hasVerticalScroller_(true)
 			.color_(\background,Color(59/77,59/77,59/77))
 			.color_(\border,Color(6/11,42/83,29/65))
-			.hasHorizontalScroller_(true);
+			.hasHorizontalScroller_(false);
 	}
 	
 	// make the gui
@@ -197,11 +106,13 @@
 
 			// the expand view
 			visibleTypesGUI[typeSymbol] =
-				MVC_ExpandView( mixerGUI[\libraryScrollView], 182@((files.size)*19+18), 182@18  )
+				MVC_ExpandView( mixerGUI[\libraryScrollView], 
+				(186)@((files.size)*19+18), 
+				(186)@18)
 					.color_(\background,Color(0.88,0.88,0.88));
 			
 			// the main instrument text
-			MVC_StaticText(visibleTypesGUI[typeSymbol],Rect(0,1,125,16))
+			MVC_StaticText(visibleTypesGUI[typeSymbol],Rect(0,1,125 + ScrollBars.addIfNone(7),16))
 				.canBeHidden_(false)
 				.font_(Font("Helvetica",11))
 				.shadow_(false)
@@ -209,7 +120,7 @@
 				.string_(type.studioName.asString);
 				
 			// the main instrument add button
-			MVC_FlatButton(visibleTypesGUI[typeSymbol],Rect(127+3,0,30,17)).strings_("Add")
+			MVC_FlatButton(visibleTypesGUI[typeSymbol],Rect(128 + ScrollBars.addIfNone(7),0,30,17)).strings_("Add")
 				.canBeHidden_(false)
 				.rounded_(true)
 				.color_(\background,Color(0,0,0,0.3))
@@ -237,7 +148,8 @@
 			
 			// lib inst name
 			libraryGUI[typeSymbol][(file++"_text").asSymbol] =
-				MVC_StaticText(visibleTypesGUI[typeSymbol],Rect(15,1+((i+1)*19),110,16))
+				MVC_StaticText(visibleTypesGUI[typeSymbol],
+					Rect(15,1+((i+1)*19),110 + ScrollBars.addIfNone(7),16))
 					.font_(Font("Helvetica",11))
 					.shadow_(false)
 					.color_(\string,Color.black)
@@ -245,15 +157,15 @@
 			
 			// add / load inst from library
 			libraryGUI[typeSymbol][(file++"_button").asSymbol] =
-				MVC_FlatButton(visibleTypesGUI[typeSymbol],Rect(127+3,0+((i+1)*19),30,17))
+				MVC_FlatButton(visibleTypesGUI[typeSymbol],
+					Rect(128 + ScrollBars.addIfNone(7),0+((i+1)*19),30,17))
 					.strings_("Add")
 					.rounded_(true)
 					.color_(\background,Color(0,0,0,0.3))
 					.color_(\up,Color(0,0,0,0.3))
 					.color_(\down,Color(0,0,0,0.6))
 					.action_{
-						this.guiLoadInstFromLibrary(
-							"Library"+/+(type.studioName)+/+file,type,file);
+						this.guiLoadInstFromLibrary((type.studioName)+/+file,type,file);
 					};
 
 			// delete inst from library
@@ -265,7 +177,7 @@
 					.color_(\up,Color(0,0,0,0.1))
 					.color_(\down,Color(0,0,0,0.2))
 					.actions_(\mouseUpDoubleClickAction,{
-						("Library"+/+(type.studioName)+/+file).deletePref;
+						(libraryFolder+/+(type.studioName)+/+file).deleteList;
 						{this.refreshLibrary(type)}.defer(0.1);
 					});
 					
@@ -282,8 +194,9 @@
 	guiLoadInstFromLibrary{|filename,type,name|
 		var list;
 		if ((isLoading.not)and:{server.serverRunning}) {
-			list = filename.loadPref;
+			list = (libraryFolder +/+ filename).loadList;
 			if (list.notNil) {
+				list[3]=name; // fix for naming over network
 				this.guiAddInst(type,list,name);
 				{MVC_Automation.updateDurationAndGUI.refreshGUI}.defer(1);
 			}
@@ -356,7 +269,7 @@
 	
 	// save this instrument to the library
 	saveInstToLibrary{|class, saveList, filename, studioName|
-		saveList.savePref("Library"+/+studioName+/+filename);
+		saveList.saveList(libraryFolder+/+studioName+/+filename);
 		visibleTypesGUI[class.studioName.asSymbol].expand;
 		{this.refreshLibrary(class)}.defer(0.1);
 	}
@@ -398,6 +311,97 @@
 			// add the new widgets
 			this.addLibraryWidgets(class);
 		};
+	}
+	
+	// comment this neil!!
+	checkForLibraryUpdates{
+		var internetLibraryIndex;
+		if (LNX_Mode.isSafe.not) {
+			{
+				(String.scDir+/+"internet_library_index").removeFile(false,false,true);
+				this.dialog1("Checking...",Color.white);
+				this.dialog2("",Color.white);
+				("curl http://lnxstudio.sourceforge.net/default_library/index > \""++
+					String.scDir+/+"internet_library_index\"").unixCmd;
+				3.wait;
+				internetLibraryIndex = (String.scDir+/+"internet_library_index").loadList;
+				if (internetLibraryIndex[0]=="*** LNX Library Index ***") {
+					this.dialog2("Connected",Color.white);
+					1.wait;
+					this.downLoadUpdates(internetLibraryIndex.drop(1));
+				}{
+					this.dialog1("Checking......",Color.white);
+					("curl http://lnxstudio.sourceforge.net/default_library/index > \""++
+						String.scDir+/+"internet_library_index\"").unixCmd;
+					5.wait;
+					internetLibraryIndex = (String.scDir+/+"internet_library_index").loadList;
+					if (internetLibraryIndex[0]=="*** LNX Library Index ***") {
+						this.dialog2("Connected",Color.white);
+						1.wait;
+						this.downLoadUpdates(internetLibraryIndex.drop(1));
+					}{
+						this.dialog1("Checking.........",Color.white);
+						("curl http://lnxstudio.sourceforge.net/default_library/index > \""++
+							String.scDir+/+"internet_library_index\"").unixCmd;
+						7.wait;
+						internetLibraryIndex = (String.scDir+/+
+							"internet_library_index").loadList;
+						if (internetLibraryIndex[0]=="*** LNX Library Index ***") {
+							this.dialog2("Connected",Color.white);
+							1.wait;
+							this.downLoadUpdates(internetLibraryIndex.drop(1));
+						}{
+							this.dialog1(
+						"Failed connecting to http://lnxstudio.sourceforge.net",Color.white);
+							this.dialog2("",Color.white);
+						};	
+					};
+				};
+			}.fork(AppClock);
+		};
+	}
+	
+	// comment this neil!!
+	downLoadUpdates{|internetLibraryIndex|	
+		var folder = String.scDir++"/default library".absolutePath;
+		internetLibraryIndex.collect{|file|
+			if ((folder+/+file).pathExists(false).not) {
+				this.dialog1("Downloading... ",Color.white);
+				this.dialog2(file,Color.white);
+				("curl http://lnxstudio.sourceforge.net/default_library/"
+					++ (file.replace(" ", "%20"))
+					++ " > \""
+					++ folder+/+file
+					++"\""
+				).unixCmd;
+				(0.25/4).wait;		
+			};
+		};
+		this.dialog1("Installing... ",Color.white);
+		this.dialog2("",Color.white);
+		1.wait;
+		this.restoreLibraryDefaults;
+		this.dialog1("Finished",Color.white);
+	}
+	
+	backupLibrary{
+		// desktop folder
+		var folder = "~/".absolutePath +/+ "Desktop/LNX_Studio Library" + (Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2));
+		// library paths
+		var paths  = instLibraryFileNames.select{|i| i.size>0 }
+					.collect{|i,k| i.collect{|p| k.asString+/+p}}.asList.flatNoString;
+		// create folder
+		if (folder.pathExists(false).not) {folder.makeDir(true)};
+		// save index
+		(["*** LNX Library Index ***"]++paths).saveList(folder +/+ "index");
+		// copy files
+		LNX_Studio.instLibraryFileNames.select{|i| i.size>0 }.keys.do{|instFolder|
+			(libraryFolder+/+instFolder++"/").folderContents(1).select(_.isFile)
+				.do{|file|
+					file.copyToDir(folder+/+instFolder,silent:true,overwrite:false)
+				}
+		};
+		"Library backed-up".postln;
 	}
 
 }

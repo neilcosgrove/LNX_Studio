@@ -3,7 +3,7 @@
  //     LNX_STUDIO Version 2.0     //        //  ||   //    |// 
 // ****************************** //        //   ||  //     //|
 //                               //        //    || //     //||
-//   2015 by neil cosgrove      //======= //     ||//     // ||
+//   2016 by neil cosgrove      //======= //     ||//     // ||
 //     for Mac & Linux
 //
 // Linux port (andrew lambert)
@@ -58,6 +58,8 @@
 // Josh           : helping with the SC side of OscGroups
 // and nonprivate : sound advice.
 //
+// also thanks to Southern express, Themes Link and Gatwick Express for the time
+//
 // Unsolved BUG LOG:
 // WebView crashes ramdomly in Cocoa.
 //
@@ -73,7 +75,8 @@ LNX_Studio {
 		
 	classvar	studios,			<instTypes, 
 			<thisWidth=212, 	<thisHeight,		<defaultHeight=374,
-			<>osx=0,			<visibleTypes,	<instLibraryFileNames, menuGap;
+			<>osx=0,			<visibleTypes,	<instLibraryFileNames, menuGap,
+			<libraryFolder;
 			
 	classvar <>verbose=false;
 		
@@ -263,8 +266,11 @@ LNX_Studio {
 		MVC_Automation.studio_(this);         // for finding MVC_Automation's on the network
 		LNX_POP.studio_(this);                // for finding instBeat when gui pressing program
 		LNX_BufferProxy.studio_(this);        // for gui flashing
+		LNX_URLDownloadManager.studio_(this); // for "Downloading samples..." & "Finished." Dialog
 		
 		//insts.addDependant(LNX_POP); // for updating gui positions
+		
+		#show1, showNone = (("show1 showNone").loadPref?[true,false]).collect(_.isTrue);
 		
 	}
 	
@@ -282,7 +288,7 @@ LNX_Studio {
 			\netSyncCollaboration, \netAddLoadList, \netOnSoloUpdate, \netMove, \hostPlay,
 			\play, \netPause, \hostStop, \netStop, \hostSetBPM, \setBPM,
 			\netAddInstWithLoadList,\netAllInstsSelectProgram, \netSetModel, \hostJumpTo,
-			\netSetAuto, \netNoteOn, \netNoteOff, \netAllToPOP
+			\netSetAuto, \netNoteOn, \netNoteOff, \netAllToPOP, \jumpWhileStopped
 		],#[
 			\post, \postMe, \postList, \postAll, \postStuff, \postTime, \postClock,
 			\postSpecies
@@ -554,10 +560,11 @@ LNX_Studio {
 	
 	// work out the largest -ive sync delay in all instruments
 	// and set that as the studio +ive syncdelay	
-	checkSyncDelay{	
+	checkSyncDelay{
+		var oldSync = syncDelay;
 		// largest only -ive is turned into a +ive syncDelay so we don't below latency
 		syncDelay = insts.collect{|inst| inst.syncDelay.clip(-inf,0).abs }.asList.sort.last ? 0;
-		insts.do(_.stopAllNotes);
+		if (oldSync!=syncDelay) {insts.do(_.stopAllNotes) };
 	}
 	
 	// MIDI ///////////////////////////////////////////////////////////////////////////////
@@ -754,46 +761,56 @@ LNX_Studio {
 		};
 	}
 	
+	/////
+	
+	isCntKeyboardNetworked{ ^models[\networkCntKeyboard].isTrue }
+	
 	// noteOn from controller keyboard
 	noteOn{|note, vel, latency|
-		this.doNoteOn(insts.selectedInst, note.asInt, vel, latency); // do note on event
-		if (models[\networkCntKeyboard].isTrue) {
+		// do note on event
+		this.doNoteOn(insts.selectedInst, note.asInt, vel, latency, \controllerKeyboard); 
+		if (this.isCntKeyboardNetworked) {
 			api.sendOD(\netNoteOn,insts.selectedInst.id, note, vel); // and send over network
 		};
 	}
 	
 	// net version of above
-	netNoteOn{|id, note, vel| this.doNoteOn(insts[id.asInt], note.asInt, vel.asFloat) }
+	netNoteOn{|id, note, vel|
+		this.doNoteOn(insts[id.asInt], note.asInt, vel.asFloat, nil, \network)
+	}
 	
 	// do controller keyboard note On
-	doNoteOn{|inst, note, vel, latency|	
+	doNoteOn{|inst, note, vel, latency, source|	
 		if(midiCnrtLastNote[note].notNil) {
-			this.doNoteOff(midiCnrtLastNote[note], note, vel, latency); // finish last note
+			this.doNoteOff(midiCnrtLastNote[note], note, vel, latency, source);// finish last note
 		};
-		inst.pipeIn( LNX_NoteOn(note,vel,latency,\controllerKeyboard) ); // do note on
+		inst.pipeIn( LNX_NoteOn(note,vel,latency,source) ); // do note on
 		midiCnrtLastNote[note] = inst;   // and store for note off
 	}
 		
 	// noteOff from controller keyboard
 	noteOff{|note, vel, latency|
-		this.doNoteOff(insts.selectedInst, note.asInt, vel, latency); // do note off event
-		if (models[\networkCntKeyboard].isTrue) {
+		// do note off event
+		this.doNoteOff(insts.selectedInst, note.asInt, vel, latency, \controllerKeyboard); 
+		if (this.isCntKeyboardNetworked) {
 			api.sendOD(\netNoteOff,insts.selectedInst.id, note, vel); // and send over network
 		};
 	}
 	
 	// net version of above
-	netNoteOff{|id, note, vel|  this.doNoteOff(insts[id.asInt], note.asInt, vel.asFloat) }
+	netNoteOff{|id, note, vel|
+		this.doNoteOff(insts[id.asInt], note.asInt, vel.asFloat, nil, \network)
+	}
 	
 	// do controller keyboard note On
-	doNoteOff{|inst, note, vel, latency|	
+	doNoteOff{|inst, note, vel, latency, source|	
 		(midiCnrtLastNote[note] ? inst).pipeIn(
-			LNX_NoteOff(note,vel,latency,\controllerKeyboard) ); // do note on
+			LNX_NoteOff(note,vel,latency,source) ); // do note on
 		// use midiCnrtLastNote 1st
 		midiCnrtLastNote[note] = nil; // and remove from midiCnrtLastNote IdentityDictionary
 	}
 		
-	// auto map MIDI in ( to review )
+	// auto map MIDI in ( to review ) /////
 	
 	autoMap{|num,val|
 		if (autoMapOn) {
@@ -859,8 +876,6 @@ LNX_Studio {
 				// from someone else to the host
 				this.netAddInst(class,id,userID,userIsListening,0, autoAdd, autoBeat,loadList);
 			};
-			
-			
 			
 			// put the load list if there is one (this only happens with duplicate i believe)
 			{
@@ -956,7 +971,6 @@ LNX_Studio {
 	addInst{|type,bounds,open=true,id,onOff=1, autoAdd=false, autoBeat, loadList|
 		var i,inst;
 		
-		
 		if (type.isNumber) { type=visibleTypes[type] };  // convert index to class
 		if (type.species==Symbol) { type=type.asClass };
 		i=insts.size;
@@ -964,22 +978,11 @@ LNX_Studio {
 												  //work out bounds
 		bounds=bounds ? Rect((i*25)+thisWidth+osx+3,i*23+50,type.thisWidth,type.thisHeight);
 		
-		
-		
 		// this is the only place a new inst is created
-		
 		inst=type.new(server, this, i, bounds, open,id, loadList); // make the instrument
 		
-		
-		
-		// insts.addInst(inst,id); 	                     // add to instruments
-		
-		// this.createMixerInstWidgets(inst);			  // make the mixer widgets
-		
 		this.refreshOnOffEnabled;					  // update solo gui enabled/not enabled
-		
-		//inst.studioLatency_(this.actualLatency);         // update latency (old don't use)
-		
+
 		// do onSolo stuff
 		if (onOff==0) {
 			inst.onOff_(0);
@@ -1067,16 +1070,10 @@ LNX_Studio {
 				inst.free;
 				this.selectInst(insts.selectedID); // selectInst changes with removeInst
 				insts.visualOrder.do({|inst,index| inst.instNo_(index) }); // change numbers
-				//mixerGUI[id][\scrollView].remove; // remove mixerGUI;
-				
 				mixerGUI[id].do(_.remove);
-				
 				this.alignInstGUI; // re-align gui here
-				
 				MVC_Automation.updateDurationAndGUI; // temp
-				
 				this.checkSyncDelay;
-				
 			};
 		}
 	}
@@ -1300,6 +1297,9 @@ LNX_Studio {
 	
 	///////////////  info  /////////////////////////
 		
+	//openHelp{ "LNX_Studio Help".help }
+		
+		
 	openHelp{
 		if ( (frontWindow.isKindOf(Window))
 			or: {frontWindow.isNil}
@@ -1307,6 +1307,7 @@ LNX_Studio {
 				"LNX_Studio Help".help
 		}
 	}
+		
 		
 	fullDump{
 		"// LNX_Studio Dump ///////////".postln;
@@ -1698,7 +1699,7 @@ LNX_Studio {
 				}.defer(this.actualLatency+0.05); 
 				
 				{
-					this.clearShowWindowsOptions; // show all instrument windows
+					// this.clearShowWindowsOptions; // show all instrument windows
 					// close midi
 					if (LNX_MIDIControl.window.notNil) {LNX_MIDIControl.window.close};
 
@@ -1711,7 +1712,7 @@ LNX_Studio {
 						this.dialog1("Finished loading.",Color.white);
 						{
 							this.dialog1("Studio"+version);
-							this.dialog2("January 2015 - l n x");
+							this.dialog2("April 2016 - l n x");
 							isLoading=false;
 																			// maybe move this here?
 							// insts.do(_.postSongLoad); // after all insts added. 
@@ -1757,26 +1758,30 @@ LNX_Studio {
 						this.dialog1("Finished loading.",Color.white);
 						{
 							this.dialog1("Studio"+version);
-							this.dialog2("January 2015 - l n x");
+							this.dialog2("April 2016 - l n x");
 							isLoading=false;
 						}.defer(1);
 					}{
-				
 						this.recursiveLoad(0,l,noInst,loadVersion,ids);
-						
 						insts.do(_.postSongLoad); // after all insts added. 
-						
 						insts.orderEffects; // fix: some effects start in the wrong order
-						
 						if (header.subVersion>=2) {
 							LNX_POP.putLoadList(l.popEND("***EOD of POP Doc***"));
 						};
-						
-						
 					};
+					
+					// leave inst windows open or close
+					if (showNone) {
+						{ models[\showNone].doValueAction_(1,nil,false) }.defer(0.1);
+					}{
+						if (show1) {
+							{ models[\show1].doValueAction_(1,nil,false) }.defer(0.1);
+						}
+					};
+					
 				}.defer(this.actualLatency+0.1);
 				// if you change this defer value update value in netSyncCollaboration
-				
+		
 			};
 			
 		}{
@@ -1815,9 +1820,7 @@ LNX_Studio {
 			);
 			// changed;
 		};
-			
-	
-			
+					
 		if (i<(noInst - 1)) {
 			this.recursiveLoad(i+1,l,noInst,loadVersion,ids);
 		}{
@@ -1827,102 +1830,6 @@ LNX_Studio {
 		
 	}
 	
-	//// add studio user dialog ////
-
-	addDialog{
-		if ((server.serverRunning) and: {isLoading.not} and: {network.isConnecting.not}) {
-			Dialog.openPanel({ arg path;
-				var g,l,i;
-				path=path@0;	
-				g = File(path,"r");
-				l=[g.getLine];
-				if (l[0].documentType=="SC Studio Doc") {
-					//Studio.saveLastFileName(path);
-					i = g.getLine;
-					while ( { (i.notNil)&&(i!="*** END STUDIO DOC ***")  }, { 
-						l=l.add(i); 
-						i = g.getLine;
-					});
-					this.addLoadList(l);
-					//api.sendClumpedList(\netAddLoadList,l.collect(_.asString));
-					api.sendClumpedList(\netAddLoadList,l);
-					// this needs to be synced !!!!
-				};
-				g.close;
-			});
-		}
-	}
-	
-	netAddLoadList{|l| this.addLoadList(l) }
-	
-	// 'add studio to current song' - similar to putLoadList but slighty different.
-	
-	addLoadList{|l|
-		var noInst,ti,instType,header,loadVersion,midiLoadVersion;
-		var startSize=insts.size;
-		l=l.reverse;
-		header=l.popS;						
-		if (((header.documentType)=="SC Studio Doc")&&(isLoading.not)) {
-			loadVersion=header.version;
-			network.stopTimeOut;
-			// some house keeping
-			isLoading=true;
-			this.dialog1("Adding...");
-			loadedAction={
-				{
-					this.selectInst(insts.visualAt(insts.size-noInst).id);
-					network.startTimeOut;
-				}.defer;
-				this.dialog1("Finished adding.",Color.white);
-				{
-					this.dialog1("Studio"+version);
-					this.dialog2("January 2013 - l n x");
-					isLoading=false;
-				}.defer(1);
-			};	
-			if (loadVersion>1.0) {
-				l.pop; // ignore audio device
-				l.pop; // ignore extInt clock
-				l.pop; // ingore bpm 
-				l.pop; // ignore latecy
-				l.pop; // ingnore studio volume
-			};		
-			if (loadVersion>1.1) { l.pop }; // ignore 2nd audio device in version 1.2
-			l.pop; // ignore title
-			// let pull the rest of it in then
-			noInst=l.popI;
-			this.noInternalBuses_(noInternalBuses.max(l.popI));
-			
-			// use subversion to add bar length to save (ignore here)
-			if (header.subVersion>0) { l.popI };
-			
-			// use subversion to add bar length to save
-			//if (header.subVersion>=1) { MVC_Automation.barLength_(l.popI)};
-			
-			l.popNS(noInst); // ignore for later versions
-			midiLoadVersion=l.popS.version;
-			midiControl.putLoadList(l.popEND("*** End MIDI Control Doc ***"),midiLoadVersion);
-			if (noInst==0) {
-				loadedAction=nil;
-				this.dialog1("Finished loading.",Color.white);
-				{
-					this.dialog1("Studio"+version);
-					this.dialog2("January 2013 - l n x");
-					isLoading=false;
-				}.defer(1);
-			}{
-				this.recursiveLoad(insts.size,l,insts.size+noInst,loadVersion);
-				// after all insts added. (this will affect things)
-				insts.do(_.postSongLoad(startSize));
-				
-				if (header.subVersion>=2) {
-					LNX_POP.addLoadList(l.popEND("***EOD of POP Doc***"));
-				};
-			};
-			LNX_MIDIControl.createGUI;
-		};
-	}
-
 	// onSolo methods.. //////////////////////////////////////////////////////////
 
 	// alt onOff for studio and inst

@@ -43,10 +43,9 @@ LNX_SplashScreen{
 				texts=[
 					"		LNX_Studio"+(studio.version.drop(1)) ,
 					"",
-					"		Oct 2015",
+					"		March 2016",
 					"",
 					"		           LNX_Studio - Digital Audio Workstation",
-					"		                    Live on-line collaborations",
 					"                                  (created in SuperCollider)",
 					"",
 					" Do you want to..."	
@@ -74,41 +73,40 @@ LNX_SplashScreen{
 							.align_(\left);
 					}
 				};
-				
-//				Button(window,Rect(50,160,w/2.8,30))
-//					.states_([
-//						["Go on-line", Color.white, Color(0.2,0.2,0.2,0.7)]
-//					])
-//					.action_{
-//						studio.network.guiConnect;
-//						this.close;
-//					};
-					
-				MVC_RoundButton(window,Rect(50,160,w/2.8,30))
-					.states_([
-						["Load demo song", Color.white, Color(0.2,0.2,0.2,0.7)]
-					])
-					.action_{
+		
+		 		MVC_FlatButton(window,Rect(50,160,w/2.8,30), "Load demo song")
+					.rounded_(true)
+					.shadow_(true)
+					.canFocus_(false)
+					.color_(\up,Color(257/643,62/157,195/463))
+					.color_(\down,Color(257/643,62/157,195/463)/2)
+					.color_(\string,Color.white)
+					.action_{					
 						if (studio.canLoadSong) {
 							studio.loadDemoSong;
 							this.close;
-						}
-					};
-					
-				MVC_RoundButton(window,Rect((w/4*2)+20,160,w/2.8,30))
-					.states_([
-						["Open help", Color.white, Color(0.2,0.2,0.2,0.7)]
-					])
-					.action_{
+					} };
+
+				MVC_FlatButton(window,Rect((w/4*2)+20,160,w/2.8,30), "Open help")
+					.rounded_(true)
+					.shadow_(true)
+					.canFocus_(false)
+					.color_(\up,Color(257/643,62/157,195/463))
+					.color_(\down,Color(257/643,62/157,195/463)/2)
+					.color_(\string,Color.white)
+					.action_{		
 						"LNX_Studio Help".help;
-						this.close;
+						this.close;	
 					};
 					
-				MVC_RoundButton(window,Rect((w/4)+35,160+40,w/2.8,30))
-					.states_([
-						["Don't show this again", Color.white, Color(0.2,0.2,0.2,0.7)];
-					])
-					.action_{
+				MVC_FlatButton(window,Rect((w/4)+35,160+40,w/2.8,30), "Don't show this again")
+					.rounded_(true)
+					.shadow_(true)
+					.canFocus_(false)
+					.color_(\up,Color(257/643,62/157,195/463))
+					.color_(\down,Color(257/643,62/157,195/463)/2)
+					.color_(\string,Color.white)
+					.action_{	
 					    ["Delete this file to show the splash screen."].savePref("SplashScreen");
 						this.close;
 					};

@@ -1,12 +1,12 @@
 SC CodeFX Doc v1.4
-Template Version v1.1
+Template Version v1.2
 LNX_CodeFX
 Limiter
 19
 0
 0
 1
-3.6394908811459
+0.29227448508202
 0
 0
 1
@@ -19,7 +19,7 @@ Limiter
 8
 0
 1
--4.4504963984064
+0.14841514494554
 263
 262
 9
@@ -27,10 +27,11 @@ Limiter
 0
 1
 0
-*** MIDI Control Doc v1.1
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
-359
+389
 10
 47
 47
@@ -70,6 +71,10 @@ Limiter
 32
 123
 124
+111
+110
+44
+32
 111
 117
 116
@@ -145,6 +150,16 @@ Limiter
 110
 97
 108
+44
+32
+115
+105
+103
+110
+97
+108
+73
+110
 32
 61
 32
@@ -198,6 +213,8 @@ Limiter
 110
 97
 108
+73
+110
 44
 108
 101
@@ -225,6 +242,8 @@ Limiter
 78
 88
 95
+70
+88
 79
 117
 116
@@ -235,6 +254,18 @@ Limiter
 110
 97
 108
+44
+115
+105
+103
+110
+97
+108
+73
+110
+44
+111
+110
 44
 111
 117
@@ -574,7 +605,7 @@ focus
 *** END MVC_View Document ***
 0
 MVC_MyKnob
-0.01
+0.033975970820601
 *** MVC_View Document v1 ***
 9
 0
@@ -628,9 +659,9 @@ focus
 0
 0
 *** END MVC_View Document ***
-8
+9
 MVC_MyKnob
-1
+0.088358838841279
 *** MVC_View Document v1 ***
 9
 0

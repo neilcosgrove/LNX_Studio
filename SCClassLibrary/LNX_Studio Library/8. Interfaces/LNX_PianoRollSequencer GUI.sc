@@ -154,6 +154,8 @@
 		
 		var bCount=0;
 		
+		var sb = ScrollBars.addIfSome(13);
+		
 		gui[\window] = window;
 		
 		gui[\velocityOffset] = velocityOffset;
@@ -229,7 +231,8 @@
 							
 				gui[\menu]=MVC_PopUpMenu(window,
 					Rect(bounds.left, bounds.top-6+1, 60, 16))
-					.items_(["Edit","-","Copy","Paste","Select All","-","Quantise","-","Delete",
+					.items_(["Edit","-","Copy","Paste",
+							"Select All","-","Quantise","-","Delete",
 							"-","Fit to window","Exit Full Screen"])
 					.color_(\background,colors[\boxes])
 					.color_(\string,Color.white)
@@ -355,7 +358,8 @@
 				
 	// I'm going to remove tabs to make it easier to code !!! /////////////////////////////////////
 			
-	gui[\notes] = MVC_UserView(gui[\scrollView],Rect(0,0,gridW*(score.dur),gridH*128))
+	gui[\notes] = MVC_UserView(gui[\scrollView],
+			Rect(0,0,gridW*(score.dur),gridH*128).resizeBy(sb.neg))
 		
 		.addParentView(parentViews)
 	
@@ -367,14 +371,14 @@
 		var bounds, w, h, svb, x1, x2, voL,voR, voT, voB, vBars, vNum;
 		var spo = this.spo;
 
-		svb=gui[\scrollView].bounds;
+		svb=gui[\scrollView].bounds.resizeBy(sb.neg);
 		visibleOrigin=gui[\scrollView].visibleOrigin;
 		voL = visibleOrigin.x;
-		voR = voL+svb.width;
+		voR = voL+svb.width+sb;
 		voT = visibleOrigin.y;
-		voB = voT+svb.height;
+		voB = voT+svb.height+sb;
 		
-		visibleRect=Rect(voL,voT,svb.width,svb.height);
+		visibleRect=Rect(voL,voT,svb.width+sb,svb.height+sb);
 		
 		score.viewArgs_(gridW,gridH,voL,voT);
 		
@@ -382,8 +386,8 @@
 		//if (	lastVisibleRect!=visibleRect ) {
 		
 		bounds = me.bounds;
-		w = bounds.width;
-		h = bounds.height;
+		w = bounds.width+sb;
+		h = bounds.height+sb;
 
 		xScale = 1;
 		if (gridW<24) {xScale=2};
@@ -520,7 +524,8 @@
 	
 	// this is the transport position marker which is on top of the notes view
 	// and its this view that actually recieves all the mouse actions
-	gui[\notesPosAndMouse] = MVC_UserView(gui[\scrollView],Rect(0,0,gridW*(score.dur),gridH*128))
+	gui[\notesPosAndMouse] = MVC_UserView(gui[\scrollView],
+		Rect(0,0,gridW*(score.dur),gridH*128).resizeBy(sb.neg))
 		.canFocus_(true)
 		
 		.addParentView(parentViews)

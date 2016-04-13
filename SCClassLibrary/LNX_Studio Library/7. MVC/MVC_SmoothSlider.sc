@@ -123,6 +123,7 @@ MVC_SmoothSlider : MVC_View {
 						};
 						if (controlSpec.notNil) { val=controlSpec.map(val) };
 						this.viewValueAction_(val,nil,true,false,buttonPressed);
+						this.refreshValue;
 					};
 				};
 			};
@@ -338,13 +339,15 @@ MVC_SmoothSlider : MVC_View {
 		if (view.notClosed) {
 			if (controlSpec.notNil) {
 				if (parentsVisible) {
-					view.value_(controlSpec.unmap(value))
+					view.value_(controlSpec.unmap(value));
+					if (numberGUI.notNil) { numberGUI.refresh }
 				}{
 					view.valueNoRefresh_(controlSpec.unmap(value))
 				}
 			}{
 				if ( parentsVisible) {
 					view.value_(value);
+					if (numberGUI.notNil) { numberGUI.refresh };
 				}{
 					view.valueNoRefresh_(value);
 				}

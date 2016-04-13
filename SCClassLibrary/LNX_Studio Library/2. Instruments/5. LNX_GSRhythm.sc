@@ -80,7 +80,14 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 					this.updateSampleControlSpec(i);
 					if (updateBank) {
 						models[100+i].doValueAction_(13,send:send);// send was true
-					};
+					};				
+					{
+						models[108+i]
+							.dependantsPerform(\items_,bank.names)
+							.dependantsPerform(\value_,p[108+i])
+							.dependantsPerform(\freshAdaptor);
+					}.defer;
+					
 				}
 				.title_("User: "++((i+1).asString))
 		} ! defaultChannels;

@@ -1,8 +1,8 @@
 SC BumNote2 Doc v1.6
 Template Version v1.2
 LNX_BumNote2
-wobbly melody 2
-75
+square
+80
 0
 0
 1
@@ -45,7 +45,7 @@ wobbly melody 2
 0
 -5.592578125
 0
-1
+0
 -inf
 0
 0.7
@@ -62,8 +62,8 @@ wobbly melody 2
 0
 1
 5
-0
-43
+1
+67
 1
 0
 0
@@ -79,7 +79,12 @@ wobbly melody 2
 8
 1
 1
-1
+0
+2
+0
+2
+0
+0
 0
 1
 0

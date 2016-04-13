@@ -301,7 +301,7 @@ LNX_MyInvite{
 	inviteString{
 		var string="You want to start a ";
 		if (network.isLAN) {
-			string=string++"  in\nRoom: ";
+			string=string++"LAN collaboration in\nRoom: ";
 			string=string++(room.name);
 		}{
 			string=string++(room.location);

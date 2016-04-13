@@ -15,7 +15,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 	*initClass{
 		Class.initClassTree(LNX_File);
 		// load in all the preferences
-		isVisiblePref = ("RolandIsVisible".loadPref ? [true])[0].isTrue;
+		isVisiblePref = ("RolandIsVisible".loadPref ? [false])[0].isTrue;
 		// how shall i insert the factory defaults here?
 		rolandPresets = "Roland Presets".loadPref ?? { (8*8).collect{|i| "" } }; 
 		rolandPresetDict = IdentityDictionary[];
@@ -61,7 +61,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 	}
 	
 	// an immutable list of methods available to the network
-	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn]}
+	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn, \netPipeIn]}
 	
 	iInitVars{
 
@@ -150,20 +150,21 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 				}], 		
 				
 			// 9. channelSetup
-			[0,[0,3,\lin,1], midiControl, 9, "Channel Setup",
-				(\items_:["Left & Right","Left + Right","Left","Right"]),
+			[0,[0,4,\lin,1], midiControl, 9, "Channel Setup",
+				(\items_:["Left & Right","Left + Right","Left","Right","No Audio"]),
 				{|me,val,latency,send|
 					this.setSynthArgVH(9,val,\channelSetup,val,latency,send);
 				}],
 				
 			// 10. syncDelay
 			[\sync, {|me,val,latency,send|
-				this.setPVP(10,val,latency,send);
+				this.setPVPModel(10,val,latency,send);
 				this.syncDelay_(val);
 			}],		
 						
-			// 11. empty
-			[0],
+			// 11.network keyboard
+			[0, \switch, midiControl, 11, "Network", (strings_:["Net"]),
+				{|me,val,latency,send|	this.setPVH(11,val,latency,send) }],
 			
 			// 12. preset
 			[0,[1,64,\lin,1], midiControl, 12, "Preset",{|me,value,latency,send,toggle|
@@ -184,15 +185,18 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 			[0, \switch, midiControl, 14, "MIDI Clock",
 					(strings_:["MIDI Clock"]),
 					{|me,val,latency,send|
-						this.setPVP(14,val,latency,send);
-						if (val.isFalse) { midi.stop(latency +! syncDelay) };
+						this.setPVPModel(14,val,latency,send);
+						if (val.isFalse) {
+							//">>> Out Stop >>> ".post; [latency +! syncDelay].postln;
+							midi.stop(latency +! syncDelay)
+						};
 					}],
 					
 			// 15. use controls in presets
 			[1, \switch, midiControl, 15, "Controls Preset",
 					(strings_:["Controls"]),
 					{|me,val,latency,send|	
-						this.setPVP(15,val,latency,send);
+						this.setPVPModel(15,val,latency,send);
 						if (val.isTrue) {
 							presetExclusion=[0,1,10,14];
 						}{
@@ -255,13 +259,31 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 				api.groupCmdOD(\extProgIn, pipe.program+1,false); // network prog change
 				^this   // & drop	
 			};
+		
+		// network if needed		
+		if ((p[11].isTrue) and:
+			{#[\external, \controllerKeyboard, \MIDIIn, \keyboard].includes(pipe.source)}) {
+				if (((pipe.source==\controllerKeyboard) and:{studio.isCntKeyboardNetworked}).not) 
+					{ api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}
+		};
+			
 		midiInBuffer.pipeIn(pipe); // to in Buffer. (control & progam are dropped above)
+	}
+	
+	// networked midi pipes	
+	netPipeIn{|type,note,velocity|
+		switch (type.asSymbol)
+			{\noteOn } { this.pipeIn(LNX_NoteOn(note,velocity,nil,\network)) }
+			{\noteOff} { this.pipeIn(LNX_NoteOff(note,velocity,nil,\network)) }
+		;
 	}
 	
 	// sysex in from the JP08 physical MIDI Out port, not the USB MIDI port
 	// to prevent feedback ouput chokes input for 1 second
 	sysex2{|data, latency|
 		var index, key, value;
+
+		// if (true) {^this}; // temp disable
 
 		// exceptions
 		if (data.size!=16)    {^this};          // packet size exception
@@ -271,7 +293,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		if (data[8]!=3)       {^this};          // unsure, maybe set value command?
 		if (data[0]!=(-16))   {^this};          // first byte
 		if (data[15]!=(-9))   {^this};          // last byte
-
+		
 		key   = (data[10]*25) + data[11];       // key to metadata in RolandJP08 dictionary
 		value = (data[12]*16) + data[13];       // 8 bit value (0-255)
 		index = RolandJP08.indexOfKey(key);     // index of model
@@ -282,6 +304,8 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		if (sysex2Time[index].notNil and: { SystemClock.now < sysex2Time[index] })
 			{ ^this }                          // exception
 			{ sysex2Time[index] = nil };       // else clear time
+			
+		//"<<< In Sysex  <<< ".post; data.postln;
 
 		models[(index+17)].lazyValue_(value, true); // set model, no action
 		p[index+17]=value;                          // set p[]
@@ -298,6 +322,9 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 											value.div(16), value.asInt%16, 0, -9 ];
 		
 		data[14] = RolandJP08.checkSum(data[8..13]); // put in Roland checksum
+		
+		//">>> Out Sysex >>> ".post; data.postln;
+		
 		midi.sysex(data,latency +! syncDelay);       // midi control out
 		
 		// to prevent feedback, when can i start listening again?
@@ -315,10 +342,23 @@ RolandJP08.checkSum(Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13
 Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 */
 
+	// import a complete folder of roland patches
+	importFolder{
+		Dialog.openPanel({|files|
+			files = files.select{|path|
+				(path.basename[..9] == "JP08_PATCH")&&(path.extension=="PRM")
+			};	
+			files.do{|path|
+				var index = (path.basename.drop(10).drop(-4).asInt);
+				this.dropFile(index,path);
+			}
+		},multipleSelection:true)		
+	}
+	
 	// drag and drop a Roland PATCH.PRM file into the preset
 	dropFile{|i,path|
 		var file,loadList;
-		
+				
 		// file type / name exceptions
 		if (path.keep(-4)!=".PRM")      { "Not a .PRM file".postln;  ^this};
 		if (path.contains("PATCH").not) { "Not a PATCH file".postln; ^this};
@@ -364,6 +404,9 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	netExtCntIn{|item,value,uidOut,midiOutChannel|
 		p[item+17]=value;
 		models[item+17].lazyValue_(value,false);
+		
+		// need to do this via sysex on nrtwork
+		
 		// go on, do a pipe here
 		midi.control(RolandJP08.keyAt(item) ,value,nil,false,true);
 		// ignore set to true so no items learnt from this
@@ -395,6 +438,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	
 	// and finally to the midi out
 	toMIDIPipeOut{|pipe|
+		//">>> Out Pipe >>> ".post; pipe.postln;
 		midi.pipeIn(pipe.addToHistory(this).addLatency(syncDelay));    // add this to its history
 	}
 
@@ -452,11 +496,26 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	}
 	
 	// clock in for midi out clock methods
-	midiSongPtr{|songPtr,latency| if (p[14].isTrue) { midi.songPtr(songPtr,latency +! syncDelay) }} 
-	midiStart{|latency|           if (p[14].isTrue) { midi.start(latency +! syncDelay) } }
-	midiClock{|latency|           if (p[14].isTrue) { midi.midiClock(latency +! syncDelay) } }
-	midiContinue{|latency|        if (p[14].isTrue) { midi.continue(latency +! syncDelay) } }
-	midiStop{|latency|            if (p[14].isTrue) { midi.stop(latency +! syncDelay) } }
+	midiSongPtr{|songPtr,latency| if (p[14].isTrue) {
+		//">>> Out songPtr >>> ".post; [songPtr,latency].postln;
+		midi.songPtr(songPtr,latency +! syncDelay);
+	}} 
+	midiStart{|latency|           if (p[14].isTrue) { 
+		//">>> Out start >>> ".post; [latency].postln;
+		midi.start(latency +! syncDelay);
+	} }
+	midiClock{|latency|           if (p[14].isTrue) {
+		//">>> Out midiClock >>> ".post; [latency].postln;
+		midi.midiClock(latency +! syncDelay)
+	} }
+	midiContinue{|latency|        if (p[14].isTrue) {
+		//">>> Out continue >>> ".post; [latency].postln;
+		midi.continue(latency +! syncDelay)
+	} }
+	midiStop{|latency|            if (p[14].isTrue) {
+		//">>> Out stop >>> ".post; [latency].postln;
+		midi.stop(latency +! syncDelay)
+	} }
 
 	// disk i/o ///////////////////////////////
 		
@@ -588,6 +647,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	// set program on roland, latency isn't really needed here
 	setRolandProgram{|latency|
 		var prog=	p[12];
+		//">>> Out program >>> ".post; [prog-1, latency +! syncDelay].postln;
 		midi.program(prog-1, latency +! syncDelay); // out to midi
 		this.updatePresetGUI;
 	}
@@ -897,6 +957,9 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			);
 		this.attachActionsToPresetGUI;	
 
+		// 11.network this
+		MVC_OnOffView(models[11], gui[\preTab], Rect(903, 295, 33, 18), gui[\onOffTheme1]);
+		
 		// the keyboard, fix bug so we don't need this scrollView
 		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(12, 330+25, 925, 93))
 			.hasHorizontalScroller_(false)
@@ -907,11 +970,13 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			.pipeFunc_{|pipe|
 				sequencer.pipeIn(pipe);     // to sequencer
 				this.toMIDIOutBuffer(pipe); // and midi out
+				if (p[11].isTrue) {
+					api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}; // and network
 			};
 		
 		// program names in a 8 x 8 grid	
 		rolandPresets.do{|string,i|
-			gui[i]=MVC_Text(gui[\preTab], Rect( 40+((i%8)*113), 30+(i.div(8)*34), 105, 30) )
+			gui[i]=MVC_Text(gui[\preTab], Rect( 40+((i%8)*113), 30+(i.div(8)*33), 105, 29) )
 				.string_(string)
 				.canEdit_(false)
 				.enterStopsEditing_(true)
@@ -953,7 +1018,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 				.color_(\string,Color(59/77,59/77,59/77)*1.4)
 				.color_(\background,Color(0.14,0.12,0.11,0.25)*0.4)
 				.font_(Font.new("STXihei", 11));	
-			gui[2000+i]=MVC_Text(gui[\preTab], Rect( 15, 30+(i*34), 20, 30) )
+			gui[2000+i]=MVC_Text(gui[\preTab], Rect( 15, 30+(i*33), 20, 29) )
 				.align_(\right)
 				.string_((i+1).asString)
 				.color_(\string,Color(59/77,59/77,59/77)*1.4)
@@ -966,7 +1031,27 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			.value_(1)
 			.permanentStrings_(["S","S"])
 			.action_{|me| rolandPresets.do{|string,i| gui[i].canEdit_(me.value.isFalse) } };
+				
+		// ImportFolder
+	 	MVC_FlatButton(gui[\preTab],Rect(40, 294, 57, 20),"Import")
+			.rounded_(true)
+			.shadow_(true)
+			.canFocus_(false)
+			.color_(\up,Color.orange*0.75)
+			.color_(\down,Color.orange*0.75/2)
+			.color_(\string,Color.white)
+			.action_{
+				this.importFolder;
+			};
 			
+		// info text
+		
+		MVC_Text(gui[\preTab],Rect(97, 294, 346, 20))
+			.string_("= [PATCH 2 + Power On] JP-08/BACKUP/All files")
+			.font_(Font("Helvetica",11))
+			.shadow_(false)
+			.color_(\string,Color.black)
+	
 	}
 	
 	// dsp stuFF for audio in /////////////////////////////////////////////////////////////////////
@@ -990,10 +1075,10 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			sendAmp = Lag.kr(sendAmp);
 			              
 			signalL = Select.ar(channelSetup,[
-				signal[0], signal[0]+signal[1], signal[0], signal[1] ]);
+				signal[0], signal[0]+signal[1], signal[0], signal[1], Silent.ar ]);
 				
 			signalR = Select.ar(channelSetup,[
-				signal[1], signal[0]+signal[1], signal[0], signal[1] ]);
+				signal[1], signal[0]+signal[1], signal[0], signal[1], Silent.ar ]);
 					
 			signal = LinPan2.ar(signalL, (pan-1).clip(-1,1))
 			       + LinPan2.ar(signalR, (pan+1).clip(-1,1));

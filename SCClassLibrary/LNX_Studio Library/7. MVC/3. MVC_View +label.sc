@@ -211,12 +211,12 @@
 			// in this situation the bug can't be avoided because text taller than widget
 			if (orientation==\horizontal) {
 				^Rect(l+w+1,(t+(h/2)-(textHeight/2)).asInt-1,
-					textBounds.width.asInt+1,textBounds.height);
+					textWidth+1,textBounds.height);
 			};
 		}{
 			// if its smaller we can make them match and avoid the bug
 			if (orientation==\horizontal) {
-				^Rect(l+w+1,t,textBounds.width.asInt+1,h);
+				^Rect(l+w+1,t,textWidth+1,h);
 			};
 		};
 		

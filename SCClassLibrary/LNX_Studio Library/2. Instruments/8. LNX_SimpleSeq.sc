@@ -64,7 +64,7 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 				
 			// 3. syncDelay
 			[\sync, {|me,val,latency,send|
-				this.setPVP(3,val,latency,send);
+				this.setPVPModel(3,val,latency,send);
 				this.syncDelay_(val);
 			}],	
 			

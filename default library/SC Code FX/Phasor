@@ -1,7 +1,7 @@
 SC CodeFX Doc v1.4
 Template Version v1.2
 LNX_CodeFX
-SC Code FX
+Phasor
 19
 0
 0
@@ -27,10 +27,11 @@ SC Code FX
 -1
 1
 0
-*** MIDI Control Doc v1.1
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
-376
+412
 10
 47
 47
@@ -84,6 +85,10 @@ SC Code FX
 32
 123
 124
+111
+110
+44
+32
 111
 117
 116
@@ -166,6 +171,16 @@ SC Code FX
 110
 97
 108
+44
+32
+115
+105
+103
+110
+97
+108
+73
+110
 32
 61
 32
@@ -193,12 +208,18 @@ SC Code FX
 10
 9
 10
+32
+32
+32
+32
+32
 115
 105
 103
 110
 97
 108
+32
 61
 32
 65
@@ -219,6 +240,8 @@ SC Code FX
 110
 97
 108
+73
+110
 32
 44
 48
@@ -293,6 +316,8 @@ SC Code FX
 78
 88
 95
+70
+88
 79
 117
 116
@@ -303,6 +328,18 @@ SC Code FX
 110
 97
 108
+44
+115
+105
+103
+110
+97
+108
+73
+110
+44
+111
+110
 44
 111
 117
@@ -589,13 +626,13 @@ focus
 0
 0
 *** END MVC_View Document ***
-7
+9
 MVC_MyKnob3
-4.7805512520357
+1
 *** MVC_View Document v1 ***
 10
 0
-50
+130
 75
 55
 55
@@ -652,11 +689,11 @@ focus
 *** END MVC_View Document ***
 8
 MVC_MyKnob3
-0.315302734375
+0.19697482530762
 *** MVC_View Document v1 ***
 10
 0
-130
+50
 75
 55
 55

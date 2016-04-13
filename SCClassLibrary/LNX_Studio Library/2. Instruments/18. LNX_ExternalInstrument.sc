@@ -39,7 +39,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	}
 	
 	// an immutable list of methods available to the network
-	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn]}
+	interface{^#[\netMidiControlVP, \netExtCntIn, \extProgIn, \netPipeIn]}
 
 	// MIDI patching ///////////////////////////////////////////////////////
 
@@ -79,10 +79,26 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				api.sendOD(\netExtCntIn, index+14, pipe.val);// network it
 			}
 			{\program} { // program
-				this.program(pipe.program,pipe.latency);
+				midi.program(pipe.program,pipe.latency);
 				^this // drop	
 			};
+		
+		// network if needed		
+		if ((p[144].isTrue) and:
+			{#[\external, \controllerKeyboard, \MIDIIn, \keyboard].includes(pipe.source)}) {
+				if (((pipe.source==\controllerKeyboard) and:{studio.isCntKeyboardNetworked}).not) 
+					{ api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}
+		};
+			
 		if (pipe.isNote) {	 midiInBuffer.pipeIn(pipe) }; // to in Buffer
+	}
+	
+	// networked midi pipes	
+	netPipeIn{|type,note,velocity|
+		switch (type.asSymbol)
+			{\noteOn } { this.pipeIn(LNX_NoteOn(note,velocity,nil,\network)) }
+			{\noteOff} { this.pipeIn(LNX_NoteOff(note,velocity,nil,\network)) }
+		;
 	}
 	
 	// external midi setting controls (these are network methods)
@@ -195,15 +211,15 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				}], 		
 				
 			// 9. channelSetup
-			[0,[0,3,\lin,1], midiControl, 9, "Channel Setup",
-				(\items_:["Left & Right","Left + Right","Left","Right"]),
+			[0,[0,4,\lin,1], midiControl, 9, "Channel Setup",
+				(\items_:["Left & Right","Left + Right","Left","Right","No Audio"]),
 				{|me,val,latency,send|
 					this.setSynthArgVH(9,val,\channelSetup,val,latency,send);
 				}],
 				
 			// 10. syncDelay
 			[\sync, {|me,val,latency,send|
-				this.setPVP(10,val,latency,send);
+				this.setPVPModel(10,val,latency,send);
 				this.syncDelay_(val);
 			}],
 			
@@ -218,14 +234,14 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			// 12. midi clock out
 			[1, \switch, midiControl, 12, "MIDI Clock", (strings_:["MIDI Clock"]),
 				{|me,val,latency,send|
-					this.setPVP(12,val,latency,send);
+					this.setPVPModel(12,val,latency,send);
 					if (val.isFalse) { midi.stop(latency +! syncDelay)};
 				}],
 				
 			// 13. use controls in presets
 			[0, \switch, midiControl, 13, "Controls Preset", (strings_:["Controls"]),
 				{|me,val,latency,send|	
-					this.setPVP(13,val,latency,send);
+					this.setPVPModel(13,val,latency,send);
 					if (val.isTrue) {
 						presetExclusion=[0,1,10,12];
 					}{
@@ -245,6 +261,23 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 					}],	
 			);
 		};
+		
+		// 142. program
+		template = template.add([0,[0,127,\lin,1], midiControl, 142, "Prg",
+			{|me,value,latency,send,toggle|
+				this.setODModel(142,value,latency,send); // network must come 1st
+				midi.program(p[142]);
+			}]);
+					
+		// 143. use program in preset
+		template = template.add([1, \switch, midiControl, 143, "Program",
+				(strings_:["Program"]),
+				{|me,val,latency,send| this.setPVP(143,val,latency,send) }]);
+				
+		// 144.network keyboard
+		template = template.add([0, \switch, midiControl, 144, "Network", (strings_:["Net"]),
+		{|me,val,latency,send|	this.setPVH(144,val,latency,send) }]);
+		
 		
 		#models,defaults=template.generateAllModels;
 
@@ -288,6 +321,14 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 		sequencer.putLoadList(l.popEND("*** END OBJECT DOC ***"));
 	}
 	
+	// anything else that needs doing before a load
+	preLoadP{|tempP|
+		models[143].doLazyValueAction_(tempP[143],nil,false); // use programs in presets
+		// check send program  1st and then send
+		if (models[143].isTrue) { midi.program(tempP[142]) };
+		^tempP
+	}
+	
 	//iFreeAutomation{ sequencer.freeAutomation }
 	
 	// free this
@@ -327,8 +368,16 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 		// 13.use controls
 		models[13].lazyValueAction_(presetToLoad[13],latency,false);
 
+		// 143.use program
+		models[143].lazyValueAction_(presetToLoad[143],latency,false);
+		
 		// exclude these parameters
 		presetExclusion.do{|i| presetToLoad[i]=p[i]};
+		
+		// check send program  1st and then send
+		if (models[143].isTrue) {
+			models[142].lazyValueAction_(presetToLoad[142],latency,false);
+		};
 		
 		// update models
 		presetToLoad.do({|v,j|	
@@ -420,26 +469,26 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 	
 		// widgets
+		
+		// 1. channel onOff	
+		MVC_OnOffView(models[1], window,Rect(10, 5, 26, 18),gui[\onOffTheme1])
+			.rounded_(true)
+			.permanentStrings_(["On","On"]);
+		
+		// 0. channel solo
+		MVC_OnOffView(models[0], window, Rect(40, 5, 26, 18),gui[\soloTheme])
+			.rounded_(true);
+		
 						
 		// 3. in	
-		MVC_PopUpMenu3(models[3],window,Rect(5,5,70,17), gui[\menuTheme ] );
+		MVC_PopUpMenu3(models[3],window,Rect(80,5,70,17), gui[\menuTheme ] );
 	
 		// 9. channelSetup
-		MVC_PopUpMenu3(models[9],window,Rect(85,5,75,17), gui[\menuTheme ] );
+		MVC_PopUpMenu3(models[9],window,Rect(160,5,75,17), gui[\menuTheme ] );
 		
-		// 10. syncDelay
-		MVC_NumberBox(models[10], window,Rect(194, 30-25, 40, 18),  gui[\theme2])
-			.labelShadow_(false)
-			.color_(\label,Color.white);
-			
-		MVC_StaticText(Rect(100+140,30-25, 40, 18), window,)
-			.string_("sec(s)")
-			.font_(Font("Helvetica",10))
-			.shadow_(false)
-			.color_(\string,Color.white);
 		
 		// MIDI Settings
- 		MVC_FlatButton(window,Rect(277, 4, 43, 19),"MIDI")
+ 		MVC_FlatButton(window,Rect(250, 4, 43, 19),"MIDI")
 			.rounded_(true)
 			.canFocus_(false)
 			.shadow_(true)
@@ -450,7 +499,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			.action_{ this.createMIDIInOutModelWindow(window) };
 			
 		// MIDI Control
- 		MVC_FlatButton(window,Rect(327, 4, 43, 19),"Cntrl")
+ 		MVC_FlatButton(window,Rect(300, 4, 43, 19),"Cntrl")
 			.rounded_(true)
 			.canFocus_(false)
 			.shadow_(true)
@@ -498,44 +547,54 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			.autohidesScrollers_(false);
 
 		// levels
-		MVC_FlatDisplay(this.peakLeftModel,gui[\controlsTab],Rect(5+630-18, 9, 6, 160));
-		MVC_FlatDisplay(this.peakRightModel,gui[\controlsTab],Rect(13+630-18, 9, 6, 160));
-		MVC_Scale(gui[\controlsTab],Rect(11+630-18, 9, 2, 160));
+		MVC_FlatDisplay(this.peakLeftModel,gui[\controlsTab],Rect(5+630-18-10, 9, 6, 160-24));
+		MVC_FlatDisplay(this.peakRightModel,gui[\controlsTab],Rect(13+630-18-10, 9, 6, 160-24));
+		MVC_Scale(gui[\controlsTab],Rect(11+630-18-10, 9, 2, 160-24));
 
 		// 2. channel volume
-		MVC_SmoothSlider(gui[\controlsTab],models[2],Rect(587, 9, 27, 160))
+		MVC_SmoothSlider(gui[\controlsTab],models[2],Rect(587-10, 9, 27, 160-24))
 			.label_(nil)
 			.showNumberBox_(false)
 			.color_(\hilite,Color(1,1,1,0.3))
 			.color_(\knob,Color.orange);	
 			
-		// 1. channel onOff	
-		MVC_OnOffView(models[1], gui[\controlsTab],Rect(583, 177, 26, 18),gui[\onOffTheme1])
-			.rounded_(true)
-			.permanentStrings_(["On","On"]);
-		
-		// 0. channel solo
-		MVC_OnOffView(models[0], gui[\controlsTab], Rect(616, 177, 26, 18),gui[\soloTheme])
-			.rounded_(true);
 
 		// 11. onSolo turns audioIn, seq or both on/off
-		MVC_PopUpMenu3(models[11], gui[\controlsTab] ,Rect(576, 202, 70, 16), gui[\menuTheme] );
+		MVC_PopUpMenu3(models[11], gui[\controlsTab] ,Rect(566, 158-4, 70, 16), gui[\menuTheme] );
 
 		// 11. midi clock out
-		MVC_OnOffView(models[12], gui[\controlsTab], Rect(575, 223, 73, 19),gui[\onOffTheme3]);
+		MVC_OnOffView(models[12], gui[\controlsTab], Rect(565, 176-2, 73, 19),gui[\onOffTheme3]);
 
 		// 13. use controls in presets
-		MVC_OnOffView(models[13], gui[\controlsTab], Rect(575, 245, 73, 19),gui[\onOffTheme3]);
+		MVC_OnOffView(models[13], gui[\controlsTab], Rect(565, 204-8, 73, 19),gui[\onOffTheme3]);
+
+	
+		// program
+		MVC_NumberBox(models[142],gui[\controlsTab],Rect(606, 220, 28, 19))
+				.labelFont_(Font("AvenirNext-Bold",12))
+				.orientation_(\horiz)
+				.label_("Prog")
+				.color_(\background,Color(0.25,0.25,0.25))
+				.color_(\typing,Color.orange)
+				.color_(\string,Color.white)
+				.numberWidth_(-24);
+		
+
+		// 13. use prog in presets
+		MVC_OnOffView(models[143], gui[\controlsTab], Rect(565, 245, 73, 19),gui[\onOffTheme3]);
+
+	
+
 
 		// 14..141   all 127 midi controls
 		(0..127).do{|i|
 			MVC_MyKnob3(models[14+i], gui[\controlsTab],gui[\knobTheme2],
-				Rect(10+(i%16*35), 20+(i.div(16)*53), 25, 25)
+				Rect(10+(i%16*34), 20+(i.div(16)*53), 25, 25)
 			);
 		};
 	
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(window,380@5,50,
+		presetView=MVC_PresetMenuInterface(window,350@5,80,
 				Color(0.7,0.65,0.65)/1.6,
 				Color(0.7,0.65,0.65)/3,
 				Color(0.7,0.65,0.65)/1.5,
@@ -559,6 +618,10 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				parentViews: [ window, gui[\masterTabs].mvcTab(1)]
 				);
 		
+		// 144.network keyboard
+		MVC_OnOffView(models[144], gui[\controlsTab], Rect(604, 269, 32, 19), gui[\onOffTheme1]);
+			
+		
 		// the keyboard, fix bug so we don't need this scrollView
 		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(12,320,653,93))
 			.hasHorizontalScroller_(false)
@@ -569,6 +632,8 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 			.pipeFunc_{|pipe|
 				sequencer.pipeIn(pipe);     // to sequencer
 				this.toMIDIOutBuffer(pipe); // and midi out
+				if (p[144].isTrue) {
+					api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}; // and network
 			};
 
 	}

@@ -73,11 +73,14 @@ LNX_AppMenus {
 		var tools  = SCMenuGroup.new(nil, "Tools",9);
 		
 		// add LNX Help menu
-		SCMenuItem('Help',"LNX_Studio Help", 0).setShortCut("b").action_{studio.openHelp};
+		SCMenuItem('Help',"LNX_Studio Help", 0).setShortCut("d").action_{studio.openHelp};
 		
 		SCMenuItem.new(tools,  "Save").setShortCut("s").action_({ studio.saveDialog });
 		SCMenuItem.new(tools,  "Open...").setShortCut("o").action_({ studio.loadDialog });
 		SCMenuItem.new(tools,  "Network").setShortCut("n").action_({ studio.network.guiConnect });
+		
+		SCMenuSeparator.new(tools);
+		
 		SCMenuItem.new(tools,  "Add preset to all instruments")
 			.action_{studio.guiAllInstsAddPreset};
 			
@@ -114,16 +117,16 @@ LNX_AppMenus {
 		SCMenuItem.new(tools,  "Clear All Automation").action_({
 			studio.freeAllAutomation;
 		});
-			
-		SCMenuSeparator.new(tools);
-		SCMenuItem.new(tools,  "Master EQ").action_({MasterEQ.new});
-		
+//			
+//		SCMenuSeparator.new(tools);
+//		SCMenuItem.new(tools,  "Master EQ").action_({MasterEQ.new});
+//		
 		SCMenuSeparator.new(tools);
 		SCMenuItem.new(tools,  "Backup Library to Desktop").action_{studio.backupLibrary};
 		SCMenuItem.new(tools,  "Restore Library Defaults").action_{studio.restoreLibraryDefaults};
 		SCMenuItem.new(tools,  "Check For Library Updates").action_{studio.checkForLibraryUpdates};
 		SCMenuItem.new(tools,  "Open Library in Finder").action_{
-			("open" + (LNX_File.prefDir++"Library").quote ).systemCmd};
+			("open" + (LNX_Studio.libraryFolder).quote ).systemCmd};
 			
 //		SCMenuSeparator.new(tools);
 //		SCMenuItem.new(tools, "Quit LNX_Studio").setShortCut("q").action_{

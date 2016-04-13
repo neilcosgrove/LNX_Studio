@@ -25,7 +25,6 @@
 		};	
 	}
 	
-	
 	// this method will have to be triggered inside of play
 	resetInstBeat{|beat|
 		beat = beat ? 0;
@@ -243,11 +242,27 @@
 			}{
 				this.hostJumpTo(val);
 			}	
+		}{
+			// when not playing	
+			if (network.isConnected) {
+				api.groupCmdSync(\jumpWhileStopped,val)
+			}{
+				this.jumpWhileStopped(val);
+			}	
+			
 		}
 	}
 	
 	// host it
 	hostJumpTo{|val| jumpTo=val; }
+	
+	// jumpTo while stopped
+	jumpWhileStopped{|val|
+		instBeat = beat = val.asInt;
+		MVC_Automation.jumpWhileStopped(beat);
+		jumpTo=nil;
+		this.refreshGuiBeat;
+	}
 	
 	// for gui clock & beat ///////////////////////////
 	

@@ -5,7 +5,6 @@
 
 	/////// server controls & studio transport models //////////////////////////////////////////
 
-
 	makeBatch{
 	
 		if (batchOn && (lastBatchFolder.notNil)) {
@@ -28,7 +27,7 @@
 		var path;
 								
 		// block size
-		models[\blockSize] = [(("blockSize".loadPref?[2])[0]).asInt,[0,4,\lin,1],
+		models[\blockSize] = [(("blockSize".loadPref?[1])[0]).asInt,[0,4,\lin,1],
 			(\label_:"Block Size", \items_: (2**(5..9)).collect(_.asString) ),
 			{|me,val,latency,send|
 				this.initServerPostModels;   // update server options
@@ -232,12 +231,13 @@
 		server.startAliveThread;
 
 		// show 1 inst or show all
-		models[\show1]=[\switch, midiControl, 11, "All or 1",
+		models[\show1]=[show1.asInt, \switch, midiControl, 11, "All or 1",
 			{|me,val|
 				transmitInstChange=false; // stop this from going over the net
 				showNone=false;
 				models[\showNone].value_(0);
 				show1=val.booleanValue;
+				[show1,showNone].savePref("show1 showNone");
 				if ((insts.size>0) and: {insts.selectedInst.notNil}) {
 					if (show1) {
 						insts.pairsDo{|id,inst|
@@ -253,9 +253,10 @@
 			}].asModel.automationActive_(false);
 
 		// hide all instruments
-		models[\showNone]=[\switch, midiControl, 10, "Hide All",
+		models[\showNone]=[showNone.asInt, \switch, midiControl, 10, "Hide All",
 			{|me,val|
 				showNone=me.value.booleanValue;
+				[show1,showNone].savePref("show1 showNone");
 				transmitInstChange=false; // stop this from going over the net
 				if (insts.size>0) {
 					if (showNone) {
@@ -483,7 +484,7 @@
 		this.addTextToDialog("",false,true);
 		this.addTextToDialog("                  LNX_Studio",false,true);
 		this.addTextToDialog("",false,true);
-		this.addTextToDialog("                 "+(version.drop(1))+"beta",false,true);
+		this.addTextToDialog("                       "+(version.drop(1))+"",false,true);
 		this.addTextToDialog("",false,true);
 
 		// user dialog input
@@ -676,7 +677,7 @@
 			LNX_POP.midi.createInGUIB (scrollView, (330-25)@(222-2), false, false);
 			LNX_POP.midi.action_{|me| LNX_POP.saveMIDIPrefs };
 			LNX_POP.midi.portInGUI
-				.label_("Preset MIDI controller In")
+				.label_("Program Launchpad In")
 				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black);

@@ -1,12 +1,12 @@
-SC Code Doc v1.4
-Template Version v1.1
+SC Code Doc v1.5
+Template Version v1.2
 LNX_Code
 filter rain
-17
+24
 0
 0
 1
-0.62884948550227
+4.127458069428
 0
 0
 1
@@ -21,14 +21,22 @@ filter rain
 1
 -inf
 9
-1
+0.73404255319149
+0
+60
+12
+0
+0
 0
 1
 0
-*** MIDI Control Doc v1.1
+1
+0
+*** MIDI Control Doc v1.2
+0
 0
 *** End MIDI Control Doc ***
-753
+749
 10
 47
 47
@@ -655,10 +663,6 @@ filter rain
 97
 109
 112
-42
-48
-46
-49
 44
 112
 97
@@ -787,7 +791,7 @@ filter rain
 volume
 MVC_SmoothSlider
 *** MVC_View Document v1 ***
-12
+13
 0
 567
 20
@@ -823,7 +827,7 @@ knob
 0.5
 0
 1
-border
+knobBorder
 0
 0
 0
@@ -837,6 +841,11 @@ knobDisabled
 0.6
 0.6
 0.6
+1
+border
+0
+0
+0
 1
 label
 1
@@ -1034,121 +1043,9 @@ focus
 0
 0
 *** END MVC_View Document ***
-9
-MVC_MyKnob
-0
-*** MVC_View Document v1 ***
-9
-0
-240
-40
-50
-50
-pin
-0
-0
-0
-1
-numberUp
-0
-0
-0
-1
-off
-0
-0
-0
-1
-on
-1
-0.5
-0
-1
-midiLearn
-0
-1
-1
-1
-numberDown
-1
-0.5
-0
-1
-label
-1
-1
-1
-1
-disabled
-0.3
-0.3
-0.3
-1
-focus
-0
-0
-0
-0
-*** END MVC_View Document ***
-11
-MVC_MyKnob
-1
-*** MVC_View Document v1 ***
-9
-0
-340
-40
-50
-50
-pin
-0
-0
-0
-1
-numberUp
-0
-0
-0
-1
-off
-0
-0
-0
-1
-on
-1
-0.5
-0
-1
-midiLearn
-0
-1
-1
-1
-numberDown
-1
-0.5
-0
-1
-label
-1
-1
-1
-1
-disabled
-0.3
-0.3
-0.3
-1
-focus
-0
-0
-0
-0
-*** END MVC_View Document ***
 12
 MVC_MyKnob
-0.955
+0.75197265625
 *** MVC_View Document v1 ***
 9
 0
@@ -1202,9 +1099,121 @@ focus
 0
 0
 *** END MVC_View Document ***
+11
+MVC_MyKnob
+7
+*** MVC_View Document v1 ***
+9
+0
+340
+40
+50
+50
+pin
+0
+0
+0
+1
+numberUp
+0
+0
+0
+1
+off
+0
+0
+0
+1
+on
+1
+0.5
+0
+1
+midiLearn
+0
+1
+1
+1
+numberDown
+1
+0.5
+0
+1
+label
+1
+1
+1
+1
+disabled
+0.3
+0.3
+0.3
+1
+focus
+0
+0
+0
+0
+*** END MVC_View Document ***
+9
+MVC_MyKnob
+0.3683203125
+*** MVC_View Document v1 ***
+9
+0
+240
+40
+50
+50
+pin
+0
+0
+0
+1
+numberUp
+0
+0
+0
+1
+off
+0
+0
+0
+1
+on
+1
+0.5
+0
+1
+midiLearn
+0
+1
+1
+1
+numberDown
+1
+0.5
+0
+1
+label
+1
+1
+1
+1
+disabled
+0.3
+0.3
+0.3
+1
+focus
+0
+0
+0
+0
+*** END MVC_View Document ***
 7
 MVC_MyKnob
-4375.5232478993
+4608.1859521119
 *** MVC_View Document v1 ***
 9
 0
@@ -1260,7 +1269,7 @@ focus
 *** END MVC_View Document ***
 8
 MVC_MyKnob
-0.99
+0.766015625
 *** MVC_View Document v1 ***
 9
 0
@@ -1317,44 +1326,20 @@ focus
 LNX PRSeq DOC v1.2
 0
 LNX Score DOC v1.4
-7
 0
-32
-18.8125
+0
+64
+9.609375
 15
 0
-445
+815
 1
 16
 1
-62
-0
-16
-0.78740157480315
-62
-16
-6
-0.78740157480315
-66
-9
-7.0531561461794
-0.78740157480315
-70
-10.435690555292
-5.6079734219269
-0.78740157480315
-72
-12.65197640518
-3.3830090175605
-0.6004
-62
-22
-6
-0.78740157480315
-62
-28
-2
-0.78740157480315
 *** END Score DOC ***
 *** END PRSeq DOC ***
+SC URL Bank Doc v1.1
+
+0
+*** END URL Bank Doc ***
 *** END INSTRUMENT DOC ***

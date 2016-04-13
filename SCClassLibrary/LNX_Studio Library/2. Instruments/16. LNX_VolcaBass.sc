@@ -37,6 +37,9 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 		instrumentHeaderType="SC Volca Bass Doc";
 		version="v1.0";		
 	}
+	
+	// an immutable list of methods available to the network
+	interface{^#[\netPipeIn]}
 
 	// MIDI patching ///////////////////////////////////////////////////////
 
@@ -70,10 +73,26 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 		if (pipe.historyIncludes(this)) {^this};       // drop to prevent internal feedback loops
 		switch (pipe.kind)
 			{\program} { // program
-				this.program(pipe.program,pipe.latency);
+				//this.program(pipe.program,pipe.latency);
 				^this // drop	
 			};
+		
+		// network if needed		
+		if ((p[26].isTrue) and:
+			{#[\external, \controllerKeyboard, \MIDIIn, \keyboard].includes(pipe.source)}) {
+				if (((pipe.source==\controllerKeyboard) and:{studio.isCntKeyboardNetworked}).not) 
+					{ api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}
+		};
+		
 		if (pipe.isNote) {	 midiInBuffer.pipeIn(pipe) }; // to in Buffer
+	}
+		
+	// networked midi pipes	
+	netPipeIn{|type,note,velocity|
+		switch (type.asSymbol)
+			{\noteOn } { this.pipeIn(LNX_NoteOn(note,velocity,nil,\network)) }
+			{\noteOff} { this.pipeIn(LNX_NoteOff(note,velocity,nil,\network)) }
+		;
 	}
 	
 	// midi coming from in buffer
@@ -176,15 +195,15 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 				}], 		
 				
 			// 9. channelSetup
-			[0,[0,3,\lin,1], midiControl, 9, "Channel Setup",
-				(\items_:["Left & Right","Left + Right","Left","Right"]),
+			[0,[0,4,\lin,1], midiControl, 9, "Channel Setup",
+				(\items_:["Left & Right","Left + Right","Left","Right","No Audio"]),
 				{|me,val,latency,send|
 					this.setSynthArgVH(9,val,\channelSetup,val,latency,send);
 				}],
 				
 			// 10. syncDelay
 			[\sync,{|me,val,latency,send|
-				this.setPVP(10,val,latency,send);
+				this.setPVPModel(10,val,latency,send);
 				this.syncDelay_(val);
 			}],
 			
@@ -284,20 +303,24 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			// 24. midi clock out
 			[0, \switch, midiControl, 24, "MIDI Clock", (strings_:["MIDI Clock"]),
 				{|me,val,latency,send|
-					this.setPVP(24,val,latency,send);
+					this.setPVPModel(24,val,latency,send);
 					if (val.isFalse) { midi.stop(latency +! syncDelay) };
 				}],
 				
 			// 25. use controls in presets
 			[0, \switch, midiControl, 25, "Controls Preset", (strings_:["Controls"]),
 				{|me,val,latency,send|	
-					this.setPVP(25,val,latency,send);
+					this.setPVPModel(25,val,latency,send);
 					if (val.isTrue) {
 						presetExclusion=[0,1,10,24];
 					}{
 						presetExclusion=[0,1,10,24]++(11..22)
 					}	
 				}],
+		
+			// 26.network keyboard
+			[0, \switch, midiControl, 26, "Network", (strings_:["Net"]),
+				{|me,val,latency,send|	this.setPVH(26,val,latency,send) }],
 		
 		];
 		
@@ -475,15 +498,24 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 	
 		// widgets
+			
+		// 1. channel onOff	
+		MVC_OnOffView(models[1], window,Rect(10, 5, 26, 18),gui[\onOffTheme1])
+			.rounded_(true)
+			.permanentStrings_(["On","On"]);
+		
+		// 0. channel solo
+		MVC_OnOffView(models[0], window, Rect(40, 5, 26, 18),gui[\soloTheme])
+			.rounded_(true);
 						
 		// 3. in	
-		MVC_PopUpMenu3(models[3],window,Rect(5,5,70,17), gui[\menuTheme ] );
+		MVC_PopUpMenu3(models[3],window,Rect(80,5,70,17), gui[\menuTheme ] );
 	
 		// 9. channelSetup
-		MVC_PopUpMenu3(models[9],window,Rect(85,5,75,17), gui[\menuTheme ] );
+		MVC_PopUpMenu3(models[9],window,Rect(160,5,75,17), gui[\menuTheme ] );
 		
 		// MIDI Settings
- 		MVC_FlatButton(window,Rect(177, 4, 43, 19),"MIDI")
+ 		MVC_FlatButton(window,Rect(250, 4, 43, 19),"MIDI")
 			.rounded_(true)
 			.canFocus_(false)
 			.shadow_(true)
@@ -496,7 +528,7 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			) };
 			
 		// MIDI Control
- 		MVC_FlatButton(window,Rect(227, 4, 43, 19),"Cntrl")
+ 		MVC_FlatButton(window,Rect(300, 4, 43, 19),"Cntrl")
 			.rounded_(true)
 			.canFocus_(false)
 			.shadow_(true)
@@ -550,62 +582,57 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			.autohidesScrollers_(false);
 
 		// levels
-		MVC_FlatDisplay(this.peakLeftModel,gui[\controlsTab],Rect(5+630, 11, 6, 160));
-		MVC_FlatDisplay(this.peakRightModel,gui[\controlsTab],Rect(13+630, 11, 6, 160));
-		MVC_Scale(gui[\controlsTab],Rect(11+630, 11, 2, 160));
+		MVC_FlatDisplay(this.peakLeftModel,gui[\controlsTab],Rect(635, 11, 6, 150));
+		MVC_FlatDisplay(this.peakRightModel,gui[\controlsTab],Rect(643, 11, 6, 150));
+		MVC_Scale(gui[\controlsTab],Rect(641, 11, 2, 150));
 
 		// 2. channel volume
-		MVC_SmoothSlider(gui[\controlsTab],models[2],Rect(600, 11, 27, 160))
+		MVC_SmoothSlider(gui[\controlsTab],models[2],Rect(600, 11, 27, 150))
 			.label_(nil)
 			.showNumberBox_(false)
 			.color_(\hilite,Color(1,1,1,0.3))
 			.color_(\knob,Color.orange);	
 			
-		// 1. channel onOff	
-		MVC_OnOffView(models[1], gui[\controlsTab],Rect(600, 187, 26, 18),gui[\onOffTheme1])
-			.rounded_(true)
-			.permanentStrings_(["On","On"]);
-		
-		// 0. channel solo
-		MVC_OnOffView(models[0], gui[\controlsTab], Rect(600, 210, 26, 18),gui[\soloTheme])
-			.rounded_(true);
-
 		// 23. onSolo turns audioIn, seq or both on/off
-		MVC_PopUpMenu3(models[23], gui[\controlsTab] ,Rect(579, 242, 70, 16), gui[\menuTheme] );
+		MVC_PopUpMenu3(models[23], gui[\controlsTab] ,Rect(579, 174, 70, 16), gui[\menuTheme] );
 
 		// 24. midi clock out
-		MVC_OnOffView(models[24], gui[\controlsTab], Rect(349, 236, 73, 19),gui[\onOffTheme3]);
+		MVC_OnOffView(models[24], gui[\controlsTab], Rect(577, 198, 73, 19),gui[\onOffTheme3]);
 
 		// 25. use controls in presets
-		MVC_OnOffView(models[25], gui[\controlsTab], Rect(256, 236, 73, 19),gui[\onOffTheme3]);
+		MVC_OnOffView(models[25], gui[\controlsTab], Rect(577, 222, 73, 19),gui[\onOffTheme3]);
 
 		// 11. midiControl 5. Slide Time
-		MVC_MyKnob3(models[11], gui[\controlsTab], Rect(455, 196, 30, 30),gui[\knobTheme2]);
+		MVC_MyKnob3(models[11], gui[\controlsTab], Rect(435, 196, 30, 30),gui[\knobTheme2]);
 		// 12. midiControl 11. Expression
-		MVC_MyKnob3(models[12], gui[\controlsTab], Rect(539, 196, 30, 30),gui[\knobTheme2]);
+		MVC_MyKnob3(models[12], gui[\controlsTab], Rect(519, 196, 30, 30),gui[\knobTheme2]);
 		// 13. midiControl 40. Octave
 		MVC_MyKnob3(models[13], gui[\controlsTab], Rect(21, 112, 42, 42),gui[\knobTheme2]);
 		// 14. midiControl 41. LFO Rate
-		MVC_MyKnob3(models[14], gui[\controlsTab], Rect(203, 119, 30, 30),gui[\knobTheme2]);
+		MVC_MyKnob3(models[14], gui[\controlsTab], Rect(183, 119, 30, 30),gui[\knobTheme2]);
 		// 15. midiControl 42. LFO Int
-		MVC_MyKnob3(models[15], gui[\controlsTab], Rect(287, 119, 30, 30),gui[\knobTheme2]);
+		MVC_MyKnob3(models[15], gui[\controlsTab], Rect(267, 119, 30, 30),gui[\knobTheme2]);
 		// 16. midiControl 43. VCO Pitch 1
-		MVC_MyKnob3(models[16], gui[\controlsTab], Rect(371, 119, 30, 30),gui[\knobTheme2]);
+		MVC_MyKnob3(models[16], gui[\controlsTab], Rect(351, 119, 30, 30),gui[\knobTheme2]);
 		// 17. midiControl 44. VCO Pitch 2
-		MVC_MyKnob3(models[17], gui[\controlsTab], Rect(455, 119, 30, 30),gui[\knobTheme2]);
+		MVC_MyKnob3(models[17], gui[\controlsTab], Rect(435, 119, 30, 30),gui[\knobTheme2]);
 		// 18. midiControl 45. VCO Pitch 3
-		MVC_MyKnob3(models[18], gui[\controlsTab], Rect(539, 119, 30, 30),gui[\knobTheme2]);
+		MVC_MyKnob3(models[18], gui[\controlsTab], Rect(519, 119, 30, 30),gui[\knobTheme2]);
 		// 19. midiControl 46. Attack
-		MVC_MyKnob3(models[19], gui[\controlsTab], Rect(119, 28, 30, 30),gui[\knobTheme2]);
+		MVC_MyKnob3(models[19], gui[\controlsTab], Rect(99, 28, 30, 30),gui[\knobTheme2]);
 		// 20. midiControl 47. Decay
-		MVC_MyKnob3(models[20], gui[\controlsTab], Rect(287, 28, 30, 30),gui[\knobTheme2]);
+		MVC_MyKnob3(models[20], gui[\controlsTab], Rect(267, 28, 30, 30),gui[\knobTheme2]);
 		// 21. midiControl 48. Cutoff Eg Int
-		MVC_MyKnob3(models[21], gui[\controlsTab], Rect(371, 28, 30, 30),gui[\knobTheme2]);
+		MVC_MyKnob3(models[21], gui[\controlsTab], Rect(351, 28, 30, 30),gui[\knobTheme2]);
 		// 22. midiControl 49. Gate Time
-		MVC_MyKnob3(models[22], gui[\controlsTab], Rect(203, 28, 30, 30),gui[\knobTheme2]);
+		MVC_MyKnob3(models[22], gui[\controlsTab], Rect(183, 28, 30, 30),gui[\knobTheme2]);
+		
+		// 26.network keyboard
+		MVC_OnOffView(models[26], gui[\controlsTab], Rect(617, 246, 32, 19), gui[\onOffTheme1]);
+			
 	
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(window,280@5,150,
+		presetView=MVC_PresetMenuInterface(window,350@5,80,
 				Color(0.7,0.65,0.65)/1.6,
 				Color(0.7,0.65,0.65)/3,
 				Color(0.7,0.65,0.65)/1.5,
@@ -639,6 +666,8 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			.pipeFunc_{|pipe|
 				sequencer.pipeIn(pipe);     // to sequencer
 				this.toMIDIOutBuffer(pipe); // and midi out
+				if (p[26].isTrue) {
+					api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}; // and network
 			};
 
 	}

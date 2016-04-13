@@ -270,6 +270,8 @@ MVC_TabbedView {
 MVC_TabView {
 
 	var <parent, <tabIndex, <gui, <parentViews;
+	
+	var <>hasHorizontalScroller, <>hasVerticalScroller;
 
 	*new {|tabbedView,tabIndex| ^super.new.init(tabbedView,tabIndex) }
 		
@@ -313,6 +315,15 @@ MVC_TabView {
 	createView{
 		var view;
 		view=this.view;
+		
+		if (hasHorizontalScroller.notNil) {
+			this.view.hasHorizontalScroller_(hasHorizontalScroller)
+		};
+			
+		if (hasVerticalScroller.notNil) {
+			this.view.hasVerticalScroller_(hasVerticalScroller)
+		};
+		
 		gui.do{|item| item.do(_.create(view)) }; // now make all views inside the views
 	}
 	
@@ -354,5 +365,5 @@ MVC_TabView {
 		});
 		^false;
 	}
-
+	
 }

@@ -838,12 +838,12 @@ LNX_InstrumentTemplate {
 			// put in midi
 			midi.putLoadList(l.popNI(4));
 			
+			// extend older versions with deault P and clip any extra
+			tempP = (tempP++defaults[(tempP.size)..(defaults.size)])[0..(defaults.size-1)];
+			
 			// now use tempP
 			// pop & adjust in preLoadP if needed, used to change p in LNX_BumNote2:preLoadP only
 			tempP = this.preLoadP(tempP,loadVersion);
-			
-			// extend older versions with deault P and clip any extra
-			tempP = (tempP++defaults[(tempP.size)..(defaults.size)])[0..(defaults.size-1)];
 			
 			// and midi controls but do later...
 			midiLoadVersion = l.pop.version;
