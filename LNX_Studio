@@ -1,0 +1,2 @@
+#! /bin/bash
+sclang -d PATH_TO_LNX -l sclang_conf_lnx.yaml -a -i lnx

@@ -1,0 +1,9 @@
+includePaths:
+    - /usr/local/share/SuperCollider/SCClassLibrary/
+    - /usr/local/share/SuperCollider/Extensions/SC3plugins/
+    - PATH_TO_LNX/SCClassLibrary/
+excludePaths:
+    - /usr/local/share/SuperCollider/SCClassLibrary/deprecated/
+    - /usr/local/share/SuperCollider/Extensions/SC3plugins/SkUGens/FM7.sc
+    - PATH_TO_LNX/SCClassLibrary/LNX_Studio Library/10. by others/AppKitViews/
+postInlineWarnings: false
