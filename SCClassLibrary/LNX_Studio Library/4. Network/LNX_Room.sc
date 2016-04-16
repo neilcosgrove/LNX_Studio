@@ -502,7 +502,7 @@ LNX_Room{
 		gui[\dialogOut] = MVC_DialogView(window,Rect(136, 9+40, 378, 195))
 			.color_(\string,Color.black)
 			.color_(\background,Color.ndcMenuBG)
-			.lines_(16)
+			.lines_(14)
 			.dialog_(dialogOutList);
 			
 //		MVC_PlainSquare(window,Rect(135, 209+40, 380, 16))
