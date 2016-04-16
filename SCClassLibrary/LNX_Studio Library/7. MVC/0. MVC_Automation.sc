@@ -735,15 +735,11 @@ MVC_Automation {
 							\orientation_: 	\horiz,
 							\colors_:			( \label: Color.black, \on: Color(1,1,1,0.5),
 												\off: Color(1,1,1,0.5)));
-		
-		MVC_StaticText(gui[\window], Rect(30+3, 1, 109, 24))
-			.shadow_(false)
-			.align_(\center)
-			.penShadow_(true)
-			.color_(\string,Color(0.85,0.85,0.85))
-			.font_(Font("AvenirNext-Heavy",16))
-			.string_("Automation");	
 
+		// logo					
+		MVC_ImageView(gui[\window],Rect(33, 3, 107, 22))
+			.image_("fontImages/Automation.tiff");	
+			
 		// pen mode (write, erase, slect, value)	
 		gui[\write] = MVC_OnOffView(gui[\window],Rect(10, 91, 49, 19), gui[\themeOnOff])
 			.action_{ models[\penMode].lazyValueAction_(1) }

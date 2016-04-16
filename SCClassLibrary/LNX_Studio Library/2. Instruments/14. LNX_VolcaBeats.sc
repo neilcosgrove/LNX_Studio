@@ -554,18 +554,12 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 		
 	
 		// widgets
-		
-		//gui[\scrollView] = MVC_RoundedComView(window,
-		//					Rect(11,11,thisWidth-22,thisHeight-22-1), gui[\scrollTheme]);
-						
+					
 		gui[\scrollView] = window;
-						
-		MVC_Text(gui[\scrollView],Rect(4, 180,137,25))
-			.align_(\center)
-			.shadow_(false)
-			.penShadow_(false)
-			.font_(Font("AvenirNext-Heavy",22))
-			.string_("Volca Beats");
+			
+		// logo					
+		MVC_ImageView(gui[\scrollView],Rect(4, 182, 140, 26))
+			.image_("fontImages/Volca Beats.tiff");
 						
 		// 3. in	
 		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(5,5,70,17), gui[\menuTheme ] );

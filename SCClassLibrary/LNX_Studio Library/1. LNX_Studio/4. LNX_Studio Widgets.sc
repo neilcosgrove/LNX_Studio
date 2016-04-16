@@ -91,9 +91,12 @@
 		mixerGUI[\everythingInfoText].hidden_(insts.size>0);
 		if (insts.size<1) { 
 			mixerGUI[\instInfoText].bounds_(
-				Rect(0, 190, mixerGUI[\instScrollView].bounds.width , 43));
+				Rect(155+ (mixerGUI[\instScrollView].bounds.width-492/2), 210, 163, 30)
+				
+				);
 			mixerGUI[\everythingInfoText].bounds_(
-				Rect(20, 190, mixerGUI[\presetTab].bounds.width-40 , 43));
+				Rect(155+ (mixerGUI[\presetTab].bounds.width-492/2), 212, 148, 34)
+			);
 		};
 	}
 	
@@ -114,12 +117,6 @@
 					 					\string: Color.black),
 							\rounded_ : true);	
 							
-		mixerGUI[\textTheme] = (\colors_ : (	\string    : Color(0.85,0.85,0.85)),
-							\shadow_	: false,
-							\penShadow_ : true,
-							\align_	: \center,
-							\font_	:Font("AvenirNext-Heavy",24));
-		
 		gui[\textTheme2] = (	\shadow_	: false,
 							\font_	: Font("Helvetica", 10),
 							\align	: \left,
@@ -367,9 +364,11 @@
 			.resizeAction_{
 				if (insts.size<1) { 
 					mixerGUI[\instInfoText].bounds_(
-						Rect(0, 190, mixerGUI[\instScrollView].bounds.width , 43));
+						Rect(155+ (mixerGUI[\instScrollView].bounds.width-492/2), 210, 163, 30)
+					);
 					mixerGUI[\everythingInfoText].bounds_(
-						Rect(20, 190, mixerGUI[\presetTab].bounds.width-40 , 43));
+						Rect(155+ (mixerGUI[\presetTab].bounds.width-492/2), 212, 148, 34)
+					);
 				};
 			};
 		
@@ -390,8 +389,9 @@
 			.width_(6)
 			.color_(\background, Color(6/11,42/83,29/65));
 		
-		mixerGUI[\instInfoText] = MVC_StaticText(mixerGUI[\instScrollView], mixerGUI[\textTheme],
-			Rect(162, 190, 174, 43)).string_("Instruments");
+		// instrument logo
+		mixerGUI[\instInfoText] = MVC_ImageView(mixerGUI[\instScrollView],Rect(155, 212, 163, 30))
+			.image_("fontImages/Instruments.tiff");
 			
 		// the fx scroll view
 		mixerGUI[\fxScrollView] = MVC_RoundedScrollView (mixerWindow,
@@ -402,12 +402,11 @@
 			.color_(\background,Color(59/77,59/77,59/77))
 			.color_(\border,Color(6/11,42/83,29/65))
 			.hasVerticalScroller_(true);
-					
-		mixerGUI[\fxInfoText] = MVC_StaticText(mixerGUI[\fxScrollView], mixerGUI[\textTheme],
-						Rect(33, 110, 102, 47))
-			.font_(Font("Helvetica-Bold",20))
-			.string_("Effects");	
 		
+		// effects logo			
+		mixerGUI[\fxInfoText] = MVC_ImageView(mixerGUI[\fxScrollView],Rect(49, 130, 80, 27))
+			.image_("fontImages/Effects.tiff");
+			
 		// the midi scroll view	
 		mixerGUI[\midiScrollView] = MVC_RoundedScrollView (mixerWindow,
 				Rect(753, 316, 247 - ScrollBars.addIfNone(7), 167))
@@ -419,11 +418,10 @@
 			.hasVerticalScroller_(true)
 			.hasHorizontalScroller_(false);
 			
-		mixerGUI[\midiInfoText] = MVC_StaticText(mixerGUI[\midiScrollView], mixerGUI[\textTheme],
-						Rect(65, 58, 102, 47))
-			.font_(Font("Helvetica-Bold",20))
-			.string_("MIDI");
-		
+		// MIDI logo			
+		mixerGUI[\midiInfoText] = MVC_ImageView(mixerGUI[\midiScrollView],Rect(88, 71, 59, 26))
+			.image_("fontImages/MIDI.tiff");	
+			
 		// the master levels scroll view
 		mixerGUI[\masterLevelsScrollView] = MVC_RoundedComView(mixerWindow, 
 								Rect(927- ScrollBars.addIfNone(7), 10, 73, 288))
@@ -489,9 +487,11 @@
 		// add the preset widgets	
 		LNX_POP.createWidgets( mixerGUI[\popProgramsScrollView], mixerGUI[\presetTab]);
 		
-		mixerGUI[\everythingInfoText] = MVC_StaticText(mixerGUI[\presetTab], mixerGUI[\textTheme],
-			Rect(20, 190, 369, 43)).string_("Everything");
-						
+		// Everything logo
+		mixerGUI[\everythingInfoText] = MVC_ImageView(mixerGUI[\presetTab],Rect(155, 212, 148, 34))
+			.image_("fontImages/Everything.tiff");
+			
+								
 	}
 	
 	

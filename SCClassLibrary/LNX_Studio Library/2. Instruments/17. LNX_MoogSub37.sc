@@ -726,12 +726,9 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		MVC_PlainSquare(gui[\scrollView], Rect(732,0,5,277), gui[\plainTheme]);
 		MVC_PlainSquare(gui[\scrollView], Rect(0,217,735,5), gui[\plainTheme]);
 								
-		MVC_Text(gui[\scrollView],Rect(540, 222,177,39))
-			.align_(\center)
-			.shadow_(false)
-			.penShadow_(true)
-			.font_(Font("AvenirNext-Heavy",23))
-			.string_("Moog Sub 37");
+		// logo					
+		MVC_ImageView(gui[\scrollView],Rect(543, 226, 166, 30))
+			.image_("fontImages/Moog Sub 37.tiff");	
 			
 		// levels
 		MVC_FlatDisplay(this.peakLeftModel,gui[\scrollView],Rect(718, 224, 6, 51));
@@ -856,7 +853,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				.color_(\background,Color(0.14,0.12,0.11)*0.4)
 				.color_(\focus,Color.orange)
 				.color_(\editBackground, Color(0,0,0,0.7))
-				.font_(Font.new("STXihei", 10));	
+				.font_(Font.new("Helvetica", 10));	
 			
 		};
 			

@@ -563,14 +563,10 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			.hasHorizontalScroller_(false)
 			.hasVerticalScroller_(false)
 			.autohidesScrollers_(false);
-			
-		MVC_Text(gui[\controlsTab],Rect(7, 223,139, 42))
-			.align_(\center)
-			.shadow_(false)
-			.penShadow_(true)
-			.font_(Font("AvenirNext-Heavy",22))
-			.string_("Volca Bass");
-		
+	
+		// logo					
+		MVC_ImageView(gui[\controlsTab],Rect(11, 235, 126, 25))
+			.image_("fontImages/Volca Bass.tiff");
 			
 		gui[\sequencerTab] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(1),Rect(4,4,654,269))
 			.color_(\border,  Color(0.6 , 0.562, 0.5))

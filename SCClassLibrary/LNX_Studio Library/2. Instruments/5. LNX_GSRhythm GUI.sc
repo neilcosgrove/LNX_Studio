@@ -307,13 +307,10 @@
 		// MASTER inst tab/////////////////////////////////////////////////////////////////////
 		
 		tab=gui[\tabView2].mvcTab(8);
-
-		MVC_Text(tab,Rect(217, 157, 254, 44))
-				.align_(\center)
-				.shadow_(false)
-				.penShadow_(true)
-				.font_(Font("AvenirNext-Heavy",28))
-				.string_("GS Rhythm Box");
+	
+		// logo					
+		MVC_ImageView(tab,Rect(226, 165, 241, 36))
+			.image_("fontImages/GS Rhythm Box.tiff");
 		
 		// MIDI Settings
  		MVC_FlatButton(tab,Rect(10, 1, 43, 19),"MIDI")

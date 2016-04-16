@@ -571,7 +571,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	
 		// program
 		MVC_NumberBox(models[142],gui[\controlsTab],Rect(606, 220, 28, 19))
-				.labelFont_(Font("AvenirNext-Bold",12))
+				.labelFont_(Font("Helvetica-Bold",14))
 				.orientation_(\horiz)
 				.label_("Prog")
 				.color_(\background,Color(0.25,0.25,0.25))

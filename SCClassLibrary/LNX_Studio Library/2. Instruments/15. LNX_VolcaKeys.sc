@@ -598,13 +598,10 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 			.hasHorizontalScroller_(false)
 			.hasVerticalScroller_(false)
 			.autohidesScrollers_(false);
-			
-		MVC_Text(gui[\controlsTab],Rect(7, 223,139, 42))
-			.align_(\center)
-			.shadow_(false)
-			.penShadow_(true)
-			.font_(Font("AvenirNext-Heavy",22))
-			.string_("Volca Keys");
+
+		// logo					
+		MVC_ImageView(gui[\controlsTab],Rect(8, 231, 135, 29))
+			.image_("fontImages/Volca Keys.tiff");
 			
 		gui[\sequencerTab] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(1),Rect(4,4,654,269))
 			.color_(\border, Color(0.6 , 0.562, 0.5))

@@ -863,13 +863,9 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		MVC_PlainSquare(gui[\scrollView], Rect(697,127,3,116), gui[\plainTheme2]);
 			
 		// logo					
-		MVC_Text(gui[\scrollView],Rect(22, 246, 176, 30))
-			.align_(\center)
-			.shadow_(false)
-			.penShadow_(true)
-			.font_(Font("AvenirNext-Heavy",23))
-			.string_("Roland JP-08");
-		
+		MVC_ImageView(gui[\scrollView],Rect(2, 249, 168, 27))
+			.image_("fontImages/JP08.tiff");
+				
 		// levels
 		MVC_FlatDisplay(this.peakLeftModel,gui[\scrollView],Rect(365, 147, 6, 80));
 		MVC_FlatDisplay(this.peakRightModel,gui[\scrollView],Rect(371, 147, 6, 80));
@@ -925,7 +921,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		
 		// program
 		MVC_NumberBox(models[12],gui[\scrollView],Rect(66, 278, 28, 19))
-				.labelFont_(Font("AvenirNext-Bold",12))
+				.labelFont_(Font("Helvetica-Bold",13))
 				.orientation_(\horiz)
 				.label_("Program")
 				.color_(\background,Color(0.25,0.25,0.25))
@@ -935,7 +931,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		
 		// program name text
 		gui[\programName] = MVC_Text(gui[\scrollView],Rect(104, 273,132,26))
-			.font_(Font("AvenirNext-Bold",14))
+			.font_(Font("Helvetica-Bold",13))
 			.align_(\left)
 			.shadow_(false)
 			.penShadow_(true)
@@ -997,7 +993,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 				.color_(\background,Color(0.14,0.12,0.11)*0.4)
 				.color_(\focus,Color.orange)
 				.color_(\editBackground, Color(0,0,0,0.7))
-				.font_(Font.new("STXihei", 14))
+				.font_(Font.new("Helvetica", 14))
 				.canReceiveDragHandler_{
 					(SCView.currentDrag.isArray)and:{SCView.currentDrag[0].isString}
 				}
@@ -1017,13 +1013,13 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 				.align_(\center)
 				.color_(\string,Color(59/77,59/77,59/77)*1.4)
 				.color_(\background,Color(0.14,0.12,0.11,0.25)*0.4)
-				.font_(Font.new("STXihei", 11));	
+				.font_(Font.new("Helvetica", 11));	
 			gui[2000+i]=MVC_Text(gui[\preTab], Rect( 15, 30+(i*33), 20, 29) )
 				.align_(\right)
 				.string_((i+1).asString)
 				.color_(\string,Color(59/77,59/77,59/77)*1.4)
 				.color_(\background,Color(0.14,0.12,0.11,0.25)*0.4)
-				.font_(Font.new("STXihei", 11));	
+				.font_(Font.new("Helvetica", 11));	
 		};
 		
 		// edit text or select preset	

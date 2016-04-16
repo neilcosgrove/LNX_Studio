@@ -613,13 +613,9 @@ LNX_Melody : LNX_InstrumentTemplate {
 			.orientation_(\horizontal)
 			.color_(\label,Color.black);
 			
-		// melody maker text
-		MVC_Text(gui[\scrollView],Rect(654, 411, 118, 23))
-				.align_(\center)
-				.shadow_(false)
-				.penShadow_(true)
-				.font_(Font("AvenirNext-Heavy",15))
-				.string_("Melody Maker");
+		// logo					
+		MVC_ImageView(gui[\scrollView],Rect(654, 411, 118, 21))
+			.image_("fontImages/Melody Maker.tiff");
 		
 		// 1.on/off
 		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(4, 7,22,18),gui[\onOffTheme1])

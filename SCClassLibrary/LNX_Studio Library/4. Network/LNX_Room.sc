@@ -472,7 +472,7 @@ LNX_Room{
 			.color_(\string,Color.black)
 			.color_(\selectedString,Color.white)
 			.color_(\hilite,Color(0,0,0,0.5))
-			.font_(Font("STXihei", 12))
+			.font_(Font("Helvetica", 12))
 			.fontHeight_(18);
 			
 		gui[\userList].actions_(\enterKeyAction,gui[\userList].actions[\doubleClickAction]);
@@ -523,7 +523,7 @@ LNX_Room{
 			.color_(\focus,Color(1,1,1,0.4))
 			.color_(\editBackground, Color(0,0,0,0.7))
 			.color_(\cursor,Color.white)
-			.font_(Font.new("STXihei", 13));
+			.font_(Font.new("Helvetica", 13));
 			
 			
 		// Room Dialog text

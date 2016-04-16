@@ -242,14 +242,10 @@ LNX_POP {
 					{4}{ this.guiClear  }
 					{5}{ this.guiRemove }
 			};
-		
-		MVC_StaticText(gui[\window], Rect(1, 1+3, 74, 27))
-			.shadow_(false)
-			.color_(\string,Color(0.85,0.85,0.85))
-			.align_(\center)
-			.penShadow_(true)
-			.font_(Font("AvenirNext-Heavy",14))
-			.string_("Program");	
+
+		// logo					
+		MVC_ImageView(gui[\window],Rect(3, 9, 70, 21))
+			.image_("fontImages/Program.tiff");
 		
 		// 23.program number (to become)
 		gui[\program]=MVC_ProgramChangeMain(studioModels[\toBecome],gui[\window],

@@ -5,7 +5,7 @@
 
 MVC_DialogView : MVC_View {
 
-	var <dialog, lastDisplayTime, <>lines=7, <string;
+	var <dialog, lastDisplayTime, <>lines=6, <string;
 
 	// set your defaults
 	initView{
@@ -15,7 +15,7 @@ MVC_DialogView : MVC_View {
 		);
 		canFocus=false;
 		if (string.isNil) {string=""};
-		font=Font("STXihei", 12);
+		font=Font("Helvetica", 12);
 		dialog=[];
 
 	}

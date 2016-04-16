@@ -76,11 +76,11 @@
 						\colors_      : (\label : Color.white, \background : Color(0.2,0.2,0.2),
 										\string : Color.orange, \focus : Color(0,0,0,0)));
 						
-		gui[\labelTheme]=( \font_		: Font("Chalkboard-Bold", 16),
+		gui[\labelTheme]=( \font_		: Font("Arial", 16),
 						\align_		: \center,
 						\colors_		: (\string : Color.orange));
 						
-		gui[\labelTheme2]=( \font_		: Font("Chalkboard-Bold", 14),
+		gui[\labelTheme2]=( \font_		: Font("Arial", 14),
 						\align_		: \center,
 						\colors_		: (\string : Color(1,0.75,0)));
 						
@@ -142,7 +142,7 @@
 		// view labels
 		
 		MVC_StaticText(gui[\masterView],Rect(444, 84, 101, 31)).string_("Bum Note")
-			.color_(\string,Color(1,0.75,0)).font_(Font("Chalkboard-Bold", 22))
+			.color_(\string,Color(1,0.75,0)).font_(Font("Arial", 22))
 			.shadow_(false).penShadow_(true);
 		MVC_StaticText(gui[\masterView],Rect(4,-8,46,28),gui[\labelTheme]).string_("LFO");
 		MVC_StaticText(gui[\masterView],Rect(99,-8,98,28),gui[\labelTheme]).string_("Oscillators");

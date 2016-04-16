@@ -46,5 +46,24 @@ MVC_ImageView : MVC_View {
 		if (view.notClosed) {view.refresh}
 	}
 	
+	// add the controls
+	addControls{
+		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
+			if (modifiers==524576) { buttonNumber=1 };
+			if (modifiers==262401) { buttonNumber=2 };
+			buttonPressed=buttonNumber;
+			if (modifiers.asBinaryDigits[4]==0) { // check apple not pressed because of drag
+				if (editMode) {
+					lw=lh=nil; startX=x; startY=y; view.bounds.postln; // for moving
+				}
+			};
+		};
+		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
+			var xx=x/w, yy=y/h;
+			if (editMode) {
+				this.moveBy(x-startX,y-startY,buttonPressed)
+			}
+		};
+	}
 
 }
