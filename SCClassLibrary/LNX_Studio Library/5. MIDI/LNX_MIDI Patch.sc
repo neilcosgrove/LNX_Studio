@@ -91,6 +91,7 @@ LNX_MIDIPatch {
 	inPoint{^inPoints[midiIn]}
 	
 	*init {
+		var inFails = 0, outFails = 0;
 	
 		if (initialized.not) {
 		 	// MIDIClient.init;
@@ -152,15 +153,19 @@ LNX_MIDIPatch {
 			outs=[NoMIDI];
 			outPoints=[NoMIDI];
 			noOutPorts.do({|i|
-				outPoints = outPoints.add(LNX_MIDIEndPoint(MIDIClient.destinations[i]));
-				MIDIOut.connectByUID(i, MIDIClient.destinations[i].uid);
-				outs = outs.add(MIDIOut(i));
-				outs[i].latency_(0);
-				// latency is set to zero, the studio will control when latency is apllied
-				// this depends on internal sequencers, external midi in
-				// no midiclock, ext midiClockIn or send midiClockOut
-				// seq control signals (internal external)
-			
+				try {
+					MIDIOut.connectByUID(i, MIDIClient.destinations[i].uid);
+					outs = outs.add(MIDIOut(i));
+					outs[i].latency_(0);
+					// latency is set to zero, the studio will control when latency is apllied
+					// this depends on internal sequencers, external midi in
+					// no midiclock, ext midiClockIn or send midiClockOut
+					// seq control signals (internal external)
+					outPoints = outPoints.add(LNX_MIDIEndPoint(MIDIClient.destinations[i]));
+				} {
+					outFails = outFails+1;
+					("Warning: " ++ MIDIClient.destinations[i] ++ " failed to init").postln;
+				};
 			});
 			noInternalBuses.do({
 				outs=outs.add(NoMIDI);
@@ -169,16 +174,21 @@ LNX_MIDIPatch {
 			
 			inPoints=[NoMIDI];
 			
-			noInPorts.do({|i| 
-				inPoints = inPoints.add(LNX_MIDIEndPoint(MIDIClient.sources[i]));
-				MIDIIn.connect(i, MIDIClient.sources[i].uid);
+			noInPorts.do({|i|
+				try {
+					MIDIIn.connect(i, MIDIClient.sources[i].uid);
+					inPoints = inPoints.add(LNX_MIDIEndPoint(MIDIClient.sources[i]));
+				} {
+					inFails = inFails+1;
+					("Warning: " ++ MIDIClient.sources[i] ++ " failed to init").postln;
+				};
 			});
 			noInternalBuses.do({
 				inPoints=inPoints.add(NoMIDI);
 			});
 			
-			noInPorts=noInPorts+1+noInternalBuses;
-			noOutPorts=noOutPorts+1+noInternalBuses;
+			noInPorts=noInPorts+1+noInternalBuses-inFails;
+			noOutPorts=noOutPorts+1+noInternalBuses-outFails;
 			
 			MIDIIn.noteOn  = { arg src, chan, note, vel;
 				//["note on","src",src,"chan",chan,"note",note,"vel",vel].postln;
