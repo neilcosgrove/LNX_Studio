@@ -13,6 +13,9 @@ LNX_StartUp {
 		
 	*initClass{
 		Class.initClassTree(LNX_File);
+		Platform.case(
+			\linux,		{ this.linuxInitClass   },
+		);
 		StartUp.add {
 			Platform.case(
 				\osx,		{ this.osxStartUp     },
@@ -21,6 +24,29 @@ LNX_StartUp {
 			);
 		};	
 		ShutDown.add { studio.onClose };		 // and on shutdown
+	}
+
+	*linuxInitClass{
+		var lrd = Platform.lnxResourceDir;
+		var cwd = File.getcwd;
+		if (lrd.pathExists(false).not) {
+			lrd.makeDir;
+		};
+		if ((lrd +/+ "lnx.jpg").pathExists(false).not) {
+			File.copy(cwd +/+ "lnx.jpg", lrd +/+ "lnx.jpg");
+		};
+		if ((lrd +/+ "demo song").pathExists(false).not) {
+			File.copy(cwd +/+ "demo song", lrd +/+ "demo song");
+		};
+		if ((lrd +/+ "sounds").pathExists(false).not) {
+			var sounds = PathName(cwd +/+ "sounds").deepFiles;
+			sounds.do {|s|
+				var newPath = PathName(s.fullPath.replace(cwd, lrd));
+				newPath.pathOnly.makeDir;
+				File.copy(s.fullPath,
+					newPath.fullPath);
+			};
+		};
 	}
 
 	*xPlatStartUp{						
