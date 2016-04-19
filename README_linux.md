@@ -27,6 +27,6 @@ LNX_Studio is built on top of the amazing SuperCollider language and synth engin
 
 To run LNX, simply open up a terminal, cd to the LNX directory and type `./LNX_Studio`. You can also set up a launcher to do this quite simply and use `lnx.jpg` as the icon.
 
-## 4) Keeping up-to-date
+## 5) Keeping up-to-date
 
 Most of the code changes will be within LNX's SCClassLibrary, so to update to the latest version you will just need to do a `git pull` from your repo directory. If at any point you need to more than this, we'll update these instructions.
