@@ -47,6 +47,15 @@ LNX_StartUp {
 					newPath.fullPath);
 			};
 		};
+		if ((lrd +/+ "default library").pathExists(false).not) {
+			var lib = PathName(cwd +/+ "default library").deepFiles;
+			lib.do {|l|
+				var newPath = PathName(l.fullPath.replace(cwd, lrd));
+				newPath.pathOnly.makeDir;
+				File.copy(l.fullPath,
+					newPath.fullPath);
+			};
+		};
 	}
 
 	*xPlatStartUp{						
