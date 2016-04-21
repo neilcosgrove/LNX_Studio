@@ -10,7 +10,7 @@ LNX_Studio requires the following software to be installed on your machine: `cur
 
 ## 2) SuperCollider and SC3-Plugins
 
-LNX_Studio is built on top of the amazing SuperCollider language and synth engine. You will need working versions of both [SuperCollider](https://github.com/supercollider/supercollider) and [SC3-Plugins](https://github.com/supercollider/sc3-plugins) which are available from their respective GitHub pages. LNX_Studio should work with SuperCollider 3.6+.
+LNX_Studio is built on top of the amazing SuperCollider language and synth engine. You will need working versions of both [SuperCollider](https://github.com/supercollider/supercollider) and [SC3-Plugins](https://github.com/supercollider/sc3-plugins) which are available from their respective GitHub pages. LNX_Studio should work with SuperCollider 3.7+.
 
 ## 3) Installation
 
