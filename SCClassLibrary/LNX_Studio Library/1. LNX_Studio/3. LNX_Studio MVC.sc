@@ -36,8 +36,16 @@
 			}].asModel;
 		
 		// master out level meter
-		models[\peakOutL] = [\unipolar].asModel.fps_(20); // fps same as in LNX_Studio:initUGens
-		models[\peakOutR] = [\unipolar].asModel.fps_(20); // fps same as in LNX_Studio:initUGens
+		models[\peakOutL] = [\unipolar, {|me,val|
+//				~x=val
+			} 
+			].asModel.fps_(20); // fps same as in LNX_Studio:initUGens
+		models[\peakOutR] = [\unipolar,
+			{|me,val|
+//				~y=val;
+//				if (~v.notNil) { {~v.refresh}.defer }
+			} 
+		].asModel.fps_(20); // fps same as in LNX_Studio:initUGens
 
 		// network master voulme and mute controls
 		models[\networkMaterVolume] = [

@@ -25,7 +25,9 @@ MVC_Window {
 	
 	var <parentViews;
 	
-	*initClass { windows = [] }
+	*initClass {
+		windows = [];
+	}
 		
 	// new only creates an instance of MVC_Window
 	// use .create .open or .front to bring to the front
@@ -37,8 +39,9 @@ MVC_Window {
 		name=argName;
 		// stops crash on cocoa
 		if (argBounds.isKindOf(Rect)) {
-			bounds = Rect(argBounds.left.clip(0,inf), argBounds.top.clip(0,inf), argBounds.width,
-			 argBounds.height);
+			bounds = Rect(argBounds.left.clip(0,Window.screenBounds.width-1),
+						argBounds.top.clip(0,Window.screenBounds.height-1),
+						argBounds.width, argBounds.height);
 		}{
 			bounds=Rect(128, 64, 400, 400);
 		};
