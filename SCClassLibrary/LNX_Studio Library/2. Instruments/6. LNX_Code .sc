@@ -63,20 +63,8 @@ LNX_Code : LNX_InstrumentTemplate {
 		
 		// user content !!!!!!!		
 		userBank = LNX_SampleBank(server,apiID:((id++"_url_").asSymbol))
-				.selectedAction_{|bank,val,send=true|
-					// when an item is selected
-					// models[108+i].doValueAction_(val,send:send);
-					// find dup calls to this func below
-					/*
-					val.postln;
-					thisProcess.dumpBackTrace;
-					*/
-				}
-				.itemAction_{|bank,items,send=false| // i don't think send is needed here
-					// when a sample is added or removed from the bank
-					// this.updateSampleControlSpec(i);
-					// models[100+i].doValueAction_(13,send:send);// send was true
-				}
+				.selectedAction_{|bank,val,send=true| }
+				.itemAction_{|bank,items,send=false| }
 				.title_("");
 		
 		// the webBrowsers used to search for new sounds!
@@ -104,14 +92,16 @@ LNX_Code : LNX_InstrumentTemplate {
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(2,val,latency,send);
 					this.updateSynthArg(systemIndices[\amp],val.dbamp,latency);
+					this.setMixerSynth(\amp,val.dbamp,latency); // set mixer synth
 				}],						
 			
 			// 3. out channels		
 			[\audioOut, midiControl, 3, "Output channels", 
 				(\label_:"Out", \items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
-					this.setPVPModel(3,val,0,true);
-					this.instOutChannel_( LNX_AudioDevices.getOutChannelIndex(p[3]));
+					var channel = LNX_AudioDevices.getOutChannelIndex(val);
+					this.setPVPModel(3,val,0,send);     // set p & network model via VP
+					this.setMixerSynth(\outChannel,channel,latency); // set mixer synth
 				}],
 								
 			// 4.master pan
@@ -120,6 +110,7 @@ LNX_Code : LNX_InstrumentTemplate {
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(4,val,latency,send);
 					this.updateSynthArg(systemIndices[\pan],val,latency);
+					this.setMixerSynth(\pan,val,latency); // set mixer synth
 				}],
 			
 			// 5.master duration (i don't think this is used!)
@@ -130,7 +121,6 @@ LNX_Code : LNX_InstrumentTemplate {
 				(\label_:"Pitch" , \numberFunc_:'float2Sign', \zeroValue_:0),
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(6,val,latency,send);
-					//channels.do{|i| this.updateSynthArg(\rate,i,latency)};
 				}],
 			
 			// 7.MIDI low 
@@ -161,11 +151,12 @@ LNX_Code : LNX_InstrumentTemplate {
 			[-1,\audioOut, midiControl, 9, "Send channel",
 				(\label_:"Send", \items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
+					var channel = LNX_AudioDevices.getOutChannelIndex(val);
 					this.setPVPModel(9,val,latency,send);
 					if (systemIndices[\sendOut].notNil) {
-						this.updateSynthArg(systemIndices[\sendOut],
-							LNX_AudioDevices.getOutChannelIndex(val),latency);
+						this.updateSynthArg(systemIndices[\sendOut], channel, latency);
 					};
+					this.setMixerSynth(\sendChannel,channel,latency); // set mixer synth
 				}],
 			
 			// 10. sendAmp
@@ -175,6 +166,7 @@ LNX_Code : LNX_InstrumentTemplate {
 					if (systemIndices[\sendAmp].notNil) {
 						this.updateSynthArg(systemIndices[\sendAmp],val.dbamp,latency);
 					};
+					this.setMixerSynth(\sendAmp,val.dbamp,latency); // set mixer synth
 				}], 
 				
 			// 11. in channels		
@@ -215,7 +207,7 @@ LNX_Code : LNX_InstrumentTemplate {
 				}],
 				
 			// 16.font size
-			[9,[9,30,1,1],{|me,val,latency,send,toggle|
+			[14,[9,30,1,1],{|me,val,latency,send,toggle|
 				this.setPVPModel(16,val,latency,send:false);
 				{codeModel.themeMethods_((\font_:Font("Monaco",p[16])))}.defer;
 			}],
@@ -317,6 +309,14 @@ LNX_Code : LNX_InstrumentTemplate {
 			}).add;
 		
 	}
+	
+	getMixerArgs{^[
+		[\amp,           p[ 2].dbamp       ],
+		[\outChannel,    LNX_AudioDevices.getOutChannelIndex(p[3])],
+		[\pan,           p[4]             ],
+		[\sendChannel,  LNX_AudioDevices.getOutChannelIndex(p[9])],
+		[\sendAmp,       p[10].dbamp       ]
+	]}
 	
 	// return the models
 	peakModel   {^models[17]}
@@ -438,10 +438,10 @@ LNX_Code : LNX_InstrumentTemplate {
 		var voicerNode;
 		if (valid) {  // this is test to see if synthDef is valid
 			if (instOnSolo.onOff==0) {^nil}; // drop out if instrument onSolo is off
-			voicerNode = voicer.noteOn(note, velocity, latency +! syncDelay); // create a voicer node
+			voicerNode = voicer.noteOn(note, velocity, latency +! syncDelay);//create a voicerNode
 			server.sendBundle(latency +! syncDelay,
 				[\s_new, synthDef.name, voicerNode.node, 0, scCodeGroupID]++
-					(this.getSystemMsg(note,velocity))++(this.getUserMsg));
+					(this.getSystemMsg(note,velocity))++[\gate,1]++(this.getUserMsg));
 		};
 	}
 	
@@ -482,11 +482,13 @@ LNX_Code : LNX_InstrumentTemplate {
 
 	///////////////////////////////////////////////////////////////////////////////////
 	
+	// this is used in server reboot
 	updateDSP{|oldP,latency|
-		// this is used in server reboot
-		this.instOutChannel_( LNX_AudioDevices.getOutChannelIndex(p[3]), latency );
+		if (instOutSynth.notNil) {
+			server.sendBundle(latency +! syncDelay,
+				*this.getMixerArgs.collect{|i| [\n_set, instOutSynth.nodeID]++i } );
+		};
 	}
-	
 	
 	// make the list of system args for the synth
 	getSystemMsg{|note,velocity|
@@ -804,7 +806,6 @@ LNX_Code : LNX_InstrumentTemplate {
 			
 		};
 		
-		systemViews[\sendAmp].visible_(system[\sendAmp].notNil);
 		systemViews[\inAmp].visible_(system[\inAmp].notNil);
 		
 		// put in user views	
@@ -1047,7 +1048,7 @@ LNX_Code : LNX_InstrumentTemplate {
 		
 		// test for compulsory arguments before proceeding
 		missingArgs=[];
-		#[\out, \amp, \gate, \pan].do{|argName|
+		#[\out, \gate, ].do{|argName|
 			if (names.includes(argName).not) {
 				missingArgs=missingArgs.add(argName);
 			}
@@ -1268,14 +1269,10 @@ LNX_Code : LNX_InstrumentTemplate {
 				var synthDefControl = me.synthDefControl;
 				// no point setting a scalar
 				if (synthDefControl.rate!=\scalar) {
-									
 					voicer.allNodes.do{|voicerNode|
-						
 						server.sendBundle(latency +! syncDelay,
 							[\n_set,voicerNode.node,synthDefControl.index,val]);
 					};
-					
-					
 				};
 				this.setUserModel(synthDefControl.index,val,latency,send,toggle);
 			};
@@ -1336,9 +1333,6 @@ LNX_Code : LNX_InstrumentTemplate {
 		// again with the defering, i really need to tidy this up
 		{
 			// make system controls visible (why do i need to defer this when initalising
-			systemViews[\sendAmp].visible_(system[\sendAmp].notNil);
-			gui[\sendOut].visible_(system[\sendOut].notNil);
-			
 			gui[\in].visible_(system[\in].notNil);
 			systemViews[\inAmp].visible_(system[\inAmp].notNil);
 		}.defer(0.075);  

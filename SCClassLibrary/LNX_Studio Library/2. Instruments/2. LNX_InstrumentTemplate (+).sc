@@ -16,25 +16,24 @@
 	*thisWidth  {^100} // the default width of this instrument
 	*thisHeight {^100} // the default height of this instrument
 	*sortOrder{^10}
+	*isVisible{^true}
 	
 	isMIDI{^false}
 	isFX{^false}
 	isInstrument{^false}
 	canBeSequenced{^false}
 	isMixerInstrument{^false}
+	hasEQ{^this.isMixerInstrument} // override if ever needed,so far all mixer insts can make sound
 	onColor{^nil}  // if you want a different color on button in the studio put it here
 	mixerColor{^Color(1,1,1,0.4)} // colour in mixer
 	alwaysOn{^false} // am i always on? used by melody maker to change onOff widgets
 	canAlwaysOn{^false} // can i always be on as an inst?
 	canTurnOnOff{^true}
 	hasMIDIClock{^false}
-	
 	clockPriority{^5} // order for clock beats. sequenced controllers 1st. instruments last.
 					// the lower the number the higher the priority
 					
 	interface{^nil} // supply an immutable list of methods to make available to the network
-
-	*isVisible{^true}
 
 	header { 
 		// define your document header details

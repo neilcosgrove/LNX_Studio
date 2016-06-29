@@ -367,6 +367,12 @@ MVC_View {
 		this.adjustLabels;
 	}
 	
+	// move the view to h & v
+	moveTo{|h,v|
+		var newRect = rect.moveTo(h,v);
+		if (newRect!=rect) { this.bounds_(newRect) };
+	}
+	
 	// set the top only
 	top_{|value|
 		if (value!=t) {

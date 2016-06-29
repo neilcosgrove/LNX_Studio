@@ -370,6 +370,7 @@
 		// code view
 		gui[\code]=MVC_TextView(gui[\codeGUIScrollView],codeModel,Rect(5, 15, 610, 290))
 			.label_("Code")
+			.font_(Font("Monaco",14))
 			.resize_(5)
 			.attachCodeHelpFunction(window,30,75)
 			.color_(\string,Color.black)

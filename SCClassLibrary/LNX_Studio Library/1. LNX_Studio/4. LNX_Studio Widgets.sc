@@ -346,20 +346,20 @@
 			.color_(\background,Color(0.8,0.8,0.8));
 
 		mixerGUI[\masterTabs]=MVC_TabbedView(mixerWindow,Rect(220, 33, 514, 450),
-			scroll:[true,true,false], offset:(6@(279)))
+			scroll:[true,true,false,false], offset:(6@(279)))
 			.action_{|me|}
 			.labels_(["Mixer","Prog","Auto"])
 			.resize_(2)
 			.font_(Font("Helvetica", 14))
 			.tabPosition_(\right)
-			.unfocusedColors_( Color(6/11,42/83,29/65)/2 ! 3)
-			.labelColors_(   Color(6/11,42/83,29/65) !3)
-			.backgrounds_(  [Color(0.8,0.8,0.8),Color(0.8,0.8,0.8),Color(0.8,0.8,0.8)] )
+			.unfocusedColors_( Color(6/11,42/83,29/65)/2 ! 4)
+			.labelColors_(   Color(6/11,42/83,29/65) !4)
+			.backgrounds_(  Color(0.8,0.8,0.8)!4 )
 			.tabCurve_(5)
-			.tabWidth_([ 45, 41, 38 ])
+			.tabWidth_([ 45, 41, 38,12 ])
 			.tabHeight_(22)
 			.followEdges_(true)
-			.adjustments_([nil, Rect(83-10,0,-83+10,0)])
+			.adjustments_([nil, Rect(83-10,0,-83+10,0),nil,nil])
 			.value_(0)
 			.resizeAction_{
 				if (insts.size<1) { 
@@ -378,6 +378,71 @@
 		mixerGUI[\masterTabs].unfocusActions_([{},{ 
 			mixerGUI[\popProgramsScrollView].visible_(false);
 		},{}]);
+		
+		
+		
+		// v tab
+		mixerGUI[\v] = mixerGUI[\masterTabs].mvcTab(3);
+		
+//		
+//		
+//~x=0; ~y=0;
+//~lx=0; ~ly=0;
+//~ld=0;
+//~rect=mixerGUI[\masterTabs].bounds.resizeBy(-20,0);
+//~w=~rect.bounds.width/2;
+//~h=~rect.bounds.height/2;
+//~v=MVC_UserView(mixerGUI[\v],Rect(0,0,~w*2,~h*2))
+//	.clearOnRefresh_(false)
+//	.drawFunc_{
+//		Pen.use{
+//			
+//			Pen.smoothing_(true);
+//			
+//			~b=[0,0,0,0,0,2,3,5,6,9,13].wrapAt((SystemClock.now).asInt.hash);
+//			
+//			Pen.blendMode_(~b);			
+//			Pen.width_(SystemClock.now.fold(0,10)/10*40+5);
+//			Pen.capStyle_(1);
+//			
+//			Pen.fillColor = Color(0,0,0,0.05/2);
+//			Pen.fillRect(Rect(0,0,~w*2,~h*2));
+//			
+//			Pen.strokeColor = Color(~x,SystemClock.now.fold(0,10)/10,~y);
+//			
+//			if(~x>~y) { ~y=~y**2 } { ~x=~x**2 };
+//			
+//			~x=~x**1.5*0.66; ~y=~y**1.5*0.66;
+//			
+//			~lx=~lx; ~ly=~ly;
+//			
+//			~d = sin(SystemClock.now/10)*pi*2;
+//			
+//			Pen.moveTo( (~w@~h) + (((~lx*~w)@(~ly*~h)).rotate(~ld)) );
+//			Pen.lineTo( (~w@~h) + ((( ~x*~w)@( ~y*~h)).rotate(~d)) );
+//
+//			Pen.moveTo( (~w@~h) + (((~lx*~w).neg@(~ly*~h)).rotate(~ld)) );
+//			Pen.lineTo( (~w@~h) + ((( ~x*~w).neg@( ~y*~h)).rotate(~d)) );
+//			
+//			
+//			Pen.moveTo( (~w@~h) + (((~lx*~w)@(~ly*~h).neg).rotate(~ld)) );
+//			Pen.lineTo( (~w@~h) + ((( ~x*~w)@( ~y*~h).neg).rotate(~ld)) );
+//			
+//			Pen.moveTo( (~w@~h) + (((~lx*~w).neg@(~ly*~h).neg).rotate(~ld)) );
+//			Pen.lineTo( (~w@~h) + ((( ~x*~w).neg@( ~y*~h).neg).rotate(~d)) );
+//
+//			
+//			Pen.stroke;
+//
+//			~lx=~x;
+//			~ly=~y;
+//			~ld=~d;
+//	
+//		}
+//	}.resize_(4);
+//
+//		
+//		
 		
 		// mixer tab
 		
@@ -521,8 +586,26 @@
 			var id=inst.id;
 			y=y*70;
 			mixerGUI[id][\scrollViewPOP].left_(y);
-		};	
+		};
+		
+		this.alignEQWidgets;
 	}
+	
+	// align eq widgets because alternate widgets have different pos
+	alignEQWidgets{
+		insts.mixerInstruments.do{|inst,i|
+			var id = inst.id;
+			if (i.even) {
+				mixerGUI[id][\eqButton].moveTo(42,356);
+				mixerGUI[id][\eqLamp].moveTo(47,341);
+					
+			}{
+				mixerGUI[id][\eqButton].moveTo(42,343);
+				mixerGUI[id][\eqLamp].moveTo(47,362);
+			};	
+		}
+	}
+
 	
 	// create the widgets for the instrument in the mixer
 	
@@ -764,22 +847,55 @@
 			MVC_FlatButton(sv,Rect(24, 290+30, 27, 17), mixerGUI[\buttonTheme2 ] ,"down")
 				.mode_(\icon)
 				.action_{ inst.fadeOut };
-			
-//			// pan text
-//			MVC_StaticText(sv,Rect(3, 344, 22, 10))
-//				.string_("Pan")
-//				.shadow_(false)
-//				.penShadow_(false)
-//				.font_(Font("Helvetica",10))
-//				.color_(\string,Color.black)
-//				.excludeFromVerbose_(true);
-			
+						
 			// pan
-			MVC_MyKnob3(inst.panModel,sv,Rect(25, 340 + ScrollBars.addIfNone(2), 25, 25),mixerGUI[\knobTheme1])
+			MVC_MyKnob3(inst.panModel,sv,Rect(12, 340 + ScrollBars.addIfNone(2), 25, 25),mixerGUI[\knobTheme1])
 				.numberFont_(Font("Helvetica",10))
 				.numberFunc_(\pan)
 				.label_(nil)
+				.numberWidth_(-6)
 				.showNumberBox_(true);
+			
+			
+			if (insts.mixerInstruments.indexOf(inst).even) {
+			
+				// eq button
+				mixerGUI[id][\eqButton] = MVC_FlatButton(sv, Rect(42, 356, 21, 17),"EQ")
+					.rounded_(true)
+					.font_(Font("Helvetica-Bold",10))
+					.resize_(7)
+					.canFocus_(false)
+					.color_(\up,Color(1,1,1))
+					.color_(\down,Color(6/11,42/83,29/65)/2)
+					.action_{ inst.openEQ };
+				
+				// eq on/off
+				mixerGUI[id][\eqLamp] = MVC_PipeLampView(sv,Rect(47,341,11,11),inst.eqOnOffModel)
+					.insetBy_(1)
+					.border_(true)
+					.mouseWorks_(true)
+					.color_(\on,Color.green);
+			
+			}{
+			
+				// eq button
+				mixerGUI[id][\eqButton] = MVC_FlatButton(sv, Rect(42, 343, 21, 17),"EQ")
+					.rounded_(true)
+					.font_(Font("Helvetica-Bold",10))
+					.resize_(7)
+					.canFocus_(false)
+					.color_(\up,Color(1,1,1))
+					.color_(\down,Color(6/11,42/83,29/65)/2)
+					.action_{ inst.openEQ };
+				
+				// eq on/off
+				mixerGUI[id][\eqLamp] = MVC_PipeLampView(sv,Rect(47,362,11,11),inst.eqOnOffModel)
+					.insetBy_(1)
+					.border_(true)
+					.mouseWorks_(true)
+					.color_(\on,Color.green);
+					
+			};
 			
 			if (inst.sendAmpModel.notNil) {
 
@@ -1106,6 +1222,6 @@
 		};
 
 	}
-
+	
 }
 

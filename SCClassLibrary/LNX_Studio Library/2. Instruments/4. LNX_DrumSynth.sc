@@ -30,10 +30,10 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 	mixerColor       {^Color(0.75,1,0.75,0.4)} // colour in mixer
 	
 	peakModel   {^models[131]}
-	volumeModel {^models[2] }
-	outChModel  {^models[25]}
-	soloModel   {^models[0]}
-	onOffModel  {^models[1]}
+	volumeModel {^models[  2]}
+	outChModel  {^models[ 25]}
+	soloModel   {^models[  0]}
+	onOffModel  {^models[  1]  }
 	panModel    {^models[130]}
 	sendChModel {^models[132]}
 	sendAmpModel{^models[133]}
@@ -66,7 +66,10 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 			// 2.amp
 			[ \db6, midiControl, 2, "Amp",
 				(mouseDownAction_:{hack[\fadeTask].stop}),
-				{|me,val,latency,send| this.setPVP(2,val,latency,send) }],
+				{|me,val,latency,send|
+					this.setPVP(2,val,latency,send);
+					this.setMixerSynth(\amp,val.dbamp,latency); // set mixer synth
+				}],
 			
 			0,    // 3.tab position (this doesn't need a model
 			
@@ -171,8 +174,9 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 			[0, \audioOut,  midiControl, 25, "Output Channel",
 				(\items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
-					this.setPVH(25,val,latency,send);
-					this.instOutChannel_( LNX_AudioDevices.getOutChannelIndex(p[25]),latency );
+					var channel = LNX_AudioDevices.getOutChannelIndex(val);
+					this.setPVPModel(25,val,0,send);     // set p & network model via VP
+					this.setMixerSynth(\outChannel,channel,latency); // set mixer synth
 				}],
 			
 			// 26.unsed
@@ -387,7 +391,10 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 			
 			// 130 mater pan		
 			[\bipolar, midiControl, 130, "Pan", (\label_:"Pan", zeroValue_:0),
-				{|me,val,latency,send| this.setPVP(130,val,latency,send)}],
+				{|me,val,latency,send|
+					this.setPVPModel(130,val,0,send);      // set p & network model via VP
+					this.setMixerSynth(\pan,val,latency); // set mixer synth
+				}],
 				
 			// 131. peak level
 			[0.7, \unipolar,  midiControl, 131, "Peak Level",
@@ -396,10 +403,17 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 			// 132. master send channel
 			[-1, \audioOut,  midiControl, 132, "Master Send Channel",
 				(\items_:LNX_AudioDevices.outputAndFXMenuList),
-				{|me,val,latency,send| this.setPVH(132,val,latency,send) }],			
+				{|me,val,latency,send|
+					var channel = LNX_AudioDevices.getOutChannelIndex(val);
+					this.setPVPModel(132,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\sendChannel,channel,latency); // set mixer synth
+				}],			
 			// 133. master send amp
 			[-inf, \db2,  midiControl, 133, "Maseter Send Amp", (label_:"Send"),
-				{|me,val,latency,send| this.setPVPModel(133,val,latency,send) }],
+				{|me,val,latency,send|
+					this.setPVPModel(133,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\sendAmp,val.dbamp,latency); // set mixer synth
+				}],
 				
 			// 134. syncDelay
 			[\sync, {|me,val,latency,send|
@@ -461,6 +475,16 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 		autoExclusion=[26,134];
 
 	}
+	
+	
+	getMixerArgs{^[
+		[\amp,           p[ 2].dbamp       ],
+		[\outChannel,    LNX_AudioDevices.getOutChannelIndex(p[25])],
+		[\pan,           p[130]             ],
+		[\sendChannel,  LNX_AudioDevices.getOutChannelIndex(p[132])],
+		[\sendAmp,       p[133].dbamp       ]
+	]}
+	
 		
 	// your own vars
 	iInitVars{
@@ -774,9 +798,10 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 	/// midi Clock ////////////////////////////////////////
 	
 	updateDSP{|oldP,latency|
-	
-		 this.instOutChannel_(  LNX_AudioDevices.getOutChannelIndex(p[25]), latency);
-		 
+		if (instOutSynth.notNil) {
+			server.sendBundle(latency +! syncDelay,
+				*this.getMixerArgs.collect{|i| [\n_set, instOutSynth.nodeID]++i } );
+		};
 	} // also used for server reboot
 	
 	//clockIn is the clock pulse, with the current song pointer in beats
@@ -811,8 +836,13 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 		    filterScale, fq, q, noise, npoNote, amp, dur, pan, outputChannels,
 		    sendChannels, send, nMix, nDur, env, rnd, timbre, freq, cFreq, slope, slopeDur,
 		    stick, mix, lp, hp, mDur;
-		    
-		var masterSendChannels, masterSendAmp;
+
+		var masterAmp, masterPan, select;
+		
+		
+		masterAmp = (p[2].dbamp); // master amp
+		
+		masterPan = p[130]; // master pan
 
 		if (instOnSolo.onOff==0) {^nil}; // drop out if onSolo is off
 
@@ -821,17 +851,14 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 		if (p[120+drum]==0) {^nil}; // drop out if off
 		if (p[52+drum]==1) { if (1.0.rand>(vel+p[11])) {^nil} }; // beat probality drop out
 		
-		amp=((vel*(1-p[57+drum]))+p[57+drum])*(p[2].dbamp)
-			*(p[125+drum].dbamp);
-		
-		if (p[130]>=0) {
-			pan = p[32+drum].map(-1,1,p[130]*2-1,1)
-		}{
-			pan = p[32+drum].map(-1,1,-1,1+(p[130]*2))
-		};
+		amp=((vel*(1-p[57+drum]))+p[57+drum]) // velocity
+			*(p[125+drum].dbamp);             // chAmp
 				
+		pan = p[32+drum]; // channel pan
+					
 		// select out channel
 		outputChannels=p[27+drum]; // from each drum
+		
 		case {outputChannels==0} {
 			outputChannels = this.instGroupChannel; // select group channel if master
 		}
@@ -842,13 +869,16 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 			outputChannels = LNX_AudioDevices.firstFXBus+(outputChannels.neg*2-2);
 		};
 		
+		if (outputChannels==LNX_AudioDevices.getOutChannelIndex(p[25])) {
+			outputChannels = this.instGroupChannel;
+		};
+		
+		select = (this.instGroupChannel == outputChannels).if(0,1);
+		
 		sendChannels=LNX_AudioDevices.getOutChannelIndex(p[37+drum]);
 		send=vel.mapVelocityToRange(p[42+drum].dbamp,p[47+drum],0,1);
 		dur=p[117]**2;
-		
-		masterSendAmp = p[133].dbamp;
-		masterSendChannels = LNX_AudioDevices.getOutChannelIndex(p[132]);
-		
+
 		switch (drum)
 		
 				// bass
@@ -881,8 +911,9 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 							\pan,            pan,
 							\sendChannels,   sendChannels,
 							\send,           send,
-							\masterSendChannels,	masterSendChannels,
-							\masterSendAmp,		masterSendAmp,
+							\masterAmp,      masterAmp,
+							\masterPan,      masterPan,
+							\select,         select
 
 						]);
 					if (synthsOn[drum].notNil) {
@@ -921,8 +952,9 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 				              \attackAmount,   env,
 				              \nDur,           nDur,
 				              \mDur,           mDur,
-							\masterSendChannels,	masterSendChannels,
-							\masterSendAmp,		masterSendAmp,
+							\masterAmp,      masterAmp,
+							\masterPan,      masterPan,
+							\select,         select
 							]);
 					if (synthsOn[drum].notNil) {
 						server.sendBundle(latency +! syncDelay,
@@ -955,8 +987,9 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 							\rnd1,           rnd.rand2,
 							\rnd2,           rnd.rand2,
 							\rnd2,           rnd.rand2,
-							\masterSendChannels,	masterSendChannels,
-							\masterSendAmp,		masterSendAmp,
+							\masterAmp,      masterAmp,
+							\masterPan,      masterPan,
+							\select,         select
 							]);
 					if (synthsOn[drum].notNil) {
 						server.sendBundle(latency +! syncDelay,
@@ -1008,8 +1041,9 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 							\attackAmount,   attackAmount,
 							\stick,          stick,
 							
-							\masterSendChannels,	masterSendChannels,
-							\masterSendAmp,		masterSendAmp,
+							\masterAmp,      masterAmp,
+							\masterPan,      masterPan,
+							\select,         select
 							
 						]);
 					if (synthsOn[drum].notNil) {
@@ -1041,9 +1075,11 @@ LNX_DrumSynth : LNX_InstrumentTemplate {
 							\noteAdj,        note,
 							\lp,             lp,
 							\q,              q,
-							\hp,             hp,
-							\masterSendChannels,	masterSendChannels,
-							\masterSendAmp,		masterSendAmp,
+							\hp,             hp
+							,
+							\masterAmp,      masterAmp,
+							\masterPan,      masterPan,
+							\select,         select
 						]);
 					if (synthsOn[drum].notNil) {
 						server.sendBundle(latency +! syncDelay,

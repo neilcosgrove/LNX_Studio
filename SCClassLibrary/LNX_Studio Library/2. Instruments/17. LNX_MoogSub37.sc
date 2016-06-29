@@ -235,7 +235,8 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			[\db6,midiControl, 2, "Master volume",
 				(\label_:"Volume" , \numberFunc_:'db',mouseDownAction_:{hack[\fadeTask].stop}),
 				{|me,val,latency,send,toggle|
-					this.setSynthArgVP(2,val,\amp,val.dbamp,latency,send);
+					this.setPVPModel(2,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\amp,val.dbamp,latency); // set mixer synth
 				}],	
 				
 			// 3. in channels
@@ -252,15 +253,16 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				(\items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
 					var channel = LNX_AudioDevices.getOutChannelIndex(val);
-					this.instOutChannel_(channel);
-					this.setPVPModel(4,val,0,send);   // to test on network
+					this.setPVPModel(4,val,0,send);     // set p & network model via VP
+					this.setMixerSynth(\outChannel,channel,latency); // set mixer synth
 				}], // test on network
 								
 			// 5.master pan
 			[\pan, midiControl, 5, "Pan",
 				(\numberFunc_:\pan, \zeroValue_:0),
 				{|me,val,latency,send,toggle|
-					this.setSynthArgVH(5,val,\pan,val,latency,send);
+					this.setPVPModel(5,val,0,send);      // set p & network model via VP
+					this.setMixerSynth(\pan,val,latency); // set mixer synth
 				}],
 				
 			// 6. peak level
@@ -271,14 +273,16 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			[-1,\audioOut, midiControl, 7, "Send channel",
 				(\label_:"Send", \items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
-					this.setSynthArgVH(7,val,
-						\sendChannels,LNX_AudioDevices.getOutChannelIndex(val),latency,send);
+					var channel = LNX_AudioDevices.getOutChannelIndex(val);
+					this.setPVPModel(7,val,0,send);               // set p & network model via VP
+					this.setMixerSynth(\sendChannel,channel,latency); // set mixer synth
 				}],
 			
 			// 8. sendAmp
 			[-inf,\db6,midiControl, 8, "Send amp", (label_:"Send"),
 				{|me,val,latency,send,toggle|
-					this.setSynthArgVH(8,val,\sendAmp,val.dbamp,latency,send);
+					this.setPVPModel(8,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\sendAmp,val.dbamp,latency); // set mixer synth
 				}], 		
 				
 			// 9. channelSetup
@@ -364,6 +368,14 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		autoExclusion=[10,11,12];
 
 	}
+	
+	getMixerArgs{^[
+		[\amp,           p[ 2].dbamp       ],
+		[\outChannel,    LNX_AudioDevices.getOutChannelIndex(p[4])],
+		[\pan,           p[5]             ],
+		[\sendChannel,  LNX_AudioDevices.getOutChannelIndex(p[7])],
+		[\sendAmp,       p[8].dbamp       ]
+	]}
 
 	// clock in //////////////////////////////
 	
@@ -922,26 +934,23 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	
 	updateDSP{|oldP,latency|
 		var in  = LNX_AudioDevices.firstInputBus+(p[3]*2);
-		var out, on;				
-		if (p[4]>=0) {
-			out = p[4]*2
-		}{	
-			out = LNX_AudioDevices.firstFXBus+(p[4].neg*2-2);
-		};
-		this.instOutChannel_(out,latency);
+		var on;				
+
 		if (p[13]==1) { on=true } { on=this.isOn };
 			
 		server.sendBundle(latency +! syncDelay,
-			[\n_set, node, \amp,p[2].dbamp],
-			[\n_set, node, \pan,p[5]],
 			[\n_set, node, \inputChannels,in],
 			[\n_set, node, \outputChannels,this.instGroupChannel],
 			[\n_set, node, \on, on],
-			[\n_set, node, \sendChannels,LNX_AudioDevices.getOutChannelIndex(p[7])],
-			[\n_set, node, \sendAmp, p[8].dbamp],
 			[\n_set, node, \channelSetup, p[9]]
 			
 		);
+		
+		if (instOutSynth.notNil) {
+			server.sendBundle(latency +! syncDelay,
+				*this.getMixerArgs.collect{|i| [\n_set, instOutSynth.nodeID]++i } );
+		};
+		
 	}
 
 } // end ////////////////////////////////////

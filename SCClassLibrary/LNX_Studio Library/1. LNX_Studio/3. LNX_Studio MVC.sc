@@ -249,7 +249,7 @@
 				if ((insts.size>0) and: {insts.selectedInst.notNil}) {
 					if (show1) {
 						insts.pairsDo{|id,inst|
-							if (id!=insts.selectedID) { inst.hide }
+							if (id!=insts.selectedID) { inst.hide.closeEQ }
 						};
 						insts.selectedInst.front;
 					}{
@@ -268,12 +268,12 @@
 				transmitInstChange=false; // stop this from going over the net
 				if (insts.size>0) {
 					if (showNone) {
-						insts.do(_.closeWindow)
+						insts.do{|i| i.closeWindow.closeEQ }
 					}{
 						if (insts.selectedInst.notNil) {
 							if (show1) {
 								insts.pairsDo{|id,inst|
-									if (id!=insts.selectedID) {inst.closeWindow}
+									if (id!=insts.selectedID) {inst.closeWindow.closeEQ}
 								};
 								insts.selectedInst.front;
 							}{
@@ -296,7 +296,7 @@
 				transmitInstChange=false; // stop this from going over the net
 				insts.do{|i| if (i.isVisible) {anyVisable=true} };
 				if (anyVisable) {
-					insts.do(_.closeWindow)
+					insts.do{|i| i.closeWindow.closeEQ } 
 				}{
 					insts.do(_.openWindow)
 				};

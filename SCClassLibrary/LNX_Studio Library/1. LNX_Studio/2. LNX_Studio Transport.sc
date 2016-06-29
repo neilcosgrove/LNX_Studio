@@ -195,7 +195,10 @@
 			midiClock.stop(0);
 			insts.midiClock.do{|inst| inst.midiStop(0) };
 		}{	
-			if (beat == 0) { LNX_MIDIPatch.panic }; // do panic after 3
+			if (beat == 0) {
+				LNX_MIDIPatch.panic;
+				this.updateAllPadMixer; // temp for CARBON ************
+			}; // do panic after 3
 			instBeat = beat = 0;	
 			this.refreshGuiBeat;
 			MVC_Automation.reset;

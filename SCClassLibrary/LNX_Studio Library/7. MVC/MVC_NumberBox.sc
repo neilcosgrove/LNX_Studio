@@ -58,7 +58,7 @@ MVC_NumberBox : MVC_View {
 		
 		view.background_(colors[midiLearn.if(\midiLearn,
 						enabled.if(\background,\backgroundDisabled))])
-			.value_(value)
+			.value_(value.round(visualRound))
 			.typingColor_(colors[\typing])
 			.normalColor_(colors[\string])
 			.stringColor_(colors[\string])

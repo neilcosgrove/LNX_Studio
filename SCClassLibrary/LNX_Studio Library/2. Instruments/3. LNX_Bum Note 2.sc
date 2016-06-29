@@ -21,7 +21,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 		<voicer,				<monoSynth, 		<monoSynthNode,
 		<phase=1,				<noteID=0,		<noteIDServer=0;
 	
-	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
+	*new{ arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
@@ -33,7 +33,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	hasLevelsOut{^true}
 	mixerColor{^Color(1,0.75,1,0.4)} // colour in mixer
 	
-	header { 
+	header{ 
 		// define your document header details
 		instrumentHeaderType="SC BumNote2 Doc";
 		version="v1.6";		
@@ -43,7 +43,7 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	interface{^#[\netPipeIn]} // only the standard api is needed with bn2 
 
 	// the models
-	initModel {
+	initModel{
 		writeIndexModel = [0,[0,inf,\lin,1]].asModel;
 		lfoModelA       = [0,[0,2]].asModel.fps_(20); // the 4 models below r the visual feedback
 		lfoModelB       = [0,[0,2]].asModel.fps_(20); // from the server to sclang for the 2 lfos
@@ -184,12 +184,15 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
 				{|me,val,latency,send,toggle| this.onOff(val,latency,send,toggle) },
 				\action2_ -> {|me| this.onOffAlt(me.value) }],
-			
+	
 			// 2.amp
 			[ \db6,  midiControl, 2, "Volume",
 				(mouseDownAction_:{hack[\fadeTask].stop}, numberFunc_:\db, label_:"Amp"),
-				{|me,val,latency,send| this.setSynthArgVP(2,val,\amp,val.dbamp,latency,send)}],
-				
+				{|me,val,latency,send|
+					this.setPVPModel(2,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\amp,val.dbamp,latency); // set mixer synth
+				}],
+		
 			// 3.q
 			[0.9,[0,0.9728,-2], (\label_:"Q",\numberFunc_:\float2), midiControl, 3, "Filter Q",
 				{|me,val,latency,send|
@@ -346,8 +349,11 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 				
 			// 26.pan
 			[\pan, (\label_:"Pan",\numberFunc_:\pan, \zeroValue_:0), midiControl,26,"Pan",
-				{|me,val,latency,send| this.setSynthArgVP(26,val,\pan,val,latency,send) }],
-			
+				{|me,val,latency,send|
+					this.setPVPModel(26,val,0,send);      // set p & network model via VP
+					this.setMixerSynth(\pan,val,latency); // set mixer synth
+				}],
+
 			// 27.MIDI low 
 			[0, \MIDInote, midiControl, 27, "MIDI Low", (\label_:"Low"),
 				\actions_ -> (\action2Down -> {|me|
@@ -377,21 +383,25 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 				(\items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
 					var channel = LNX_AudioDevices.getOutChannelIndex(val);
-					this.instOutChannel_(channel);
-					this.setPVPModel(29,val,0,send);   // to test on network
+					this.setPVPModel(29,val,0,send);     // set p & network model via VP
+					this.setMixerSynth(\outChannel,channel,latency); // set mixer synth
 				}],
-			
+	
 			// 30.send channels = 4&5
 			[-1, \audioOut, midiControl, 30, "Send Channels",
 				(\items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
 					var channel = LNX_AudioDevices.getOutChannelIndex(val);
-					this.setSynthArgVP(30,val,\sendChannels,channel,latency,send)}],
-		
+					this.setPVPModel(30,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\sendChannel,channel,latency); // set mixer synth
+				}],
+
 			// 31.send amp
 			[-inf, \db6, midiControl, 31, "Send Amp", (\label_:"Send"),
 				{|me,val,latency,send|
-					this.setSynthArgVP(31,val,\sendAmp,val.dbamp,latency,send) }],
+					this.setPVPModel(31,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\sendAmp,val.dbamp,latency); // set mixer synth
+				}],
 			
 			// 32.filterLag
 			[0, \unipolar, midiControl,32, "Filter Glide",
@@ -1046,14 +1056,14 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 
 		SynthDef("BumNote_PolyBody", {
 			
-			arg	outputChannels=0,	gate=1, 			amp=0.1,
+			arg	outputChannels=0,	gate=1, 			
 				pw=0.5,			velocity=0,		filterFq=0,
 				q=0.3,			qAmp=1,			filterEnv=1,
 				hpSelectLFO=0,	lpSelectLFO=0,	pitchSelectLFO=0,
 				pwmSelectLFO=0,	lfoOutChannel=0,	filterLFO=0,
 				osc1Pitch=0,		osc2Pitch=0,		kybd=1,
-				pan=0,			filterLag=0,		sendAmp=0,
-				sendChannels=4,	pGate=0,			eq=1,
+				filterLag=0,		
+				pGate=0,			eq=1,
 				eqHi=1,			linkOsc=0,		freqSeq=0,
 				pulseAmp=0,		sawAmp=0,			noise=0,
 				fmAmp=0,			fmMod=0,			velAmp=1,
@@ -1161,16 +1171,14 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 						
 			// and the amp env
 			out = out * ampEnv * Lag.kr(
-						velocity.linlin(0,1,velAmp,1) * ((q+1) * (qAmp*amp*7.5)));
+						velocity.linlin(0,1,velAmp,1) * ((q+1) * (qAmp*7.5)));
 			
 			// phase flips from 1 to -1 for alternate notes, this helps removes phase spikes
 			// and easily doubles the dynamic range when multiple notes are played together
 			out = out * phase;
 
 			// now send out
-			Out.ar(outputChannels,Pan2.ar(out,pan));
-			out = out*sendAmp;
-			Out.ar(sendChannels,out.dup);
+			Out.ar(outputChannels,out.dup);
 			
 			// and back to the client
 			SendPeakRMS.kr([Lag.ar(filterResponse),Lag.ar(filterResponseHP),noteID]
@@ -1182,14 +1190,14 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 
 		SynthDef("BumNote_MonoBody", {
 			
-			arg	outputChannels=0,	gate=1, 			amp=0.1,
+			arg	outputChannels=0,	gate=1, 
 				pw=0.5,			velocity=0,		filterFq=0,
 				q=0.3,			qAmp=1,			filterEnv=1,
 				hpSelectLFO=0,	lpSelectLFO=0,	pitchSelectLFO=0,
 				pwmSelectLFO=0,	lfoOutChannel=0,	filterLFO=0,
 				osc1Pitch=0,		osc2Pitch=0,		kybd=1,
-				pan=0,			filterLag=0,		sendAmp=0,
-				sendChannels=4,	pGate=0,			eq=1,
+				filterLag=0,		
+				pGate=0,			eq=1,
 				eqHi=1,			linkOsc=0,		freqSeq=0,
 				pulseAmp=0,		sawAmp=0,			noise=0,
 				fmAmp=0,			fmMod=0,			velAmp=1,
@@ -1295,13 +1303,10 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 			out = Select.ar(eqHi,[out, BHiShelf.ar (out, 3905, 1, 12)]);
 						
 			// and the amp env
-			out = out * ampEnv * Lag.kr(
-						velocity.linlin(0,1,velAmp,1) * ((q+1) * (qAmp*amp*7.5)));
+			out = out * ampEnv * Lag.kr( velocity.linlin(0,1,velAmp,1) * ((q+1) * (qAmp*7.5)));
 
 			// now send out
-			Out.ar(outputChannels,Pan2.ar(out,pan));
-			out = out*sendAmp;
-			Out.ar(sendChannels,out.dup);
+			Out.ar(outputChannels,out.dup);
 			
 			// and back to the client
 			SendPeakRMS.kr([Lag.ar(filterResponse),Lag.ar(filterResponseHP),noteID]
@@ -1355,7 +1360,6 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 		[\qAmp,          amp               ],
 		[\filterEnv,     p[ 4]             ],
 		[\pw,            0.5- p[5]         ],
-		[\amp,           p[ 2].dbamp       ],
 		[\filterLag,     p[32]**2          ],
 		[\pwm,           p[61]             ],
 		[\modAmp,        (p[7]**1.75)*4    ],
@@ -1364,9 +1368,6 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 		[\filterLFO,     p[10]             ],
 		[\filterFq,      p[ 9]             ],
 		[\kybd,          p[18]             ],
-		[\pan,           p[26]             ],
-		[\sendAmp,       p[31].dbamp       ],
-		[\sendChannels,  LNX_AudioDevices.getOutChannelIndex(p[30])],
 		[\outputChannels,this.instGroupChannel],
 		[\eq,            p[41]             ],
 		[\eqHi,          p[34]             ],
@@ -1408,6 +1409,13 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 		[\lfoSyncDurB,   60*p[78]/bpm/8    ],
 	]}
 	
+	getMixerArgs{^[
+		[\amp,           p[ 2].dbamp       ],
+		[\outChannel,    LNX_AudioDevices.getOutChannelIndex(p[29])],
+		[\pan,           p[26]             ],
+		[\sendChannel,  LNX_AudioDevices.getOutChannelIndex(p[30])],
+		[\sendAmp,       p[31].dbamp       ]
+	]}
 	
 	// update the play synths with the correct arguments
 	updateDSP{|oldP,latency|
@@ -1444,18 +1452,17 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 				[\n_setn, node, \newFilterEnvHP] ++ (this.getHPEnvList));
 			
 		};
-
-		this.instOutChannel_(LNX_AudioDevices.getOutChannelIndex(p[29]),latency);
+			
+		if (instOutSynth.notNil) {
+			server.sendBundle(latency +! syncDelay,
+				*this.getMixerArgs.collect{|i| [\n_set, instOutSynth.nodeID]++i } );
+		};
 			
 		if (updateNote) {
 			// the pitch
 			this.acidNote(models[59].value,0,latency); // pitch, slide, latency
 		};
 
-	}
-	
-	updateOut{|latency|	
-		this.instOutChannel_(LNX_AudioDevices.getOutChannelIndex(p[29]),latency);
 	}
 	
 	// play a poly note

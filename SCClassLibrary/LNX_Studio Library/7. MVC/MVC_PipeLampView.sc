@@ -22,7 +22,7 @@ MVC_PipeLampView : MVC_View {
 
 	var lastTime=0, nextTime, fps=50; // has its own fps
 	
-	var <notesOn;
+	var <notesOn, <>border=false, <>mouseWorks=false, <down=false, <>insetBy=0;
 
 	// set your defaults
 	initView{
@@ -52,6 +52,11 @@ MVC_PipeLampView : MVC_View {
 //					colors[\background].set;
 //					Pen.fillOval(Rect(2,2,w-4,h-4));
 					
+					if (border) {
+						Color.black.set;
+						Pen.fillOval(Rect(0,0,w,h).insetBy(insetBy))
+					};
+					
 					if (controlSpec.notNil) {
 						val=controlSpec.unmap(value); // this will always give (0-1)
 						if (val>0)
@@ -62,7 +67,16 @@ MVC_PipeLampView : MVC_View {
 							{ (colors[\on]*(value.map(0,1,0.5,1))).set; }
 							{ colors[\off].set; };
 					};
-					Pen.fillOval(Rect(0,0,w,h));
+					
+					if (mouseWorks&&down) {
+						(colors[\on]/3).set;
+					};
+					
+					if (border) {
+						Pen.fillOval(Rect(0,0,w,h).insetBy(insetBy+1.5));
+					}{
+						Pen.fillOval(Rect(0,0,w,h));
+					};
 				}; // end.pen
 			};		
 	}
@@ -78,14 +92,46 @@ MVC_PipeLampView : MVC_View {
 			if (modifiers==262401) {buttonNumber=2};
 			if (buttonNumber==2) { this.toggleMIDIactive };
 			if ((buttonPressed==0)and:{editMode.not}) {
-				//this.viewDoValueAction_(value,nil,true,false);
+				if (mouseWorks) {
+					down=true;
+					view.refresh;	
+				};	
 			};
 		};
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
-			if (editMode) { this.moveBy(x-startX,y-startY) };
+			
+			var xx=x/w, yy=y/h;
+			
+			if (editMode) {
+				this.moveBy(x-startX,y-startY)
+			}{		
+				if (mouseWorks) {
+						
+					if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}and:{evaluateAction}) {
+						if (down.not) {
+							down=true;
+							view.refresh;
+						};
+					}{
+						if (down) {
+							down=false;
+							view.refresh;
+						}
+					};
+				};
+			};
 		};
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
-
+			var xx=x/w, yy=y/h;
+			if (mouseWorks) {
+				if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}
+					and:{evaluateAction}and:{editMode.not}){
+						this.viewDoValueAction_(
+							(1-value).asInt,nil,true,false);
+				};
+				down=false;
+				view.refresh;
+			}
 		};
 	}
 	

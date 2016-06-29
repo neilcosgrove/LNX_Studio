@@ -92,28 +92,31 @@
 + Help {
 	*addToMenu {
 		var ugens, menu;
-		var addSubMenu = { |parent, dict, name, index=8|
-			var menu = SCMenuGroup.new(parent, name, index);
-			var keys = dict.keys.asArray;
-			keys.sort {|a,b| a.asString <= b.asString };
-			keys.do{ |key, subindex|
-				if(dict[key].class == Dictionary) {
-					// Add submenu
-					addSubMenu.value(menu, dict[key], key[2..key.size-3], subindex)
-				}{
-					// Add selectable menu item
-					SCMenuItem.new(menu, key.asString, subindex).action_(
-						{ key.asString.openHelpFile }
-					)
-				}
+		var addSubMenu;
+		{		
+			addSubMenu = { |parent, dict, name, index=8|
+				var menu = SCMenuGroup.new(parent, name, index);
+				var keys = dict.keys.asArray;
+				keys.sort {|a,b| a.asString <= b.asString };
+				keys.do{ |key, subindex|
+					if(dict[key].class == Dictionary) {
+						// Add submenu
+						addSubMenu.value(menu, dict[key], key[2..key.size-3], subindex)
+					}{
+						// Add selectable menu item
+						SCMenuItem.new(menu, key.asString, subindex).action_(
+							{ key.asString.openHelpFile }
+						)
+					}
+				};
+				menu
 			};
-			menu
-		};
-		if (LNX_Studio.isStandalone) {
-			addSubMenu.value('Help', Help.tree["[[UGens]]"], "UGens");
-		}{
-			addSubMenu.value('Help', Help.tree, "Help Tree");
-		};
+			if (LNX_Studio.isStandalone) {
+				addSubMenu.value('Help', Help.tree["[[UGens]]"], "UGens");
+			}{
+				addSubMenu.value('Help', Help.tree, "Help Tree");
+			};
+		}.try;	
 	}
 }
 

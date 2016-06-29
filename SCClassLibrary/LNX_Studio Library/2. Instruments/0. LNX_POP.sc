@@ -44,8 +44,10 @@ LNX_POP {
 		// note value of pads left to right, top to bottom
 		padNotes =  #[ 0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,
 			32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
-			64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
-			96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119 ];
+//			
+//			64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
+//			96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119
+		];
 		
 		midi = LNX_MIDIPatch(0,0,0,0);	
 		
@@ -54,7 +56,7 @@ LNX_POP {
 		if (pref.isNil) { midi.findByName("pad","pad") }{ midi.putLoadList(pref.asInt) };
 		
 		midi.noteOnFunc  = {|src, chan, note, vel ,latency|
-			var prog =padNotes.indexOf(note);
+			var prog = padNotes.indexOf(note);
 			if (prog.notNil and: {prog<noPOP}) {
 				if (lastNote.notNil) { midi.noteOn(lastNote,0) }; // 0 off
 				lastNote=note;
@@ -152,7 +154,10 @@ LNX_POP {
 				gui[\program].flash_((beat%24).clip(0,1));
 				if (studioModels[\toBecome]>=0) {
 					var prog = (studioModels[\toBecome]%8)+(studioModels[\toBecome].div(8)*16);
-					midi.noteOn(prog, ((1-(beat%24).clip(0,1))*51), latency);  // flashYellow
+					// limit to top half of launchpad
+					if (prog<64) {
+						midi.noteOn(prog, ((1-(beat%24).clip(0,1))*51), latency); // flashYellow
+					}
 				};
 			};	
 			// so we can play catch up on the network the test here is >= and not ==
@@ -165,6 +170,8 @@ LNX_POP {
 			};
 		};
 		quant = studioModels[\quant].value;
+		
+		// clock display on left
 		pad = (beat.div(6)%quant/quant*8).asInt;
 		pad = #[120, 104, 88, 72, 56, 40, 24, 8].wrapAt(pad);
 		if (pad != lastPad) {
