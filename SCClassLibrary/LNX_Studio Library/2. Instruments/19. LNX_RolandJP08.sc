@@ -1104,7 +1104,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			signalR = Select.ar(channelSetup,[
 				signal[1], signal[0]+signal[1], signal[0], signal[1], Silent.ar]);
 				
-			Out.ar(outputChannels,signal);
+			Out.ar(outputChannels,[signalL,signalR]);
 		}).send(s);
 
 	}

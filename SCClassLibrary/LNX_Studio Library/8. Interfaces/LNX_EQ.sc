@@ -158,7 +158,10 @@ LNX_EQ {
 			}],
 			
 			// 18.preAmp (to be used)
-			[\db6]
+			[\db6, midiControl, midiOffset+18, "Pre Amp", (label_:"Pre"),
+				{|me,val,latency,send,toggle|
+					this.sendSynthArg(18, val, \preAmp, val.dbamp, latency, send);
+			}]
 			
 		].generateAllModels;
 		
@@ -224,10 +227,12 @@ LNX_EQ {
 	*initUGens{|server|
 		
 		// the synth def
-		SynthDef( "param_beq", {|in=0, gate=1, fadeTime=0.05, doneAction=2, lag=0.1, clip=0|
+		SynthDef( "param_beq", {|in=0, gate=1, fadeTime=0.05, doneAction=2, lag=0.1, clip=0,
+			preAmp=1|
+			
 			var frdb, input, env;
 			
-			input = In.ar(in, 2);
+			input = In.ar(in, 2) * (preAmp.lag);
 			
 			frdb  = (Control.names([\eq_controls]).kr(0!15)).clump(3);
 			input = BLowShelf.ar(input, *frdb[0][[0,1,2]].lag(lag));
@@ -258,7 +263,7 @@ LNX_EQ {
 		// send everything to the server	
 		server.sendBundle(latency +! syncDelay, group.newMsg(server, \addAfter),
 			*([ synth.newMsg( group,
-				[\in, channel, \doneAction, 2, \lag: p[16], \clip: p[17]]),
+				[\in, channel, \doneAction, 2, \lag: p[16], \clip: p[17], \preAmp: p[18].dbamp]),
 					synth.setnMsg(\eq_controls, p[0..14])] )
 		);
 	}
@@ -288,8 +293,9 @@ LNX_EQ {
 		if (synth.notNil) {
 			server.sendBundle( latency +! syncDelay, 
 				*([ synth.newMsg( group,
-					[\in, channel, \doneAction, 2, \lag: p[16], \clip: p[17]]),
-						synth.setnMsg(\eq_controls, p[0..14])] )
+					[\in, channel, \doneAction, 2, \lag: p[16], \clip: p[17],
+						\preAmp: p[18].dbamp]),
+					synth.setnMsg(\eq_controls, p[0..14])] )
 			);	
 		}
 	}
@@ -652,15 +658,25 @@ LNX_EQ {
 			};
 		
 		// 17. clip
-		MVC_PopUpMenu3(models[17],gui[\scrollView  ],Rect(48, 5, 67, 16),gui[\menuTheme]);
+		MVC_PopUpMenu3(models[17],gui[\scrollView  ],Rect(105, 5, 67, 16),gui[\menuTheme]);
 
 		// 16. lag 				
-		MVC_NumberBox(models[16], gui[\scrollView], Rect( 155, 4, 28, 17) )
+		MVC_NumberBox(models[16], gui[\scrollView], Rect( 202, 4, 28, 17) )
 			.color_(\background,Color(1,1,1,0.33))
 			.labelShadow_(false)
 			.visualRound_(0.01)
 			.orientation_(\horizontal)
 			.color_(\label,Color.black);
+			
+			
+		// 18. preAmp 				
+		MVC_NumberBox(models[18], gui[\scrollView], Rect( 70, 4, 28, 17) )
+			.color_(\background,Color(1,1,1,0.33))
+			.labelShadow_(false)
+			.visualRound_(0.01)
+			.orientation_(\horizontal)
+			.color_(\label,Color.black);
+			
 			
 		// 15.onOff				
 		MVC_OnOffView(models[15], gui[\scrollView] , Rect(10, 4,25,19))

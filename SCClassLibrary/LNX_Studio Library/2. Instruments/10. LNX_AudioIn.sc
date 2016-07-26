@@ -230,7 +230,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			signalR = Select.ar(channelSetup,[
 				signal[1], signal[0]+signal[1], signal[0], signal[1] ]);
 				
-			Out.ar(outputChannels,signal);
+			Out.ar(outputChannels,[signalL,signalR]);
 			
 		}).send(s);
 	
@@ -245,7 +245,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			signalR = Select.ar(channelSetup,[
 				signal[1], signal[0]+signal[1], signal[0], signal[1], Silent.ar]);
 				
-			Out.ar(outputChannels,signal);
+			Out.ar(outputChannels,[signalL,signalR]);
 		
 		}).send(s);
 
