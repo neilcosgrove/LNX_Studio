@@ -9,7 +9,7 @@ Protect{
 	*newNoClip{|signal,clip=2|
 		^Select.ar(CheckBadValues.ar(signal, 0, 0)>0, [signal,DC.ar(0)]);
 	}
-	
+
 }
 
 // easy stereo output for mono, stereo or multichannel signals to out channel
@@ -60,10 +60,10 @@ LNX_Out{
 			OffsetOut.ar(out,sigOut);	 // output
 			if ((sendOut.notNil) && (sendAmp.notNil)) {
 				OffsetOut.ar(sendOut, sigOut * sendAmp );   // effect send
-			};		
+			};
 		};
 		^signal;	// return the signal, unchanged
-	}	
+	}
 }
 
 LNX_FXOut{
@@ -113,10 +113,10 @@ LNX_FXOut{
 			OffsetOut.ar(out,sigOut);	 // output
 			if ((sendOut.notNil) && (sendAmp.notNil)) {
 				OffsetOut.ar(sendOut, sigOut * sendAmp );   // effect send
-			};		
+			};
 		};
 		^signal;	// return the signal, unchanged
-	}	
+	}
 }
 
 
@@ -130,7 +130,7 @@ SendTrigID {
 Colour : Color {}
 
 // covert from top left co-ords to bottom left co-ords
-+ Rect {	
++ Rect {
 	convert{ ^Rect(left, Window.screenBounds.bounds.height-top-height-44, width, height) }
 }
 + Point { convert{ ^Point(x, Window.screenBounds.bounds.height-y-44) } }
@@ -144,19 +144,19 @@ Colour : Color {}
 		};
 		^assoc.sort(func)
 	}
-	
+
 	removeAll{|item|
-		this.keysDo{|key|		
+		this.keysDo{|key|
 			if (this.at(key)==item) { this.put(key,nil) };
 		};
-		
+
 	}
 }
 
 // safety
 
 + Object {
-	
+
 	// summary for apple click on sc code
 	getClassArgsSummary{
 		var class=this.class;
@@ -170,11 +170,11 @@ Colour : Color {}
 			};
 			if (method.notNil) {
 				args=args.add( symbol -> (method.argNames.drop(1)) ) ;
-			};			
+			};
 		};
 		if (args.size>0) {^args} {^nil}
 	}
-	
+
 	getClassArgsSummaryHelp{
 		var summary=this.getClassArgsSummary;
 		var list="";
@@ -189,7 +189,7 @@ Colour : Color {}
 			}
 			^list.drop(-1);
 		}{
-			^nil	
+			^nil
 		}
 	}
 
@@ -208,7 +208,7 @@ Colour : Color {}
 			}
 			^list;
 		}{
-			^nil	
+			^nil
 		}
 	}
 
@@ -223,14 +223,14 @@ gives min, max, averages and total
 */
 
 + Function {
-	
+
 	benchMark{|n=10,print=true|
 		var dt;
 		var t0;
 		var total=0;
 		var min=inf, max=0;
-		
-		n.do{|i| 
+
+		n.do{|i|
 			t0 = Main.elapsedTime;
 			this.value;
 			dt = Main.elapsedTime - t0;
@@ -238,7 +238,7 @@ gives min, max, averages and total
 			if (dt<min) { min=dt};
 			if (dt>max) { max=dt};
 		};
-		
+
 		if (print) {
 			"".postln;
 			"Total: ".post;
@@ -251,24 +251,24 @@ gives min, max, averages and total
 			"Min: ".post;
 			min.postln;
 			"Max: ".post;
-			max.postln;			
+			max.postln;
 		};
-		
+
 		^total
-		
+
 	}
-	
-	
+
+
 }
 
 // this is cool, make any method a function
 
 + Object{
- 
+
   asFunc{ |methodName|
-         ^{ |Éargs| this.performList(methodName,args) }  
+         ^{ |ï¿½args| this.performList(methodName,args) }
    }
- 
+
 }
 
 + Nil {
@@ -279,7 +279,7 @@ gives min, max, averages and total
 	id{^nil}
 	host{^nil}
 	isHost{^nil}
-} 
+}
 
 + Color{
 
@@ -291,33 +291,33 @@ gives min, max, averages and total
 			red.asFraction[1].post;
 		};
 		",".post;
-		
-		
+
+
 		if ((green==1)||(green==0)) { green.post } {
 			green.asFraction[0].post;
 			"/".post;
 			green.asFraction[1].post;
 		};
-		
+
 		",".post;
-		
+
 		if ((blue==1)||(blue==0)) { blue.post } {
 			blue.asFraction[0].post;
 			"/".post;
 			blue.asFraction[1].post;
 		};
-		
+
 		if (alpha!=1) {
-			
+
 			",".post;
-			
+
 			if (alpha==0) { alpha.post } {
 				alpha.asFraction[0].post;
 				"/".post;
 				alpha.asFraction[1].post;
 			};
 		};
-		
+
 		")".postln;
 	}
 
@@ -332,86 +332,86 @@ gives min, max, averages and total
 		}
 	}
 	- {|y| ^Color.new((red-y).clip(0,1),(green-y).clip(0,1),(blue-y).clip(0,1), alpha) }
-	
+
 	// i've been lazy at keeping this upto date, alot of colours are difined in the insts now
-	
+
 	*orange {^Color(1,0.5,0)}
 	*purple {^Color(1,0  ,1)}
-	
+
 	*ndcTab1Focused   {^Color(0.4686,0.4373,0.3412)}
 	*ndcTab1Unfocused {^Color(0.3686,0.3373,0.2412)}
-	
+
 	*ndcTab2Focused   {^Color(0.4686,0.4373,0.3412)}
 	*ndcTab2Unfocused {^Color(0.3686,0.3373,0.2412)}
-	
+
 	*ndcTab3Focused   {^Color(0.4686,0.4373,0.3412)}
 	*ndcTab3Unfocused {^Color(0.3686,0.3373,0.2412)}
-	
+
 	*ndcBack1         {^Color(0.6275,0.6039,0.4902)}
 	*ndcBack0         {^Color(0.5686,0.5373,0.3912)}
 	*ndcBack2         {^Color(0.1176,0.1176,0.0627)}
 	*ndcBack3         {^Color(0.5686,0.5373,0.3412)}
 	*ndcBack4         {^Color(0.2, 0.1, 0.1, 1)}
-	
+
 	*ndcStudioBack0   {^Color(0.5, 0.07, 0.07, 1)}
 	*ndcStudioBack1   {^Color(0.2, 0.07, 0.07, 1)}
 	*ndcStudioBack2   {^Color(0.6, 0.15, 0.15, 1)}
 	*ndcStudioBack3   {^Color(0.3, 0.10, 0.10, 1)}
 	*ndcStudioText    {^Color(1, 0.5, 0.5, 1)}
 	*ndcStudioButton  {^Color(0.7, 0.25, 0.25, 1)}
-	
+
 	//*ndcStudioText0   {^Color(0.5, 0.25, 0.25, 1)}
 	*ndcStudioText1   {^Color(0.5, 0.35, 0.25, 1)}
 	*ndcStudioText2   {^Color(1, 1, 1, 1)}
 	*ndcStudioSelect  {^Color(0.6, 0.35, 0.25, 1)} // {^Color(0.48, 0.06, 0.06, 1)}
 	*ndcStudioBG	    {^Color(0.3, 0.2, 0.2, 1)}
-	
+
 	*ndcStudioOnOffBack {^Color(0.4, 0.15, 0.15, 1)}
-	
-	
+
+
 	*ndcDarkButtonBG  {^Color(0.3086,0.2373,0.1512)}  // {^Color(0.2, 0.2, 0.3, 1.0 )}
 	*ndcLightButtonBG {^Color(0.5686,0.5373,0.3412)}
 	*ndcEnvBG         {^Color(0.1876,0.1876,0.1027)}  //  {^Color(0.1, 0.2, 0.25     )}
-	
+
 	*ndcSliderDarkBG  {^Color(0.1, 0.05, 0.05    )}
 	*ndcSliderDarkKB  {^Color(0.5275,0.4939,0.4102)}
-	
+
 	*ndcSliderLightBG {^Color(0.3, 0.15, 0.15 )}
-	*ndcSliderLightKB {^Color(0.4196,0.3843,0.2706)} // 
-	
-	*ndcMenuBG        {^Color(1,1,0.9)}  // {^Color(1,1,0.9)} 
-	*ndcNumberBoxBG   {^Color(1,1,0.9)}  // {^Color(1,1,0.9)} 
-	
+	*ndcSliderLightKB {^Color(0.4196,0.3843,0.2706)} //
+
+	*ndcMenuBG        {^Color(1,1,0.9)}  // {^Color(1,1,0.9)}
+	*ndcNumberBoxBG   {^Color(1,1,0.9)}  // {^Color(1,1,0.9)}
+
 	*ndcTextDarkBG    {^Color(0,0,0)}
 	*ndcTextLightBG   {^Color(1,0.95,0.95)}
-	
+
 	*ndcListBackGrad1 {^Color(0.2876,0.2876,0.2027)}
 	*ndcListBackGrad2 {^Color(0.1876,0.1876,0.1027)}
 	*ndcListSelect    {^Color(0.4196,0.3843,0.2706)}
-	
+
 	*ndcVelocity1     {^Color(0.4196,0.3843,0.2706)}
 	*ndcVelocity2     {^Color(0.6275,0.6039,0.4902)}
 	*ndcVelocity3     {^Color(0.8275,0.8078,0.6784)}
-	
+
 	*ndcWaveform      {^Color(0.5686,0.5373,0.3412)}
-	
+
 	*ndcOnOffON		{^Color(1, 0.9, 0.3)}
 	*ndcOnOffOFF		{^Color(0.3686,0.3373,0.2412)}
 	*ndcOnOffText		{^Color(0,  0, 0)}
 	*ndcOnOffONUen	{^Color(0.5, 0.5, 0.5)}
 	*ndcOnOffOFFUen	{^Color(0.2, 0.2, 0.2)}
 	*ndcOnOffTextUnen	{^Color(0.35,0.35,0.35)}
-	
+
 	*ndcOnOffON2		{^Color(0.25, 1, 0.25)}
-	
+
 	*ndcSoloBG		{^Color(1,0.2,0.2)}
 	*ndcUpdateBG		{^Color(0.95,0.55,0.3)}
-	
+
 	*ndcLampBG		{^Color(0,0,0)}
 	*ndcLampON		{^Color(1,0,0)}
 	*ndcLampOFF		{^Color(0.3,0,0)}
 	*ndcLampBorder	{^Color(1,1,1,0.6)}
-	
+
 	*ndcKnobOff		{^Color(0, 0, 0 )}
 	*ndcKnobOn		{^Color(1, 0.9, 0.3)}
 	*ndcKnobPin		{^Color(0,   0,   0)}
@@ -419,27 +419,27 @@ gives min, max, averages and total
 	*ndcKnobOn2		{^Color(1, 0.6, 0.25)}
 	*tabText			{^Color(1, 0.9, 0.3)}
 	*tabText2			{^Color(1, 0.6, 0.2)}
-	
+
 	*ndcNameText		{^Color(0.6275,0.6039,0.4902)}
 	*ndcNameText2		{^Color(0.4196,0.3843,0.2706)}
 	*ndcNameBG		{^Color(0.15,0.07,0.07)}
 	*ndcNameBG2		{^Color(0.3686,0.3373,0.2012)}
-	
+
 	*ndcMIDIActive	{^Color(0,1,1)}
 	*ndcMIDIActive2	{^Color(1,0,1)}
-	
+
 	*ndcDark 			{^Color(0.1176,0.1176,0.0627)}
 	*ndcDark2			{^Color(0.2386,0.2073,0.1412)}
 
 }
 
-//+ ServerOptions { 
+//+ ServerOptions {
 //	*outDevices{ ^["Built-in Audio","Soundflower (2ch)"] }
 //	*inDevices{ ^["Built-in Audio","Soundflower (2ch)"] }
 //	*devices{ ^["Built-in Audio","Soundflower (2ch)"] }
 //} // intel testing of ppc audio settings
 
-//+ ServerOptions { 
+//+ ServerOptions {
 //	*outDevices{ ^[ "Built-in Output", "Built-in Line Output", "Built-in Digital Output" ] }
 //	*inDevices{ ^[ "Built-in Line Input", "Built-in Digital Input" ] }
 //	*devices{ ^[ "Built-in Line Input", "Built-in Digital Input", "Built-in Output", "Built-in Line Output", "Built-in Digital Output"] }
@@ -479,62 +479,62 @@ gives min, max, averages and total
 + SimpleNumber {
 
 	asAudio{ ^this.asAudioRateInput}
-	
+
 	notNaN { ^(this >= 0 or: { this <= 0 }) }
-	
+
 	roundFloor{|n=1| ^(this-(n/2)).round(n) }
-	
-	logN{|n| ^log2(this)/log2(n) } // Base n logarithm. 
+
+	logN{|n| ^log2(this)/log2(n) } // Base n logarithm.
 
 }
 
 + Number {
-	
-	++ {|item| ^this.asString++item }	
-	
+
+	++ {|item| ^this.asString++item }
+
 	mapVelocityToRange{|val,range,low,hi|
 		var rng=(hi-low)*range;
 		var l=(val-rng).clip(low,hi);
 		var h=(val+rng).clip(low,hi);
 		^this.map(0,1,l,h);
 	}
-	
+
 	// digital reduction
-	
+
 	dr{
 		^{|n|
 			n=n.asInt.abs.asString.asList.collect(_.asString).collect(_.asInt).reduce('+');
 			if (n>9) { thisFunction.value(n) } { n }
 		}.value(this)
 	}
-	
+
 	dr2{ if (this==0) { ^this }{ ^this.wrap(1,9) } }
-	
+
 /*
 	(0..100).collect(_.dr2);
 	(-50..50).collect{|x| (x**5)-(x**4*3)-(x**3)+(x**2*4)+(x*1)+1;}.collect(_.dr2).plot;
 */
-	
-	
+
+
 }
 
 
 + MIDIOut {
-	
+
 	writeLatency { arg len, hiStatus, loStatus, a=0, b=0, argLatency;
 		//[port, uid, len, hiStatus, loStatus, a, b, argLatency].postln;
 		// argLatency.postln;
 		this.send(port, uid, len, hiStatus, loStatus, a, b, argLatency);
 	}
-	
+
 	noteOnLatency { arg chan, note=60, veloc=64, latency;
 		this.writeLatency(3, 16r90, chan.asInteger, note.asInteger, veloc.asInteger, latency);
 	}
-	
+
 	noteOffLatency { arg chan, note=60, veloc=64, latency;
 		this.writeLatency(3, 16r80, chan.asInteger, note.asInteger, veloc.asInteger, latency);
 	}
-	
+
 	controlLatency { arg chan, ctlNum=7, val=64, latency;
 		this.writeLatency(3, 16rB0, chan.asInteger, ctlNum.asInteger, val.asInteger, latency);
 	}
@@ -548,15 +548,15 @@ gives min, max, averages and total
 		val = val.asInteger;
 		this.writeLatency(3, 16rE0, chan, val bitAnd: 127, val >> 7, latency);
 	}
-	
+
 	songPtrLatency{ arg songPtr, latency;
-		songPtr = songPtr.asInteger;	
+		songPtr = songPtr.asInteger;
 		this.writeLatency(4, 16rF0, 16r02, songPtr & 16r7f, songPtr >> 7 & 16r7f, latency);
 	}
-	
+
 	songSelectLatency { arg song, latency;
 		this.writeLatency(3, 16rF0, 16r03, song.asInteger, 0, latency);
-	}	
+	}
 	midiClockLatency {|latency|
 		this.writeLatency(1, 16rF0, 16r08, 0, 0, latency);
 	}
@@ -572,7 +572,7 @@ gives min, max, averages and total
 	resetLatency {|latency|
 		this.writeLatency(1, 16rF0, 16r0F, 0, 0, latency);
 	}
-		
+
 }
 
 + TabbedView {
@@ -603,7 +603,7 @@ gives min, max, averages and total
 			// it should be this to be the same as System clock but i don't need to
 		}
 	}
-	
+
 }
 
 
@@ -613,36 +613,36 @@ gives min, max, averages and total
 
 
 + UGen {
-	
+
 	oddEvenMix{^this}
 }
 
 + SequenceableCollection {
-	
+
 	// mixing down multichannel expansion to a stereo pair
 	oddEvenMix{
-		var odds;	
+		var odds;
 		var evens;
 		if (this.size>1) {
-			odds  = [];	
+			odds  = [];
 			evens = [];
 			this.do{|i,j|
 				if (j.odd) {
 					odds=odds.add(i);
 				}{
 					evens=evens.add(i);
-				};	
-			};	
+				};
+			};
 			^[Mix(evens),Mix(odds)]
-		}{			
-			^this[0]	
-		};	
+		}{
+			^this[0]
+		};
 	}
-		
+
 	lnx_ClumpBundles {|clumpSize=4096|  // 4096, 6144, 8192
 		var size=0, res, clumps, count=0, bundleSizes, tempList;
 		tempList=[nil];
-		
+
 		// this might be very inefficient, check it out
 		bundleSizes = this.collect {|item| tempList.put(0,item).msgSize }; // does this work ??
 											 // what about msgSize
@@ -665,16 +665,16 @@ gives min, max, averages and total
 	compress{
 		var list=this, size=this.size, mode=nil, thisItem, nextItem, doSize=size-1,
 		    items=[], func=[], n, toRepeat, count, fromIndex;
-		    
+
 		if (size>1) {
-			
+
 			n=0;
-			
+
 			while {n<size} {
-			
+
 				thisItem=list[n];
 				nextItem=list[n+1];
-				
+
 				if (mode.isNil) {
 					if (thisItem==nextItem) {
 						mode=\repeat;
@@ -715,23 +715,23 @@ gives min, max, averages and total
 						};
 					};
 				};
-				n=n+1;	
-			};			
+				n=n+1;
+			};
 			^[this.size,func.size]++func++items;
 		}{
 			^this
 		}
 	}
-		
+
 	decompress{
 		var list,funcSize,func,items,item,n,totalSize,index;
-		if (this.size>1) {	
-			list=[];	
+		if (this.size>1) {
+			list=[];
 			totalSize=this[0];
-			funcSize=this[1];	
+			funcSize=this[1];
 			func=this[2..(funcSize+1)];
 			items=this.drop(funcSize+2);
-			list=Array.newClear(totalSize);	
+			list=Array.newClear(totalSize);
 			n=0;
 			index=0;
 			func.do{|i|
@@ -749,29 +749,29 @@ gives min, max, averages and total
 					n=n+i;
 				};
 			};
-			^list;	
+			^list;
 		}{
 			^this
 		}
-		
-		
 
-	}	
-		
-	
+
+
+	}
+
+
 	/////////////////////////////////////////////////////////////////////////
 
 	findNearest{|n,offset=0|
-		var index=this.indexOfNearest(n);	
+		var index=this.indexOfNearest(n);
 		if (index.notNil) {
 			^this.clipAt(index+offset);
 		}{
-			^nil	
-		}	
+			^nil
+		}
 	}
-	
+
 	indexOfNearest{|n|
-		var diff=inf, index;	
+		var diff=inf, index;
 		this.do{|i,j|
 			var d = (n-i).abs;
 			if (d<diff) {
@@ -808,7 +808,7 @@ gives min, max, averages and total
 		});
 		^false
 	}
-	
+
 	indexOfString{|string|
 		string=string.asSymbol;
 		this.size.do({|i|
@@ -816,7 +816,7 @@ gives min, max, averages and total
 		});
 		^nil
 	}
-	
+
 	indexOfList{|list|
 		this.size.do({|i|
 			if (this.at(i)==list) {^i}
@@ -825,11 +825,11 @@ gives min, max, averages and total
 	}
 
 	// these pop statments have been optimised for speed ////////////////////
-	
+
 	popInt{ ^this.pop.asInt    }
 	popI  { ^this.pop.asInt    }
 	popF  { ^this.pop.asFloat  }
-	popS  { ^this.pop.asString }	
+	popS  { ^this.pop.asString }
 
 	popN{|n|
 		var l=Array.newClear(n);
@@ -842,13 +842,13 @@ gives min, max, averages and total
 		n.do{|i| l.put(i,this.pop.asInt) };
 		^l
 	}
-	
+
 	popNF{|n|
 		var l=Array.newClear(n);
 		n.do{|i| l.put(i,this.pop.asFloat) };
 		^l
 	}
-	
+
 	popNS{|n|
 		var l=Array.newClear(n);
 		n.do{|i| l.put(i,this.pop.asString) };
@@ -871,7 +871,7 @@ gives min, max, averages and total
 	}
 
 	average { ^this.mean }
-	
+
 	asInt32Array{
 		var int32Array;
 		int32Array=Int32Array.newClear(this.size);
@@ -882,7 +882,7 @@ gives min, max, averages and total
 }
 
 + Array {
-	
+
 	// reverse of String:ascii
 	asciiToString{
 		var s=String.newClear(this.size);
@@ -899,20 +899,20 @@ gives min, max, averages and total
 		"".postln;
 		if (this.isSequenceableCollection) {
 			maxSize=this.size.asString.size;
-			this.do{|i,j| 
+			this.do{|i,j|
 				"[".post;
 				j=j.asString;
 				(maxSize-(j.size)).clip(0,maxSize).do{" ".post};
-				
+
 				j.post;
 				"] ".post;
 				i.postln;
 			};
-		
+
 		}{
 			this.pairsDo{|i| maxSize=maxSize.max(i.asString.size)};
-		
-			this.pairsDo{|i,j| 
+
+			this.pairsDo{|i,j|
 				i=i.asString;
 				"[".post;
 				i.post;
@@ -929,8 +929,8 @@ gives min, max, averages and total
 
 + Env {
 
-	insertAtTime{|time,level| 
-		var t=0, idx, thisTime;	
+	insertAtTime{|time,level|
+		var t=0, idx, thisTime;
 		times.do({|i,j| t=t+i; if ((t>time)&&(idx.isNil)) { idx= j+1; thisTime=t-times[j] } });
 		times=times.insert(idx - 1,time - thisTime);
 		levels=levels.insert(idx,level);
@@ -938,19 +938,19 @@ gives min, max, averages and total
 		times[idx]=times[idx]-time;
 		if ((idx- 1)<releaseNode) { releaseNode=releaseNode+1 };
 	}
-	
+
 	removeAt{|node|
 		var t;
-		node=node.asInt;	
+		node=node.asInt;
 		if (((levels.size)>2)&&(node>0)&&(node<(levels.size- 1))) {
 				t=times[node];
 				times.removeAt(node);
 				levels.removeAt(node);
 				times.put(node- 1,times[node- 1]+t);
 		}
-	
+
 	}
-	
+
 	dump2 {
 		"An Env".postln;
 		"levels, times, curves, releaseNode, loopNode".postln;
@@ -960,7 +960,7 @@ gives min, max, averages and total
 		releaseNode.postln;
 		loopNode.postln;
 	}
-	
+
 }
 
 // i don't know why i did this in the 1st place but it makes sc crash on 3rd compile now
@@ -971,13 +971,13 @@ gives min, max, averages and total
 //		initialized = true;
 //		this.list;
 //	}
-//	
+//
 //}
 
 + Symbol {
 
 	asInt{ ^this.asInteger }
-	
+
 	version { ^this.asString.split($ ).last.drop(1).asFloat }
 
 	documentType {
@@ -988,25 +988,25 @@ gives min, max, averages and total
 		d=d.drop(1);
 		^d
 	}
-	
+
 
 }
 
 + String {
 
 	asInt{ ^this.asInteger }
-	
+
 	version {
 		var numbers = this.split($ ).last.drop(1).split($.);
 		^numbers.keep(2).join(".").asFloat
 	}
-	
+
 	subVersion{
 		var numbers = this.split($ ).last.drop(1).split($.);
 		if (numbers.size>2) {
 			^numbers[2].asInt
 		}{
-			^0	
+			^0
 		}
 	}
 
@@ -1018,7 +1018,7 @@ gives min, max, averages and total
 		d=d.drop(1);
 		^d
 	}
-	
+
 	unixSafe{
 		var string;
 		string=this;
@@ -1027,9 +1027,9 @@ gives min, max, averages and total
 		});
 		^string
 	}
-	
+
 	addressSafe{
-		var string;	
+		var string;
 		string=this;
 		[" "].do{|char| string=string.findReplaceAll(char,"_") };
 		["\r"].do{|char| string=string.findReplaceAll(char,"") };
@@ -1037,61 +1037,61 @@ gives min, max, averages and total
 	}
 
 	profileSafe{
-		var string;	
+		var string;
 		string=this;
 		["\r","\n","*"].do{|char| string=string.findReplaceAll(char,"") };
 		^string[..38]
 	}
-	
+
 	nameSafe{
-		var string;	
+		var string;
 		string=this;
 		["\r"].do{|char| string=string.findReplaceAll(char,"") };
 		^string[..100]
 	}
-	
+
 	filenameSafe{
-		var string;	
+		var string;
 		string=this;
 		["\r","\n","*","/"].do{|char| string=string.findReplaceAll(char,"") };
 		^string[..38]
 	}
-	
+
 	dropFolder{|d|
 		var string="";
 		if (d>0) {d=d+1};
 		this.copy.split.drop(d).do{|s| string=string +/+ s };
-		^string	
+		^string
 	}
-	
+
 	openApplication {
 		("open -a" + this.quote).systemCmd;
-	}	
-	
+	}
+
 }
 
 + Buffer {
 
 	getWithRef { arg index, action, ref1, ref2;
-		OSCpathResponder(server.addr,['/b_set',bufnum,index],{ arg time, r, msg; 
+		OSCpathResponder(server.addr,['/b_set',bufnum,index],{ arg time, r, msg;
 			action.value(msg.at(3),index, ref1, ref2); r.remove }).add;
 		server.listSendMsg(["/b_get",bufnum,index]);
-		
+
 		}
-		
+
 }
 
 
 + Integer {
 
 	clipIndexToList { arg list; ^(this.clip(0,list.size - 1)) }
-	
+
 	asFormatedString{|wn=1,dp=1| ^this.asFloat.asFormatedString(wn,dp); }
-	
+
 	map { |x1,x2,y1,y2| ^this.asFloat.map(x1,x2,y1,y2) }
-	
+
 	asInt { ^this }
-	
+
 	asNote {|prefix|
 		prefix= prefix ? false;
 		^(prefix.if((this.asString)++": ","")
@@ -1121,24 +1121,24 @@ gives min, max, averages and total
 	isSpace { ^this == 0x20 }
 	isArrow { ^(this.isLeft or: { this.isUp or: { this.isRight or: { this.isDown } } } ) }
 	isXCmd { ^(this.isCmd or: {this.isCtrl}) }
-	
+
 }
 
 
 + Float {
 
 	decimal{|dp| ^(this-(this.round)*(10**dp)).round/(10**dp)+(this.round)}
-	
-	asFormatedString{|wn=1,dp=1| 
+
+	asFormatedString{|wn=1,dp=1|
 		var strList;
-		
+
 		if (this==inf) {^"inf"};
 		if (this==(-inf)) {^"-inf"};
-		
+
 		strList=this.decimal(dp).asString.split($.);
 		while ( { (strList@0).size < wn }, { strList=[" "++(strList@0),strList@1] });
 		if (dp>0)	{
-			if (strList.size<2) {		
+			if (strList.size<2) {
 				strList=strList.add("0");
 			};
 			while ( { (strList@1).size < dp }, { strList=[strList@0 ,(strList@1)++"0"] });
@@ -1148,19 +1148,19 @@ gives min, max, averages and total
 		}
 		^this
 	}
-	
+
 	map{|x1,x2,y1,y2| ^((this-x1/(x2-x1))*(y2-y1)+y1) }
-	
+
 	asInt{ ^this.asInteger }
-	
+
 	asNote{|prefix| ^this.asInteger.asNote(prefix) }
-	
+
 	asNote2{|prefix| ^this.asInteger.asNote2(prefix) }
-	
+
 	asNote3{^this.asInteger.asNote3 }
-	
+
 	asNote4{^this.asInteger.asNote4 }
-	
+
 }
 
 + Platform {
@@ -1189,7 +1189,7 @@ gives min, max, averages and total
 
 // 	background_{|c|
 // 		if (Main.versionAtMost(3,2)) {
-// 			this.setProperty(\boxColor,c) 
+// 			this.setProperty(\boxColor,c)
 // 		}{
 // 			super.background_(c);
 // 		}
@@ -1197,7 +1197,7 @@ gives min, max, averages and total
 
 // }
 
-+ Quarks {
+/*+ Quarks {
 	*initClass {
 		folder = Platform.lnxResourceDir +/+ "downloaded-quarks";
 		additionalFolders = additionalFolders ? [];
@@ -1206,7 +1206,7 @@ gives min, max, averages and total
 		});
 		cache = Dictionary.new;
 	}
-}
+}*/
 
 
 ////////////////////////////////////////////////

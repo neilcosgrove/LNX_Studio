@@ -8,7 +8,7 @@ MVC_ImageView : MVC_View {
 	var <image="lnx.jpg", scimage;
 
 	*initClass{
-		lnx = Image.new(Platform.lnxResourceDir +/+ "lnx.jpg");
+/*		lnx = Image.new(Platform.lnxResourceDir +/+ "lnx.jpg");*/
 		// gs = SCImage.new(String.scDir +/+ "GS Rhythm.jpg");
 	}
 
@@ -20,27 +20,27 @@ MVC_ImageView : MVC_View {
 			scimage = Image.new(Platform.lnxResourceDir +/+ image)
 		}
 	}
-	
+
 	// make the view
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				scimage.drawInRect(Rect(0,0,w,h),Rect(0,0,scimage.width,scimage.height),2,1.0);
-			};		
+			};
 	}
-	
+
 	image_{|filename|
 		image=filename;
 		this.initView;
 		if (view.notClosed) {view.refresh}
 	}
-	
+
 	imagePath_{|filename|
 		image=filename;
 		scimage=SCImage.new(image);
 		if (view.notClosed) {view.refresh}
 	}
-	
+
 
 }

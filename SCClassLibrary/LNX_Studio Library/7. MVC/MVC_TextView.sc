@@ -19,7 +19,7 @@ MVC_TextView : MVC_View {
 		if (string.isNil) {string=""};
 		font=Font("Monaco",9);
 	}
-	
+
 	// make the view
 	createView{
 		view=MVC_SCTextView.new(window,rect)
@@ -29,10 +29,10 @@ MVC_TextView : MVC_View {
 			.stringColor_(colors[\string])
 			.usesTabToFocusNextView_(false)
 			.hasVerticalScroller_ (true);
-	
+
 		if (colorizeOnOpen) {view.syntaxColorize};
 	}
-	
+
 	// add the controls
 	addControls{
 		view.action_{|me|
@@ -53,13 +53,13 @@ MVC_TextView : MVC_View {
 					this,x, y, modifiers, buttonNumber, clickCount, clickPos) };
 			}
 	}
-	
+
 	// set the font
 	font_{|argFont|
 		font=argFont;
 		if (view.notClosed) { view.font_(font) };
 	}
-	
+
 	// set the string
 	string_{|argString|
 		string=argString.asString;
@@ -69,29 +69,29 @@ MVC_TextView : MVC_View {
 		};
 		this.refresh;
 	}
-	
+
 	string{ if (view.notClosed) { ^view.string }{ ^string } }
-	
+
 	selectedString{ if (view.notClosed) { ^view.selectedString }{ ^"" } }
-	
+
 	setString{|string, rangestart=0, rangesize=0|
 		if (view.notClosed) {
-			view.setString(string, rangestart, rangesize); 
+			view.setString(string, rangestart, rangesize);
 			if (autoColorize) {view.syntaxColorize};
 			string=view.string;
 		}
-	}	
+	}
 
 	setStringAction{|string, rangestart=0, rangesize=0|
 		if (view.notClosed) {
-			view.setString(string, rangestart, rangesize); 
+			view.setString(string, rangestart, rangesize);
 			if (autoColorize) {view.syntaxColorize};
 			string=view.string;
 			this.valueActions(\stringAction,this);
 			if (model.notNil){ model.stringAction_(string,this) };
 		}
-	}	
-	
+	}
+
 	// set the colour in the Dictionary
 	color_{|index,color|
 		colors[index]=color;
@@ -99,23 +99,23 @@ MVC_TextView : MVC_View {
 		if (index=='background' ) { {if (view.notClosed) { view.background_ (color)  } }.defer };
 		if (index=='focus'      ) { {if (view.notClosed) { view.focusColor_ (color)  } }.defer };
 	}
-	
+
 	focus{ if (view.notClosed) {view.focus} }
-	
+
 	// unselected the range selected in view
 	clearRangeSize{ if (view.notClosed) { view.clearRangeSize} }
-	
+
 	// colorize it
 	syntaxColorize{ if (view.notClosed) {view.syntaxColorize} }
-	
+
 	// UGen Menu support //////////////////////////////////////////////////////////////////
-		
+
 	// init widget, extracts UGen names from Help.tree for use in UGen help menus
 	*initClass{
 		var function;
 		Class.initClassTree(Help);
 		menus=[];
-		// function call calls itself every time a new branch is found else add item to list
+/*		// function call calls itself every time a new branch is found else add item to list
 		function={|dict|
 			var list=[];
 			dict.pairsDo{|key,item|
@@ -135,9 +135,9 @@ MVC_TextView : MVC_View {
 		// call the above funtion on UGens
 		Platform.case(
 			\osx, { function.value(Help.global.tree["[[UGens]]"]) }
-		);
+		);*/
 	}
-	
+
 	// get a list of menus that contain symbol
 	*getMenuList{|symbol|
 		var index=[];
@@ -147,7 +147,7 @@ MVC_TextView : MVC_View {
 		};
 		^index.collect{|i| menus[i] }.flat.asSet.asList.sort
 	}
-	
+
 	// make UGen active, need to supply the window and an x,y offset
 	attachCodeHelpFunction{|argParentWindow,x,y|
 		parentWindow=argParentWindow;
@@ -163,35 +163,35 @@ MVC_TextView : MVC_View {
 		var summary, summaryList;
 		var textView, selectView, selected, class, sB, rect;
 		var menuList, pop;
-		
+
 		// stop previous windows, just in case
 		task.stop;
 		helpWindow.free;
-	
+
 		menuXY = menuXY ? (0@0);
-	
+
 		// start is selectionSize>0	and have mods
 		if (( view.selectionSize>0)&&(
 				(modifiers==1048840) || (modifiers==1114376) || (buttonNumber!=0)
 			)) {
 				string=string.split($.)[0]; // .split($.)[0] for later OS default
-				class=string.asSymbol.asClass; 
+				class=string.asSymbol.asClass;
 				menuList=this.class.getMenuList(string.asSymbol); // get the menus
 				summary = class.getClassArgsSummaryHelp;     // get the summary from the class
 				summaryList = class.getClassArgsSummaryList; // get the summary from the class
-				
+
 				// summary might be nil if not a class or doesn't support .new .ar .kr .ir
 				if (summary.notNil) {
 					// the string bounds
 					sB = GUI.stringBounds(summary,Font("Helvetica-Bold",14));
-					// get rect for window	
+					// get rect for window
 					Platform.case(\osx,{
 						rect=Rect(
 							OSXPlatform.getMouseCoords.x-7,
 							OSXPlatform.getMouseCoords.convert.y+8,
 							sB.width+5+20, sB.height+2
 						);
-					},{	
+					},{
 						if (LNX_MouseXY.active) {
 							rect=Rect(
 								(LNX_MouseXY.pos.x).clip(
@@ -201,13 +201,13 @@ MVC_TextView : MVC_View {
 								sB.width+5+20, sB.height+2)
 						}{
 							rect=Rect(
-								(parentWindow.bounds.left)+(this.bounds.left)+x+(menuXY.x), 
+								(parentWindow.bounds.left)+(this.bounds.left)+x+(menuXY.x),
 								(parentWindow.bounds.top)+(this.bounds.top)+(
 										y.clip(0,this.bounds.height))+(menuXY.y),
 								sB.width+5+20, sB.height+2)
 						};
 					});
-								
+
 					// the window
 					helpWindow=MVC_Window(string, rect , border:false);
 					// to help fix mouseOver bug
@@ -220,12 +220,12 @@ MVC_TextView : MVC_View {
 						};
 						0.5.wait;
 					}.loop},AppClock).start;
-					
+
 					// the mouse over selection view
 					selectView=MVC_UserView(helpWindow,Rect(20,0,sB.width+5, sB.height+1))
 						.drawFunc_{|me|
 							var bounds=me.bounds;
-							if (selected.notNil){	
+							if (selected.notNil){
 								Pen.use{
 									Pen.smoothing_(false);
 									Color(0,0.5,1,0.3).set;
@@ -233,7 +233,7 @@ MVC_TextView : MVC_View {
 								}
 							}
 						};
-					
+
 					// the summary text view, overlaps selectView
 					textView=MVC_StaticText(helpWindow,Rect(20,0,sB.width+5, sB.height+1))
 						.shadow_(false)
@@ -243,16 +243,16 @@ MVC_TextView : MVC_View {
 						.color_(\string,Color.black)
 						.mouseOverAction_{|me, x, y|
 							var val = (y/19).asInt.clip(0,summaryList.size-1); // get index
-							
+
 							//val.postln;
-							
+
 							if (selected!=val) {
 								selected=val;		 // set index
 								selectView.refresh; // refresh the view
 							};
 						}
 						.mouseUpAction_{|me, x, y|
-							
+
 							// get index
 							selected=(y/19).asInt.clip(0,summaryList.size-1);
 							// set the string
@@ -262,7 +262,7 @@ MVC_TextView : MVC_View {
 							task.stop;
 							helpWindow.free;
 						};
-						
+
 						// the pop up menu will other suggestions
 						pop=MVC_PopUpMenu(helpWindow,Rect(1,1,18,sB.height))
 							.items_(
@@ -274,7 +274,7 @@ MVC_TextView : MVC_View {
 							)
 							.action_{|me|
 								var path;
-								if (me.value==1) {	
+								if (me.value==1) {
 									// close the window
 									task.stop;
 									helpWindow.free;
@@ -300,7 +300,7 @@ MVC_TextView : MVC_View {
 							.color_(\background,Color(0,0,0,0))
 							.value_(
 								(menuList.indexOf(string.asSymbol)?(-3))+3
-							);				
+							);
 					// create the window
 					helpWindow.create;
 					// must be done here
@@ -308,12 +308,12 @@ MVC_TextView : MVC_View {
 						task.stop;
 						helpWindow.free;
 					};
-					
+
 				};
 		}
 	}
 
-	
+
 }
 
 //// adapted TextView for use in MVC_TextView (not for direct use)
@@ -332,13 +332,13 @@ MVC_SCTextView : TextView {
 			.keyDownAction_{|char, modifiers, unicode, keycode, key|
 				this.onKeyDown(char, modifiers, unicode, keycode, key)};
 	}
-	
+
 	value{^this.string}
-	
+
 	value_{|v| this.string=v}
-	
+
 	align_{} // this makes myTextView exchangable with myTextField
-	
+
 	onKeyDown {|char, modifiers, unicode, keycode, key|
 		if (key.isArrow.not) {
 			{
@@ -357,5 +357,5 @@ MVC_SCTextView : TextView {
 		};
 		^this
 	}
-	
+
 }

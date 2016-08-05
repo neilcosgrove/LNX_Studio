@@ -2,15 +2,15 @@
 // footnote to help files
 
 + SCDocHTMLRenderer{
-	
+
 	*renderFooter {|stream, doc|
 		stream << "<div class='doclink'>";
 		if (LNX_Studio.isStandalone) {
-			
+
 			stream	<< "LNX_Studio " << LNX_Studio.version << "</div>"
-					<< "</div></body></html>";	          
+					<< "</div></body></html>";
 		}{
-	   
+
 			doc.fullPath !? {
 				stream << "source: <a href='" << URI.fromLocalPath(doc.fullPath).asString << "'>"
 					<< doc.fullPath << "</a><br>"
@@ -19,7 +19,7 @@
 			<< "sc version: " << Main.version << "</div>"
 			<< "</div></body></html>";
 		}
-	
+
 	}
 }
 
@@ -36,18 +36,18 @@
 		if (urlString.endsWith("/Demo%20Song.html")) {
 			LNX_StartUp.studio.loadDemoSong
 		}{
-		
+
 			window.front;
 			this.startAnim;
-	
+
 			brokenAction = brokenAction ? { |fragment|
 				var brokenUrl = URI.fromLocalPath( SCDoc.helpTargetDir++"/BrokenLink.html" );
 				brokenUrl.fragment = fragment;
 				brokenUrl;
 			};
-	
+
 			url = URI(urlString);
-	
+
 			rout = Routine {
 				try {
 					url = SCDoc.prepareHelpForURL(url) ?? { brokenAction.(urlString) };
@@ -66,11 +66,11 @@
 			}.play(AppClock);
 			CmdPeriod.add(this);
 		}
-	}	
+	}
 }
 
 // stop server windows from been made
-// + OSXPlatform {	
+// + OSXPlatform {
 // 	startup {
 // 		if(Platform.ideName == "scapp"){
 // 			Document.implementationClass.startup;
@@ -83,7 +83,7 @@
 // 			//if (LNX_Studio.isStandalone.not) {
 // 				Help.addToMenu;
 // 			//};
-// 		};	
+// 		};
 // 	}
 // }
 
@@ -138,7 +138,7 @@
 
 }
 
-// filter those NaNs out of ControlSpec to stop certain errors  
+// filter those NaNs out of ControlSpec to stop certain errors
 
 + ControlSpec {
 
@@ -146,12 +146,12 @@
 		// maps a value from [0..1] to spec range
 		^warp.map(value.clip(0.0, 1.0)).round(step).filterNaN;
 	}
-	
+
 	unmap { arg value;
 		// maps a value from spec range to [0..1]
 		^warp.unmap(value.round(step).clip(clipLo, clipHi)).filterNaN;
 	}
-	
+
 	constrain { arg value;
 		^value.filterNaN.asFloat.clip(clipLo, clipHi).round(step)
 	}
@@ -160,7 +160,7 @@
 		value=value.filterNaN.asFloat.round(step);
 		if ((value<clipLo)or:{value>clipHi}) {^clipLo}{^value};
 	}
-	
+
 	constrainHigh { arg value;
 		value=value.filterNaN.asFloat.round(step);
 		if ((value<clipLo)or:{value>clipHi}) {^clipHi}{^value};
@@ -170,7 +170,7 @@
 
 // fix for ascii 13
 // @TODO: maybe a problem for xplatform?
-+ UnixFILE {
+/*+ UnixFILE {
 	getLine { arg maxSize=1024;
 		var string,line;
 		string = String.newClear(maxSize);
@@ -192,7 +192,7 @@
 			}
 		);
 	}
-}
+}*/
 
 // fix for 1 ! inf;
 
@@ -207,9 +207,9 @@
 }
 
 + Server {
-	
+
 	// for security
-	
+
 	// *default_ { |server|
 	// 	default = server; // sync with s?
 	// 	if (LNX_Studio.isStandalone.not) {
@@ -255,13 +255,13 @@
 			{arg buf; buf.writeMsg(path, recHeaderFormat, recSampleFormat, 0, 0, true);},
 			this.options.numBuffers + 1); // prevent buffer conflicts by using reserved bufnum
 		SynthDef("server-record", { arg bufnum;
-			DiskOut.ar(bufnum, In.ar(0, recChannels)) 
+			DiskOut.ar(bufnum, In.ar(0, recChannels))
 		}).send(this);
 		// cmdPeriod support
 		CmdPeriod.add(this);
 		^path;
 	}
-	
+
 }
 
 

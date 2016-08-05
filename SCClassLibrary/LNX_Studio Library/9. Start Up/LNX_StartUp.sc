@@ -8,9 +8,9 @@
 //
 
 LNX_StartUp {
-	
+
 	classvar >studio;
-		
+
 	*initClass{
 		Class.initClassTree(LNX_File);
 		Platform.case(
@@ -22,7 +22,7 @@ LNX_StartUp {
 				\linux,		{ this.linuxStartUp   },
 				\windows,	{ this.windowsStartUp }
 			);
-		};	
+		};
 		ShutDown.add { studio.onClose };		 // and on shutdown
 	}
 
@@ -58,7 +58,7 @@ LNX_StartUp {
 		};
 	}
 
-	*xPlatStartUp{						
+	*xPlatStartUp{
 		studio = LNX_Studio(Server.local); 	// start the studio, use local server
 //		studio = LNX_Studio(Server.internal); // start the studio, use internal server
 
@@ -78,32 +78,32 @@ LNX_StartUp {
 		this.xPlatStartUp;
 		this.postStartUp;
 	}
-	
+
 	// TODO: any linux specific startup here
 	*linuxStartUp{
 		this.xPlatStartUp;
 		this.postStartUp;
 	}
-	
-	*osxStartUp{
-	
+
+/*	*osxStartUp{
+
 		// bug fix for starting macOS midi and some MIDI devices
 		var midiBugFix = ("midiBugFix".loadPref ? [false])[0].isTrue; // get preference
 		var audioRunning = "Audio".pid.notNil;    // is Audio MIDI Setup running?
 		if (audioRunning.not  && midiBugFix) {
 			"Audio MIDI Setup".openApplication;  // if not open it
-		}; 
+		};
 		SCDoc.indexAllDocuments;
 
 		if (audioRunning) {
 			this.osxStartUp2;
 		}{
 			{ this.osxStartUp2 }.defer(2); // delay start-up so Audio MIDI Setup starts 1st
-		}; 
-	}
-	
-	*osxStartUp2{
-		
+		};
+	}*/
+
+	*osxStartUp{
+
 		"".postln;
 		"".postln;
 		"If this application repeatedly hangs on opening the following might help...".postln;
@@ -115,24 +115,24 @@ LNX_StartUp {
 		"4. Plug all MIDI equipment back in".postln;
 		"5. Quit & Relaunch LNX_Studio".postln;
 		"".postln;
-				
+
 		studio = LNX_Studio(Server.local); 	// start the studio, use local server
 //		studio = LNX_Studio(Server.internal); // start the studio, use internal server
-				
-		LNX_AppMenus.addReleaseMenus(studio);
+
+/*		LNX_AppMenus.addReleaseMenus(studio);
 
 		// to remove for release
-		LNX_AppMenus.addDeveloperMenus(studio); 
+		LNX_AppMenus.addDeveloperMenus(studio);
 		Document.listener.bounds=Rect(LNX_Studio.osx,32,535,175);
-		
+
 		// to uncomment for release
-//		Document.listener.close;				
+//		Document.listener.close;
 //		Document.initAction=Document.initAction.addFunc{|doc|
 //			if	(studio.isStandalone) {
 //				doc.editable_(false)
 //			};
 //		};
-					
+
 		// load songs dropped or opened in SC
 		Document.initAction=Document.initAction.addFunc{|doc|
 			if (doc.string[..14]=="SC Studio Doc v") {
@@ -147,7 +147,7 @@ LNX_StartUp {
 				}.defer(0.15)
 			};
 		};
-		
+
 		// load songs dropped or opened in SC at start-up
 		Document.allDocuments.do{|doc|
 			if (doc.string[..14]=="SC Studio Doc v") {
@@ -162,38 +162,38 @@ LNX_StartUp {
 				}.defer(0.15)
 			};
 		};
-		
+
 		// add lnx preferences as the preferences
 		thisProcess.preferencesAction = { studio.preferences };
-		
+
 		if (studio.isStandalone && LNX_Mode.isSafe) {
-			thisProcess.platform.recordingsDir = 
+			thisProcess.platform.recordingsDir =
 				"/Users/Shared";
 				//String.scDir.dirname.dirname +/+ "Contents/Safe Mode Recordings";
 		}{
 			// set the recording directory
 			thisProcess.platform.recordingsDir = "~/Desktop".standardizePath;
 		};
-		
+		*/
 		this.postStartUp;
 	}
-	
+
 	*postStartUp{
 		this.interpreterDebugging;
 	}
-	
+
 	*interpreterDebugging{
 		// attach various objects to interpreter variables for debugging
-		"	
+		"
 			a=LNX_StartUp.studio;
 			s=a.server;
 		 	n=a.network;
 		 	u=n.thisUser;
 		 	i=a.insts;
 		 	//p=LNX_API(a,'test');
-		".interpret;		
+		".interpret;
 	}
-	
+
 	*studio{^studio} // to remove for release
 
 }

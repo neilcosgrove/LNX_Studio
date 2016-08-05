@@ -9,44 +9,44 @@ LNX_MIDIPatch {
 
 	classvar <patches, 		<noPatches=0,
 			<initialized=false,
-	
+
 			<noInPorts, 		<noOutPorts,
 			<midiSourceNames, 	<midiDestinationNames,
 			<midiSourceUIDs, 	<midiDestinationUIDs,
 			<inPortsActive,	<outPortsActive,
 			<inPoints,		<outPoints,
 			<outs,
-			
+
 			noInternalBuses=3, <noteOnTrigFunc;
-			
+
 	classvar	nextUnusedIn= -1,	nextUnusedOut= -1;
-	
+
 	classvar <>verbose = false;
-	
+
 	classvar <>midiSyncLatency = 0.1;
 
 	var		<>patchNo,
-			
-			<midiIn,	  		<midiOut, 	
+
+			<midiIn,	  		<midiOut,
 			<uidIn,			<uidOut,
 			<midiInChannel,	<midiOutChannel,
 			<midiInName,       <midiOutName,
-			
+
 			<>noteOnFunc,		<>noteOffFunc,
-			<>controlFunc, 	<>bendFunc, 
+			<>controlFunc, 	<>bendFunc,
 			<>touchFunc,		<>programFunc,
 			<>sysrtFunc,		<>internalFunc,
 			<>sysexFunc,
-			
+
 			<>pipeFunc,  // to replace all off the above funcs... when i get round to it
-			
+
 			<>previousInUID,	<>previousOutUID,
-			
+
 			<portInGUI,		<portOutGUI,
 			channelInGUI,		channelOutGUI,
-			
+
 			<window,			<>action;
-			
+
 	// find in & out port by name (uses find not ==)
 	findByName{|inName,outName|
 		var inIndex, outIndex;
@@ -58,51 +58,51 @@ LNX_MIDIPatch {
 	}
 
 	*new { arg in=0, inC=(-1), out=1, outC=0; if (initialized) {^super.new.init(in,inC,out,outC)} }
-	
+
 	*initClass { patches=[] }
-	
+
 	*nextUnusedIn{
 		nextUnusedIn=nextUnusedIn+1;
 		//^[(nextUnusedIn/16).asInt%noInternalBuses+1,nextUnusedIn%16]
 		^[1,0];
 	}
-	
+
 	*nextUnusedOut{
 		nextUnusedOut=nextUnusedOut+1;
 		^[(nextUnusedOut/16).asInt%noInternalBuses+1,nextUnusedOut%16]
 		//^[1,0];
 	}
-	
+
 	*resetUnused{ nextUnusedIn= -1; nextUnusedOut= -1;}
-	
+
 	initInstance{
 		patches=patches.add(this);
 		patchNo=noPatches;
 		noPatches=noPatches+1;
 	}
-	
+
 	init { arg in,inC,out,outC;
 		this.initInstance;
 		this.initVars;
 		this.setInterface(in,inC,out,outC);
 	}
-	
+
 	outPoint{^outPoints[midiOut]}
 	inPoint{^inPoints[midiIn]}
-	
+
 	*init {
 		var inFails = 0, outFails = 0;
-	
+
 		if (initialized.not) {
 		 	// MIDIClient.init;
 			MIDIClient.init(16,16);
 			noInPorts=MIDIClient.sources.size;
 			noOutPorts=MIDIClient.destinations.size;
-			
+
 			midiSourceNames=["None"];
 			midiSourceUIDs=[0];
 			inPortsActive=[true];
-			
+
 			MIDIClient.sources.do({|m|
 				midiSourceUIDs=midiSourceUIDs.add(m.uid);
 				m=m.asString;
@@ -120,13 +120,13 @@ LNX_MIDIPatch {
 				midiSourceNames=midiSourceNames.add(m);
 				inPortsActive=inPortsActive.add(true);
 			});
-			
+
 			noInternalBuses.do({|i|
 				midiSourceNames=midiSourceNames.add("Internal: Bus"+((i+1).asString));
 				midiSourceUIDs=midiSourceUIDs.add(i+1);
 				inPortsActive=inPortsActive.add(true);
 			});
-		
+
 			midiDestinationNames=["None"];
 			midiDestinationUIDs=[0];
 			outPortsActive=[true];
@@ -143,13 +143,13 @@ LNX_MIDIPatch {
 				midiDestinationNames=midiDestinationNames.add(m);
 				outPortsActive=outPortsActive.add(true);
 			});
-			
+
 			noInternalBuses.do({|i|
-				midiDestinationNames=midiDestinationNames.add("Internal: Bus"+((i+1).asString)); 
+				midiDestinationNames=midiDestinationNames.add("Internal: Bus"+((i+1).asString));
 				midiDestinationUIDs=midiDestinationUIDs.add(i+1);
 				outPortsActive=outPortsActive.add(false);
 			});
-			
+
 			outs=[NoMIDI];
 			outPoints=[NoMIDI];
 			noOutPorts.do({|i|
@@ -171,9 +171,9 @@ LNX_MIDIPatch {
 				outs=outs.add(NoMIDI);
 				outPoints = outPoints.add(NoMIDI);
 			});
-			
+
 			inPoints=[NoMIDI];
-			
+
 			noInPorts.do({|i|
 				try {
 					MIDIIn.connect(i, MIDIClient.sources[i].uid);
@@ -186,10 +186,10 @@ LNX_MIDIPatch {
 			noInternalBuses.do({
 				inPoints=inPoints.add(NoMIDI);
 			});
-			
+
 			noInPorts=noInPorts+1+noInternalBuses-inFails;
 			noOutPorts=noOutPorts+1+noInternalBuses-outFails;
-			
+
 			MIDIIn.noteOn  = { arg src, chan, note, vel;
 				//["note on","src",src,"chan",chan,"note",note,"vel",vel].postln;
 				patches.do({|patch|
@@ -202,9 +202,9 @@ LNX_MIDIPatch {
 								pipe[\endPoint] = patch.inPoint;
 								pipe[\source] = src;
 								pipe[\channel] = chan;
-								
+
 								patch.pipeFunc.value(pipe);
-							};	
+							};
 					}
 				});
 			};
@@ -215,14 +215,14 @@ LNX_MIDIPatch {
 						{(chan==(patch.midiInChannel)) or: {(patch.midiInChannel)==(-1)}} ) {
 							patch.noteOffFunc.value(src, chan, note, vel);
 								// send with no latency parameter
-							
+
 							if (patch.pipeFunc.notNil) {
 								var pipe = LNX_NoteOff(note,vel,nil,\external);
 								pipe[\endPoint] = patch.inPoint;
 								pipe[\source] = src;
 								pipe[\channel] = chan;
 								patch.pipeFunc.value(pipe);
-							};	
+							};
 						}
 				});
 			};
@@ -239,32 +239,32 @@ LNX_MIDIPatch {
 								pipe[\source] = src;
 								pipe[\channel] = chan;
 								patch.pipeFunc.value(pipe);
-							};	
+							};
 					}
 				});
-			};		
+			};
 			MIDIIn.control = { arg src, chan, num,  val;
 				//["control","src", src, "chan", chan, "num", num, "val", val,
 				//		(val>64).if(64-val,val)].postln;
-				
+
 	LNX_MIDIControl.controlIn(src, chan, num,  val, nil, true, false); // direct into MIDI Control
 				// later i might need to think about this more
 				// or i could plug all of these diredtly in MIDIIn
 				// the last arg is sourceIsInternal
-				
+
 				patches.do({|patch|
 					if ( (patch.uidIn==src) and:
 						{(chan==(patch.midiInChannel)) or: {(patch.midiInChannel)==(-1)}} ) {
 							patch.controlFunc.value(src, chan, num, val, nil, true, false);
 								// send with no latency parameter
-								
+
 							if (patch.pipeFunc.notNil) {
 								var pipe = LNX_Control(num,val,nil,\external);
 								pipe[\endPoint] = patch.inPoint;
 								pipe[\source] = src;
 								pipe[\channel] = chan;
 								patch.pipeFunc.value(pipe);
-							};	
+							};
 					}
 				});
 
@@ -273,20 +273,20 @@ LNX_MIDIPatch {
 				patches.do({|patch|
 					if ( (patch.uidIn==src) and:
 						{(chan==(patch.midiInChannel)) or: {(patch.midiInChannel)==(-1)}} ) {							patch.bendFunc.value(src, chan, bend);
-							
+
 																			if (patch.pipeFunc.notNil) {
 								var pipe = LNX_Bend(bend,nil,\external);
 								pipe[\endPoint] = patch.inPoint;
 								pipe[\source] = src;
 								pipe[\channel] = chan;
 								patch.pipeFunc.value(pipe);
-							};	
-							
-								
+							};
+
+
 						// send with no latency parameter
-							
+
 		LNX_MIDIControl.controlIn(src, chan, -1,  bend/16383*127, nil, true, false); // direct into
-						
+
 					}
 				});
 			};
@@ -295,27 +295,27 @@ LNX_MIDIPatch {
 					if ( (patch.uidIn==src) and:
 						{(chan==(patch.midiInChannel)) or: {(patch.midiInChannel)==(-1)}} ) {							patch.touchFunc.value(src, chan, pressure);
 							// send with no latency parameter
-							
+
 																			if (patch.pipeFunc.notNil) {
 								var pipe = LNX_Touch(pressure,nil,\external);
 								pipe[\endPoint] = patch.inPoint;
 								pipe[\source] = src;
 								pipe[\channel] = chan;
 								patch.pipeFunc.value(pipe);
-							};	
+							};
 					}
 				});
 			};
-			
+
 			MIDIIn.sysrt = { arg src, chan, val;
-				//[src,chan,val].postln;			
+				//[src,chan,val].postln;
 				patches.do({|patch|
 					if ( patch.uidIn==src ) {
 						patch.sysrtFunc.value(src, chan, val); // send with no latency parameter
 					}
 				});
 			};
-			
+
 			MIDIIn.sysex = {arg src, data;
 				//[src,data].postln;
 				patches.do({|patch|
@@ -323,10 +323,10 @@ LNX_MIDIPatch {
 						patch.sysexFunc.value(src, data); // send with no latency parameter
 					}
 				});
-			
+
 			};
-			
-			if (verbose) { 					
+
+			if (verbose) {
 				Post << "MIDI Sources: " << Char.nl;
 				midiSourceNames.do({ |x,y|
 					Post << Char.tab << y << " : " << x << Char.nl });
@@ -334,16 +334,16 @@ LNX_MIDIPatch {
 				midiDestinationNames.do({ |x,y|
 					Post << Char.tab << y << " : " << x << Char.nl });
 			};
-			
+
 			initialized=true;
-			
+
 		}{ // else.if initialized
-		
+
 			if (verbose) { "MIDI Client already initialized".postln; };
-			
+
 		}; // end.if initialized
 	}
-	
+
 	// this is used to get a midi note on trigger
 	// it replace note on until the 1st noteOn is recieved
 	*noteOnTrigFunc_{|f|
@@ -360,7 +360,7 @@ LNX_MIDIPatch {
 							pipe[\source] = src;
 							pipe[\channel] = chan;
 							patch.pipeFunc.value(pipe);
-						};	
+						};
 				}
 			});
 			if (noteOnTrigFunc.notNil) {
@@ -375,22 +375,22 @@ LNX_MIDIPatch {
 							{(patch.midiInChannel)==(-1)}} ) {
 								patch.noteOnFunc.value(src, chan, note, vel);
 										// send with no latency parameter
-										
+
 																				if (patch.pipeFunc.notNil) {
 									var pipe = LNX_NoteOn(note,vel,nil,\external);
 									pipe[\source] = src;
 									pipe[\channel] = chan;
 									patch.pipeFunc.value(pipe);
-								};	
+								};
 						}
 					});
 				};
 			};
 		};
 	}
-	
+
 	pipeIn{|pipe|
-		
+
 		if ((uidOut>0)and:{uidOut<=noInternalBuses}) {
 		 	// internal buses
 	 		patches.do({|patch,j|
@@ -399,18 +399,18 @@ LNX_MIDIPatch {
 						// internal
 						patch.pipeFunc.value(pipe);
 				}
-			}); 		
+			});
 	 	}{
 		 	// external MIDIOUt
 		 	var midi = outs[midiOut];
 			var latency = pipe.latency;
-		
+
 			// i should be able to get rid of this line soon
 			if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
 
 	 		switch (pipe.kind)
 				{\noteOn} { // noteOn
-					midi.noteOnLatency(midiOutChannel, pipe.note, pipe.velocity, latency); 
+					midi.noteOnLatency(midiOutChannel, pipe.note, pipe.velocity, latency);
 				}
 				{\noteOff} { // noteOff
 					midi.noteOffLatency(midiOutChannel, pipe.note, pipe.velocity, latency);
@@ -426,37 +426,37 @@ LNX_MIDIPatch {
 					midi.programLatency(midiOutChannel, pipe.program, latency );
 				}
 				{\bend} { // bend
-					midi.bendLatency(midiOutChannel, pipe.val, latency) 
+					midi.bendLatency(midiOutChannel, pipe.val, latency)
 				}
 	 	};
 	}
-	
+
 	// these now include latency which is been supplied by the source
 	// internal/externalInOut internalSeq control midiClockIn/out
-	
-	noteOn{|note, vel, latency|	
+
+	noteOn{|note, vel, latency|
 	 	if ((uidOut>0)and:{uidOut<=noInternalBuses}) {
 		 	// internal buses
 	 		patches.do({|patch,j|
 				if ( (patch.uidIn==uidOut) and:{(patch===this).not} and:
 					{(patch.midiInChannel==midiOutChannel) or: {patch.midiInChannel==(-1)}} ) {
 						patch.noteOnFunc.value (uidIn, midiOutChannel, note, vel, latency);
-						
+
 						if (patch.pipeFunc.notNil) {
 							var pipe = LNX_NoteOn(note,vel,nil,\internal);
-							pipe[\source] = uidIn; 
+							pipe[\source] = uidIn;
 							pipe[\channel] = midiOutChannel;
 							patch.pipeFunc.value(pipe);
-						};	
+						};
 				}
-			}); 		
+			});
 	 	}{
 		 	// MIDIOUt
 		 	if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
-	 		outs[midiOut].noteOnLatency(midiOutChannel, note, vel, latency); 
+	 		outs[midiOut].noteOnLatency(midiOutChannel, note, vel, latency);
 	 	};
 	}
-	 
+
 	noteOff{|note, vel, latency|
 	 	if ((uidOut>0)and:{uidOut<=noInternalBuses}) {
 		 	// internal buses
@@ -464,21 +464,21 @@ LNX_MIDIPatch {
 				if ( (patch.uidIn==uidOut) and:{(patch===this).not} and:
 					{(patch.midiInChannel==midiOutChannel) or: {patch.midiInChannel==(-1)}} ) {
 						patch.noteOffFunc.value (uidIn, midiOutChannel, note, vel, latency);
-						
+
 																		if (patch.pipeFunc.notNil) {
 							var pipe = LNX_NoteOff(note,vel,nil,\internal);
 							pipe[\source] = uidIn;
 							pipe[\channel] = midiOutChannel;
 							patch.pipeFunc.value(pipe);
-						};	
+						};
 				}
-			}); 		
+			});
 	 	}{
 			// MIDIOut
 			if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
-			outs[midiOut].noteOffLatency(midiOutChannel, note,   vel, latency );		};		
+			outs[midiOut].noteOffLatency(midiOutChannel, note,   vel, latency );		};
 	}
-			
+
 	control{|ctlNum, val, latency, send, ignore=false|
 		var name;
 		if ((uidOut>0)and:{uidOut<=noInternalBuses}) {
@@ -491,14 +491,14 @@ LNX_MIDIPatch {
 						patch.controlFunc.value (uidIn, midiOutChannel, ctlNum, val,
 												       latency, send, ignore);
 				}
-			}); 		
+			});
 	 	}{
 		 	if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
 			outs[midiOut].controlLatency(midiOutChannel, ctlNum, val, latency); // no latency to out
 		};
 		^name
 	}
-	
+
 	// used as the control method but split in two (isNextControlLearn + learn)
 	// to control traffic
 	isNextControlLearn{
@@ -508,33 +508,33 @@ LNX_MIDIPatch {
 			^false
 		}
 	}
-	
+
 	learn{|ctlNum, val| ^LNX_MIDIControl.learnIn(uidOut, midiOutChannel, ctlNum,  val); }
-	
-	program{|val, latency|	
+
+	program{|val, latency|
 		if ((uidOut>0)and:{uidOut<=noInternalBuses}) {
 	 		patches.do({|patch|
 				if ( (patch.uidIn==uidOut) and:{(patch===this).not} and:
 					{(patch.midiInChannel==midiOutChannel) or: {patch.midiInChannel==(-1)}} ) {
 						patch.programFunc.value (uidIn, midiOutChannel, val, latency);
 				}
-			}); 		
+			});
 	 	}{
 		 	if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
 			outs[midiOut].programLatency(midiOutChannel, val, latency );
 		};
 	}
-	
+
 	// packet needs to be a Int8Array
 	// no latency in sysex, shall i delay it myself
-	sysex {|packet,latency|		
+	sysex {|packet,latency|
 		if ((uidOut>0)and:{uidOut<=noInternalBuses}) {
 	 		patches.do({|patch|
 				if ( (patch.uidIn==uidOut) and:{(patch===this).not} and:
 					{(patch.midiInChannel==midiOutChannel) or: {patch.midiInChannel==(-1)}} ) {
 						patch.sysex.value(packet, latency);
 				}
-			}); 		
+			});
 	 	}{
 		 	if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
 		 	{
@@ -542,40 +542,40 @@ LNX_MIDIPatch {
 				nil;
 		 	}.sched(latency);
 		};
-		
+
 	}
-	
-	
+
+
 
 	// special internal messages only lnx understands (comms via midi) used in LNX_Controllers
-	internal{|...msg|	
+	internal{|...msg|
 		if ((uidOut>0)and:{uidOut<=noInternalBuses}) {
 	 		patches.do({|patch|
 				if ( (patch.uidIn==uidOut) and:{(patch===this).not} and:
 					{(patch.midiInChannel==midiOutChannel) or: {patch.midiInChannel==(-1)}} ) {
 						patch.internalFunc.value(*msg);
 				}
-			}); 		
+			});
 		};
 	}
 
-	
+
 	// need to update these to include internal buses, but i'm not them at the moment
 	bend { |val, latency|
 		if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
 		outs[midiOut].bendLatency   (midiOutChannel, val, latency);
-		
+
 	}
 	touch{ |val, latency|
 		if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
 		outs[midiOut].touchLatency  (midiOutChannel, val, latency);
-		
+
 	}
-	
+
 	*panic{ patches.do(_.panic) }
-	
+
 	panic{ 127.do({|n|     outs[midiOut].noteOff(midiOutChannel, n, 0) }) }
-	
+
 	// for midi clock out, only used for external out
 	songPtr {|songPtr,latency|
 		if (((uidOut>0)and:{uidOut<=noInternalBuses}).not) {
@@ -583,28 +583,28 @@ LNX_MIDIPatch {
 			outs[midiOut].songPtrLatency(songPtr,latency);
 		}
 	}
-	
+
 	start {|latency|
 		if (((uidOut>0)and:{uidOut<=noInternalBuses}).not) {
 			if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
 			outs[midiOut].startLatency(latency);
 		}
 	}
-	
+
 	stop {|latency|
 		if (((uidOut>0)and:{uidOut<=noInternalBuses}).not) {
 			if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
 			outs[midiOut].stopLatency(latency);
 		}
 	}
-	
+
 	continue {|latency|
 		if (((uidOut>0)and:{uidOut<=noInternalBuses}).not) {
 			if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
 			outs[midiOut].continueLatency(latency);
 		}
 	}
-	
+
 	midiClock {|latency|
 		if (((uidOut>0)and:{uidOut<=noInternalBuses}).not) {
 			if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
@@ -620,7 +620,7 @@ LNX_MIDIPatch {
 		midiInName=midiSourceNames[midiIn];
 		this.refreshGUI;
 	}
-	
+
 	setOutPort{|out|
 		midiOut=out.clip(0,noOutPorts+noInternalBuses- 1);
 		uidOut=midiDestinationUIDs.[midiOut];
@@ -628,17 +628,17 @@ LNX_MIDIPatch {
 		midiOutName=midiDestinationNames[midiOut];
 		this.refreshGUI;
 	}
-	
+
 	setInChannel{|inC|
 		midiInChannel=inC.clip(-1,15);
 		this.refreshGUI;
 	}
-	
+
 	setOutChannel{|outC|
 		midiOutChannel=outC.clip(0,15);
 		this.refreshGUI;
 	}
-	
+
 	setInterface{|in,inC,out,outC|
 		midiIn=in.clip(0,noInPorts+noInternalBuses- 1);
 		midiOut=out.clip(0,noOutPorts+noInternalBuses- 1);
@@ -652,27 +652,27 @@ LNX_MIDIPatch {
 		midiOutName=midiDestinationNames[midiOut];
 		this.refreshGUI;
 	}
-		
+
 	initVars{
-	
+
 	}
-	
+
 	*deviceSourceByUID{|u|
 		if (u==0) {^["None","None"]};
 		if ((u>0)&&(u<=16)) {^["Internal","Bus"+(u.asString)]};
 		MIDIClient.sources.do({|i| if (i.uid==u) {^[i.device,i.name]}});
-		^["Missing","None"];		
+		^["Missing","None"];
 	}
-	
+
 	*deviceDestinationByUID{|u|
 		if (u==0) {^["None","None"]};
 		if ((u>0)&&(u<=16)) {^["Internal","Bus"+(u.asString)]};
 		MIDIClient.destinations.do({|i| if (i.uid==u) {^[i.device,i.name]}});
-		^["Missing","None"];		
+		^["Missing","None"];
 	}
-	
+
 	getSaveList{ ^[uidIn,midiInChannel,uidOut,midiOutChannel] }
-	
+
 	putLoadList{ |l|
 		# uidIn,midiInChannel,uidOut,midiOutChannel = l.asInteger;
 		previousInUID=uidIn;
@@ -685,7 +685,7 @@ LNX_MIDIPatch {
 		midiOutName=midiDestinationNames[midiOut];
 		this.refreshGUI;
 	}
-	
+
 	// net change
 	putNetChangeList{|l|
 		# uidIn,midiInChannel,uidOut,midiOutChannel = l.asInteger;
@@ -699,13 +699,13 @@ LNX_MIDIPatch {
 		if (midiOut==0) {uidOut=0};
 		this.refreshGUI;
 	}
-	
+
 	clear {
-	
+
 	}
-	
+
 	free {
-		
+
 		if ((patchNo+1)<noPatches) {
 			for (patchNo+1, noPatches - 1, {|i|
 				patches[i].patchNo=patches[i].patchNo - 1;
@@ -715,12 +715,12 @@ LNX_MIDIPatch {
 		noPatches=patches.size;
 
 	}
-	 
+
 	*uidInName{|i|
 		i=midiSourceUIDs.indexOf(i);
 		if (i.isNil) { ^"Missing" } { ^midiSourceNames[i] };
 	}
-	
+
 	printOn { arg stream;
 		stream
 			<< this.class.name << "("
@@ -730,12 +730,12 @@ LNX_MIDIPatch {
 			<< (34.asAscii) << " , " << midiOutChannel << " )"
 	}
 	// putLoadList doesn't update midiInName & midiOutName
-	
+
 	*dump {
-			patches.postln; 		
+			patches.postln;
 			["In:" ,noInPorts, "Out:", noOutPorts].postln;
-			"midiSourceNames".postln; 
-			midiSourceNames.postln;	
+			"midiSourceNames".postln;
+			midiSourceNames.postln;
 			"midiDestinationNames".postln;
 			midiDestinationNames.postln;
 			"midiSourceUIDs".postln;
@@ -743,19 +743,19 @@ LNX_MIDIPatch {
 			"midiDestinationUIDs".postln;
 			midiDestinationUIDs.postln;
 	}
-	
+
 /////////////// refresh ports ////////////////
-	
+
 	*changeNoInternalBuses{|b| this.refreshPorts(b) }
-	
+
 	*refreshPorts{|argNoInternalBuses|
-	
+
 		var newSources, newDestinations, removalsIn, removalsOut, win, text;
-	
+
 		argNoInternalBuses=argNoInternalBuses ? noInternalBuses;
-	
+
 		////////// get updated midi port lists //////////////////
-	
+
 		MIDIClient.list;
 		newSources=[0];
 		MIDIClient.sources.do     ({|m| newSources=newSources.add(m.uid.asInteger); });
@@ -765,7 +765,7 @@ LNX_MIDIPatch {
 		argNoInternalBuses.do     ({|i| newDestinations=newDestinations.add(i+1) });
 
 		//////// REMOVALS ////////////////////////////////////////
-		
+
 		//////// 1st test for in & outs been used and removed ////
 
 		removalsIn=Set[];
@@ -777,7 +777,7 @@ LNX_MIDIPatch {
 				p.previousInUID=temp;
 			}
 		});
-		 
+
 		removalsOut=Set[];
 		patches.do({|p,j| var temp;
 			//[p.uidOut,j].postln;
@@ -789,78 +789,78 @@ LNX_MIDIPatch {
 				p.previousOutUID=temp;
 			}
 		});
-		
+
 		//["remove:",removalsOut,newDestinations].postln;
-		
+
 		/////// and warn user //////////////////////////////////////
-		
+
 //		if (((removalsIn.size)>0)||((removalsOut.size)>0)) {
-//		
+//
 //		 	text="";
 //		 	if (removalsIn.size>0) {
 //				text=text++"\nMIDI Sources:\n";
 //				removalsIn.do({|i| text=text++"     "++midiSourceNames[i]++("\n"); });
-//			};			 
+//			};
 //		 	if (removalsOut.size>0) {
 //				text=text++"\nMIDI Destinations:\n";
 //				removalsOut.do({|i| text=text++"     "++midiDestinationNames[i]++("\n"); });
-//			};	
-//		 
+//			};
+//
 //	 		win=Window.new("MIDI / Pitch",
 //			Rect(200,600, 460, 200), resizable: false);
 //			win.view.background = Gradient(Color.ndcBack2,Color.ndcBack3);
 //			win.front.alwaysOnTop_(true);
-//			
+//
 //			StaticText.new(win,Rect(20, 10, 460, 42))
 //			.string_("                                                         WARNING !\n"
 //				++"The following MIDI Device(s) have been removed from the system.")
 //			.stringColor_(Color.white);
-//				
+//
 //			TextView.new(win,Rect(50, 60, 350, 87))
 //			.hasVerticalScroller_(true)
 //			.editable_(false)
 //			.string_(text);
-//				
-//			Button.new(win,Rect(373, 158, 60, 25))  
+//
+//			Button.new(win,Rect(373, 158, 60, 25))
 //			.states_([ [ "OK", Color(1.0, 1.0, 1.0, 1.0), Color.ndcDarkButtonBG ]])
 //			.action_{win.close}
 //			.focus;
-//		
+//
 //		};
 
 		//////// then test all in & outs removed to capture the others //
-	
+
 		removalsIn=Set[];
-		midiSourceUIDs.do({|p,i| 
+		midiSourceUIDs.do({|p,i|
 			if (newSources.includes(p).not) {
 				removalsIn=removalsIn.add(i);
 			}
 		});
-		 
+
 		removalsOut=Set[];
-		midiDestinationUIDs.do({|p,i| 
+		midiDestinationUIDs.do({|p,i|
 			if (newDestinations.includes(p).not) {
 				removalsOut=removalsOut.add(i);
 			}
 		});
-	
+
 		/////// disable ports & gui menu items ///////////////////////////
-	
+
 		if (removalsIn.size>0) {
-			removalsIn.do({|i| 
+			removalsIn.do({|i|
 				inPortsActive[i]=false;
 				patches.do({|p| var items; 	           // deactivate gui item
-					if (p.portInGUI.notNil) { 
+					if (p.portInGUI.notNil) {
 						items=p.portInGUI.items.copy;
 						items[i]="("++midiSourceNames[i];
-						if ((p.portInGUI.notNil) and: {p.portInGUI.isClosed.not}) { 
+						if ((p.portInGUI.notNil) and: {p.portInGUI.isClosed.not}) {
 							p.portInGUI.items_(items)
 						};
 					};
 				});
 			});
 		};
-		 
+
 		if (removalsOut.size>0) {
 			removalsOut.do({|i|
 				outPortsActive[i]=false;
@@ -869,23 +869,23 @@ LNX_MIDIPatch {
 					if (p.portOutGUI.notNil) {
 						items=p.portOutGUI.items.copy;
 						items[i]="("++midiDestinationNames[i];
-						if ((p.portOutGUI.notNil) and: {p.portOutGUI.isClosed.not}) { 
+						if ((p.portOutGUI.notNil) and: {p.portOutGUI.isClosed.not}) {
 							p.portOutGUI.items_(items)
 						};
 					};
-				});	
+				});
 			});
 		};
-		
+
 		//////// ADDITIONS ////////////////////////////////////////
-		
+
 		/////// 1st reistate ins & outs that have been removed ////
-		
+
 		midiSourceUIDs.do({|uid, i|
 			if (newSources.includes(uid)) {
 				inPortsActive[i]=true;
 				patches.do({|p| var items; 	           // activate gui item
-					if (p.portInGUI.notNil) { 
+					if (p.portInGUI.notNil) {
 						items=p.portInGUI.items.copy;
 						items[i]=midiSourceNames[i];
 						if ((p.portInGUI.notNil) and: {p.portInGUI.isClosed.not}) {
@@ -896,12 +896,12 @@ LNX_MIDIPatch {
 				});
 			};
 		});
-		
+
 		midiDestinationUIDs.do({|uid, i|
 			if (newDestinations.includes(uid)) {
 				outPortsActive[i]=true;
 				patches.do({|p| var items; 	           // activate gui item
-					if (p.portOutGUI.notNil) { 
+					if (p.portOutGUI.notNil) {
 						items=p.portOutGUI.items.copy;
 						items[i]=midiDestinationNames[i];
 						if ((p.portOutGUI.notNil) and: {p.portOutGUI.isClosed.not}) {
@@ -912,7 +912,7 @@ LNX_MIDIPatch {
 				});
 			};
 		});
-		
+
 		///////// and then add any new devices /////////////////////
 
 		newSources.do({|u,i| var m;
@@ -942,16 +942,16 @@ LNX_MIDIPatch {
 				inPortsActive=inPortsActive.add(true);
 				noInPorts=noInPorts+1;
 				patches.do({|p| var items; 	           // activate gui item
-					if ((p.portInGUI.notNil) and: {p.window.isClosed.not}) { 
+					if ((p.portInGUI.notNil) and: {p.window.isClosed.not}) {
 						items=p.portInGUI.items.copy;
 						items=items.add(midiSourceNames[i]);
 						p.portInGUI.items_(items);
 					};
 				});
-				
+
 			}
 		});
-	
+
 		newDestinations.do({|u,i| var m;
 			if( midiDestinationUIDs.includes(u).not) {
 				if ((u>0)&&(u<=argNoInternalBuses)) {
@@ -975,7 +975,7 @@ LNX_MIDIPatch {
 				outPortsActive=outPortsActive.add(true);
 				noOutPorts=noOutPorts+1;
 				patches.do({|p| var items; 	           // activate gui item
-					if ((p.portOutGUI.notNil) and: {p.window.isClosed.not}) { 
+					if ((p.portOutGUI.notNil) and: {p.window.isClosed.not}) {
 						items=p.portOutGUI.items.copy;
 						items=items.add(midiDestinationNames[i]);
 						p.portOutGUI.items_(items);
@@ -983,17 +983,17 @@ LNX_MIDIPatch {
 				});
 			}
 		});
-	
+
 		noInternalBuses=argNoInternalBuses;
-	
+
 	}
-	
+
 //////////////// GUI//////////////////////////////
 
 	createInGUIA{arg argWindow, xy;
 
 		var x, y, menuItems;
-			
+
 		xy=xy?(0@0);
 		x=xy.x;
 		y=xy.y;
@@ -1002,12 +1002,12 @@ LNX_MIDIPatch {
 		midiSourceNames.do({|n,j|
 			menuItems=menuItems.add( (inPortsActive[j]==true).if(n,"("++n) );
 		});
-							
+
 		portInGUI=MVC_PopUpMenu3(window,Rect(x+25,y+2,150,17))
 			.items_(menuItems)
 			.color_(\background,Color.ndcMenuBG)
 			.canFocus_(false)
-			.action_{|me| 
+			.action_{|me|
 				//panicFunc ??
 				this.setInPort(me.value);
 				action.value(this);
@@ -1015,15 +1015,15 @@ LNX_MIDIPatch {
 			.value_(midiIn)
 			.canFocus_(false)
 			.font_(Font("Arial", 10));
-	
+
 	}
-	
+
 	createInMVUA{arg argWindow, xy, test, background;
 
 		var x, y, menuItems;
-			
-		background = background ? Color.ndcMenuBG; 
-			
+
+		background = background ? Color.ndcMenuBG;
+
 		xy=xy?(0@0);
 		x=xy.x;
 		y=xy.y;
@@ -1032,12 +1032,12 @@ LNX_MIDIPatch {
 		midiSourceNames.do({|n,j|
 			menuItems=menuItems.add( (inPortsActive[j]==true).if(n,"("++n) );
 		});
-							
+
 		portInGUI=MVC_PopUpMenu3(window,Rect(x,y,144,17))
 			.items_(menuItems)
 			.color_(\background,background)
 			.canFocus_(false)
-			.action_{|me| 
+			.action_{|me|
 				//panicFunc ??
 				this.setInPort(me.value);
 				action.value(this);
@@ -1045,18 +1045,18 @@ LNX_MIDIPatch {
 			.value_(midiIn)
 			.canFocus_(false)
 			.font_(Font("Arial", 10));
-	
+
 	}
-	
+
 	createInGUIB{arg argWindow, xy;
 
 		var x, y, menuItems;
-			
+
 		xy=xy?(0@0);
 		x=xy.x;
 		y=xy.y;
 		window=argWindow;
-							
+
 		channelInGUI=MVC_PopUpMenu3(window,Rect(x+25,y+2,53,17))
 			.items_(["All","Ch. 1","Ch. 2","Ch. 3"
 					 ,"Ch. 4","Ch. 5","Ch. 6","Ch. 7","Ch. 8"
@@ -1073,18 +1073,18 @@ LNX_MIDIPatch {
 			.font_(Font("Arial", 10));
 
 	}
-	
+
 	createInMVUB{arg argWindow, xy, test, background;
 
 		var x, y, menuItems;
-			
+
 		xy=xy?(0@0);
 		x=xy.x;
 		y=xy.y;
 		window=argWindow;
-						
+
 		background = background ? Color.ndcMenuBG;
-							
+
 		channelInGUI=MVC_PopUpMenu3(window,Rect(x,y,97-40-4,17))
 			.items_(["All","Ch. 1","Ch. 2","Ch. 3"
 					 ,"Ch. 4","Ch. 5","Ch. 6","Ch. 7","Ch. 8"
@@ -1101,11 +1101,11 @@ LNX_MIDIPatch {
 			.font_(Font("Arial", 10));
 
 	}
-	
+
 	createInGUI{arg argWindow, xy, label=true, includeInternal=true;
 
 		var x, y, menuItems;
-			
+
 		xy=xy?(0@0);
 		x=xy.x;
 		y=xy.y;
@@ -1124,12 +1124,12 @@ LNX_MIDIPatch {
 				.string_("   In")
 				.stringColor_(Color.white);
 		};
-							
+
 		portInGUI=MVC_PopUpMenu3(window,Rect(x+25,y+2,220-35-35-6,17))
 			.items_(menuItems)
 			.color_(\background,Color.ndcMenuBG)
 			.canFocus_(false)
-			.action_{|me| 
+			.action_{|me|
 				//panicFunc ??
 				this.setInPort(me.value);
 				action.value(this);
@@ -1154,10 +1154,10 @@ LNX_MIDIPatch {
 			.font_(Font("Arial", 10));
 
 	}
-	
+
 	createOutGUI{arg argWindow, xy, label=true;
 
-		var x, y, menuItems;	
+		var x, y, menuItems;
 		x=xy.x;
 		y=xy.y;
 
@@ -1171,18 +1171,18 @@ LNX_MIDIPatch {
 		if (label==true) {
 			StaticText.new(window,Rect(x, y, 30, 20)).string_("Out").stringColor_(Color.white);
 		};
-					
+
 		portOutGUI=MVC_PopUpMenu3(window,Rect(x+25,y+2,220-35-35,17))
 			.items_(midiDestinationNames)
 			.color_(\background,Color.ndcMenuBG)
 			.canFocus_(false)
-			.action_{|me| 
+			.action_{|me|
 				this.setOutPort(me.value);
 				action.value(this);
-			}	
+			}
 			.value_(midiOut)
 			.font_(Font("Arial", 10));
-	
+
 		channelOutGUI=MVC_PopUpMenu3(window,Rect(x+250-70,y+2,50,17))
 			.items_(["Ch. 1","Ch. 2","Ch. 3"
 					 ,"Ch. 4","Ch. 5","Ch. 6","Ch. 7","Ch. 8"
@@ -1198,10 +1198,10 @@ LNX_MIDIPatch {
 			.font_(Font("Arial", 10));
 
 	}
-	
+
 	createOutGUIA{arg argWindow, xy, label=true, w=150;
 
-		var x, y, menuItems;	
+		var x, y, menuItems;
 		x=xy.x;
 		y=xy.y;
 
@@ -1217,28 +1217,28 @@ LNX_MIDIPatch {
 				.string_("Out")
 				.stringColor_(Color.white);
 		};
-					
+
 		portOutGUI=MVC_PopUpMenu3(window,Rect(x,y,w,17))
 			.items_(midiDestinationNames)
 			.color_(\background,Color.ndcMenuBG)
 			.canFocus_(false)
-			.action_{|me| 
+			.action_{|me|
 				this.setOutPort(me.value);
 				action.value(this);
-			}	
+			}
 			.value_(midiOut)
 			.font_(Font("Arial", 10));
-	
+
 		}
-	
+
 	// **********
-	
+
 	createOutMVUA{arg argWindow, xy,label=true, w=144, background;
 
 		var x, y, menuItems;
-			
-		background = background ? Color.ndcMenuBG; 
-			
+
+		background = background ? Color.ndcMenuBG;
+
 		xy=xy?(0@0);
 		x=xy.x;
 		y=xy.y;
@@ -1248,12 +1248,12 @@ LNX_MIDIPatch {
 			[n, j].postln;
 			menuItems=menuItems.add( (outPortsActive[j]==true).if(n,"("++n) );
 		});
-							
+
 		portOutGUI=MVC_PopUpMenu3(window,Rect(x,y,w,17))
 			.items_(midiDestinationNames)
 			.color_(\background,background)
 			.canFocus_(false)
-			.action_{|me| 
+			.action_{|me|
 				//panicFunc ??
 				this.setOutPort(me.value);
 				action.value(this);
@@ -1261,12 +1261,12 @@ LNX_MIDIPatch {
 			.value_(midiOut)
 			.canFocus_(false)
 			.font_(Font("Arial", 10));
-	
+
 	}
-	
+
 	createOutGUIB{arg argWindow, xy, label=true;
 
-		var x, y, menuItems;	
+		var x, y, menuItems;
 		x=xy.x;
 		y=xy.y;
 
@@ -1287,18 +1287,18 @@ LNX_MIDIPatch {
 			.font_(Font("Arial", 10));
 
 	}
-	
+
 	createOutMVUB{arg argWindow, xy, background;
 
 		var x, y, menuItems;
-			
-		background = background ? Color.ndcMenuBG; 	
-		
+
+		background = background ? Color.ndcMenuBG;
+
 		xy=xy?(0@0);
 		x=xy.x;
 		y=xy.y;
 		window=argWindow;
-							
+
 		channelOutGUI=MVC_PopUpMenu3(window,Rect(x,y,53,17))
 			.items_(["Ch. 1","Ch. 2","Ch. 3"
 					 ,"Ch. 4","Ch. 5","Ch. 6","Ch. 7","Ch. 8"
@@ -1315,10 +1315,10 @@ LNX_MIDIPatch {
 			.font_(Font("Arial", 10));
 
 	}
-	
+
 	refreshGUI{
 
-		if ((portInGUI.notNil)     and: { portInGUI.isClosed.not}) { 
+		if ((portInGUI.notNil)     and: { portInGUI.isClosed.not}) {
 			portInGUI.value=midiIn
 		};
 		if ((channelInGUI.notNil)  and: { channelInGUI.isClosed.not}) {
@@ -1332,14 +1332,14 @@ LNX_MIDIPatch {
 		};
 
 	}
-	
+
 } ////////////////////////////// end.LNX_MIDIPatch Object /////////////////////////////
 
 // used as a fake in & out device for the "None" midi device
 // any functionality added to LNX_MIDIPatch must also br added here
 
 NoMIDI {
-	
+
 	*latency_ {}
 	*noteOn   {}
 	*noteOff  {}
@@ -1366,12 +1366,12 @@ NoMIDI {
 	*midiClockLatency{}
 	*endPoint{}
 	*device  {}
-	*name    {}
+//	*name    {}
 	*uid     {}
 	*isSameDevice{|endPoint| ^(endPoint === this) }
 	*isSameName{|endPoint| ^(endPoint === this) }
-	*isSameDeviceAndName{|endPoint| ^(endPoint === this) } 
+	*isSameDeviceAndName{|endPoint| ^(endPoint === this) }
 	*isSameEndPoint{|endPoint|^(endPoint === this)}
-	
+
 } /////////////////////////////// end.NoMIDI Patch ///////////////////////////////////////
 
