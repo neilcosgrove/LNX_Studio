@@ -839,7 +839,7 @@ LNX_Collaboration{
 			.editable_(false)
 			.background_(Color(0,0,0))
 			.stringColor_(Color.white)
-			.font_(Font("STXihei", 12));
+			.font_(Font("Helvetica", 12));
 			
 		this.refresh;
 		
@@ -976,7 +976,7 @@ LNX_Collaboration{
 			.drawFunc={|me|
 				if (isConnected) {
 					Pen.smoothing_(true);
-					Pen.font_(Font("Sathu",12));
+					Pen.font_(Font("Helvetica",14));
 					hostOrder.do{|userID,i|
 						var x1,y1,h1,connected,user;
 						user=users[userID];

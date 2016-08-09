@@ -11,26 +11,27 @@
 
 		// kick //////////////////
 		
-		(
-		
 		SynthDef("kick", {	|outputChannels=0,
-						 amp=1,
-						 note=29,
-						 dur=1,
-						 mDur=1,
-						 attackTime=0.005,
-						 attackTime2=1,
-						 attackAmount=1,
-						 filterScale=1.5,
-						 q=0,
-						 gate=1,
-						 noise=0,
-						 pan=0,
-						 sendChannels=0,
-						 send=0,
-						 masterSendChannels=0, masterSendAmp=0|
+				 amp=1,
+				 note=29,
+				 dur=1,
+				 mDur=1,
+				 attackTime=0.005,
+				 attackTime2=1,
+				 attackAmount=1,
+				 filterScale=1.5,
+				 q=0,
+				 gate=1,
+				 noise=0,
+				 pan=0,
+				 sendChannels=0,
+				 send=0,
+				 masterAmp=0,
+				 masterPan=0,
+				 select=0
+				|
 		
-			var env0, env1, env1m, out;
+			var env0, env1, env1m, out, out2;
 			
 			// amp env
 			env0 =  EnvGen.ar(Env.new([0.5, 1, 0.5, 0],
@@ -56,37 +57,51 @@
 			out = out * amp;
 			
 			out=Pan2.ar(out,pan);
-			OffsetOut.ar(outputChannels,out);
-			OffsetOut.ar(sendChannels,[out[0]*send,out[1]*send]);
-			OffsetOut.ar(masterSendChannels,[out[0]*masterSendAmp,out[1]*masterSendAmp]);
+			
+			masterPan = masterPan*2;
+			out2= Pan2.ar(out[0], (masterPan-1).clip(-1,1))
+			       + Pan2.ar(out[1], (masterPan+1).clip(-1,1)); // this is local ch chPan
+			out2 = out2 * masterAmp;
+			
+			// so we need chPan and chAmp for ch sends & incase out not to mixer synth
+				
+			// these may or may not get amp & pan, depends 
+			// all out as 1??
+			OffsetOut.ar(outputChannels,Select.ar(select,[out,out2])); // main out to mixer
+			
+			// this won't get amp and pan yet
+			OffsetOut.ar(sendChannels,[out2[0]*send,out2[1]*send]); // channel send
+			
 			
 		}).send(s);
-	
-		);
+		
 		
 		// snare //////////////////
 		
 		SynthDef("snare", {|
-				outputChannels=0,
-				amp=0.8,
-				note=49,
-				dur=1,
-				noiseFilt1=1,
-				noiseFilt2=1,
-				noiseMix=0.5,
-				nDur=1,
-				mDur=1,
-				attackAmount=1,
-				gate=1,
-				pan=0,
-				sendChannels=0,
-				send=0,
-				masterSendChannels=0, masterSendAmp=0|
+			outputChannels=0,
+			amp=0.8,
+			note=49,
+			dur=1,
+			noiseFilt1=1,
+			noiseFilt2=1,
+			noiseMix=0.5,
+			nDur=1,
+			mDur=1,
+			attackAmount=1,
+			gate=1,
+			pan=0,
+			sendChannels=0,
+			send=0,
+			masterAmp=0,
+			masterPan=0,
+			select=0|
 			
-			var env0, env1, env2, env1m, oscs, noise, out;
+			var env0, env1, env2, env1m, oscs, noise, out, out2;
 			
 			// osc amp env
-			env0 = EnvGen.ar(Env.new([0.5, 1, 0.5, 0], [0.005, 0.03, 0.10], [-4, -2, -4]),gate,timeScale:dur*mDur);
+			env0 = EnvGen.ar(Env.new([0.5, 1, 0.5, 0], [0.005, 0.03, 0.10],
+									[-4, -2, -4]),gate,timeScale:dur*mDur);
 			
 			// osc pitch env
 			env1 = EnvGen.ar(Env.new([
@@ -98,7 +113,8 @@
 			env1m = env1.midicps;
 			
 			// noise amp env
-			env2 = EnvGen.ar(Env.new([1, 0.4, 0,0], [0.05*nDur, 0.13*nDur,0.18*(1-nDur)], [-2, -2]),gate, doneAction:2,timeScale:dur*mDur);
+			env2 = EnvGen.ar(Env.new([1, 0.4, 0,0], [0.05*nDur, 0.13*nDur,0.18*(1-nDur)],
+							[-2, -2]),gate, doneAction:2,timeScale:dur*mDur);
 			
 			oscs = LFPulse.ar(env1m, 0, 0.5, 1, -0.5)
 				  + LFPulse.ar(env1m * 1.6, 0, 0.5, 0.5, -0.25);
@@ -114,9 +130,16 @@
 			out = out.clip2(1) * amp;
 			
 			out=Pan2.ar(out,pan);
-			OffsetOut.ar(outputChannels,out);
-			OffsetOut.ar(sendChannels,[out[0]*send,out[1]*send]);
-			OffsetOut.ar(masterSendChannels,[out[0]*masterSendAmp,out[1]*masterSendAmp]);
+			
+			masterPan = masterPan*2;
+			out2= Pan2.ar(out[0], (masterPan-1).clip(-1,1))
+			       + Pan2.ar(out[1], (masterPan+1).clip(-1,1)); // this is local ch chPan
+			out2 = out2 * masterAmp;
+			
+			OffsetOut.ar(outputChannels,Select.ar(select,[out,out2])); // main out to mixer
+					
+			OffsetOut.ar(sendChannels,[out2[0]*send,out2[1]*send]);
+			
 			
 		}).send(s);
 		
@@ -135,10 +158,11 @@
 			    rnd1=0,
 			    rnd2=0,
 			    rnd3=0,
-				masterSendChannels=0, masterSendAmp=0
-			    |
+			    masterAmp=0,
+			    masterPan=0,
+			    select=0|
 		
-			var env1, env2, out, noise1, noise2;
+			var env1, env2, out, noise1, noise2, out2;
 			
 			// noise 1 - 4 short repeats
 			env1 = EnvGen.ar(Env.new([0, 1, 0, 1, 0, 1, 0, 1, 0], 
@@ -161,9 +185,15 @@
 			out = out.softclip * amp;
 			
 			out=Pan2.ar(out,pan);
-			OffsetOut.ar(outputChannels,out);
-			OffsetOut.ar(sendChannels,[out[0]*send,out[1]*send]);
-			OffsetOut.ar(masterSendChannels,[out[0]*masterSendAmp,out[1]*masterSendAmp]);
+			
+			masterPan = masterPan*2;
+			out2= Pan2.ar(out[0], (masterPan-1).clip(-1,1))
+			       + Pan2.ar(out[1], (masterPan+1).clip(-1,1)); // this is local ch chPan
+			out2 = out2 * masterAmp;
+			
+			OffsetOut.ar(outputChannels,Select.ar(select,[out,out2])); // main out to mixer
+			
+			OffsetOut.ar(sendChannels,[out2[0]*send,out2[1]*send]);
 			
 		}).send(s);
 
@@ -192,13 +222,15 @@
 				gate=1,
 				chorus=1.16,
 				stick=4,
-				masterSendChannels=0, masterSendAmp=0;
+				masterAmp=0,
+				masterPan=0,
+				select=0;
 			
 			var drum_mode_sin_1, drum_mode_sin_2, drum_mode_pmosc, drum_mode_mix,
 			drum_mode_env;
 			var stick_noise, stick_env;
 			var drum_reson, tom_mix;
-			var env1, idxEnv;
+			var env1, idxEnv, out, out2;
 			
 			
 			// osc pitch env
@@ -225,17 +257,23 @@
 			
 			tom_mix= (drum_mode_mix+stick_noise)*(amp*0.15);
 			
-			tom_mix=Pan2.ar(tom_mix,pan);
+			out = Pan2.ar(tom_mix,pan);
 			
-			OffsetOut.ar(outputChannels,tom_mix);
-			OffsetOut.ar(sendChannels,[tom_mix[0]*send,tom_mix[1]*send]);
-			OffsetOut.ar(masterSendChannels,[tom_mix[0]*masterSendAmp,tom_mix[1]*masterSendAmp]);
 			
+			masterPan = masterPan*2;
+			out2= Pan2.ar(out[0], (masterPan-1).clip(-1,1))
+			       + Pan2.ar(out[1], (masterPan+1).clip(-1,1)); // this is local ch chPan
+			out2 = out2 * masterAmp;
+			
+			OffsetOut.ar(outputChannels,Select.ar(select,[out,out2])); // main out to mixer
+			
+			OffsetOut.ar(sendChannels,[out2[0]*send,out2[1]*send]);
+
 			}
 		).send(s);
  		
 		// hat //////////////////
-	(	
+			
 		SynthDef("hat", {	
 			arg outputChannels=0,
 				amp=0.3,
@@ -249,7 +287,9 @@
 				pan=0,
 				sendChannels=0,
 				send=0,
-				masterSendChannels=0, masterSendAmp=0;
+				masterAmp=0,
+				masterPan=0,
+				select=0;
 		
 			var env1, env2, oscs1, noise, n, n2;
 
@@ -259,7 +299,7 @@
 			//var freqs = [205.35, 254.29, 294.03, 304.41, 369.64, 522.71];
 			
 			var freqs; 
-			var signal, pulseEnv;
+			var signal, pulseEnv, out2;
 			
 			dur=dur/3;
 			noteAdj=(noteAdj.midicps)/(0.midicps);
@@ -284,13 +324,18 @@
 			out = Pan2.ar(out,pan);
 			out = [out[0], DelayN.ar(out[1], 0.002, 0.002)];
 			
-			OffsetOut.ar(outputChannels,out);
-			OffsetOut.ar(sendChannels,[out[0]*send,out[1]*send]);
-			OffsetOut.ar(masterSendChannels,[out[0]*masterSendAmp,out[1]*masterSendAmp]);
+			
+			masterPan = masterPan*2;
+			out2= Pan2.ar(out[0], (masterPan-1).clip(-1,1))
+			       + Pan2.ar(out[1], (masterPan+1).clip(-1,1)); // this is local ch chPan
+			out2 = out2 * masterAmp;
+			
+			OffsetOut.ar(outputChannels,Select.ar(select,[out,out2])); // main out to mixer
+			
+			OffsetOut.ar(sendChannels,[out2[0]*send,out2[1]*send]);
 			
 		}).send(s);
-	)
-
+		
 	}
 
 } // end ////////////////////////////////////

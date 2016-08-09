@@ -36,8 +36,16 @@
 			}].asModel;
 		
 		// master out level meter
-		models[\peakOutL] = [\unipolar].asModel.fps_(20); // fps same as in LNX_Studio:initUGens
-		models[\peakOutR] = [\unipolar].asModel.fps_(20); // fps same as in LNX_Studio:initUGens
+		models[\peakOutL] = [\unipolar, {|me,val|
+//				~x=val
+			} 
+			].asModel.fps_(20); // fps same as in LNX_Studio:initUGens
+		models[\peakOutR] = [\unipolar,
+			{|me,val|
+//				~y=val;
+//				if (~v.notNil) { {~v.refresh}.defer }
+			} 
+		].asModel.fps_(20); // fps same as in LNX_Studio:initUGens
 
 		// network master voulme and mute controls
 		models[\networkMaterVolume] = [
@@ -241,7 +249,7 @@
 				if ((insts.size>0) and: {insts.selectedInst.notNil}) {
 					if (show1) {
 						insts.pairsDo{|id,inst|
-							if (id!=insts.selectedID) { inst.hide }
+							if (id!=insts.selectedID) { inst.hide.closeEQ }
 						};
 						insts.selectedInst.front;
 					}{
@@ -260,12 +268,12 @@
 				transmitInstChange=false; // stop this from going over the net
 				if (insts.size>0) {
 					if (showNone) {
-						insts.do(_.closeWindow)
+						insts.do{|i| i.closeWindow.closeEQ }
 					}{
 						if (insts.selectedInst.notNil) {
 							if (show1) {
 								insts.pairsDo{|id,inst|
-									if (id!=insts.selectedID) {inst.closeWindow}
+									if (id!=insts.selectedID) {inst.closeWindow.closeEQ}
 								};
 								insts.selectedInst.front;
 							}{
@@ -288,7 +296,7 @@
 				transmitInstChange=false; // stop this from going over the net
 				insts.do{|i| if (i.isVisible) {anyVisable=true} };
 				if (anyVisable) {
-					insts.do(_.closeWindow)
+					insts.do{|i| i.closeWindow.closeEQ } 
 				}{
 					insts.do(_.openWindow)
 				};
@@ -410,7 +418,7 @@
 			.color_(\cursor,Color.white)
 			.color_(\focus,Color.orange)
 			.color_(\editBackground, Color.black)
-			.font_(Font.new("STXihei", 13))
+			.font_(Font.new("Helvetica", 13))
 			.actions_(\stringAction,{|me|
 				filename=me.string.filenameSafe;
 				me.string_(filename);
@@ -479,7 +487,6 @@
 			.color_(\background,Color(0.14,0.12,0.11)*0.4)
 			.color_(\string,Color.white);
 
-
 		this.addTextToDialog("",false,true);
 		this.addTextToDialog("",false,true);
 		this.addTextToDialog("                  LNX_Studio",false,true);
@@ -503,7 +510,7 @@
 			.color_(\focus,Color.orange)
 			.color_(\editBackground, Color(0,0,0,0.7))
 			.color_(\cursor,Color.white)
-			.font_(Font.new("STXihei", 12));
+			.font_(Font.new("Helvetica", 12));
 
 		// isListening (uses model from studio)
 		MVC_OnOffView(models[\isListening],gui[\netScrollView],Rect(w-27,1+h-37-6,16,16))

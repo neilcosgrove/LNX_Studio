@@ -88,7 +88,7 @@ LNX_Studio {
 	//// groups // to be replaced by groups & groupIDs above;
 	var	<instGroup, 		<fxGroup,			<channelOutGroup,
 		<scCodeGroup,		<instOutGroup,	<gsrFilterGroup,
-		<lfoGroup;
+		<lfoGroup,		<eqGroup;
 
 	//// midi
 	var	<midi,			<noInternalBuses=3,
@@ -126,6 +126,59 @@ LNX_Studio {
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 
+	var midi2, padNotes;
+
+	// temp for CARBON ************
+	// LNX_POP changed
+	// LNX_Instruments:move changed
+	// LNX_Studio:stop
+
+	initPadMixerMIDI{
+
+		// note value of pads left to right, top to bottom
+		padNotes =  #[
+//			0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,
+//			32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
+			64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
+			96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119 ];
+
+		midi2 = LNX_POP.midi;
+
+		midi2.noteOnFunc_{|src, chan, note, vel ,latency|
+			var inst, index = padNotes.indexOf(note);
+			if (index.notNil) {
+				inst = insts.mixerInstruments[index];
+				if (inst.notNil) {
+					inst.onOffModel.lazyValueAction_(1 -(inst.onOffModel.value) );
+				};
+			};
+
+		};
+
+	}
+
+	updatePadMixer{|inst|
+		var index = insts.mixerInstruments.indexOf(inst);
+		if (index.notNil and:{padNotes[index].notNil}) {
+			if (inst.onOffModel.isTrue) {
+				midi2.noteOn(padNotes[index],48, latency) ; // green
+			}{
+				midi2.noteOn(padNotes[index],0, latency) ; // off
+			}
+		};
+	}
+
+	updateAllPadMixer{ insts.mixerInstruments.do{|inst| this.updatePadMixer(inst) } }
+
+	addMixerPaddDependant{|inst|
+		var index = insts.mixerInstruments.indexOf(inst);
+		if (index.notNil) {
+			inst.onOffModel.addDependant{
+				this.updatePadMixer(inst)
+			}
+		};
+	}
+
 	// create a new studio ///////////////////////////////////////////////////////
 
 	*new {|server| if (studios.isEmpty) { ^super.new.init(server) } } // only 1 instance for now
@@ -140,6 +193,7 @@ LNX_Studio {
 		this.initLibrary;            // make all the files & folders for the inst library
 		this.initVars;			 // all the main vars are initialised here
 		this.initMIDI;			 // start all midi services
+
 		this.initNetwork;			 // initialise the network
 		this.startResponders;		 // start responders for SCSynth >> SCLang
 
@@ -349,6 +403,7 @@ LNX_Studio {
 				instTypes.do(_.initUGens(server));   // init all instrument uGens
 				insts.do(_.initUGens(server));		// used by SC Code FX
 				LNX_SampleBank.initUGens(server);	// sample bank for tuning
+				LNX_EQ.initUGens(server);            // and EQ
 				LNX_Voicer.update_(server);			// update voicer
 
 				{this.initGroups}.defer(0.1);		// start inst, code, fx & out groups
@@ -362,7 +417,8 @@ LNX_Studio {
 						.do(_.serverReboot)
 						.do(_.startInstOutDSP)
 						.do(_.startDSP)
-						.do(_.updateDSP);
+						.do(_.updateDSP)
+						.do(_.restartEQ);
 				}.defer(0.3); // defer used to help LNX_CodeFX
 				{
 					if (songToLoad.notNil) {
@@ -388,7 +444,8 @@ LNX_Studio {
 		gsrFilterGroup  = Group(instGroup,\addAfter);       // gsRythmn filter group
 		postFilterGroup = Group(gsrFilterGroup,\addAfter);  // gsRythmn post filter group
 		scCodeGroup     = Group(postFilterGroup,\addAfter); // sc code instruments
-		instOutGroup    = Group(scCodeGroup,\addAfter);     // the inst out group for levels & outs
+		eqGroup         = Group(scCodeGroup,\addAfter);     // eq group before inst out
+		instOutGroup    = Group(eqGroup,\addAfter);         // the inst out group for levels & outs
 		fxGroup         = Group(instOutGroup,\addAfter);    // the effects
 		channelOutGroup = Group.after(fxGroup);             // the channel outputs
 
@@ -398,6 +455,7 @@ LNX_Studio {
 			\gsrFilter:	gsrFilterGroup,
 			\postFilter:  postFilterGroup,
 			\scCode: 	 	scCodeGroup,
+			\eq:          eqGroup,
 			\instOut:		instOutGroup,
 			\fx:			fxGroup,
 			\channelOut:	channelOutGroup
@@ -429,14 +487,21 @@ LNX_Studio {
 			ReplaceOut.ar(channel,out);	// replace
 		}).send(server);
 
-		// SynthDef out instOut, does levels.
+		// SynthDef out instOut, does levels, pan & send
 
-		SynthDef("LNX_InstOut", {|inChannel=0,outChannel=0,id=0|
-			var out;
-			out=In.ar(inChannel, 2);
-			SendPeakRMS.kr(out[0], 20, 1.5, "/instPeakOutL", id);
-			SendPeakRMS.kr(out[1], 20, 1.5, "/instPeakOutR", id);
-			Out.ar(outChannel,out);	 // do not replace
+		SynthDef("LNX_InstOut", {|inChannel=0, outChannel=0, id=0, amp=1, pan=0, sendAmp=0,
+								sendChannel=0|
+			var leftPan, rightPan;
+			var out  = In.ar(inChannel, 2);    // signal in
+			leftPan  = (pan*2-1).clip(-1,1);   // left pos
+			rightPan = (pan*2+1).clip(-1,1);   // right pos
+			out      = LinPan2.ar(out[0], leftPan) + LinPan2.ar(out[1], rightPan); // pan
+			out      = out * amp;                                 // apply amp
+			SendPeakRMS.kr(out[0], 20, 1.5, "/instPeakOutL", id); // left meter
+			SendPeakRMS.kr(out[1], 20, 1.5, "/instPeakOutR", id); // right meter
+			Out.ar(outChannel,out);                               // now send out
+			out = out*sendAmp;                                    // apply send amp
+			Out.ar(sendChannel,out.dup);                          // and send to fxs
 		}).send(server);
 
 	}
@@ -506,6 +571,7 @@ LNX_Studio {
 			insts.visualOrder.do(_.startDSP);
 			insts.visualOrder.do(_.startInstOutDSP);
 			insts.visualOrder.do(_.updateDSP);
+			insts.visualOrder.do(_.restartEQ);
 			{server.volume_(models[\volume].value)}.defer(0.1);
 
 //			Bus.new(\audio,0, 2, server).scope;
@@ -590,7 +656,10 @@ LNX_Studio {
 		LNX_MIDIControl.studio_(this); // used to register this studio in midi control so
 									// midi control can update front window in studio
 									// so this will remain on top when networking
+
 		LNX_POP.initMIDI;
+
+		this.initPadMixerMIDI;           // temp for CARBON ************
 
 	}
 
@@ -982,6 +1051,8 @@ LNX_Studio {
 
 		this.refreshOnOffEnabled;					  // update solo gui enabled/not enabled
 
+		this.addMixerPaddDependant(inst).updatePadMixer(inst); // temp for CARBON ************
+
 		// do onSolo stuff
 		if (onOff==0) {
 			inst.onOff_(0);
@@ -1129,8 +1200,8 @@ LNX_Studio {
 	selectInst{|id|
 		if (id.notNil) {
 			if (showNone.not) {
-				if (show1) {insts.do({|inst| if (inst.id!=id) {inst.closeWindow}})};
-				insts[id].front;
+				if (show1) {insts.do({|inst| if (inst.id!=id) { inst.closeWindow.closeEQ }})};
+				insts[id].front.openEQIfOn;
 			};
 			insts.selectedInst_(id);
 			this.setInstNumberColours;

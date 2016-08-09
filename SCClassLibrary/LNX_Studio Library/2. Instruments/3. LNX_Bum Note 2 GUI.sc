@@ -49,10 +49,6 @@
 						\noShadows_	: 0,
 						\colors_		: (\string : Color.black));
 						
-		gui[\labelTheme2]=( \font_		: Font("Chalkboard-Bold", 14),
-						\align_		: \left,
-						\colors_		: (\string : Color(1,0.75,0)));
-						
 		gui[\sliderTheme]=(\thumbSize_	: 18,
 						\border_		: 4,
 						 \labelFont_	: Font("Helvetica-Bold", 14),
@@ -277,15 +273,10 @@
 		MVC_PlainSquare(models[43],gui[\controlsView],Rect(32, 101, 3, 139))
 			.color_(\off,Color(0,0,0,0.21))
 			.color_(\on,border);
-			
-		// BUm note text
-		MVC_Text(gui[\controlsView],Rect(2, 0, 111, 25))
-				.align_(\center)
-				.shadow_(false)
-				.penShadow_(true)
-				.font_(Font("AvenirNext-Heavy",16))
-				.string_("Bum Note 2");
-						
+		
+		// logo					
+		MVC_ImageView(gui[\controlsView],Rect(7,5, 106, 22))
+			.image_("fontImages/Bum Note 2.tiff");													
 		// the high pass filter ///////////////////////////////////////////////////////////////////
 			
 		MVC_StaticText(gui[\controlsView], Rect(215, 11, 81, 18),gui[\labelTheme])

@@ -53,6 +53,8 @@ MVC_NumberFunc{
 		Spec.add(\noteSeq,      ControlSpec(0, 12, step:1, default: 0));
 		Spec.add(\midiNoteSeq,  ControlSpec(-1,127,\lin,1,-1));
 
+	     Spec.add(\eqAmp,        ControlSpec(-24, 24, units: " dB",default: 0));
+
 		// the number box functions
 		
 		// asFormatedString is prob quite slow

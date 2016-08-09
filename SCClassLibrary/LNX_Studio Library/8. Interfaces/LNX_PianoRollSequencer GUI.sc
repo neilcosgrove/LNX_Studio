@@ -791,6 +791,7 @@
 
 	.receiveDragHandler_{
 		var file;
+		var tempoAdjust=24;
 		// is the 1st item a string?
 		if ((View.currentDrag.isArray)and:{View.currentDrag[0].isString}) {
 			// try opening path as a midi file
@@ -803,15 +804,12 @@
 					.color_(\background, Color.grey(0.2))
 					.alwaysOnTop_(true)
 					.create;
+					
 				// and show which tracks we can import
-				MVC_ListView2(win,Rect(10,10,180,300))
+				MVC_ListView2(win,Rect(10,10,180,275))
 					.items_(file.usedTracks.collect{|t|
 						t.asString ++"."+  (file.trackName(t)?"").stripRTF })
 					.actions_(\upDoubleClickAction,{|me|
-						var tempoAdjust=24;
-										
-						//if (file.tempoMap[0].notNil) { tempoAdjust= file.tempoMap[0][1]/2 };
-						
 						file.asNoteDicts(track:(file.usedTracks[me.value])).collect{|note|
 							[note[\note],
 							note[\absTime]/tempoAdjust,
@@ -821,7 +819,17 @@
 							this.addNote(*note);
 						};			
 						win.close;
-					})
+					});
+					
+				// scale the tempo by this
+				MVC_NumberBox(win,Rect(110,291,50,18))
+					.orientation_(\horizontal)
+					.labelShadow_(false)
+					.label_("Scale tempo")
+					.value_(tempoAdjust)
+					.action_{|me|
+						tempoAdjust=me.value;		
+					};
 			};	
 		}
 	};

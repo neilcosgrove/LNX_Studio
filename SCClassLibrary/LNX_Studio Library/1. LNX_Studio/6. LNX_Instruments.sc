@@ -69,6 +69,7 @@ LNX_Instruments : IdentityDictionary {
 			visualOrder.insert(pos,inst);
 			this.orderEffects;
 			this.changed(\instruments,\moved);
+			studio.updateAllPadMixer;          // temp for CARBON ************
 			^true
 		}{
 			^false		
@@ -94,7 +95,7 @@ LNX_Instruments : IdentityDictionary {
 	selectedInst{ ^this[selectedInst] } // rememeber we are using id's here
 	
 	// the selected instrument id
-	selectedID { ^selectedInst }
+	selectedID{ ^selectedInst }
 	
 	// get the previous visual instrument id
 	previousID{
@@ -150,7 +151,7 @@ LNX_Instruments : IdentityDictionary {
 	mixerFXY{|id| ^this.effects.indexOf(this[id]) }
 		
 	// return all insts
-	instruments { ^visualOrder.select(_.isInstrument) }
+	instruments{ ^visualOrder.select(_.isInstrument) }
 	
 	// for presetsOfPresets
 	allInstX{|id| ^this.visualOrder.indexOf(this[id]) }

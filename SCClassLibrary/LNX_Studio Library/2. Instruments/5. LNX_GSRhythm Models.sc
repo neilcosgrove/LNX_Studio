@@ -4,7 +4,7 @@
 + LNX_GSRhythm {
 
 	// the models
-	initModel {
+	initModel{
 
 		var template=[
 		
@@ -25,33 +25,32 @@
 				(\label_:"Volume" , \numberFunc_:'db',
 				mouseDownAction_:{hack[\fadeTask].stop}),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(2,val,latency,send);
-					
-					this.setAllBoth(\amp,latency); // new
-					
-					//channels.do{|i| this.updateSynthArg(\amp,i,latency)};
+					this.setPVPModel(2,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\amp,val.dbamp,latency); // set mixer synth
+					this.setAll_F_NF_value(\amp,val.dbamp,latency); // masterAmp for ch & chSends
+					this.setMixerSynth(\amp,val.dbamp,latency); // set mixer synth
 				}],	
 				
 			// 3. out channels		
 			[\audioOut, midiControl, 3, "Output channels",
 				(\items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
-					var out;
-					if (val>=0) {
-						out = val*2
-					}{	
-						out = LNX_AudioDevices.firstFXBus+(val.neg*2-2);
+					var channel = LNX_AudioDevices.getOutChannelIndex(val);
+					this.setPVPModel(3,val,0,send);     // set p & network model via VP
+					this.setMixerSynth(\outChannel,channel,latency); // set mixer synth
+					// select if we need masterAmp & pan in the filer/noFilter synth
+					defaultChannels.do{|i| 
+						this.set_F_NF_value(\select,i,this.isGoingToMixerSynth(i),latency)
 					};
-					this.instOutChannel_(out);
-					this.setPVPModel(3,val,0,true);
-				}], // test on network
+				}],
 								
 			// 4.master pan
 			[\pan, midiControl, 4, "Pan",
 				(\numberFunc_:\pan, \zeroValue_:0),
 				{|me,val,latency,send,toggle|
-					this.setPVPModel(4,val,latency,send);
-					channels.do{|i| this.updateSynthArg(\pan,i,latency)};
+					this.setPVPModel(4,val,0,send);      // set p & network model via VP
+					this.setMixerSynth(\pan,val,latency); // set mixer synth
+					this.setAll_F_NF_value(\pan,val,latency);  // masterPan for ch & chSends
 				}],
 			
 			// 5.master duration
@@ -125,10 +124,7 @@
 			(\label_:"Freq" , \numberFunc_:\freq),
 			{|me,val,latency,send,toggle|
 				this.setPVPModel(233,val,latency,send);
-				//channels.do{|i| this.updateSynthArg(\filtFreq,i,latency)};
-				
 				this.setAllFilterArgs(\filtFreq,latency); // new
-				
 			}];
 		
 		// 234. Master filt res
@@ -136,10 +132,7 @@
 			(\label_:"Res" , \numberFunc_:\float2),
 			{|me,val,latency,send,toggle|
 				this.setPVPModel(234,val,latency,send);
-				//channels.do{|i| this.updateSynthArg(\filtRes,i,latency)};
-				
 				this.setAllFilterArgs(\filtRes,latency); // new
-				
 			}];
 		
 		// 235. Master filter Drive
@@ -147,10 +140,7 @@
 			(\label_:"Drive",\numberFunc_:'float2'),
 			{|me,val,latency,send,toggle|
 				this.setPVPModel(235,val,latency,send);
-				//channels.do{|i| this.updateSynthArg(\drive,i,latency)};
-				
 				this.setAllFilterArgs(\drive,latency); // new
-				
 			}];					
 						
 	// 228-235 MASTER GRAINS //////////////////////////////////////////////////////////
@@ -198,36 +188,30 @@
 			
 		// 260. Master grain overlap
 		template[260]=[2,[1,12,\exp],midiControl, 260, "Master Overlap",
-			(
-			\label_:"Overlap",
-				\numberFunc_:'float2'
-			),
+			( \label_:"Overlap", \numberFunc_:'float2'),
 			{|me,val,latency,send,toggle|
 				this.setPVPModel(260,val,latency,send);
-				if (p[228]==1) {
-					channels.do{|i|
-						this.updateSynthArg(\overlap,i,latency)
-					}
-				}
+				if (p[228]==1) { channels.do{|i| this.updateSynthArg(\overlap,i,latency) } }
 			}];
 			
 		// 286. peak level
 		template[286]=[0.7, \unipolar,  midiControl, 286, "Peak Level",
 				{|me,val,latency,send| this.setPVP(286,val,latency,send) }];
 
-		// 287. master send channel
+		// 287. master send channel (only master send channel, nothing to do with indiv channel)
 		template[287]=[-1, \audioOut,  midiControl, 287, "Master Send Channel",
 				(\items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
-					this.setPVH(287,val,latency,send);
-					this.setAllBoth(\masterSendChannels,latency);
+					var channel = LNX_AudioDevices.getOutChannelIndex(val);
+					this.setPVPModel(287,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\sendChannel,channel,latency); // set mixer synth
 				}];		
 				
-		// 288. master send amp
+		// 288. master send amp (only master send amp, nothing to do with indiv send)
 		template[288]=[-inf, \db2,  midiControl, 288, "Maseter Send Amp", (label_:"Send"),
 				{|me,val,latency,send|
-					this.setPVPModel(288,val,latency,send);
-					this.setAllBoth(\masterSendAmp,latency);
+					this.setPVPModel(288,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\sendAmp,val.dbamp,latency); // set mixer synth
 				}];
 				
 		// 297. syncDelay
@@ -258,7 +242,7 @@
 				(\numberFunc_:'db'),
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(28+i,val,latency,send);
-					this.setBoth(\amp,i,latency); // new
+					this.setF_NF(\chAmp,i,latency); // new
 				}];
 				
 			// 36-43. channel out channel (master vs individual)
@@ -266,7 +250,9 @@
 				(\items_:(["Master"]++LNX_AudioDevices.outputAndFXMenuList)),
 				{|me,val,latency,send|
 					this.setPVH(36+i,val,latency,send);
-					this.setBoth(\outputChannels,i,latency);
+					this.setF_NF(\outputChannels,i,latency);
+					// select if we need masterAmp & pan in the filer/noFilter synth
+					this.set_F_NF_value(\select,i,this.isGoingToMixerSynth(i),latency)
 				}];
 			
 			// 44-51. channel pan
@@ -274,7 +260,7 @@
 				(\numberFunc_:\pan, \zeroValue_:0),
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(44+i,val,latency,send);
-					this.updateSynthArg(\pan,i,latency);
+					this.setF_NF(\chPan,i,latency);
 				}];
 			
 			// 52-59. channel duration
@@ -299,21 +285,15 @@
 			template[76+i]=[-1,\audioOut, midiControl, 76+i, "Send channel"+(i+1),
 				(\items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
-					
 					this.setPVH(76+i,val,latency,send);
-					
-					this.setBoth(\sendChannels,i,latency);
-					
+					this.setF_NF(\sendChannels,i,latency);
 				}];
 			
 			// 84-91. channel send amps
 			template[84+i]=[-inf,\db2,midiControl, 84+i, "Send amp"+(i+1), (label_:"Send"),
 				{|me,val,latency,send,toggle|
-					
 					this.setPVPModel(84+i,val,latency,send);
-				//	this.updateSynthArg(\sendAmp,i,latency);
-					
-					this.setBoth(\sendAmp,i,latency);
+					this.setF_NF(\sendAmp,i,latency);
 				}];
 			
 			// 92-99. channel choke
@@ -333,17 +313,13 @@
 						.dependantsPerform(\freshAdaptor)
 					}.defer;
 				}];
-				
-				
+					
 			// 108-115. channel sample
 			template[108+i]=[#[0,1,4,5,6,15,16,17]@i,
-			
 				// this is not the best solution
 				[0,channelBanks[i].collect(_.size).sort.last,\linear,1],
-			
 				midiControl, 108+i, "Sample"+(i+1),
 				{|me,val,latency,send,toggle| this.setPVP(108+i,val,latency,send) }];
-
 
 			// 116-123. channel bp on/off
 			template[116+i]=[0,\switch,midiControl, 116+i, "Probability"+(i+1),
@@ -457,7 +433,7 @@
 				(\strings_:["Filter"]), 
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(236+i,val,latency,send);
-					this.updateFilterOnOff(i,latency); // new
+					this.updateFilterDSP(i,latency); // new
 				}];
 			
 			// 244-251. channel mod : filter freq
@@ -514,10 +490,8 @@
 						
 		defaultChannels.do{|i| models[108+i].constrain_(false) }; // this may not work
 		
-		
 		// for seperate filters
 		filterModel = [1,\switch,{|me,val| }].asModel;
-		
 		
 	}
 	

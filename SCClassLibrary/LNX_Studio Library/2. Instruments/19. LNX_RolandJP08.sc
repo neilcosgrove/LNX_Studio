@@ -103,7 +103,8 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 			[\db6,midiControl, 2, "Master volume",
 				(\label_:"Volume" , \numberFunc_:'db',mouseDownAction_:{hack[\fadeTask].stop}),
 				{|me,val,latency,send,toggle|
-					this.setSynthArgVP(2,val,\amp,val.dbamp,latency,send);
+					this.setPVPModel(2,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\amp,val.dbamp,latency); // set mixer synth
 				}],	
 				
 			// 3. in channels
@@ -120,15 +121,16 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 				(\items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
 					var channel = LNX_AudioDevices.getOutChannelIndex(val);
-					this.instOutChannel_(channel);
-					this.setPVPModel(4,val,0,send);   // to test on network
+					this.setPVPModel(4,val,0,send);     // set p & network model via VP
+					this.setMixerSynth(\outChannel,channel,latency); // set mixer synth
 				}], // test on network
 								
 			// 5.master pan
 			[\pan, midiControl, 5, "Pan",
 				(\numberFunc_:\pan, \zeroValue_:0),
 				{|me,val,latency,send,toggle|
-					this.setSynthArgVH(5,val,\pan,val,latency,send);
+					this.setPVPModel(5,val,0,send);      // set p & network model via VP
+					this.setMixerSynth(\pan,val,latency); // set mixer synth
 				}],
 				
 			// 6. peak level
@@ -139,14 +141,16 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 			[-1,\audioOut, midiControl, 7, "Send channel",
 				(\label_:"Send", \items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
-					this.setSynthArgVH(7,val,
-						\sendChannels,LNX_AudioDevices.getOutChannelIndex(val),latency,send);
+					var channel = LNX_AudioDevices.getOutChannelIndex(val);
+					this.setPVPModel(7,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\sendChannel,channel,latency); // set mixer synth
 				}],
 			
 			// 8. sendAmp
 			[-inf,\db6,midiControl, 8, "Send amp", (label_:"Send"),
 				{|me,val,latency,send,toggle|
-					this.setSynthArgVH(8,val,\sendAmp,val.dbamp,latency,send);
+					this.setPVPModel(8,val,0,send);             // set p & network model via VP
+					this.setMixerSynth(\sendAmp,val.dbamp,latency); // set mixer synth
 				}], 		
 				
 			// 9. channelSetup
@@ -221,8 +225,27 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 				(label_:(RolandJP08.labelAt(i)),numberFunc_:(RolandJP08.numberFuncAt(i))),
 				{|me,val,latency| this.midiControlVP(i,val,latency) }]);
 		};
-				
+		
+		// 60. oct VCO2
+		template = template.add(
+			[0, \switch, midiControl, 60, "VCO2 Oct",
+					(strings_:["Oct"]),
+					{|me,val,latency,send|	this.setPVP(60,val,latency,send);}],
+		);
+								
 		#models,defaults=template.generateAllModels;
+		
+		// adjust VCO2 so it quants to the Oct if model[60] is on
+		models[29].action_{|me,val,latency|
+			var newVal = val;
+			if (p[60].isTrue) { newVal = val.nearestInList([1, 32, 92, 166, 224, 255]) };
+			if (thisThread.clock==SystemClock) {
+				if (newVal!=val) { me.value_(newVal) };
+			}{
+				{if (newVal!=val) { me.value_(newVal) }}.defer;
+			};
+			this.midiControlVP(12,newVal,latency);
+		};
 
 		// list all parameters you want exluded from a preset change
 		presetExclusion=[0,1,10,14];
@@ -230,7 +253,15 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		autoExclusion=[10,12];
 
 	}
-		
+	
+	getMixerArgs{^[
+		[\amp,           p[ 2].dbamp       ],
+		[\outChannel,    LNX_AudioDevices.getOutChannelIndex(p[4])],
+		[\pan,           p[5]             ],
+		[\sendChannel,  LNX_AudioDevices.getOutChannelIndex(p[7])],
+		[\sendAmp,       p[8].dbamp       ]
+	]}
+	
 	// MIDI patching ///////////////////////////////////////////////////////
 	
 	// any post midiInit stuff
@@ -298,7 +329,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		value = (data[12]*16) + data[13];       // 8 bit value (0-255)
 		index = RolandJP08.indexOfKey(key);     // index of model
 
-		if (index.isNil)    {^this};            // key not found
+		if (index.isNil)      {^this};          // key not found
 
 		// feedback exception, not needed if we different device IDs, to check with new jp
 		if (sysex2Time[index].notNil and: { SystemClock.now < sysex2Time[index] })
@@ -863,13 +894,9 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		MVC_PlainSquare(gui[\scrollView], Rect(697,127,3,116), gui[\plainTheme2]);
 			
 		// logo					
-		MVC_Text(gui[\scrollView],Rect(22, 246, 176, 30))
-			.align_(\center)
-			.shadow_(false)
-			.penShadow_(true)
-			.font_(Font("AvenirNext-Heavy",23))
-			.string_("Roland JP-08");
-		
+		MVC_ImageView(gui[\scrollView],Rect(2, 249, 168, 27))
+			.image_("fontImages/JP08.tiff");
+				
 		// levels
 		MVC_FlatDisplay(this.peakLeftModel,gui[\scrollView],Rect(365, 147, 6, 80));
 		MVC_FlatDisplay(this.peakRightModel,gui[\scrollView],Rect(371, 147, 6, 80));
@@ -913,6 +940,10 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			};
 				
 		};
+
+
+		// 60. VCO2 Oct
+		MVC_OnOffView(models[60], gui[\scrollView], Rect(624, 90, 33, 19),gui[\onOffTheme4]);
 		
 		// 16. use program in presets
 		MVC_OnOffView(models[16], gui[\scrollView], Rect(717, 253, 63, 19),gui[\onOffTheme4]);
@@ -925,7 +956,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		
 		// program
 		MVC_NumberBox(models[12],gui[\scrollView],Rect(66, 278, 28, 19))
-				.labelFont_(Font("AvenirNext-Bold",12))
+				.labelFont_(Font("Helvetica-Bold",13))
 				.orientation_(\horiz)
 				.label_("Program")
 				.color_(\background,Color(0.25,0.25,0.25))
@@ -935,7 +966,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		
 		// program name text
 		gui[\programName] = MVC_Text(gui[\scrollView],Rect(104, 273,132,26))
-			.font_(Font("AvenirNext-Bold",14))
+			.font_(Font("Helvetica-Bold",13))
 			.align_(\left)
 			.shadow_(false)
 			.penShadow_(true)
@@ -997,7 +1028,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 				.color_(\background,Color(0.14,0.12,0.11)*0.4)
 				.color_(\focus,Color.orange)
 				.color_(\editBackground, Color(0,0,0,0.7))
-				.font_(Font.new("STXihei", 14))
+				.font_(Font.new("Helvetica", 14))
 				.canReceiveDragHandler_{
 					(SCView.currentDrag.isArray)and:{SCView.currentDrag[0].isString}
 				}
@@ -1017,13 +1048,13 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 				.align_(\center)
 				.color_(\string,Color(59/77,59/77,59/77)*1.4)
 				.color_(\background,Color(0.14,0.12,0.11,0.25)*0.4)
-				.font_(Font.new("STXihei", 11));	
+				.font_(Font.new("Helvetica", 11));	
 			gui[2000+i]=MVC_Text(gui[\preTab], Rect( 15, 30+(i*33), 20, 29) )
 				.align_(\right)
 				.string_((i+1).asString)
 				.color_(\string,Color(59/77,59/77,59/77)*1.4)
 				.color_(\background,Color(0.14,0.12,0.11,0.25)*0.4)
-				.font_(Font.new("STXihei", 11));	
+				.font_(Font.new("Helvetica", 11));	
 		};
 		
 		// edit text or select preset	
@@ -1063,29 +1094,17 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		if (verbose) { "SynthDef loaded: Audio In x2".postln; };
 	
 		SynthDef("LNX_AudioIn2", {
-			|outputChannels=0, inputChannels=2, pan=0, amp=0, channelSetup=0, on=1,
-			sendChannels=4, sendAmp=0 |
+			|outputChannels=0, inputChannels=2, channelSetup=0, on=1|
+			var signal, signalL, signalR;
 			
-			var signal = In.ar(inputChannels, 2);
-			var signalL, signalR;
-			
-			signal  = signal * 2;
-			signal  = signal * Lag.kr(amp*on);
-			pan     = Lag.kr(pan*2);
-			sendAmp = Lag.kr(sendAmp);
-			              
+			signal  = In.ar(inputChannels, 2);
+			signal  = signal * Lag.kr(on*2);
 			signalL = Select.ar(channelSetup,[
-				signal[0], signal[0]+signal[1], signal[0], signal[1], Silent.ar ]);
-				
+				signal[0], signal[0]+signal[1], signal[0], signal[1], Silent.ar]);
 			signalR = Select.ar(channelSetup,[
-				signal[1], signal[0]+signal[1], signal[0], signal[1], Silent.ar ]);
-					
-			signal = LinPan2.ar(signalL, (pan-1).clip(-1,1))
-			       + LinPan2.ar(signalR, (pan+1).clip(-1,1));
-
-			Out.ar(outputChannels,signal);		
-			Out.ar(sendChannels,[signal[0]*sendAmp,signal[1]*sendAmp]);
-			
+				signal[1], signal[0]+signal[1], signal[0], signal[1], Silent.ar]);
+				
+			Out.ar(outputChannels,[signalL,signalR]);
 		}).send(s);
 
 	}
@@ -1126,25 +1145,22 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	
 	updateDSP{|oldP,latency|
 		var in  = LNX_AudioDevices.firstInputBus+(p[3]*2);
-		var out, on;				
-		if (p[4]>=0) {
-			out = p[4]*2
-		}{	
-			out = LNX_AudioDevices.firstFXBus+(p[4].neg*2-2);
-		};
-		this.instOutChannel_(out,latency);
+		var on;				
+
 		if (p[13]==1) { on=true } { on=this.isOn };
 			
-		server.sendBundle(latency+! syncDelay,
-			[\n_set, node, \amp,p[2].dbamp],
-			[\n_set, node, \pan,p[5]],
+		server.sendBundle(latency +! syncDelay,
 			[\n_set, node, \inputChannels,in],
 			[\n_set, node, \outputChannels,this.instGroupChannel],
 			[\n_set, node, \on, on],
-			[\n_set, node, \sendChannels,LNX_AudioDevices.getOutChannelIndex(p[7])],
-			[\n_set, node, \sendAmp, p[8].dbamp],
 			[\n_set, node, \channelSetup, p[9]]
 		);
+		
+		if (instOutSynth.notNil) {
+			server.sendBundle(latency +! syncDelay,
+				*this.getMixerArgs.collect{|i| [\n_set, instOutSynth.nodeID]++i } );
+		};
+		
 	}
 
 } // end ////////////////////////////////////

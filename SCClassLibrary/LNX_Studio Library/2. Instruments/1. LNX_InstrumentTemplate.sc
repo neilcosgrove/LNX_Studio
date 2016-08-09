@@ -7,9 +7,11 @@
 
 LNX_InstrumentTemplate {
 
-	classvar templateVersion="v1.2", <>noInternalBuses=3;
+	classvar templateVersion="v1.3", <>noInternalBuses=3;
 	classvar <onSoloGroup,			<>verbose=false;
 	classvar fxFakeOnOffModel;
+
+	var <lastTemplateLoadVersion=1.3;
 
 	// header vars
 	var	<instrumentHeaderType,	<version,			<studioName,
@@ -53,9 +55,9 @@ LNX_InstrumentTemplate {
 		
 		<hack,			<>toFrontAction,
 		
-		<peakLeftModel,	<peakRightModel;
+		<peakLeftModel,	<peakRightModel,
 		
-	var <lastTemplateLoadVersion=1.2;
+		<eq;
 	
 	var <syncDelay=0;
 				
@@ -104,12 +106,13 @@ LNX_InstrumentTemplate {
 		this.initMIDI;			// i need this 1st becuase of midi in the model
 		this.initPreModel; 		// anything needed before the models are made
 		this.initModel;    		// subclass override this
+		this.initGroups;			// start groups
 		this.initVars;			// init superclass vars
 		this.iInitVars;			// init instrument vars
 		this.iInitMIDI;			// start midi
 		this.createWindow(bounds);	// create window (this doesn't open it)
 		this.createWidgets;		// create the widgets for it
-		this.initGroups;			// start groups
+		
 		studio.insts.addInst(this,id);		// add to instruments
 		studio.createMixerInstWidgets(this);	// make the mixer widgets
 		
@@ -121,6 +124,7 @@ LNX_InstrumentTemplate {
 		this.iPostInit;			// anything that needs doing after init
 		this.deferOpenWindow;		// now open window after a defer to help stop lates
 		if (new) { this.iPostNew };	// anything that needs doing after new creation
+		this.eqName;
 
 	}
 	
@@ -169,6 +173,28 @@ LNX_InstrumentTemplate {
 		};
 		
 		presetsOfPresets = LNX_POP(this,api);
+		
+		// add eq if needed
+		if (this.isMixerInstrument) {
+			eq = LNX_EQ(server, groups[\eq], this.instGroupChannel, ('inst_'++id++'_eq').asSymbol,
+				bounds: Rect(950, 25 + (studio.insts.mixerInstruments.size*24), 325, 235),
+				midiControl:midiControl
+			)
+		};
+
+	}
+	
+	// eq stuff
+	openEQ{ if(eq.notNil) { eq.open } }
+	openEQIfOn{ if(eq.notNil) { eq.openIfOn } }
+	closeEQ{ if(eq.notNil) { eq.close } }
+	freeEQ{  if(eq.notNil) { eq.free; eq = nil }  }
+	eqOnOffModel{ if(eq.notNil) { ^eq.onOffModel}{ ^nil } }
+	eqName{
+		if(eq.notNil) {
+			var name = (instNoModel.value+1).asString++"."+(nameModel.string);
+			eq.name_(("[EQ] "++name) );
+		}
 	}
 	
 	// groups
@@ -203,16 +229,18 @@ LNX_InstrumentTemplate {
 		};
 	}
 	
-	instGroupChannel{ ^LNX_AudioDevices.instGroupChannel(id) }
+	restartEQ{ if (this.hasEQ) { eq.restartDSP(groups[\eq]) } }
 	
-	instOutChannel_{|channel,latency|
+	instGroupChannel{ ^LNX_AudioDevices.instGroupChannel(id) }
+		
+	// set mixer synth arg
+	setMixerSynth{|synthArg,value,latency|
 		if (instOutSynth.notNil) {
 			server.sendBundle(latency +! syncDelay,
-				[\n_set, instOutSynth.nodeID, \outChannel, channel]);
+				[\n_set, instOutSynth.nodeID, synthArg, value]);
 		};
 	}
-	
-	
+
 	peakOutLeft_{|value| peakLeftModel.lazyValueAction_(value,0) }
 	peakOutRight_{|value| peakRightModel.lazyValueAction_(value,0) }
 		
@@ -224,6 +252,7 @@ LNX_InstrumentTemplate {
 	syncDelay_{|val|
 		syncDelay = val;
 		studio.checkSyncDelay; // studio will call stopAllNotes to all inst
+		if (eq.notNil) { eq.syncDelay_(val) };
 	}
 		
 	////////////////////////////////////////
@@ -336,7 +365,11 @@ LNX_InstrumentTemplate {
 	}
 	
 	// update the name of the window
-	updateWindowName{ window.name_((instNoModel.value+1).asString++"."+(nameModel.string)) }
+	updateWindowName{
+		var name = (instNoModel.value+1).asString++"."+(nameModel.string);
+		window.name_(name);
+		this.eqName;
+	}
 	
 	// if you select another field the editing and selection remains in other fields
 	// this removes it
@@ -411,6 +444,7 @@ LNX_InstrumentTemplate {
 		models.do(_.free);
 		fxFakeOnOffModel.free;
 		tasks.do(_.stop);
+		this.freeEQ;
 		
 		{
 			presetsOfPresets = tasks = models = defaults = nameModel = api =
@@ -491,7 +525,11 @@ LNX_InstrumentTemplate {
 
 	// get the current state as a list
 	getPresetList{
-		^[this.class.asSymbol] ++ p ++(this.iGetPresetList)
+		if (this.hasEQ) {
+			^[this.class.asSymbol] ++ p ++ (eq.getPresetList) ++(this.iGetPresetList) // EQ **
+		}{
+			^[this.class.asSymbol] ++ p ++(this.iGetPresetList)
+		};
 	}
 	
 	// the gui side of adding a preset
@@ -517,6 +555,9 @@ LNX_InstrumentTemplate {
 		l=l.reverse;
 		if (this.class.asSymbol==(l.pop.asSymbol)) {
 			presetMemory=presetMemory.add(l.popN(p.size));
+			
+			if (this.hasEQ) { eq.addPresetList(l.popNF(eq.pSize)) }; // EQ **
+			
 			presetNames=presetNames.add("Preset"+((presetMemory.size- 1).asString));
 			if (presetView.notNil) {
 				
@@ -553,6 +594,9 @@ LNX_InstrumentTemplate {
 			l=l.reverse;
 			if (this.class.asSymbol==(l.pop.asSymbol)) {
 				presetMemory=presetMemory.put(i,l.popN(p.size));
+				
+				if (this.hasEQ) { eq.savePresetList(i,l.popNF(eq.pSize)) }; // EQ **
+				
 				this.iSavePresetList(i,l);
 			};
 		}
@@ -567,6 +611,8 @@ LNX_InstrumentTemplate {
 		presetExclusion.do{|i| presetToLoad[i]=p[i]};
 		// update models
 		presetToLoad.do({|v,j| if (p[j]!=v) { models[j].lazyValueAction_(v,latency,false) } });
+		
+		if (this.hasEQ) { eq.loadPreset(i,latency) }; // EQ **
 		
 		this.iLoadPreset(i,presetToLoad,latency);    // any instrument specific details
 		oldP=p.copy;
@@ -594,6 +640,9 @@ LNX_InstrumentTemplate {
 	removePreset{|i|
 		if (presetMemory.size>i) {
 			presetMemory.removeAt(i);
+			
+			if (this.hasEQ) { eq.removePreset(i) }; // EQ **
+			
 			this.iRemovePreset(i);
 			presetNames.removeAt(i);
 			if (presetView.notNil) {
@@ -625,6 +674,9 @@ LNX_InstrumentTemplate {
 	removeAllPresets{
 		presetMemory=[];
 		presetNames=[];
+		
+		if (this.hasEQ) { eq.removeAllPresets }; // EQ **
+		
 		this.iRemoveAllPresets;
 		if (presetView.notNil) {
 			
@@ -760,6 +812,7 @@ LNX_InstrumentTemplate {
 		saveList=saveList++(presetNames            );
 		saveList=saveList++(midi.getSaveList       );
 		saveList=saveList++(midiControl.getSaveList);
+		if (this.hasEQ) { saveList=saveList++(eq.getSaveList) }; // eq 
 		saveList=saveList++(this.iGetSaveList);	// all other inst stuff here
 		// end of document
 		saveList=saveList++(["*** END INSTRUMENT DOC ***"]);
@@ -784,6 +837,7 @@ LNX_InstrumentTemplate {
 		saveList=saveList++(presetNames            );
 		saveList=saveList++(midi.getSaveList       );
 		saveList=saveList++(midiControl.getSaveListForLibrary); // not controls or automation
+		if (this.hasEQ) { saveList=saveList++(eq.getSaveList) }; // eq 
 		saveList=saveList++(this.iGetSaveList);	// all other inst stuff here
 		// end of document
 		saveList=saveList++(["*** END INSTRUMENT DOC ***"]);
@@ -848,6 +902,15 @@ LNX_InstrumentTemplate {
 			// and midi controls but do later...
 			midiLoadVersion = l.pop.version;
 			midiContolList = l.popEND("*** End MIDI Control Doc ***");
+			
+			// the mixer eq
+			if (this.hasEQ) {
+				if (lastTemplateLoadVersion>=1.3) {
+					eq.putLoadList(l.popEND("*** END LNX_EQ DOC ***"))
+				}{
+					eq.noSaveList(noPre);		
+				}
+			};
 			
 			l = this.iPutLoadList(l,noPre,loadVersion,templateLoadVersion); // for instance
 								

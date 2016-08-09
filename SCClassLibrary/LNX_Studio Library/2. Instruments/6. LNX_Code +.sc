@@ -1,6 +1,157 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // SC code instrument                                                                              .
-// also MVC_Model ?
+
+Protect{
+	*new{|signal,clip=2|
+		^Select.ar(CheckBadValues.ar(signal, 0, 0)>0, [signal,DC.ar(0)]).clip2(clip);
+	}
+
+	*newNoClip{|signal,clip=2|
+		^Select.ar(CheckBadValues.ar(signal, 0, 0)>0, [signal,DC.ar(0)]);
+	}
+	
+}
+
+// easy stereo output for mono, stereo or multichannel signals to out channel
+// & effect send with pan pos
+// options in protect, mix down multichannel and scale multichannel volume
+
+LNX_Out{
+	*new{|signal,out,amp,pan=0,sendOut,sendAmp,protect=true,mix=true,scaleVolume=true,leak=false|
+		var sigOut = signal;
+		var size = signal.size;
+		var leftPan, rightPan;
+		
+		// stop the following from working. This is now done by the mixer synthDef
+		amp=1;
+		pan=0;
+		sendAmp=0;
+			
+		// mix it
+		if (mix) {
+			sigOut = sigOut.oddEvenMix; // mixes to a stereo pair
+			// and scale volume
+			if((scaleVolume)&&(size>2)) {
+				if (amp.isNumber) {
+					amp=amp/(size/2);	// if amp is number adjust amp
+				}{
+					sigOut=sigOut/(size/2); // else scale now
+				};
+			};
+		};
+		// reduce to an OutputProxy or [ an OutputProxy, an OutputProxy ]
+		case {sigOut.size==1} {
+			sigOut=sigOut[0];
+		}
+		{sigOut.size>2} {
+			sigOut=sigOut[0..1];
+		};
+		// apply amp
+		if (amp.notNil) { sigOut = sigOut * amp };       // check amp not nil
+		// do protect
+		if (protect)    { sigOut = Protect(sigOut) };    // filters bad numbers
+		// do leak
+		if (leak)       { sigOut = LeakDC.ar(sigOut) };  // leak any dc offset
+		// if mono
+		case {sigOut.size==0} {
+			OffsetOut.ar(out,sigOut!2);	 // just output
+		}{ // else stereo	
+			OffsetOut.ar(out,sigOut);	     // just output
+		};
+		^signal;	// return the signal, unchanged
+	}	
+}
+
+
+LNX_InstOut{
+	*new{|signal,out,protect=true,mix=true,scaleVolume=true,leak=false|
+		var sigOut = signal;
+		var size = signal.size;
+		var leftPan, rightPan;
+		var amp=1;
+		
+		// mix it
+		if (mix) {
+			sigOut = sigOut.oddEvenMix; // mixes to a stereo pair
+			// and scale volume
+			if((scaleVolume)&&(size>2)) { amp=amp/(size/2) }; // if amp is number adjust amp
+		};
+		// reduce to an OutputProxy or [ an OutputProxy, an OutputProxy ]
+		case {sigOut.size==1} {
+			sigOut=sigOut[0];
+		}
+		{sigOut.size>2} {
+			sigOut=sigOut[0..1];
+		};
+		// apply amp
+		sigOut = sigOut * amp; 
+		// do protect
+		if (protect) { sigOut = Protect(sigOut) };    // filters bad numbers
+		// do leak
+		if (leak) { sigOut = LeakDC.ar(sigOut) };  // leak any dc offset
+		// if mono
+		case {sigOut.size==0} {
+			OffsetOut.ar(out,sigOut!2);	 // just output
+		}{ // else stereo	
+			OffsetOut.ar(out,sigOut);	     // just output
+		};
+		^signal;	// return the signal, unchanged
+	}	
+}
+
+
+LNX_FXOut{
+	*new{|signal, signalIn, on, out, amp, pan=0, sendOut, sendAmp, protect=true, mix=true,
+										scaleVolume=true, leak=false|
+		var sigOut = signal;
+		var size = signal.size;
+		var leftPan, rightPan;
+		// mix it
+		if (mix) {
+			sigOut = sigOut.oddEvenMix; // mixes to a stereo pair
+			// and scale volume
+			if((scaleVolume)&&(size>2)) {
+				if (amp.isNumber) {
+					amp=amp/(size/2);	// if amp is number adjust amp
+				}{
+					sigOut=sigOut/(size/2); // else scale now
+				};
+			};
+		};
+		// reduce to an OutputProxy or [ an OutputProxy, an OutputProxy ]
+		case {sigOut.size==1} {
+			sigOut=sigOut[0];
+		}
+		{sigOut.size>2} {
+			sigOut=sigOut[0..1];
+		};
+		// do protect
+		if (protect) { sigOut = Protect(sigOut) };	// filters bad numbers
+		// do leak
+		if (leak) { sigOut = LeakDC.ar(sigOut) }; // leak any dc offset
+		// if mono
+		case {sigOut.size==0} {
+			sigOut=Pan2.ar(sigOut, pan); // pan it
+			sigOut = SelectX.ar(on.lag,[signalIn,sigOut]); // on
+			if (amp.notNil) { sigOut = sigOut * amp }; // apply amp
+			OffsetOut.ar(out,sigOut);	 // output
+			if ((sendOut.notNil) && (sendAmp.notNil)) {
+				OffsetOut.ar(sendOut, sigOut * sendAmp );   // effect send
+			};
+		}{ // else stereo
+			leftPan= (pan*2-1).clip(-1,1);   // left pos
+			rightPan= (pan*2+1).clip(-1,1);  // right pos
+			sigOut=LinPan2.ar(sigOut[0], leftPan) + LinPan2.ar(sigOut[1], rightPan); // pair
+			sigOut = SelectX.ar(on.lag,[signalIn,sigOut]); //on
+			if (amp.notNil) { sigOut = sigOut * amp }; // apply amp
+			OffsetOut.ar(out,sigOut);	 // output
+			if ((sendOut.notNil) && (sendAmp.notNil)) {
+				OffsetOut.ar(sendOut, sigOut * sendAmp );   // effect send
+			};		
+		};
+		^signal;	// return the signal, unchanged
+	}	
+}
 
 LNX_SynthDefID {
 	classvar <id=1000;
@@ -58,25 +209,19 @@ LNX_SynthDefControl : ControlName {
 	initCode{
 
 		codeModel =
-"
-// A simple SynthDef template
+"// A simple SynthDef template
 
-SynthDef(\"LNX_Saw1\", {|out, amp, vel, freq, midi, pan, gate=1, sendOut, sendAmp, bpm, clock,
-	i_clock, poll, bufL, bufR, bufRate, bufAmp, bufStartFrame, bufStartPos, bufLoop, bufDur
-	filtFreq=1800, q=0.5, dur=1|
+SynthDef(\"MySaw\", {|out, gate, midi, vel, filtFreq=2000, q=0.5, dur=0.5|
 	
 	var signal;
 	
 	signal = Saw.ar(midi.midicps, 0.33);
 	signal = DFM1.ar(signal, filtFreq * vel, q);
-	signal = signal * EnvGen.ar(Env.new([1,1,0], [0,2], [-1,-1], 1), gate, vel, 0, dur, 2);
-		
-	LNX_Out(signal, out, amp, pan, sendOut, sendAmp);
-		
-}, metadata: ( specs: ( filtFreq: \\freq, q: \\unipolar )))
-
-//signal.poll(poll); // use for debugging
-//PlayBuf.ar(1,[bufL,bufR], BufRateScale.kr([bufL,bufR])*bufRate, 0, bufStartFrame, bufLoop)*bufAmp;
+	signal = signal * EnvGen.ar(Env.adsr(0,0,1,1), gate, vel, 0, dur, 2);
+	
+	LNX_InstOut(signal, out);
+	
+}, metadata: ( specs: ( filtFreq: \\freq ) ) )
 "
 		.asModel;
 		
@@ -109,33 +254,33 @@ SynthDef(\"LNX_Saw1\", {|out, amp, vel, freq, midi, pan, gate=1, sendOut, sendAm
 			this.warnFromError("¥ ERROR: Parse error in code.");
 		}{
 			if (LNX_Studio.isStandalone.not) {
-				"ERROR: Recieved: "++(def.asString)++", is not a SynthDef.".error;
+				"¥ ERROR: Recieved: "++(def.asString)++", is not a SynthDef.".error;
 			};
 			this.warnFromError(
-				"ERROR: Recieved: "++(def.asString)++", is not a SynthDef."
+				"¥ ERROR: Recieved: "++(def.asString)++", is not a SynthDef."
 			);
 		}
 	}
 	
 	warnMissingArgs{|missingArgs|
-		("ERROR: The following compulsory arguments are missing: "++(missingArgs.asString)).error;
+		("¥ ERROR: The following compulsory arguments are missing: "++(missingArgs.asString)).error;
 		this.warnFromError(
-			"ERROR: The following compulsory arguments are missing: "++(missingArgs.asString));
+			"¥ ERROR: The following compulsory arguments are missing: "++(missingArgs.asString));
 	}
 	
 	warnSpec{|spec|
 		("The spec: "++(spec.asString)++" is not defined.").error;
-		this.warnFromError("The spec: "++(spec.asString)++" is not defined.");
+		this.warnFromError("¥ The spec: "++(spec.asString)++" is not defined.");
 	}
 	
 	warnNoRelease{
 		("ERROR: This synth cannot be released.").error;
-		this.warnFromError("ERROR: This synth cannot be released.");
+		this.warnFromError("¥ ERROR: This synth cannot be released.");
 	}
 	
 	warnKeyword{|word|
 		("ERROR: Cannot use the keyword: "++word).error;
-		this.warnFromError("ERROR: Cannot use the keyword: "++word);
+		this.warnFromError("¥ ERROR: Cannot use the keyword: "++word);
 	}
 	
 	postPoll{|string|

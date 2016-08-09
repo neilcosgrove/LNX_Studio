@@ -27,51 +27,51 @@ LNX_POP {
 	classvar classAPI;
 	classvar <listOfPofP, <studioModels, <resets, <padNotes, <clipboard;
 	classvar <gui, <midi, <>studio, <when, <noPOP=16, <maxPOP=128, lastNote, lastPad;
-	
+
 	var <api, <inst, <>presetsOfPresets, <instGUI, <items;
-		
+
 	*initClass{
 		Class.initClassTree(LNX_API);
 		classAPI = LNX_API.newPermanent(this, \LNX_POP,
 			#[\netPopReset, \more, \less, \netSetNow, \netSetWhen,
 				\netPaste, \netInsert, \netClear, \netRemove ], #[]); // network interface
 	}
-	
+
 	*initMIDI{
-		
+
 		var pref;
-		
+
 		// note value of pads left to right, top to bottom
 		padNotes =  #[ 0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,
 			32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
-			64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
-			96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119 ];
-		
-		midi = LNX_MIDIPatch(0,0,0,0);	
-		
+//
+//			64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
+//			96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119
+		];
+
+		midi = LNX_MIDIPatch(0,0,0,0);
+
 		// load preferences or find a midi controller with "pad" in the name
 		pref = "POP Controller".loadPref;
 		if (pref.isNil) { midi.findByName("pad","pad") }{ midi.putLoadList(pref.asInt) };
-		
-		midi.noteOnFunc  = {|src, chan, note, vel ,latency|
-			var prog =padNotes.indexOf(note);
 
-			note.postln;
+		midi.noteOnFunc  = {|src, chan, note, vel ,latency|
+			var prog = padNotes.indexOf(note);
 
 			if (prog.notNil and: {prog<noPOP}) {
 				if (lastNote.notNil) { midi.noteOn(lastNote,0) }; // 0 off
 				lastNote=note;
 				studioModels[\toBecome].lazyValueAction_(prog);
 			};
-			
+
 		};
 		midi.programFunc = {|src, chan, prog, latency| "program in pop: ".post; prog.postln };
 	}
-	
+
 	*saveMIDIPrefs{ midi.getSaveList.savePref("POP Controller") }
-	
+
 	*new {|inst,api| ^super.new.init(inst,api) } // what api is this? from inst. will this be used?
-	
+
 	init{|argInst,argApi|
 		api              = argApi;
 		inst             = argInst;
@@ -80,14 +80,14 @@ LNX_POP {
 		instGUI          = IdentityDictionary[];
 		items            = this.itemHeader ++ inst.popItems; // get from inst
 	}
-	
+
 	*initModels{|argModels, midiControl|
-		
+
 		var lastProg;
-		
+
 		studioModels = argModels;  // this is studio's models becareful
 		resets       = 0 ! maxPOP;
-		
+
 		// 16. program number (current) - auto works on this, needs a midi control
 		studioModels[\program] =	[-1, [-1,noPOP-1,\lin,1,1], midiControl, 16, "Program",
 			{|me,value,latency,send,toggle,jumpTo,offset|
@@ -99,17 +99,17 @@ LNX_POP {
 				lastProg = padProg;
 				lastNote = nil;
 			}].asModel
-			.isProgramModel_(true);	
-				
+			.isProgramModel_(true);
+
 		// program number (to become)
 		studioModels[\toBecome] = [-1, [-1,noPOP-1,\lin,1,1],
 			{|me,value,latency,send| this.guiToBecome(value) }].asModel;
-						
+
 		// 17.quant on steps
 		studioModels[\quant] = [32,[1,512,\lin,1,1], midiControl, 17, "Prog Steps",
 			(label_:"Steps"),
 			{|me,value,latency,send| studio.setPVP(\quant,value,nil,send) }].asModel;
-		
+
 	}
 
 	// gui call: "to become program".
@@ -128,7 +128,7 @@ LNX_POP {
 			classAPI.groupCmdOD(\netSetNow,value);
 		}
 	}
-	
+
 	// just set the program now, no beat quantise
 	*netSetNow{|value|
 		// we are not setting beat in the call 2 lazyValueActionDoAutoBeat_
@@ -145,19 +145,22 @@ LNX_POP {
 		when  = argWhen.asInt;
 		studioModels[\toBecome].lazyValue_(value,false);
 	}
-	
+
 	// program changes are synced to clock events
 	*clockIn3{|beat,masterBeat,absTime,latency,absBeat|
-		var pad, quant;	
+		var pad, quant;
 		if (when.notNil) {
 			// flash the gui
 			if ((beat%12==0)) {
 				gui[\program].flash_((beat%24).clip(0,1));
 				if (studioModels[\toBecome]>=0) {
 					var prog = (studioModels[\toBecome]%8)+(studioModels[\toBecome].div(8)*16);
-					midi.noteOn(prog, ((1-(beat%24).clip(0,1))*51), latency);  // flashYellow
+					// limit to top half of launchpad
+					if (prog<64) {
+						midi.noteOn(prog, ((1-(beat%24).clip(0,1))*51), latency); // flashYellow
+					}
 				};
-			};	
+			};
 			// so we can play catch up on the network the test here is >= and not ==
 			if (beat>=when) {
 				// special method to avoid latency adjustments in automation
@@ -168,6 +171,8 @@ LNX_POP {
 			};
 		};
 		quant = studioModels[\quant].value;
+
+		// clock display on left
 		pad = (beat.div(6)%quant/quant*8).asInt;
 		pad = #[120, 104, 88, 72, 56, 40, 24, 8].wrapAt(pad);
 		if (pad != lastPad) {
@@ -176,20 +181,20 @@ LNX_POP {
 			lastPad = pad;
 		}
 	}
-	
+
 	*clockStop{
-		when = nil; 
+		when = nil;
 		studioModels[\toBecome].valueAction_(-1,nil,false);
 	} // not using this for now
 
 	// the model now sets the program
 	*modelSetProgram{|value,updateGUI=true,latency,jumpTo,offset=0|
 		// reset bar
-		if ((resets[value].isTrue)and:{jumpTo!=\jumpTo}) { studio.resetInstBeat(offset) }; 
+		if ((resets[value].isTrue)and:{jumpTo!=\jumpTo}) { studio.resetInstBeat(offset) };
 		listOfPofP.do{|pops| pops.modelSetProgram(value,updateGUI=true,latency) };
 		if (updateGUI) { {studioModels[\program].value_(value)}.defer } ;
 	}
-	
+
 	// set for each instance of each instrument
 	modelSetProgram{|value,updateGUI=true,latency|
 		var prog = presetsOfPresets[value]?2;
@@ -197,21 +202,21 @@ LNX_POP {
 		if (prog==2) {^this}; // do nothing
 		// on/off, prog =  0 is off, 2 do nothing (above), everthing else>0 is on
 		// testing for isFX is in instTemplate, is this best?
-		inst.popOnOff_(prog.clip(0,1),latency) 
+		inst.popOnOff_(prog.clip(0,1),latency)
 	}
 
 	// GUI STuff ******************************************************
-	
+
 	// master control (LEFT)
 	*createWidgets{|window,window2|
-		
+
 		var lastProgram;
-		
-		gui = IdentityDictionary[];	
-		
+
+		gui = IdentityDictionary[];
+
 		gui[\window] = window;
 		gui[\window2] = window2;
-		
+
 		gui[\theme2]=(	\orientation_  : \horiz,
 				\resoultion_	 : 3,
 				\visualRound_  : 0.001,
@@ -223,12 +228,12 @@ LNX_POP {
 								\backgroundDown : Color(0.1,0.1,0.1,0.85),
 								\string : Color.black,
 								\focus : Color(0,0,0,0.5)));
-								
+
 		// Quantise
 		MVC_NumberBox(studioModels[\quant], gui[\window] ,Rect(13,50, 35, 18),  gui[\theme2])
 			.orientation_(\vert)
 			.labelShadow_(false);
-		
+
 		// the Edit menu
 		MVC_PopUpMenu3(  gui[\window], Rect(51+2,50, 18, 18))
 			.items_(["Copy","Paste", "-", "Insert","Clear","Remove"])
@@ -245,25 +250,21 @@ LNX_POP {
 					{4}{ this.guiClear  }
 					{5}{ this.guiRemove }
 			};
-		
-		MVC_StaticText(gui[\window], Rect(1, 1+3, 74, 27))
-			.shadow_(false)
-			.color_(\string,Color(0.85,0.85,0.85))
-			.align_(\center)
-			.penShadow_(true)
-			.font_(Font("AvenirNext-Heavy",14))
-			.string_("Program");	
-		
+
+		// logo
+/*		MVC_ImageView(gui[\window],Rect(3, 9, 70, 21))
+			.image_("fontImages/Program.tiff");*/
+
 		// 23.program number (to become)
 		gui[\program]=MVC_ProgramChangeMain(studioModels[\toBecome],gui[\window],
 			Rect(10,42+26+10,40,noPOP*21))
 			.ww_(40)
 			.hh_(21)
 			.noPOP_(noPOP);
-			
+
 		noPOP.do{|i| this.createResetWidget(i) };
-			
-		// 18.program number	
+
+		// 18.program number
 		gui[\programFuncAdaptor]=MVC_FuncAdaptor(studioModels[\program]).func_{|me,value|
 			gui[\program].actualProgram_(value);
 			listOfPofP.do{|pop| pop.highlight(value,lastProgram) };
@@ -285,7 +286,7 @@ LNX_POP {
 			.color_(\down,Color(10665/19997,223/375,2/3) )
 			.color_(\string,Color.white)
 			.action_{ classAPI.groupCmdOD(\more) };
-			
+
 		// Less
  		gui[\less]=MVC_FlatButton(gui[\window],Rect(18, (noPOP+3)*21+22, 19, 19),"-")
 			.rounded_(true)
@@ -295,34 +296,34 @@ LNX_POP {
 			.color_(\down,Color(10665/19997,223/375,2/3) )
 			.color_(\string,Color.white)
 			.action_{  classAPI.groupCmdOD(\less) };
-	
+
 		// plainSquare to extend scroll
  		gui[\plainSquare]=MVC_PlainSquare(gui[\window],Rect(0, (noPOP+4.5)*21+22, 1, 1))
  			.color_(\on,Color.clear)
  			.color_(\off,Color.clear);
- 			
+
  		// plainSquare to extend scroll
  		gui[\plainSquare3]=MVC_PlainSquare(gui[\window],Rect(0, 0, 1, 1))
  			.color_(\on,Color.clear)
  			.color_(\off,Color.clear);
- 		
+
  		// plainSquare to extend scroll
  		gui[\plainSquare2]=MVC_PlainSquare(gui[\window2],Rect(0, (noPOP+4.5)*21+18, 1, 1))
  			.color_(\on,Color.clear)
  			.color_(\off,Color.clear);
 
 	}
-	
+
 	// give me more programs i can use
 	*more{
 		this.noPOP_(noPOP+16);
 		gui[\window2].view.visibleOrigin_(0@(25*noPOP));
 		gui[\window].view.visibleOrigin_(0@(25*noPOP));
 	}
-	
+
 	// give me less
 	*less{ this.noPOP_(noPOP-16) }
-	
+
 	// set the resets via the network
 	*netPopReset{|index,value|
 		index=index.asInt;
@@ -330,7 +331,7 @@ LNX_POP {
 		resets[index]=value;
 		{gui[(\popReset++index).asSymbol].value_(value)}.defer;
 	}
-	
+
 	// make the reset widgets
 	*createResetWidget{|i|
 		gui[(\popReset++i).asSymbol] = MVC_OnOffView(gui[\window],Rect(50,79+(21*i),22,21))
@@ -349,23 +350,23 @@ LNX_POP {
 			.color_(\icon,Color.white)
 			.font_(Font("Helvetica",11))
 	}
-	
+
 	// and free the widgets
 	*freeResetWidget{|i|
 		gui[(\popReset++i).asSymbol].free;
 		gui[(\popReset++i).asSymbol]=nil;
 		resets[i]=0;
 	}
-	
-	
+
+
 	// highlight a row as a program is selected
 	highlight{|now,last|
 		if (instGUI[(\pop++last).asSymbol].notNil) {instGUI[(\pop++last).asSymbol].highlight_(1)};
 		if (instGUI[(\pop++now).asSymbol].notNil) {instGUI[(\pop++now).asSymbol].highlight_(0.45)};
 	}
-	
+
 	itemHeader{ if (inst.canTurnOnOff) { ^["Mute", "On", " - "] } { ^[" - "] } }
-	
+
 	// put in the names of the presets
 	items_{|list|
 		// pop can't be more than number of presets
@@ -380,17 +381,17 @@ LNX_POP {
 		items = this.itemHeader ++ list;
 		noPOP.do{|i| instGUI[(\pop++i).asSymbol].items_(items) };      // update names > menus
 	}
-	
+
 	// inst / channel control (RIGHT)
 	createWidgets{|window|
 		instGUI[\popWindow] = window;
 		this.adjustSize;
 		noPOP.do{|i| this.createPOPWidget(i) };
 	}
-	
+
 	// individual widgets
 	createPOPWidget{|i|
-		
+
 		instGUI[(\pop++i).asSymbol] = MVC_PopUpMenu3(instGUI[\popWindow],
 			Rect(2,(21*i)+79,70,21))
 			.color_(\background, inst.mixerColor)
@@ -402,48 +403,48 @@ LNX_POP {
 				// this uses the instrument api to talk to its instance of LNX_POP
 				api.groupCmdOD(\netSetPOP,i,me.value);
 			}
-			.updateFunc_{ 
+			.updateFunc_{
 				LNX_POP.alignFromPOP;
 //				if (studioModels[\toBecome]<0) {
 //					LNX_POP.alignFromPOP
 //				};
-				
+
 			};
 	}
-	
+
 	// keep both container views aligned
 	*alignFromPOP{
 		var pos = gui[\window2].view.visibleOrigin.clip(0,inf);
-		
+
 		gui[\plainSquare3].bounds_(Rect(0,pos.y,1,1));
-		
+
 		if ( gui[\window].visibleOrigin.y!=pos.y ) {
 			gui[\window].visibleOrigin_(pos);
 		};
 	}
-	
+
 	// set the number of programs
 	netSetPOP{|index,value|
 		presetsOfPresets[index]=value + (inst.canTurnOnOff.if(0,2));
 		{instGUI[(\pop++index).asSymbol].value_(value,false)}.defer;
 	}
-	
-	guiSetPOP{|index,value| api.groupCmdOD(\netSetPOP,index,value); } 
-	
+
+	guiSetPOP{|index,value| api.groupCmdOD(\netSetPOP,index,value); }
+
 	// free the instruments pop menu widgets
 	freePOPWidget{|i|
 		instGUI[(\pop++i).asSymbol].free;
 		instGUI[(\pop++i).asSymbol]=nil;
 		presetsOfPresets[i] = 2;
 	}
-	
+
 	// change number of pops
 	*noPOP_{|num|
 		num=num.clip(16,maxPOP);
 		if (num!=noPOP) {
 			var old = noPOP;
 			noPOP = num;
-			// adjust gui widgets	
+			// adjust gui widgets
 			gui[\more].bounds_(Rect(47, (noPOP+3)*21+22, 19, 19));
 			gui[\less].bounds_(Rect(18, (noPOP+3)*21+22, 19, 19));
 			gui[\plainSquare].bounds_(Rect(10, (noPOP+4.5)*21+23 + ScrollBars.addIfSome(11) , 1, 1));
@@ -451,7 +452,7 @@ LNX_POP {
 			gui[\program].noPOP_(noPOP);
 			studioModels[\program].controlSpec_( [-1,noPOP-1,\lin,1,1]);
 			studioModels[\toBecome].controlSpec_( [-1,noPOP-1,\lin,1,1]);
-			
+
 			if (noPOP>old) {
 				// add
 				listOfPofP.do{|pop|
@@ -460,9 +461,9 @@ LNX_POP {
 					(old..(noPOP-1)).do{|i| pop.createPOPWidget(i) };
 				};
 				(old..(noPOP-1)).do{|i| this.createResetWidget(i)};
-				resets = resets.extend(noPOP,0);	
+				resets = resets.extend(noPOP,0);
 			}{
-				// remove	
+				// remove
 				listOfPofP.do{|pop|
 					pop.adjustSize;
 					(noPOP..(old-1)).do{|i| pop.freePOPWidget(i) };
@@ -470,23 +471,23 @@ LNX_POP {
 				};
 				(noPOP..(old-1)).do{|i| this.freeResetWidget(i) };
 			};
-			
+
 			// bug fix to align resets
 			{
 				gui[\plainSquare2].moveBy(1,0);
 				gui[\plainSquare2].moveBy(-1,0);
 			}.defer;
-			
+
 		}
 	}
-	
+
 	// adjust the size of the composite view
 	adjustSize{
 		instGUI[\popWindow].bounds_(instGUI[\popWindow].bounds.height_(21*(noPOP+4)+30));
 	}
-	
+
 	// incoming midi program as a pipe ?
-	pipeIn{|pipe| }	
+	pipeIn{|pipe| }
 
 	// get the save list
 	*getSaveList{
@@ -496,10 +497,10 @@ LNX_POP {
 		list = list ++ ["***EOD of POP Doc***"];
 		^list;
 	}
-	
+
 	// the insts pops, limit to number of programs
-	getSaveList{ ^presetsOfPresets[0..noPOP-1] } 
-	
+	getSaveList{ ^presetsOfPresets[0..noPOP-1] }
+
 	// put the load list
 	*putLoadList{|list|
 		list = list.reverse;
@@ -523,7 +524,7 @@ LNX_POP {
 			};
 		};
 	}
-	
+
 	// and put back in
 	putLoadList{|list|
 		presetsOfPresets=list;
@@ -531,7 +532,7 @@ LNX_POP {
 			instGUI[(\pop++i).asSymbol].value_(value  - (inst.canTurnOnOff.if(0,2)) )
 		};
 	}
-	
+
 	// when adding a song
 	*addLoadList{|list|
 		list = list.reverse;
@@ -546,13 +547,13 @@ LNX_POP {
 			}
 		}
 	}
-	
+
 	// when adding a song
 	addLoadList{|list|
 		presetsOfPresets=list.extend(noPOP,2);
 		presetsOfPresets.do{|value,i| instGUI[(\pop++i).asSymbol].value_(value) };
 	}
-	
+
 	// when a song is closed, do this
 	*reset{
 		this.noPOP_(16);
@@ -564,13 +565,13 @@ LNX_POP {
 		studioModels[\program].value_(-1);
 		studioModels[\toBecome].value_(-1);
 	}
-	
+
 	// free stuff
 	free{
 		listOfPofP.remove(this);
 		instGUI.do(_.free);
 		api = inst = presetsOfPresets = nil;
-	}	
+	}
 
 	// ediT menu *****************************************************************
 
@@ -584,15 +585,15 @@ LNX_POP {
 				};
 		};
 	}
-	
+
 	// gui call to paste clipboard to selected prog
-	*guiPaste{ 
+	*guiPaste{
 		var prog = studioModels[\program].asInt;
-		if (clipboard.notNil && (prog>=0)) {	
+		if (clipboard.notNil && (prog>=0)) {
 			classAPI.groupCmdOD(\netPaste, prog, *clipboard) // network it
 		};
 	}
-	
+
 	// network call to paste clipboard to selected prog
 	*netPaste{|prog,reset,noInst... pops|
 		prog=prog.asInt;
@@ -606,27 +607,27 @@ LNX_POP {
 				// test to stop an insts over noInst in the clipboard
 				if (i<noInst) { inst.presetsOfPresets.editSetPOP(prog,pops[i]) };
 			};
-		};	
+		};
 	}
-	
+
 	// set the number of programs,  maintains index in pops & adjusts gui of canTurnOnOff insts
 	editSetPOP{|index,value|
 		presetsOfPresets[index]=value;
 		{instGUI[(\pop++index).asSymbol].value_(value - (inst.canTurnOnOff.if(0,2)),false)}.defer;
 	}
-	
+
 	// gui call, insert a clear row at selected prog
 	*guiInsert{
 		var prog = studioModels[\program].asInt;
 		if (prog>=0) { classAPI.groupCmdOD(\netInsert,prog) }  // network it
 	}
-	
+
 	// network call, insert a clear row at selected prog
 	*netInsert{|prog|
 		prog=prog.asInt;
-		if (prog<(noPOP-1)) { 
+		if (prog<(noPOP-1)) {
 			// working from the bottom up to prog+1
-			((noPOP-1)..(prog+1)).do{|p| 
+			((noPOP-1)..(prog+1)).do{|p|
 				this.netPopReset(p,resets[p-1]); // move resets
 				// and move pops
 				studio.insts.visualOrder.collect{|inst,i|
@@ -637,27 +638,27 @@ LNX_POP {
 		};
 		this.netClear(prog); // clear the selected row
 	}
-	
+
 	// gui call, clear row at selected prog
 	*guiClear{
 		var prog = studioModels[\program].asInt;
 		if (prog>=0) { classAPI.groupCmdOD(\netClear, prog) };  // network it
 	}
-	
+
 	// network call, clear row at selected prog
 	*netClear{|prog|
 		prog=prog.asInt;
 		this.netPopReset(prog,0);
 		studio.insts.visualOrder.collect{|inst,i| inst.presetsOfPresets.editSetPOP(prog,2) }
 	}
-	
-	// gui call, remove row at selected prog 
+
+	// gui call, remove row at selected prog
 	*guiRemove{
 		var prog = studioModels[\program].asInt;
 		if (prog>=0) { classAPI.groupCmdOD(\netRemove,prog) }  // network it
 	}
-	
-	// network call, remove row at selected prog 
+
+	// network call, remove row at selected prog
 	*netRemove{|prog|
 		prog=prog.asInt;
 		if (prog<(noPOP-1)) { // test to stop if last row selected
@@ -673,6 +674,6 @@ LNX_POP {
 		};
 		this.netClear(noPOP-1); // clear the bottom row
 	}
-		
+
 }
 

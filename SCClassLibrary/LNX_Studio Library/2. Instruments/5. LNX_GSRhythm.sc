@@ -11,8 +11,9 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	var <chokeLamp, <mutateModel, <userBanks, <webBrowsers, <channelBanks;
 	var <lastGoodSample, <lastGoodAmp, <lastGoodOffset, <lastGoodStartFrame, <lastGoodLoop;
 	var <lastTask, <lastTaskFunc, <lastMetaWindow;
-	var <filterNodes, <filterBuses, <filterModel, <voicer, <filterOffTasks;
-
+	var <filterNodes, <filterBuses, <filterModel, <voicer;
+	var <noSynth, <noNodes; 
+	
 	*initClass {
 		Class.initClassTree(Spec);
 		// specs to do unmap in synth arg funcs seq update
@@ -107,7 +108,6 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		lastTask           = nil ! defaultChannels;
 		lastTaskFunc       = nil ! defaultChannels;
 		lastMetaWindow     = nil ! defaultChannels;
-		filterOffTasks     = nil ! defaultChannels;
 		
 	}
 
@@ -187,56 +187,44 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		this.initSynthArgFuncs;
 		
 	}
-		
+			
 	// functions to calculate synth args
 	initSynthArgFuncs{
 	
 		// out channel
 		synthArgFuncs[\outputChannels]={|i|
-			var out, sameAsMaster;
-			
-			case {p[36+i]==0} {
+			var out, cOut = p[36+i];
+			case {cOut==0} {
 					out = this.instGroupChannel; // select group channel if master
 				}
-				{p[36+i]>0} {
-					out = (p[36+i]-1)*2; // or get drum channel out
+				{cOut>0} {
+					out = (cOut-1)*2; // or get drum channel out
+					// if ch = master use instGroup	
+					if (LNX_AudioDevices.getOutChannelIndex(p[3])==out) {
+						out = this.instGroupChannel };
 				}{
-					out = LNX_AudioDevices.firstFXBus+(p[36+i].neg*2-2); // or drum ch fx channel
+					out = LNX_AudioDevices.firstFXBus+(cOut.neg*2-2); // or drum ch fx channel
+					// if ch = master use instGroup
+					if (LNX_AudioDevices.getOutChannelIndex(p[3])==out) {
+						out = this.instGroupChannel };
 				};
-				
-			if (p[3]>=0) {
-				sameAsMaster = p[3]*2; // get master out anyway
-			}{	
-				sameAsMaster = LNX_AudioDevices.firstFXBus+(p[3].neg*2-2); // or if its an fx
-			};
-			
-			if (sameAsMaster==out) { out = this.instGroupChannel}; // if ch = master use instGroup	
 			out
 		};
 		
-		// send channels
+		// send channels this is individual channel only
 		synthArgFuncs[\sendChannels]={|i| LNX_AudioDevices.getOutChannelIndex(p[76+i]) };
-		
-		// master send channels
-		synthArgFuncs[\masterSendChannels]={|i| LNX_AudioDevices.getOutChannelIndex(p[287]) };
-	
 		synthArgFuncs[\rate]={|i| (p[6]+p[68+i]+(modValues[i]*p[196+i])).midicps/0.midicps };
 		synthArgFuncs[\amp ]={|i| 
-			(
-				(if (lastGoodAmp[i].notNil) {lastGoodAmp[i].dbamp} {nil})
-				? ({(channelBanks[i][p[100+i]].amp(p[108+i]).dbamp)}.try ? 1) 
+			(if (lastGoodAmp[i].notNil) {lastGoodAmp[i].dbamp} {nil})
+			? ({(channelBanks[i][p[100+i]].amp(p[108+i]).dbamp)}.try ? 1) 
 							// try stop error on load
-			) *(p[28+i].dbamp)*(p[2].dbamp) 
 		};
-		synthArgFuncs[\pan ]={|i|
-			if (p[4]>=0) { p[44+i].map(-1,1,p[4]*2-1,1) }{ p[44+i].map(-1,1,-1,1+(p[4]*2)) }};
-			
-			
+		synthArgFuncs[\chAmp]={|i| (p[28+i].dbamp) }; // channel amp
+		synthArgFuncs[\chPan ]={|i| p[44+i] };        // channel pan
+		// this is individual channel only
 		synthArgFuncs[\sendAmp]={|i|
-			p[84+i].dbamp +( p[212+i].dbamp * ampSpec.map(modValues[i]).dbamp)};
-			
-		synthArgFuncs[\masterSendAmp]={|i| p[288].dbamp} ;
-			
+			p[84+i].dbamp +( p[212+i].dbamp * ampSpec.map(modValues[i]).dbamp)
+		};	
 		synthArgFuncs[\filtFreq ]={|i|
 			if (p[236+i]==1) {
 				if (p[244+i]>=0) {
@@ -293,7 +281,32 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 			}
 		};
 		synthArgFuncs[\type]={|i| (p[236+i]==1).if(p[188+i],p[232]) }
-			
+	}
+		
+	// args for the mixer
+	getMixerArgs{^[
+		[\amp,           p[2].dbamp],
+		[\outChannel,    LNX_AudioDevices.getOutChannelIndex(p[3])],
+		[\pan,           p[4]],
+		[\sendChannel,   LNX_AudioDevices.getOutChannelIndex(p[287])],
+		[\sendAmp,       p[288].dbamp]
+	]}	
+	
+	// is this channel going to the mixer synth as a binary value?
+	isGoingToMixerSynth{|i|
+		var out, cOut = p[36+i];
+		case {cOut==0} {
+				^1;  // if set to master then true
+			} {cOut>0} {
+				out = (cOut-1)*2; // or get drum channel out
+				// if ch = master use instGroup	
+				if (LNX_AudioDevices.getOutChannelIndex(p[3])==out) {^1 };
+			}{
+				out = LNX_AudioDevices.firstFXBus+(cOut.neg*2-2); // or drum ch fx channel
+				// if ch = master use instGroup
+				if (LNX_AudioDevices.getOutChannelIndex(p[3])==out) {^1 };
+			};
+		^0;
 	}
 		
 	// disk i/o ///////////////////////////////
@@ -536,7 +549,8 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		// then play the bundles so choke has a chance to work on the other channels
 		voicer.playAll(latency +! syncDelay, {|channel,velocity|
 			this.bangMIDI(channel,velocity,latency);
-			{gui[\lamps][channel].value_(chokeLamp[channel][0],0.1)}.defer(chokeLamp[channel][1]);
+			{gui[\lamps][channel].value_(
+				chokeLamp[channel][0],0.1)}.defer(chokeLamp[channel][1]);
 		});
 
 	}
@@ -566,9 +580,8 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	
 	// trigger a new drum
 	bang{|i,velocity,latency,internalSeq=false|
-		var sample, thisNode, envFlatList, pan, out;
-		var rate, amp, duration, modDur, sendChannels, sendAmp, choke;
-		var masterSendChannels, masterSendAmp;
+		var sample, thisNode, envFlatList;
+		var rate, amp, duration, modDur, choke;
 		var tempGrainDur, posRate, density, rand, isGrainPlayer;
 		var filterOn, vel, eVal;
 		var sampleBank, offset, startFrame, overlap, loop;
@@ -584,7 +597,6 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		//if (sampleBank.isLoading) {^nil}; // drop out if still loading
 		
 		if (sampleBank.size>0) {
-			
 			if (p[289+i].isTrue) {
 				models[108+i].lazyValueAction_(sampleBank.size.rand.asInt,latency); // random smp
 			};
@@ -614,26 +626,19 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		}{
 			eVal=((modValues[i]*p[204+i])).map(-1,0,-1,eVal);
 		};
-		eVal=(eVal*0.63639610306789+0.7778174593052)**2-1;
-		eVal=(((2**(eVal.tanh.abs))-1)*2).tan*4.66*(eVal.sign);
-		envFlatList=Env.new([0,1,0],[p[277+i]**2,1],[0,eVal]).asArray;
+		eVal = (eVal*0.63639610306789+0.7778174593052)**2-1;
+		eVal = (((2**(eVal.tanh.abs))-1)*2).tan*4.66*(eVal.sign);
+		envFlatList = Env.new([0,1,0],[p[277+i]**2,1],[0,eVal]).asArray;
 		
 		// get everything else
 		vel      = ampSpec.map(velocity).dbamp;
-		amp      = this.getAndStoreSynthArg(\amp, i);
+		amp      = this.getAndStoreSynthArg(\amp, i); // this is sample amp adjust only
 		
 		this.setFilterArg(\amp,i,amp,latency); // set amp (this will need to move)
 		
-		pan      = this.getAndStoreSynthArg(\pan, i);
-		rate     = this.getAndStoreSynthArg(\rate,i);
+		rate = this.getAndStoreSynthArg(\rate,i);
 		if ((p[236+i]==1) or:{p[11]==1}) { filterOn=1 }  { filterOn=0 };
 		
-		out                = this.getSynthArg(\outputChannels,i);
-		sendAmp            = this.getSynthArg(\sendAmp,i);
-		sendChannels       = this.getSynthArg(\sendChannels,i);
-		masterSendAmp      = this.getSynthArg(\masterSendAmp,i);
-		masterSendChannels = this.getSynthArg(\masterSendChannels,i);
-
 		voicer.killChannelNow(i,latency +! syncDelay); // kill previous if it exists (mono)
 		
 		// am i a grain player?
@@ -654,23 +659,15 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 			overlap      = this.getAndStoreSynthArg(\overlap,i);
 			
 			voicer.storeBundle(i, \samplePlayer, thisNode, duration, vel,
-				[\s_new, #[["monoGSNF","monoGS-F"],
-							["stereoGSNF","stereoGS-F"]][sample.numChannels-1][filterOn],
+				[\s_new, (#["monoGS_GSR","stereoGS_GSR"][sample.numChannels-1]),
 							thisNode, 0,  groupIDs[\inst],
 					\bufnum,				sample.bufnum,
 					\rate,				rate,
-					\amp, 				amp,
+					\amp, 				amp,     // this is sample amp adjust only
 					\velocity,			vel,
 					\loop,				loop,
 					\dur, 				duration,
-					\pan, 				pan,
-					\outputChannels,		[out,filterBuses[i].index][filterOn],
-					
-					\sendChannels,		sendChannels,
-					\sendAmp,				sendAmp,
-					\masterSendChannels,	masterSendChannels,
-					\masterSendAmp,		masterSendAmp,
-
+					\outputChannels,		filterBuses[i].index,
 					\offset,				offset,
 					\startFrame,			startFrame,
 					\posRate,				posRate,
@@ -686,23 +683,15 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 			duration = sample.duration / rate * p[5] * p[52+i];
 
 			voicer.storeBundle(i, \samplePlayer, thisNode, duration, vel,
-				[\s_new, #[["monoNF","mono-F"],
-							["stereoNF","stereo-F"]][sample.numChannels-1][filterOn],
+				[\s_new,( #["mono_GSR","stereo_GSR"][sample.numChannels-1]),
 							thisNode, 0,  groupIDs[\inst],
 					\bufnum,				sample.bufnum,
 					\rate,				rate,
-					\amp, 				amp,
+					\amp, 				amp,    // this is sample amp adjust only
 					\velocity,			vel,
 					\loop,				loop,
 					\dur, 				duration,
-					\pan, 				pan,
-					\outputChannels,		[out,filterBuses[i].index][filterOn],
-					
-					\sendChannels,		sendChannels,
-					\sendAmp,				sendAmp,
-					\masterSendChannels,	masterSendChannels,
-					\masterSendAmp,		masterSendAmp,
-
+					\outputChannels,		filterBuses[i].index,
 					\offset,				offset, // i don't think this is needed
 					\startFrame,			startFrame,
 				],[\n_setn, thisNode, \newEnv, envFlatList.size] ++ envFlatList
@@ -732,50 +721,37 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		// set the pos marker
 		this.posMarker(sampleBank, i, sampleBank.samples.indexOf(sample), duration,
 											sample.duration,offset,isGrainPlayer,loop);
-		
 	}
 	
-	// put the pos marker in
+	// put the pos marker in (the sample player) - the position can change as played
 	posMarker{|sampleBank,i , sampleIndex,duration, sampleDuration,offset,isGrain,loop|
-			
 		var task, rate;
-		
 		lastTask[i].stop;
 		lastTaskFunc[i].value;
-		
 		if (sampleIndex.isNil) {^this};
-		
 		// only do this if the window is open
 		if ((lastMetaWindow[i].notNil) and:{lastMetaWindow[i].isOpen}) {
-			
 			lastTaskFunc[i] = {
 				if (sampleBank.otherModels[sampleIndex].notNil) { 
 					sampleBank.otherModels[sampleIndex][\pos].valueAction_(-1,0.2,true);
 				};
 				lastTaskFunc[i]=nil; // only do it once
 			};
-			
 			// for the gui playback
 			task= Task({
 				var startTime = AppClock.now;
-				var lastTime = startTime;
+				var lastTime  = startTime;
 				var pos = offset;
-				
 				inf.do{
 					var now = AppClock.now;
-						
 					rate = this.getSynthArg(isGrain.if(\posRate,\rate),i);
-					
 					if (loop.isTrue) {
 						pos = (pos + ((now - lastTime)/sampleDuration*rate)).wrap(0,1);
 					}{
 						pos = (pos + ((now - lastTime)/sampleDuration*rate)).clip(0,1);
 					};
-					
 					lastTime = now;
-					
 					if ((pos>=1)or:{(now-startTime)>duration}) {
-						
 						lastTaskFunc[i].value;
 						task.stop;
 					}{	
@@ -783,14 +759,10 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 							sampleBank.otherModels[sampleIndex][\pos].valueAction_(pos,0.2);
 						};
 					};
-	
 					(1/30).wait; // 30 fps (could be lower if needed)
-					
 				};
 			}).start(AppClock);
-				
 			lastTask[i]=task;
-		
 		}
 	}
 	
@@ -817,58 +789,79 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	
 	// this is called once to start ugens at instrument creation
 	startDSP{
-		filterBuses = defaultChannels.collect{ Bus.audio(server,2) };
+		// the buses used by each channel filter
+		filterBuses = defaultChannels.collect{ Bus.audio(server,2) };		// with filter
 		synth = defaultChannels.collect{|i|
 			Synth.head(groups[\gsrFilter], "GSR_Filter",[\inputChannels, filterBuses[i].index ])
 		};
-		filterNodes  = synth.collect(_.nodeID);	
+		filterNodes  = synth.collect(_.nodeID);
+		// without filter
+		noSynth = defaultChannels.collect{|i|
+			Synth.head(groups[\gsrFilter],"GSR_NoFilter",[\inputChannels, filterBuses[i].index ])
+		};
+		noNodes = noSynth.collect(_.nodeID);		
 	}
 		
 	// and once to stop ugen when the instrument is deleted
 	stopDSP{
 		synth.do(_.free);
+		noSynth.do(_.free);
 		filterBuses.do(_.free);
 	}
 
 	// update synth parameters in a load
 	updateDSP{|oldP,latency| // this will need latency...(source midi preset seq, sync etc)
-		var out;				
-		if (p[3]>=0) {
-			out = p[3]*2
-		}{	
-			out = LNX_AudioDevices.firstFXBus+(p[3].neg*2-2);
+		if (instOutSynth.notNil) {
+			server.sendBundle(latency +! syncDelay,
+				*this.getMixerArgs.collect{|i| [\n_set, instOutSynth.nodeID]++i } );
 		};
-		this.instOutChannel_(out,latency);	
 		filterNodes.do{|node,i| this.updateFilterDSP(i,latency) }; // update all filters
+		this.setAll_F_NF_value(\amp,p[2].dbamp,latency); // master amp for filer/noFilter synth
+		this.setAll_F_NF_value(\pan,p[4],latency);	 // master pan for filer/noFilter synth
+		defaultChannels.do{|i| 
+			this.set_F_NF_value(\select,i,this.isGoingToMixerSynth(i),latency); // also select
+		};
 	}
 	
 	// update an individual filter
 	updateFilterDSP{|i,latency|
-		server.sendBundle(latency,
-			[\n_set, filterNodes[i], \drive,          this.getSynthArg(\drive,             i)],
-			[\n_set, filterNodes[i], \filtFreq,       this.getSynthArg(\filtFreq,          i)],
-			[\n_set, filterNodes[i], \filtRes,        this.getSynthArg(\filtRes,           i)],
-			[\n_set, filterNodes[i], \type,           this.getSynthArg(\type,              i)],
-			
-			[\n_set, filterNodes[i], \outputChannels, this.getSynthArg(\outputChannels,    i)],
-			[\n_set, filterNodes[i], \amp,            this.getSynthArg(\amp,               i)],
-			[\n_set, filterNodes[i], \sendAmp,        this.getSynthArg(\sendAmp,           i)],
-			[\n_set, filterNodes[i], \sendChannels,   this.getSynthArg(\sendChannels,      i)], 
-			[\n_set, filterNodes[i], \masterSendChannels,
-				this.getSynthArg(\masterSendChannels,i)], 
-			[\n_set, filterNodes[i], \masterSendAmp,  this.getSynthArg(\masterSendAmp,     i)], 
-			
-			[12, filterNodes[i],(p[11]+p[236+i]).binaryValue] // pause
-		);	
-	}
-	
-	// will these need latency... prob espically with syncs now!!
-	setFilterArg{|synthArg,i,val,latency|
+		// filter
 		if (filterNodes.notNil) {
-			server.sendBundle(latency, [\n_set, filterNodes[i], synthArg, val ] )
+			server.sendBundle(latency +! syncDelay,
+				[12, filterNodes[i],(p[11]+p[236+i]).binaryValue], // pause / unpause
+				[\n_set, filterNodes[i], \outputChannels, this.getSynthArg(\outputChannels,i)],
+				[\n_set, filterNodes[i], \chAmp,          this.getSynthArg(\chAmp,         i)],
+				[\n_set, filterNodes[i], \sendAmp,        this.getSynthArg(\sendAmp,       i)],
+				[\n_set, filterNodes[i], \sendChannels,   this.getSynthArg(\sendChannels,  i)], 
+				[\n_set, filterNodes[i], \drive,          this.getSynthArg(\drive,         i)],
+				[\n_set, filterNodes[i], \filtFreq,       this.getSynthArg(\filtFreq,      i)],
+				[\n_set, filterNodes[i], \filtRes,        this.getSynthArg(\filtRes,       i)],
+				[\n_set, filterNodes[i], \type,           this.getSynthArg(\type,          i)]
+			);	
+			// no filter
+			server.sendBundle(latency +! syncDelay,
+				[12, noNodes[i],1 - ((p[11]+p[236+i]).binaryValue)], // pause / unpause 
+				[\n_set, noNodes[i], \outputChannels, this.getSynthArg(\outputChannels,    i)],
+				[\n_set, noNodes[i], \chAmp,          this.getSynthArg(\chAmp,             i)],
+				[\n_set, noNodes[i], \sendAmp,        this.getSynthArg(\sendAmp,           i)],
+				[\n_set, noNodes[i], \sendChannels,   this.getSynthArg(\sendChannels,      i)]
+			);	
 		}
 	}
 	
+	// set just the filter
+	setFilterArg{|synthArg,i,val,latency|
+		if (filterNodes.notNil) {
+			server.sendBundle(latency +! syncDelay, [\n_set, filterNodes[i], synthArg, val ] )
+		}
+	}
+	
+	// set just the noFilter
+	setNoFilterArg{|synthArg,i,val,latency|
+		if (noNodes.notNil) {
+			server.sendBundle(latency +! syncDelay, [\n_set, noNodes[i], synthArg, val ] )
+		}
+	}
 	
 	// called from the models to update the filter synth arguments
 	updateFilterArg{|synthArg,i,latency|
@@ -886,56 +879,32 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 		defaultChannels.do{|i| this.updateFilterArg(synthArg,i,latency) }
 	}
 	
-	// for switch between channel & master filter
-	updateFilterOnOff{|i,latency|
-		var filterOn = (p[11]+p[236+i]).isTrue;
-		if (filterOn) {
-			filterOffTasks[i].stop; // stop the turn off filter task
-			filterOffTasks[i]=nil;
-			if (filterNodes.notNil) {
-				server.sendBundle(latency, [12, filterNodes[i],1]); // unpause filter
-			};
-			this.updateFilterArg(\drive,i,latency); 
-			this.updateFilterArg(\filtFreq,i,latency);
-			this.updateFilterArg(\filtRes,i,latency);
-			this.updateFilterArg(\type,i,latency);
-		}{
-			var timeRemaining = voicer.timeRemaining(i,\samplePlayer);
-			if (timeRemaining.notNil) {
-				filterOffTasks[i]={
-					timeRemaining.wait;  // pause the filter after time remaining is up
-					if (filterNodes.notNil) {
-						server.sendBundle(latency, [12, filterNodes[i],0]); // pause filter
-					};
-					filterOffTasks[i]=nil;
-				}.fork(AppClock); 
-					
-			}{
-				if (filterNodes.notNil) {
-					server.sendBundle(latency, [12, filterNodes[i],0]); // else pause filter now
-				};
-			}
-		}
-	}
-	
-	// for switch between channel & master filter
-	updateAllFilterOnOff{|latency|
-		defaultChannels.do{|i| this.updateFilterOnOff(i,latency) }
-	}
-	
-	// sets both the filter and individual drum args
-	setBoth{|synthArg,i,latency|
+	// sets both the filter and no filter
+	setF_NF{|synthArg,i,latency|
 		var value = this.getSynthArg(synthArg,i);
 		if (value!=synthArgValues[i][synthArg]) {
 			synthArgValues[i][synthArg]=value;
-			// can do testing for both here... can i be arsed?
 			this.setFilterArg(synthArg,i,value,latency);
-			this.setSynths(synthArg,i,value,latency);
+			this.setNoFilterArg(synthArg,i,value,latency);
 		};
 	}
 	
-	// as setBoth but on all channels
-	setAllBoth{|synthArg,latency| defaultChannels.do{|i| this.setBoth(synthArg,i,latency) } }	
+	// sets all channels, both the filter and no filter with a value
+	setAll_F_NF_value{|synthArg,value,latency|
+		defaultChannels.do{|i| this.set_F_NF_value(synthArg,i,value,latency) };
+	}
+	
+	// sets both the filter and no filter with a value
+	set_F_NF_value{|synthArg,i,value,latency|
+		this.setFilterArg(synthArg,i,value,latency);
+		this.setNoFilterArg(synthArg,i,value,latency);
+	}
+		
+	// for switch between channel & master filter
+	updateAllFilterOnOff{|latency|
+		defaultChannels.do{|i| this.updateFilterDSP(i,latency) }
+	}
+
 	// called from the models to update synth arguments, no testing
 	// currently set only for \samplePlayer
 	setSynths{|synthArg,i,value,latency|
