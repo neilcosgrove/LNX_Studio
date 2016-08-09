@@ -5,16 +5,16 @@
 //
 // Infuture i can do this...
 // 		responders.add(id -> OSCdef(id, function, id));
-// instead of...	
+// instead of...
 //		responders.add((id -> OSCresponderNode(nil, id, function).add));
 
 LNX_LANGroup {
-	
+
 	classvar <>verbose=false;
-	
+
 	classvar lanAddrs, otherLanAddrs, <myAddrs, port, <>uid, otherAddrs;
-	
-	var serveraddress, username, password, groupname, grouppassword, serverport, localtoremoteport, 
+
+	var serveraddress, username, password, groupname, grouppassword, serverport, localtoremoteport,
 		localtxport, localrxport, <responders, <pid, <netAddr;
 
 	var <myNetAddr, masterResponder, <isInternal=true, <>reportFunc, task, <ipModel;
@@ -24,29 +24,29 @@ LNX_LANGroup {
 		^super.newCopyArgs(serveraddress, username, password, groupname, grouppassword, serverport,
 			localtoremoteport, localtxport, localrxport).init;
 	}
-		
+
 	init{
 		this.initMasterResponder;
-		
+
 		ipModel=0.asModel.action_{|me,val|
-			this.scan;	
+			this.scan;
 			this.report( "Connected to LAN on:  "++(myNetAddr.simpleString));
-			
+
 		};
 		responders = IdentityDictionary[];
 		this.addResp('scan' ,      {|time, resp, msg| this.recieveScan(*msg) });
 		this.addResp('returnScan' ,{|time, resp, msg| this.returnScan (*msg) });
 		this.scan;
 	}
-	
+
 	join{ if (verbose) {("LNX_LANGroup started.").postln} }
-	
+
 	// remove the master responder
 	removeMasterResponder{
 		masterResponder.remove;
 		masterResponder = nil;
 	}
-	
+
 	// search with an ip number, a hostname or blank for general search
 	search{|string|
 		var addr = {NetAddr(string, port)}.try;
@@ -63,26 +63,26 @@ LNX_LANGroup {
 			this.scan;
 		};
 	}
-	
+
 	// reports to the room dialog
 	report{|string| {reportFunc.value(string)}.defer(0.1) }
-	
+
 	// check for connection
 	taskCheckingForConnection{
 		if (task.isNil) {
-			task=Task{ 
+			task=Task{
 				inf.do{|i|
 					if ( Pipe.findValuesForKey("ifconfig", "inet").size>1) {
 						task.stop;
 						task=nil;
 						this.scan;
 					};
-					(i+1).wait; 
-				}; 
+					(i+1).wait;
+				};
 			}.start;
 		}
 	}
-	
+
 	// scan for other computers (can use a specific address)
 	scan{|userIP|
 		var intAddr, startPort, ip;
@@ -95,17 +95,17 @@ LNX_LANGroup {
 			.reverse 						   // this put 192 at the top of the list for me
 			;
 		// is local if size>0
-		if (myAddrs.size>0) {	
+		if (myAddrs.size>0) {
 			// is local
-			
+
 			ipModel.themeMethods_((items_:  myAddrs.collect(_.ip)));
-			
+
 			myNetAddr = myAddrs[ipModel.value]; // is this a better option than the last ip
-			
+
 			// transition
 			if (isInternal) {
 				// CHANGED was INTERNAL before
-				lanAddrs  = Set[myNetAddr]; // reset search 
+				lanAddrs  = Set[myNetAddr]; // reset search
 				this.report( "Connected to LAN on:  "++(myNetAddr.simpleString));
 				if (task.notNil) {	task.stop; task=nil; };
 			}{
@@ -138,7 +138,7 @@ LNX_LANGroup {
 				this.report( "Not connected..." );
 				this.taskCheckingForConnection;
 			};
-			isInternal = true;	
+			isInternal = true;
 		};
 		// get the integer address to use in search
 		if (userIP.notNil) {
@@ -157,7 +157,9 @@ LNX_LANGroup {
 					tryAddr = NetAddr.fromIP(intAddr+a,port+p);
 					// do i also want to check for intAddr equal
 					// and warning 126. is this ok ?  myNetAddr.array[0]==tryAddr.array[0]
-					if (tryAddr!=myNetAddr and: {tryAddr.digit(3) > 0}) {
+                    if (tryAddr!=myNetAddr and: {tryAddr.digit(3) > 0}
+                        and:{tryAddr.hostname!="192.168.1.255"}) // my router denies access
+                    {
 						tryAddr.sendBundle(nil, [\m,uid]++[\scan]++
 							(lanAddrs.collect{|addr| [addr.addr,addr.port]}.asList.flat)
 						);
@@ -167,11 +169,11 @@ LNX_LANGroup {
 			};
 		}.fork;
 	}
-	
+
 	// add as union of lanAddrs & set
 	addUnion{|set|
 		var diff;
-		set=set.reject {|addr| addr==NetAddr.localAddr }; 
+		set=set.reject {|addr| addr==NetAddr.localAddr };
 		// i want to test this futher
 		// maybe include all my previous addresses
 		diff = set.difference(lanAddrs);
@@ -181,10 +183,10 @@ LNX_LANGroup {
 				this.report("Found user at:  "++(addr.simpleString));
 			};
 		};
-		
+
 		otherAddrs = lanAddrs.difference(myAddrs); // now make a list of all other addrs
 	}
-	
+
 	// recieved a scan and respond
 	recieveScan{|symbol...addrs|
 		addrs = addrs.clump(2).collect{|list| NetAddr.fromIP(list[0], list[1]) }.asSet;
@@ -195,7 +197,7 @@ LNX_LANGroup {
 		// this didn't work to make send more effient. why??
 		// otherLanAddrs=lanAddrs.copy.remove(myNetAddr);
 	}
-	
+
 	// a returned scan
 	returnScan{|symbol...addrs|
 		addrs = addrs.clump(2).collect{|list| NetAddr.fromIP(list[0], list[1]) }.asSet;
@@ -203,7 +205,7 @@ LNX_LANGroup {
 		// this didn't work to make send more effient. why??
 		// otherLanAddrs=lanAddrs.copy.remove(myNetAddr);
 	}
-	
+
 	// close this connection
 	close {
 		this.removeMasterResponder;
@@ -212,40 +214,40 @@ LNX_LANGroup {
 
 	// add a responder
 	addResp{|id,function| responders[id] = function }
-	
+
 	// remove a responder
 	removeResp {|id| responders[id] = nil }
-	
+
 	// all messages come via the masterResponder
 	initMasterResponder{
-		
+
 		masterResponder = OSCresponderNode(nil, \m,{|time, resp, msg|
-			
+
 			var inUID;
-			
+
 			msg=msg.drop(1);        // drop m
 			inUID=msg[0];           // the incoming user ID
 			msg=msg.drop(1);        // and drop it from the message
-			
+
 			// the test below is a saftey net to stop lnx sending messages to itself.
 			// could stop hangs and bugs
-			if ((uid.asSymbol)!=(inUID.asSymbol)) { 
+			if ((uid.asSymbol)!=(inUID.asSymbol)) {
 				if ((verbose)and:{msg[0]!=\broadcastProfile}and:{msg[4]!=\rcs}) {
 					"IN: ".post;
 					msg.postln;
 				};
 				responders[msg[0]].value(time, resp, msg);
 			};
-	
-		}).add;	
+
+		}).add;
 	}
-	
+
 	// send a bundled message (this isn't really sendBundle but i got used to this method's name)
 	sendBundle {|time,msg|
 		if ((verbose)and:{msg[0]!=\broadcastProfile}and:{msg[4]!=\rcs}) {
 			"OUT: ".post;
 			msg.postln
-		};	
+		};
 		otherAddrs.do{|addr| addr.sendBundle(time,[\m,uid]++msg); };
 	}
 
@@ -254,42 +256,42 @@ LNX_LANGroup {
 // socket for public networks - OSCGroups by Ross //////////////////////////////////////////////////
 
 OscGroupClient {
-	
-	classvar <>verbose=true;	
-	
+
+	classvar <>verbose=true;
+
 	classvar <>program, <>uid;
-	
-	var serveraddress, username, password, groupname, grouppassword, serverport, localtoremoteport, 
+
+	var serveraddress, username, password, groupname, grouppassword, serverport, localtoremoteport,
 		localtxport, localrxport, <responders, <pid, <netAddr;
-		
+
 	var masterResponder;
-	
+
 	*new {arg serveraddress, username, password, groupname, grouppassword, serverport = 22242,
 			localtoremoteport = 22243, localtxport = 22244, localrxport;
-		
+
 		"OscGroupClient(".post;
 		[serveraddress, username, password, groupname, grouppassword, serverport,
 			localtoremoteport, localtxport, localrxport].do{|i,j|
 				i.cs.post;
 				if (j<8) {", ".post}{");".postln};
-			};	
-				
+			};
+
 		^super.newCopyArgs(serveraddress, username, password, "lnx1.3_"++groupname,
 				grouppassword, serverport, localtoremoteport, localtxport, localrxport).init;
 	}
-			
+
 	*initClass {
 		program = (String.scDir +/+ "LNX_Client").unixSafe;
 		"LNX_Client".killApp;
 	}
-	
+
 	init {
 		this.initMasterResponder;
 		responders = IdentityDictionary[];
 		if (localrxport.isNil) { localrxport = NetAddr.langPort };
 	}
-		
-	join { 
+
+	join {
 		(program + serveraddress + serverport + localtoremoteport + localtxport + localrxport +
 			username + password + groupname + grouppassword).postln.unixCmdInferPID{|id|
 				pid = id;
@@ -307,15 +309,15 @@ OscGroupClient {
 				};
 			}
 	}
-		
+
 	// remove the master responder
 	removeMasterResponder{
 		masterResponder.remove;
 		masterResponder = nil;
 	}
-		
+
 	scan{ "OscGroupClient doesn't scan".reportError }
-		
+
 	close {
 		this.removeMasterResponder;
 		responders = IdentityDictionary[];
@@ -323,66 +325,66 @@ OscGroupClient {
 		pid = nil;
 		responders = IdentityDictionary[];
 	}
-	
+
 	// add a responder
 	addResp{|id,function|
 		id = this.formatSymbol(id);
 		responders[id] = function
 	}
-	
+
 	// remove a responder
 	removeResp {|id|
 		id = this.formatSymbol(id);
 		responders[id] = nil
 	}
-	
+
 	// all messages come via the masterResponder
 	initMasterResponder{
 		masterResponder = OSCresponderNode(nil, \m,{|time, resp, msg|
-			
+
 			var inUID;
-			
+
 			msg=msg.drop(1);        // drop \m
 			msg=msg.drop(msg[0]+1); // drop junk
 			inUID=msg[0];           // the incoming user ID
 			msg=msg.drop(1);        // and drop it from the message
-		
+
 			// the test below is a saftey net to stop lnx sending messages to itself.
 			// could stop hangs and bugs
-			if ((uid.asSymbol)!=(inUID.asSymbol)) { 
+			if ((uid.asSymbol)!=(inUID.asSymbol)) {
 				if ((verbose)and:{msg[0]!=\broadcastProfile}and:{msg[4]!=\rcs}) {
 					"IN: ".post;
 					msg.postln;
 				};
 				responders[msg[0]].value(time, resp, msg);
 			};
-	
-		}).add;	
+
+		}).add;
 	}
-	
+
 	// send a bundled message (this isn't really sendBundle but i got used to this method's name)
 	sendBundle {|time,msg|
-		
+
 		// if oscGroups running
-		if (pid.notNil) {		
-			
+		if (pid.notNil) {
+
 			// junk
-			var junk = [5.rand]; 
+			var junk = [5.rand];
 			junk = junk ++ (junk[0].collect{|r| [(2**15).rand,String.rand(5.rand)].choose});
-			
+
 			if ((verbose)and:{msg[0]!=\broadcastProfile}and:{msg[4]!=\rcs}) {
 				"OUT: ".post;
 				msg.postln
 			};
-			
+
 			msg = [\m]++junk++[uid]++msg;		// make message
 			msg[0] = this.formatSymbol(msg[0]);	// format symbol
 			netAddr.sendBundle(time,msg);		// send message
-			
+
 		}
 
 	}
-		
+
 	formatSymbol {|symbol|
 		var str;
 		str = symbol.asString;
@@ -400,9 +402,9 @@ OscGroupClient {
 OscGroupServer {
 
 	classvar <pid, <>program, <>serverCloseOnQuit=true;
-				
+
 	*initClass {
-	
+
 		if (LNX_Studio.isStandalone) {
 			program = String.scDir.dropFolder(-2).unixSafe +/+ "LNX_Server";
 		}{
@@ -412,10 +414,10 @@ OscGroupServer {
 			String.scDir.dropFolder(LNX_Studio.isStandalone.if(-2,0)).unixSafe +/+ "LNX_Server";
 
 		pid = "LNX_Server".pid;
-		
+
 		ShutDown.add{ if (serverCloseOnQuit.isTrue) {this.close} };
 	}
-		
+
 	*start {|port=22242,timeoutSeconds=60,maxUsers=100,maxGroups=50|
 		if (this.isRunning.not) {
 			{
@@ -429,14 +431,14 @@ OscGroupServer {
 			"OscGroupServer is already running".postln;
 		}
 	}
-		
+
 	*close {
 		("kill" + pid).systemCmd;
 		"LNX_Server".killApp;
 		"Terminal".killApp;
 		pid = nil;
 	}
-		
+
 	*isRunning{ ^("LNX_Server".pid).notNil }
 
 }
@@ -470,21 +472,21 @@ LNX_Applications{
 		list.do({|l,i| apps.add((l[6..].basename.split($ )[0]).asSymbol -> (l[0..4].asInteger)) });
 		^apps
 	}
-	
+
 	*allBySymbol{
-		
+
 		var text,list,apps;
 		text="ps -A -o pid -o command".unixCmdGetStdOut;
 		list=text.split($\n).drop(1);
 		apps=();
 		list.do{|l,i| apps[l[6..].asSymbol] = l[0..4].asInteger };
 		^apps
-		
-	}	
-	
-	
+
+	}
+
+
 	*app{|pid| this.add[pid] }
-	
+
 	*allPID{
 		var text,list,apps;
 		text="ps -A -o pid -o command".unixCmdGetStdOut;
@@ -493,27 +495,27 @@ LNX_Applications{
 		list.do({|l,i| apps.add((l[0..4].asInteger) ->  (l[6..].basename.split($ )[0]).asSymbol ) });
 		^apps
 	}
-	
-	*post{		
+
+	*post{
 		var apps=this.all;
 		apps.do({|i| (i+" ").post; apps.findKeyForValue(i).postln});
 		^this
 	}
-	
+
 	*pid{|app| ^this.all[app.asSymbol] }
 
 	*kill{|app|
-		var pid;	
+		var pid;
 		pid = this.pid(app);
 		if (pid.isNil) {
 			^nil
 		}{
 			("kill" + pid).systemCmd;
-			
+
 			("kill" + pid).postln;
 		}
 	}
-	
+
 }
 
 + String {
