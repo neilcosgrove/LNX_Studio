@@ -524,7 +524,6 @@ LNX_Studio {
 		channelOutSynths.do{|synth|
 			synth.set(\preAmp, models[\preAmp].value)
 		};
-
 	}
 
 	// the network responders for levels back from server and into the studio. + also lfo values
@@ -2049,7 +2048,7 @@ LNX_Studio {
 			.string_("Any unsaved information\n will be lost");
 
 		// Ok
-		MVC_OnOffView(gui[\scrollView],Rect(105-52, 78, 50, 20),"Ok")
+		MVC_OnOffView(gui[\scrollView],Rect(105, 78, 50, 20),"Ok")
 			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
@@ -2060,7 +2059,7 @@ LNX_Studio {
 		};
 
 		// Cancel
-		MVC_OnOffView(gui[\scrollView],Rect(105, 78, 50, 20),"Cancel")
+		MVC_OnOffView(gui[\scrollView],Rect(105-52, 78, 50, 20),"Cancel")
 			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))

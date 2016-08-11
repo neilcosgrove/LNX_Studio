@@ -16,45 +16,45 @@ LNX_NoteID {
 // this is useful when editing a score with a pianoroll
 
 LNX_Note{
-	
+
 	var <>id, <>note, <>start, >dur, <vel, <>enabled=true, <>durAdj;
-	
-	// for inClock3	
+
+	// for inClock3
 	start3{ ^start*3 }
 	dur3{ ^this.dur*3 }
 	end3{ ^ this.end*3 }
 
 	*new{|id,note,start,dur,vel| ^super.newCopyArgs(id,note,start,dur,vel) }
-	
+
  	copyToNew{|id| ^LNX_Note(id,note,start,dur,vel) } // make a new note from this one, with new ID
-		
+
 	// move this note to..
 	move{|argNote,argStart|
 		note  = argNote;
-		start = argStart;	
+		start = argStart;
 	}
-	
+
 	// move this note by..
 	moveBy{|argNote,argStart|
 		note  = note + argNote;
-		start = start + argStart;	
+		start = start + argStart;
 	}
 
 	// set the velocity (0-1)
 	vel_{|float| vel=float.clip(0,1) }
-	
+
 	// the end of the note
 	end{ ^start+this.dur }
-	
+
 	// set the end
 	end_{|value| dur = value - start }
-	
+
 	// the end of the note including adjustments
 	dur{ ^durAdj ? dur }
-	
+
 	// set the adjusted end point (usally because we have moved notes over this one)
 	endAdj_{|value| durAdj= value - start }
-	
+
 	// now use these adjustments as the actual duration (done after editing)
 	useAdjustments{
 		if (durAdj.notNil){
@@ -62,7 +62,7 @@ LNX_Note{
 			durAdj=nil;
 		}
 	}
-	
+
 	// clear the adjustments
 	resetAdjustments{
 		durAdj  = nil;
@@ -72,15 +72,15 @@ LNX_Note{
 	// return a Rect that represents the note
 	// with time in beats on x axis and Pitch in MIDI Notes on y axis
 	notesSeqRect{ ^Rect(start,note,this.dur,0) }
-	
+
 	// as above but the with the original duration
 	originalNotesSeqRect{ ^Rect(start,note,dur,0) }
-	
+
 	// various ways get notes args
 	storeArgs{ ^[id,note,start,this.dur,vel] }
 	storeArgsPlus{ ^[id,note,start,this.dur,vel,enabled.if(1,0)] } // for networking
 	storeArgsMinus{ ^[note,start,this.dur,vel] } // for saving
-	
+
 	// update this note with it new values
 	updateArgs{|argNote,argStart,argDur,argVel|
 		note  = argNote;
@@ -88,13 +88,13 @@ LNX_Note{
 		dur   = argDur;
 		vel   = argVel;
 	}
-	
+
 	// free it
 	free{
 		id = note = start = dur = vel = durAdj = nil;
 		enabled = false;
 	}
-	
+
 	// and print it
 	printOn {|stream| stream << this.class.name << "(" << id << "," << note << "," <<
 		start << "," << dur << "," << vel << ")" }
@@ -106,53 +106,53 @@ LNX_Note{
 // i'm also manually clumping velocity updates @350, ideally will need to develop a clumpedVP
 
 LNX_Score{
-	
+
 	var <notes, <notesDict, <adjusted;
 	var <>start=0, <>dur=32;
 	var <gridW=22, <gridH=15, <visibleOriginX=0, <visibleOriginY=0; // this may not be a good idea
 	var <>quantiseStep=1, <>bars=16, <>speed=1;
-	
-	
+
+
 	dur3{^dur*3}
-	
+
 	*new{|dur=32| ^super.new.init(dur) }
-	
+
 	init{|argDur|
 		dur       = argDur;
 		notes     = [];
 		notesDict = IdentityDictionary[];
 		adjusted  = IdentitySet[];
 	}
-	
+
 	// will this work if changed before a colaboration is started, (like insts?)
 	// we need to reset if possible, THIS HAS BEEN DONE NOW
-	
+
 	getSaveList{|plusIDs=false| // slightly different for presets because of note ID
 		var l=["LNX Score DOC"+"v"++1.4, notes.size, start, dur,
 					gridW, gridH, visibleOriginX, visibleOriginY, quantiseStep, bars, speed];
-		if (plusIDs) { 
+		if (plusIDs) {
 			notes.do{|note| l=l++(note.storeArgs)} // for presets
 		}{
 			notes.do{|note| l=l++(note.storeArgsMinus)} // for saving
-		};	
+		};
 		l=l++(["*** END Score DOC ***"]);
 		^l;
 	}
-	
+
 	// put save list back in
 	putLoadList{|l,noteIDObject,plusIDs=false|
 		var noNotes;
-		var header, loadVersion;		
+		var header, loadVersion;
 		header=l[0];
 		loadVersion=header.version;
 		if ((header.documentType=="LNX Score DOC")) {
 			if (loadVersion>=1.3)	{
-				
+
 				// clear everything
 				notes     = [];
 				notesDict = IdentityDictionary[];
 				adjusted  = IdentitySet[];
-				
+
 				// the properties
 				noNotes=l[1].asInt;
 				start=l[2].asInt;   // i'm not using this yet
@@ -167,11 +167,11 @@ LNX_Score{
 					speed=l[10].asFloat;
 					l=l.drop(11);
 				}{
-					l=l.drop(10);	
+					l=l.drop(10);
 				};
-				
+
 				// and the notes (IDs included depend upon the plusIDs flag)
-				if (plusIDs) { 
+				if (plusIDs) {
 					l=l.clump(5);
 					l.do{|loadList|
 						this.addNote(*loadList.collect(_.asFloat));
@@ -182,13 +182,13 @@ LNX_Score{
 						this.addNote(noteIDObject.next,*loadList.collect(_.asFloat));
 					};
 				};
-					
+
 				this.sort;
-	
+
 			}
 		}
 	}
-			
+
 	// only used when syncing collaborations. Host could have different ids so they are all reset
 	// to start from 1001
 	resetAllNoteIDs{
@@ -200,42 +200,42 @@ LNX_Score{
 			notesDict[id] = note;
 		};
 		^id
-	}	
-	
+	}
+
 	// the view args for the piano roll are stored here
 	// its easier to store the last view with the score if a bit lazy
 	viewArgs{^[gridW, gridH, visibleOriginX, visibleOriginY, quantiseStep, bars, speed]}
-	
+
 	viewArgs_{|w,h,x,y|
 		gridW=w;
 		gridH=h;
 		visibleOriginX=x;
 		visibleOriginY=y;
 	}
-	
+
 	// the end beat
 	end{^start+dur}
-	
+
 	// get a note from it's id
 	note{|id| ^notesDict[id] }
-	
+
 	// i was going to sort the notes but i might not do this now
 	sort{} // i haven't use sort so far
 	// sort{ notes.sort{|a,b| a.start<=b.start}} // this can slow things down and isn't used much
-	
+
 	// clear the score
 	clear{
 		notes     = [];
 		notesDict = IdentityDictionary[];
 		adjusted  = IdentitySet[];
 	}
-	
+
 	// free this object
 	free{
 		notesDict.do(_.free);
 		notes = notesDict = adjusted = nil;
 	}
-	
+
 	// add an note with an ID
 	addNote{|id,note,start,dur,vel|
 		id = id.asInt;
@@ -243,16 +243,16 @@ LNX_Score{
 		notes = notes.add(note);
 		notesDict[id] = note;
 	}
-	
+
 	// this is called from mouseMove and makes a copy of the notes when availble and mouse moved
 	makeCopy{|copyIDs,id,n|
 		copyIDs.do{|nid,i|
 			var note=notesDict[nid];
 			if (note.notNil) { this.addNote(id+i,note.note,note.start,note.dur,note.vel)}
 		}
-		
+
 	}
-	
+
 	// delete a note with an ID
 	deleteNote{|id|
 		var note = this.note(id);
@@ -260,20 +260,20 @@ LNX_Score{
 		notesDict[id]=nil;
 		note.free;
 	}
-	
+
 	// host only
 	hostMoveNote{|id,argNote,start|
 		var note = this.note(id);
 		note.move(argNote,start);
 		adjusted=adjusted.add(id);
 	}
-	
+
 	// host only
 	hostMoveDur{|id,argDur|
 		this.note(id).dur_(argDur);
-		adjusted=adjusted.add(id);	
+		adjusted=adjusted.add(id);
 	}
-	
+
 	// host only
 	hostQuantNote{|id,start,dur|
 		var note = this.note(id);
@@ -281,36 +281,36 @@ LNX_Score{
 		note.dur_(dur);
 		adjusted=adjusted.add(id);
 	}
-	
+
 	// reset all the adjustments made
 	resetAdjustments{
 		notes.do(_.resetAdjustments);
 	}
-	
+
 	// work out adjustments ... has to been done after all moves otherwise will affect notes
-	deleteAndClip{|ids| // of notes moved 
+	deleteAndClip{|ids| // of notes moved
 		// work out adjustments
 		var notesSeqRects = ids.collect{|id| notesDict[id].notesSeqRect};
-		
+
 		notesDict.pairsDo{|id,note| 		// of notes been adjusted
 			var i, noteRect;
 			var start   = note.start;
 			var pitch   = note.note;
 			var enabled = true;
-			
+
 			if (ids.includes(id).not) {
-				
+
 				i=0;
 				// test start for disabled
 				while ({(i<(notesSeqRects.size))&&enabled}, {
-					
+
 					// disable / delete if start is under selected notes
 					if (notesSeqRects[i].containsPointPR(start@pitch)) {
 						note.enabled_(false);
 						adjusted=adjusted.add(id);
 						enabled=false;
 					};
-					
+
 					// test intersects for duration clipping
 					if (enabled) {
 						noteRect = note.originalNotesSeqRect;
@@ -319,42 +319,42 @@ LNX_Score{
 							adjusted=adjusted.add(id);
 						};
 					};
-					
+
 					i=i+1; // iterate
-				});		
-				
-			};	
-			
+				});
+
+			};
+
 		};
 	}
-	
+
 	// work out adjustments ... has to been done after all moves otherwise will affect notes
-	quantiseDeleteAndClip{|ids| // of notes moved 
+	quantiseDeleteAndClip{|ids| // of notes moved
 		// work out adjustments
 		var notesSeqRects = ids.collect{|id| notesDict[id].notesSeqRect};
 		var notesSeqIDS = ids.collect{|id| id };
-		
+
 		notesDict.pairsDo{|id,note| 		// of notes been adjusted
 			var i, noteRect;
 			var start   = note.start;
 			var pitch   = note.note;
 			var enabled = true;
-				
+
 			i=0;
-			
+
 			// test start for disabled
 			while ({(i<(notesSeqRects.size))&&enabled}, {
-				
+
 				// not the same note and STILL enabled
 				if ((notesSeqIDS[i]!=id)and:{notesDict[notesSeqIDS[i]].enabled}) {
-						
+
 					// disable / delete if start is under selected notes
 					if (notesSeqRects[i].containsPointPR(start@pitch)) {
 						note.enabled_(false);
 						adjusted=adjusted.add(id);
 						enabled=false;
 					};
-					
+
 					// test intersects for duration clipping
 					if (enabled) {
 						noteRect = note.originalNotesSeqRect;
@@ -363,15 +363,15 @@ LNX_Score{
 							adjusted=adjusted.add(id);
 						};
 					};
-					
+
 				};
-				
+
 				i=i+1; // iterate
-			});		
-			
+			});
+
 		};
 	}
-	
+
 	// net adjustments (a list is supplied with all the updates) /////////////////////////////
 	netAdjust{|adjustList|
 		//var deleted=[];
@@ -379,43 +379,43 @@ LNX_Score{
 			var id=l[0];
 			l=l.drop(1);
 			if (l.last.isTrue) {                    // if its enabled
-				l=l.drop(-1);				
+				l=l.drop(-1);
 				if (notesDict[id].notNil) {        // and exists
 					notesDict[id].updateArgs(*l); // update it
 				}{
 					this.addNote(id,*l);          // else create it
 				};
-			}{	
+			}{
 				this.deleteNote(id);               // or it needs deleting
 				//deleted=deleted.add(id);
 			}
 		};
 		//^deleted
 	}
-	
+
 	// return a store list of all noteIDs that have been adjusted
 	adjustedList{
-		^adjusted.collect{|id| 
+		^adjusted.collect{|id|
 			if (notesDict[id].notNil) {
 				notesDict[id].storeArgsPlus
 			}{
-				[];	
+				[];
 			};
 		}.asList.flat
 	}
-	
+
 	// use the adjustments I have made
 	useAdjustments{
 		notesDict.pairsDo{|id,note|
 			if (note.enabled.not) {
 				this.deleteNote(id);
 			}{
-				note.useAdjustments;		
+				note.useAdjustments;
 			}
 		};
 		adjusted.clear;
 	}
-	
+
 }
 
 // a piano roll sequencer ///////////////////////////////////////////////////////////////
@@ -424,9 +424,9 @@ a.a.sequencer.score.notes.postList
 */
 
 LNX_PianoRollSequencer{
-	
+
 	classvar <clipboard, >studio, allPianoRolls;
-	
+
 	var <id, <score, <api, <noteIDObject;
 	var <>snapToGrid=true, <quantiseStep=1, <bars=16;
 	var <gui, <gui2, <colors, <notesSelected, <velSelected;
@@ -444,15 +444,16 @@ LNX_PianoRollSequencer{
 	var <requestID, <requestN, copyIDs;
 	var <marker=0;
 	var <>spoModel;
-	
+    var lazyRefresh;
+
 	*initClass{ allPianoRolls = [] } // all pRolls kept in allPianoRolls
 
 	*new{|id| ^super.new.init(id) }
-	
+
 	init{|argID|
 		id     = argID;
 		api    = LNX_API.newTemp(this,id,#[\hostAddNote,\netAddNote,\hostDeleteNote,
-			\netDeleteNote, \netAdjustList, \netDur_, \netAdjustVel, \returnRequestID, 
+			\netDeleteNote, \netAdjustList, \netDur_, \netAdjustVel, \returnRequestID,
 			\netRequestIDs, \updateIDs, \hostUseAdjustments, \hostDeleteNotes, \netSpeed_,
 			\netClear ]);
 		score         = LNX_Score(initialSize);
@@ -460,21 +461,23 @@ LNX_PianoRollSequencer{
 		colors        = IdentityDictionary[];
 		noteIDObject  = LNX_NoteID.new;
 		notesSelected = IdentitySet[];
-		recordNotes   = IdentityDictionary[];	
+		recordNotes   = IdentityDictionary[];
 		notesOff      = IdentityDictionary[];
 		models        = IdentityDictionary[];
-		
+
 		allPianoRolls = allPianoRolls.add(this);
-		
+
 		lastVelocity=100/127;
 		scores=[];
 
+        lazyRefresh = MVC_LazyRefresh();
+
 		// the duration of the score
 		models[\dur] = [initialSize,[1,8192,\lin,1]].asModel.action_{|me,value|
-			this.dur_(value);		
+			this.dur_(value);
 			api.sendVP(\dur,\netDur_,value);
 		};
-		
+
 		// model for the width of 1 beat in pixels (used as horizontal a zoom)
 		models[\gridW] = [gridW,[0,80,\lin,0]].asModel.action_{|me,value|
 			var lastMidX, vo;
@@ -495,7 +498,7 @@ LNX_PianoRollSequencer{
 				gui[\scrollView].visibleOrigin_((lastMidX*gridW)@(vo.y));
 			};
 		};
-		
+
 		// model for the height of 1 note in pixels (used as vertical a zoom)
 		models[\gridH] = [gridH,[2,60,\lin,1]].asModel.action_{|me,value|
 			var lastMidY, vo;
@@ -519,8 +522,8 @@ LNX_PianoRollSequencer{
 						.resizeBy(ScrollBars.addIfSome(13).neg).height/2)));
 			};
 		};
-		
-		// model for record incoming 
+
+		// model for record incoming
 		models[\record] = [0,\switch].asModel.action_{|me,value|
 			value = value.isTrue;
 			if (isRecording!=value) {
@@ -528,39 +531,39 @@ LNX_PianoRollSequencer{
 				recordNotes.clear
 			};
 		};
-		
+
 		// model for the quantise step
 		models[\quantiseStep] = [1, [1,16,\lin,1],
 			{|me,val,latency,send|
 				quantiseStep=val;
 				score.quantiseStep_(val);
 				this.refresh(false,false);
-				
+
 			}].asModel.doAction;
-			
+
 		// model for the quantise step
 		models[\bars] = [16, [2,32,\lin,1],
 			{|me,val,latency,send|
 				bars=val;
 				score.bars_(val);
 				this.refresh(false,false);
-				
+
 			}].asModel.doAction;
-			
+
 		// model for speed
-		models[\speed] = [3,[0,7,\lin,1], (\items_:["Ö8","Ö4","Ö2"," - ","x2","x4","x8"]),
+		models[\speed] = [3,[0,7,\lin,1], (\items_:["ï¿½8","ï¿½4","ï¿½2"," - ","x2","x4","x8"]),
 			{|me,value|
 				score.speed_(#[8,4,2,1,0.5,0.25,0.125][value]);
 				api.sendVP(\speed,\netSpeed_,value);
-				releaseAllAction.value;	
+				releaseAllAction.value;
 			}].asModel;
-			
+
 	}
-	
+
 	// only used when syncing collaborations. Host could have different ids so they are all reset
 	// to start from 1001
 	*resetAllNoteIDs{ allPianoRolls.do(_.resetAllNoteIDs) } // for class
-	
+
 	// above for instance
 	resetAllNoteIDs{
 		var maxID = [];
@@ -569,7 +572,7 @@ LNX_PianoRollSequencer{
 		noteIDObject.id_(maxID.sort.last); // find largest id and set next id to be that
 		this.calcNoteRects;                // we need to recalc note rect because ids have changed
 	}
-	
+
 	// zoom out so seq fits to window
 	fitToWindow{
 		models[\gridW].multipyValueAction_(0);
@@ -580,7 +583,7 @@ LNX_PianoRollSequencer{
 	resizeToWindow{
 		models[\gridW].multipyValueAction_(0);
 		models[\gridH].valueAction_(15);
-		
+
 		if (gui[\scrollView].notNil) {
 			gui[\scrollView].visibleOrigin_((gui[\scrollView].visibleOrigin.x)@
 				((gridH*68)));
@@ -593,8 +596,8 @@ LNX_PianoRollSequencer{
 	// change the duration of the score & update gui
 	dur_{|beats|
 		var gridw;
-		if (this.dur!=beats) {	
-			releaseAllAction.value;				
+		if (this.dur!=beats) {
+			releaseAllAction.value;
 			score.dur_(beats);
 			gridw=gridW;
 			if (gui[\scrollView].notNil) {
@@ -609,8 +612,8 @@ LNX_PianoRollSequencer{
 	// net version of dur_
 	netDur_{|beats|
 		var gridw;
-		if (this.dur!=beats) {	
-			releaseAllAction.value;				
+		if (this.dur!=beats) {
+			releaseAllAction.value;
 			score.dur_(beats);
 			gridw=gridW;
 			{
@@ -624,48 +627,48 @@ LNX_PianoRollSequencer{
 			}.defer;
 		}
 	}
-	
-	// duration of the current score		
+
+	// duration of the current score
 	dur{^score.dur}
-	
+
 	dur3{^score.dur3}
-	
+
 	// net change the speed
 	netSpeed_{|value|
 		score.speed_(#[8,4,2,1,0.5,0.25,0.125][value]);
 		{models[\speed].value_(value)}.defer;
-		releaseAllAction.value;	
+		releaseAllAction.value;
 	}
-	
+
 	// change the grid height
 	gridH_{|pixels|
 		gridH=pixels;
 		this.calcNoteRects;
 		this.refreshSeqBounds;
 	}
-	
+
 	// change the frid width
 	gridW_{|pixels|
-		gridW=pixels; 
+		gridW=pixels;
 		this.calcNoteRects;
 		this.refreshSeqBounds;
 		if (gui[\vel].notNil) { gui[\vel].refresh };
 	}
-		
+
 	// resize the bounds of the note view
 	refreshSeqBounds{
 		if (gui[\notes].notNil) {
 			lastVisibleRect=nil;
 			gui[\notes].bounds_(Rect(0,0,gridW*(score.dur),gridH*128));
 			gui[\notes].refresh;
-			
+
 			gui[\notesPosAndMouse].bounds_(Rect(0,0,gridW*(score.dur),gridH*128));
 		};
 	}
-	
+
 	// Presets /////////////////////////////////////////////////////////////////////////////////
 	// this use a different version of getSaveList
-	
+
 	// get the current state as a list
 	iGetPresetList{ ^score.getSaveList(true) }
 
@@ -675,13 +678,13 @@ LNX_PianoRollSequencer{
 		l=l.popEND("*** END Score DOC ***");
 		scores=scores.add( LNX_Score(initialSize).putLoadList(l,nil,true) )
 	}
-	
+
 	// save a state list over a current preset
 	iSavePresetList{|i,l|
 		l=l.popEND("*** END Score DOC ***");
 		scores[i].putLoadList(l,nil,true);
 	}
-	
+
 	// for your own load preset
 	iLoadPreset{|i|
 		var viewArgs;
@@ -690,43 +693,43 @@ LNX_PianoRollSequencer{
 		viewArgs = score.viewArgs;
 		this.clearGUIEditing;
 		models[\dur].value_(score.dur); // update the dur model
-		
+
 		models[\speed].valueAction_( 6-(log(score.speed*8)/log(2)) );
-			// coverts [8,4,2,1,0.5,0.25,0.125] to (0..6) 
+			// coverts [8,4,2,1,0.5,0.25,0.125] to (0..6)
 		{
 			this.viewArgs_(*viewArgs); // update view position
 			this.refresh;
 		}.defer;
 	}
-	
+
 	// for your own remove preset
 	iRemovePreset{|i|
 		scores[i].free;
 		scores.removeAt(i);
 	}
-	
+
 	// for your own removal of all presets
-	iRemoveAllPresets{ 
+	iRemoveAllPresets{
 		scores.do(_.free);
 		scores=[];
 	}
-	
+
 	// incase someone else is editing the score then stop them
 	clearGUIEditing{
 		notesSelected.clear;
 		mouseMode=nil;
 	}
-	
+
 	clear{ api.groupCmdOD(\netClear) }
-	
+
 	netClear{
 		//"net clear".postln;
 		score.clear;
-		this.refresh;	
+		this.refresh;
 	}
-		
+
 	// DISK I/O /////////////////////////////////////////////////////////////////////////////////
-	
+
 	//  a full save
 	getSaveList{
 		var l=["LNX PRSeq DOC"+"v"++1.2,scores.size];
@@ -735,10 +738,10 @@ LNX_PianoRollSequencer{
 		l=l++(["*** END PRSeq DOC ***"]);
 		^l
 	}
-	
+
 	// a full load
 	putLoadList{|l|
-		var header, loadVersion, noScores;		
+		var header, loadVersion, noScores;
 		l=l.reverse;
 		header=l.popS;
 		loadVersion=header.version;
@@ -761,16 +764,16 @@ LNX_PianoRollSequencer{
 			models[\speed].value_( 6-(log(score.speed*8)/log(2)) ); // and the speed
 		};
 	}
-	
+
 	// set the view args of this pRoll (includes vert & horz zoom + visable origin)
 	viewArgs_{|w,h,x,y,q,b|
 		// clip to current view width
 		w=w.clip((gui[\scrollView].bounds
-			.resizeBy(ScrollBars.addIfSome(13).neg).width)/(score.dur),inf); 
+			.resizeBy(ScrollBars.addIfSome(13).neg).width)/(score.dur),inf);
 		// clip to current view height
 		h=h.clip((gui[\scrollView].bounds
-			.resizeBy(ScrollBars.addIfSome(13).neg).height)/128,inf);        
-		gridW=w; 
+			.resizeBy(ScrollBars.addIfSome(13).neg).height)/128,inf);
+		gridW=w;
 		gridH=h;
 		models[\gridW].value_(w); // set grid width model
 		models[\gridH].value_(h); // set grid height model
@@ -783,10 +786,10 @@ LNX_PianoRollSequencer{
 			gui[\scrollView].visibleOrigin_(x@y); // set the visible origin
 		};
 	}
-	
+
 	// get a note from its id
 	note{|id| ^score.note(id) }
-	
+
 	// free this object
 	free{
 		allPianoRolls.remove(this);
@@ -796,19 +799,19 @@ LNX_PianoRollSequencer{
 		gui = colors = notesSelected = gridW = gridH = noteRects =
 		lastDuration = lastVelocity = scores = nil;
 	}
-	
+
 	freeAutomation{} // there is none, but just incase it gets called
-	
+
 	spo{^spoModel.value?12}
-	
+
 	// adding deleteing notes ///////////////////////////
-	
+
 	// this add is asynchronous via host
 	addNote{|note,start,dur,vel|
-		api.hostCmdGD(\hostAddNote, note, start, 
+		api.hostCmdGD(\hostAddNote, note, start,
 			dur ? lastDuration.clip(quantiseStep,inf), vel ? lastVelocity)
 	}
-	
+
 	// host version
 	hostAddNote{|uid,note,start,dur,vel|
 		var noteID = noteIDObject.next;
@@ -816,7 +819,7 @@ LNX_PianoRollSequencer{
 		score.addNote(noteID,note,start,dur,vel);
 		api.sendOD(\netAddNote,noteID,note,start,dur,vel);
 		// remove any notes that start underneath it
-		score.resetAdjustments; 
+		score.resetAdjustments;
 		score.deleteAndClip([noteID]);
 		api.sendClumpedList(\netAdjustList,score.adjustedList);
 		score.useAdjustments;
@@ -824,7 +827,7 @@ LNX_PianoRollSequencer{
 		this.refresh;
 		score.sort;
 	}
-	
+
 	// net version
 	netAddNote{|noteID,note,start,dur,vel|
 		noteID = noteID.asInt;
@@ -833,12 +836,12 @@ LNX_PianoRollSequencer{
 		this.refresh;
 		score.sort;
 	}
-	
+
 	// this delete is asynchronous via host
 	deleteNotes{|ids|
 		api.hostCmdClumpedList(\hostDeleteNotes,ids)
 	}
-	
+
 	// host of above
 	hostDeleteNotes{|ids|
 		api.sendClumpedList(\netDeleteNote,ids);
@@ -850,14 +853,14 @@ LNX_PianoRollSequencer{
 		ids.do{|id| score.deleteNote(id) };
 		this.refresh;
 	}
-	
+
 	// move notes by x & y
 	moveNotesBy{|x,y,notesSelected|
 		var moveList=[];
-		
+
 		// this gets done 1st, it doesn't remove notes already changed for changed list
-		score.resetAdjustments; 
-		
+		score.resetAdjustments;
+
 		// TO DO: clip movement to seq bounds
 		notesSelected.do{|id|
 			var note = score.note(id);
@@ -867,46 +870,46 @@ LNX_PianoRollSequencer{
 				s=note.start+x;
 				moveList=moveList.add(id);
 				score.hostMoveNote(id,n,s);
-			};	
+			};
 		};
-		
+
 		// adjust other notes to this movement, this just passes the noteIDs that have moved
 		score.deleteAndClip(moveList);
-		
+
 		this.refresh;
 		score.sort;
 		api.sendClumpedList(\netAdjustList,score.adjustedList);
-		
+
 	}
-	
+
 	// net recieve the adjustments list and change the score
 	netAdjustList{|list|
 		score.netAdjust(list.clump(6));
 		score.sort;
-		this.refresh;	
+		this.refresh;
 	}
-		
+
 	// set adjustment (called from mouseUpAction_)
 	useAdjustments{
 		var adjustedToEveryone = score.adjustedList.copy;
 		score.useAdjustments; // do i need to do this?
 		score.sort;			// do i need to do this?
-		
+
 		api.hostCmdClumpedList(\hostUseAdjustments,adjustedToEveryone);
 			// expensive to me but works
 	}
-	
+
 	// hosted from above
 	hostUseAdjustments{|list|
 		api.sendClumpedList(\netAdjustList,list);
 		this.netAdjustList(list);
 	}
-		
+
 	// move notes by x & y
 	moveDurBy{|x,notesSelected|
 		var moveList=[];
 		// this gets done 1st, it doesn't remove notes already changed from changed list
-		score.resetAdjustments; 
+		score.resetAdjustments;
 		// TO DO: clip movement to seq bounds
 		notesSelected.do{|id|
 			var note = score.note(id);
@@ -922,17 +925,17 @@ LNX_PianoRollSequencer{
 				moveList=moveList.add(id);
 				score.hostMoveDur(id,d);
 				lastDuration=d;
-			};	
+			};
 		};
 		// adjust other notes to this movement
 		score.deleteAndClip(moveList);
-		// 
+		//
 		this.refresh;
 		score.sort;
 		api.sendClumpedList(\netAdjustList,score.adjustedList);
-		
+
 	}
-	
+
 	// adjust the velocity of a list of notes
 	adjustVel{|value,notesSelected|
 		var note, setList=[];
@@ -943,7 +946,7 @@ LNX_PianoRollSequencer{
 				setList=setList.add(key).add(note.vel);
 			};
 		};
-		
+
 		if (gui[\vel].notNil) { gui[\vel].refresh };
 		if (setList.size>0) {
 			// because i don't have a protocol to do this yet
@@ -953,7 +956,7 @@ LNX_PianoRollSequencer{
 			};
 		};
 	}
-	
+
 	// net version of above
 	netAdjustVel{|...notesSelected|
 		notesSelected=notesSelected.clump(2);
@@ -965,7 +968,7 @@ LNX_PianoRollSequencer{
 		};
 		{if (gui[\vel].notNil) { gui[\vel].refresh }}.defer;
 	}
-	
+
 	// find the time to the next start on this note
 	findSoonestFrom{|ids,id,start|
 		var distance = inf;
@@ -973,23 +976,23 @@ LNX_PianoRollSequencer{
 		ids.do{|checkID|
 			var checkNote;
 			if (checkID!=id) {
-				checkNote = score.note(checkID);	
-				if ((checkNote.note==note.note) 
-					and: {checkNote.start>note.start} 
+				checkNote = score.note(checkID);
+				if ((checkNote.note==note.note)
+					and: {checkNote.start>note.start}
 					and: {checkNote.start<distance}) {
 						distance=checkNote.start;
 				};
 			};
-			
+
 		};
 		^distance-(note.start)
-	}	
-		
+	}
+
 	// quanise notes (most of this can go into score)
 	quantise{|notesSelected|
 		var moveList=[];
 		// this gets done 1st, it doesn't remove notes already changed for changed list
-		score.resetAdjustments; 
+		score.resetAdjustments;
 		// TO DO: clip movement to seq bounds
 		notesSelected.do{|id|
 			var note = score.note(id);
@@ -999,101 +1002,101 @@ LNX_PianoRollSequencer{
 				d=(note.dur).round(quantiseStep).clip(quantiseStep,inf);
 				moveList=moveList.add(id);
 				score.hostQuantNote(id,s,d);
-			};	
+			};
 		};
 		// adjust other notes to this movement
 		score.quantiseDeleteAndClip(moveList);  // do a version of this
 		this.useAdjustments;
 	}
-		
+
 
 	// MIDI clock in /////////////////////////////////////////////
 
 	// 3rd attempt
 
-	clockIn3{|beat,argAbsTime,latency,beatAbs|	
-		
+	clockIn3{|beat,argAbsTime,latency,beatAbs|
+
 		var now, then, endIndex, speed = score.speed;
-		
+
 		isPlaying   = true;
-		absTime     = argAbsTime; 
-		lastBeat    = beat;        
+		absTime     = argAbsTime;
+		lastBeat    = beat;
 		lastTime    = SystemClock.now;
 		lastLatency = latency;
 		beat        = beat % (score.dur3*speed); // the current beat wrapped to score duration
 		now         = beat;                      // now
 		then        = beat+1;                    // and the next beat
-		
+
 		// stop any notes as needed 1st, these have been scheduled to be released here
-		if (notesOff[beatAbs].notNil) {			
+		if (notesOff[beatAbs].notNil) {
 			notesOff[beatAbs.asInt].do{|l|
 				{ this.seqNoteOff(l[1],latency); nil; }.sched(l[0]*absTime-0.0001)
 				// slightly early
 			};
-			notesOff[beat]=nil;	
+			notesOff[beat]=nil;
 		};
-		
+
 		// go through the score
 		score.notes.do{|note|
-			
+
 			var pitch = note.note;
 			var start = note.start3 * speed;
-			
+
 			// if the note starts between now and the next midi tick
 			if ((start>=now)&&(start<then)) {
 				{
 					if (note.enabled) {
-						
+
 						var dur = note.dur3 * speed;
 						var end = note.end3 * speed;
-						
+
 						this.seqNoteOn(pitch,note.vel,latency); // play it
-						
+
 						// clip end to shortest time allowed
 						if (end<then) {
-							
+
 							{
 								this.seqNoteOff(pitch,latency);
 								nil;
 							}.sched( dur * absTime - 0.0001); // slightly early
-							
+
 						}{
-							
+
 							// this will add to notesOff in future on beatAbs timeline
 							// work out end time beat
 							endIndex = (beatAbs + (start.frac) + dur);
-							
+
 							// add the fractional part to sched when beat happens
-							notesOff[endIndex.asInt] = 
+							notesOff[endIndex.asInt] =
 								notesOff[endIndex.asInt].add([end.frac, pitch]);
-												
+
 						};
 					};
-					
+
 					nil;
-					
+
 				}.sched( (start-beat) * absTime * 0.99999); // slightly early
 				//sched it to the correct time
 			}
 		};
-		
+
 		{this.pos_(now/speed/3)}.defer(latency); // update the gui pos
-		
+
 	}
 
 	releaseAll{ notesOff=IdentityDictionary[] } // no actual release, done via buffer
-	
+
 	seqNoteOn{|note,velocity,latency|
 		action.value(note,velocity,latency); // play it
 		pipeOutAction.value( LNX_NoteOn(note,velocity*127,latency,\sequencer).addToHistory(this) );
 	}
-		
+
 	// do the note off action (i could make this redundant and put directly in methods)
 	seqNoteOff{|note,latency|
 		offAction.value(note,0,latency);
 		pipeOutAction.value( LNX_NoteOff(note,0,latency,\sequencer).addToHistory(this) );
 	}
-	
+
 	// clock stop messages should come here
 	clockStop {|latency|
 		this.releaseAll;
@@ -1101,35 +1104,35 @@ LNX_PianoRollSequencer{
 		this.isRecording_(false);
 		isPlaying=false;
 	}
-	
+
 	// clock pause messages should come here
 	clockPause{|latency|
 		this.releaseAll;
 		this.isRecording_(false);
 		isPlaying=false;
 	}
-	
+
 	// recording /////////////////////////////////////////////
-	
+
 	pipeIn{|pipe|
 		case
 			{pipe.isNoteOn } { this.noteOn (pipe.note, pipe.velocity/127, pipe.latency) }
 			{pipe.isNoteOff} { this.noteOff(pipe.note, pipe.velocity/127, pipe.latency) }
 	}
-	
-	
+
+
 	// set isRecording (needs to be defered becasue of scheduling to clockStop & clockPause
 	isRecording_{|bool| {models[\record].valueAction_(bool.if(1,0))}.defer }
-	
+
 	// midi note on (for recording)
-	noteOn{|note, velocity, latency|	
+	noteOn{|note, velocity, latency|
 		var indexPos, actualPos, offset, speed=score.speed;
 		if (isRecording && isPlaying) {
 			note      = note.asInt;
 			latency   = latency ? 0;
 			// lastLatency comes from clockIn
 			// offset is now - last beat time - last latency + this midiOn lataency
-			// which gives a time vs audio 
+			// which gives a time vs audio
 			// then divide by absTime and 3 to convert to sequencer beats
 			// so offset is time since last beat in beats
 			offset    = (SystemClock.now-lastTime-lastLatency+latency)/absTime/3;
@@ -1141,7 +1144,7 @@ LNX_PianoRollSequencer{
 			recordNotes[note] = [ note, velocity, indexPos, actualPos];
 		}
 	}
-	
+
 	// midi note off (for recording)
 	noteOff{|note, velocity, latency|
 		var indexPos, offset, speed=score.speed;
@@ -1152,7 +1155,7 @@ LNX_PianoRollSequencer{
 				latency   = latency ? 0;
 				// so offset is time since last beat in beats
 				offset    = (SystemClock.now-lastTime-lastLatency+latency)/absTime/3;
-				// indexPos is the total index time (used for end of duration) 
+				// indexPos is the total index time (used for end of duration)
 				indexPos  = (lastBeat + offset)/3;
 				// now add to the sequence
 				start = recordNotes[note][3];
@@ -1163,33 +1166,33 @@ LNX_PianoRollSequencer{
 			};
 		}
 	}
-	
+
 	// request n noteIDs from host
 	requestIDs{|n|
 		requestID = requestN = nil;
 		api.hostCmdGD(\netRequestIDs,n);
 	}
-	
-	// the host now supplies the next ids to the user and update others to the lastest id 
+
+	// the host now supplies the next ids to the user and update others to the lastest id
 	netRequestIDs{|userID,n|
 		if (api.isConnected) {
 			api.sendToGD(userID,\returnRequestID,noteIDObject.nextN(n),n); // when connected
 			api.sendOD(\updateIDs,noteIDObject.id); // update others incase we loose the host
-			
+
 		}{
 			this.returnRequestID(noteIDObject.nextN(n),n); // when not, this could be better
 		}
 	}
-	
+
 	// store the ids for use (used is mouseMoveAction)
 	returnRequestID{|startID,n|
 		requestID=startID;
 		requestN=n;
 	}
-	
+
 	// update lastest id incase we loose the host, otherwise new note ids will not match
 	updateIDs{|id| noteIDObject.id_(id.asInt) }
-	
+
 	// gui call for copy
 	guiCopy{
 		var removeOffset;
@@ -1203,16 +1206,16 @@ LNX_PianoRollSequencer{
 			};
 		};
 	}
-	
+
 	// gui call for paste (inefficient on network but works)
 	guiPaste{
 		if  (clipboard.notNil) {
 			clipboard.do{|note|
 				this.addNote(note.note,note.start+marker,note.dur,note.vel)
 			};
-		}	
+		}
 	}
-	
-}		
-		
+
+}
+
 	

@@ -9,26 +9,26 @@
 		if (symbol==\horiz) { symbol=\horizontal };
 		if (orientation!=symbol) {
 			orientation=symbol;
-			this.adjustLabels;		
+			this.adjustLabels;
 		}
 	}
-	
+
 	layout_{|symbol|
 		if (layout!=symbol) {
 			layout=symbol;
 			this.adjustLabels;
-		}		
+		}
 	}
 
 	// update label and number position
 	adjustLabels{
 		if (view.notClosed) {
 			if (labelGUI.size>0) {
-				label.size.do{|j|	
+				label.size.do{|j|
 					labelBounds[j]=this.getLabelRect(j);
 					labelGUI[j].bounds_(labelBounds[j]);
 				};
-				
+
 			};
 			if (numberGUI.notNil) {
 					numberBounds=this.getNumberRect;
@@ -38,7 +38,7 @@
 	}
 
 	// label ////////////////////////////////////////////////////////////////////////////
-	
+
 	// get label[i] bounds
 	getLabelRect{|i|
 		var textBounds, th;
@@ -57,8 +57,8 @@
 					t+h+((textBounds.height-3)*i),
 					textBounds.width.asInt+1,
 					textBounds.height
-				);			
-					
+				);
+
 			}
 		};
 		if (orientation==\horizontal) {
@@ -72,7 +72,7 @@
 			);
 		};
 	}
-	
+
 	// make a multi text label that can activate MIDI learn
 	//  (there are refs that need to be removed here)
 	createLabel{
@@ -107,11 +107,11 @@
 						Pen.fillColor_(colors[midiLearn.if(\midiLearn,
 							midiLearn2.if(\midiLearn2,\label)
 						)] * 0.8);
-						
+
 					};
 					Pen.stringCenteredIn(label[j],
 					Rect(0,0,labelBounds[j].width,labelBounds[j].height));
-		
+
 				})
 				.visible_(visible)
 				.canFocus_(false)
@@ -146,10 +146,10 @@
 						labelGUI[j]=nil;
 					};
 				});
-			}; // end.do				
-		}; // end.if	
+			}; // end.do
+		}; // end.if
 	}
-	
+
 	// change the label
 	label_{|argLabel|
 		if (argLabel.isString) { label=[argLabel] } { label=argLabel };
@@ -157,15 +157,15 @@
 			this.createLabel;
 		}
 	}
-	
+
 	// do you want the label to have a shadow
 	labelShadow_{|bool|
 		labelShadow=bool;
 		this.labelRefresh;
 	}
-	
+
 	labelRefresh{ labelGUI.do(_.refresh) }
-	
+
 	//////// number box ///////////////////////////////////////////////////////////////////
 
 	// assign a func to display the value in the number box, nil will remove the boc
@@ -189,7 +189,7 @@
 			};
 		};
 	}
-	
+
 	// get the number box bounds
 	getNumberRect{|string="200.00 db"|
 		var textBounds,textWidth,textHeight,unitStr,numberYOS=0;
@@ -201,28 +201,28 @@
 		};
 		textWidth  = (textBounds.width+numberWidth).asInt;
 		textHeight=textBounds.height-2+numberYOS;
-				
+
 		if (orientation==\vertical) {
-			^Rect((l+(w/2)-(textWidth/2)).asInt,t+h,textWidth,textHeight);
+			^Rect((l+(w/2)-(textWidth/2)).asInt,t+h+2,textWidth,textHeight+1);
 		};
-		
+
 		// there is a bug in SCView that refreshes twice when vert bounds don't match
 		if (textBounds.height>h) {
 			// in this situation the bug can't be avoided because text taller than widget
 			if (orientation==\horizontal) {
-				^Rect(l+w+1,(t+(h/2)-(textHeight/2)).asInt-1,
-					textWidth+1,textBounds.height);
+				^Rect(l+w+1,(t+(h/2)-(textHeight/2)).asInt,
+					textWidth+2,textBounds.height+1);
 			};
 		}{
 			// if its smaller we can make them match and avoid the bug
 			if (orientation==\horizontal) {
-				^Rect(l+w+1,t,textWidth+1,h);
+				^Rect(l+w+1,t+2,textWidth+1,h+1);
 			};
 		};
-		
+
 	}
-	
-	// make the number box gui 
+
+	// make the number box gui
 	createNumberGUI{
 		if (showNumberBox) {
 			numberFont = numberFont ?? { Font("Helvetica",12) };
@@ -230,7 +230,7 @@
 			numberGUI = UserView.new(window,numberBounds.moveBy(0,numberOffset))
 				.drawFunc_{|me|
 					var active,col;
-					
+
 					if (verbose) { [this.class.asString, 'numberFunc' , label].postln };
 					if (showLabelBackground) {
 						Color.black.alpha_(0.2).set;
@@ -238,7 +238,7 @@
 					};
 					active= (midiLearn or: (enabled.not)).not;
 					if (active.not) { col= midiLearn.if(\midiLearn,\disabled) };
-					Pen.smoothing_(true);	
+					Pen.smoothing_(true);
 					numberString=numberFunc.value(value).asString;
 					if ((controlSpec.notNil)&&(showUnits)) {
 						numberString=numberString++(controlSpec.units)
@@ -248,7 +248,7 @@
 						Pen.fillColor_(colors[active.if(\numberUp,col)]);
 						if (numberHeld) {Pen.fillColor_(colors[\numberDown])};
 					};
-					
+
 					if (orientation==\horizontal) {
 						Pen.stringLeftJustIn(numberString,
 							Rect(0,0,numberBounds.width,numberBounds.height));
@@ -263,7 +263,7 @@
 			this.addNumberControls;
 		}
 	}
-	
+
 	// and remove the number box
 	removeNumberGUI{
 		if ((numberGUI.notNil) and: {numberGUI.notClosed}) {
@@ -271,7 +271,7 @@
 			numberGUI=nil;
 		};
 	}
-	
+
 	// show the number or not
 	showNumberBox_{|bool|
 		showNumberBox=bool;
@@ -284,13 +284,13 @@
 			if (window.isClosed.not) { window.refresh };
 		}
 	}
-	
+
 	// show units in the number box
-	showUnits_{|bool|	
+	showUnits_{|bool|
 		showUnits=bool;
 		if (numberGUI.notClosed) { numberGUI.refresh };
 	}
-	
+
 	// add the controls to the number box
 	// this is overridden in the various views,  (there are refs that need to be removed here)
 	addNumberControls{
@@ -313,7 +313,7 @@
 			};
 			if (y>w)				{buttonNumber = 1.5 }; // numbers
 			if (modifiers==524576)	{buttonNumber = 1.5 };
-			buttonPressed=buttonNumber;	
+			buttonPressed=buttonNumber;
 			numberHeld=true;
 			numberGUI.refresh;
 		}
@@ -327,7 +327,7 @@
 				if (controlSpec.notNil) { val=controlSpec.map(val) };
 				if (val!=value) {
 					this.viewValueAction_(val,nil,true,false);
-					this.refreshValue;	
+					this.refreshValue;
 				};
 			};
 		}

@@ -460,7 +460,7 @@
 
 		// the fx scroll view
 		mixerGUI[\fxScrollView] = MVC_RoundedScrollView (mixerWindow,
-			Rect(732, 3+menuGap.y, 177 - ScrollBars.addIfNone(7), 295-menuGap.y))
+			Rect(732, 13+menuGap.y, 177 - ScrollBars.addIfNone(7), 285-menuGap.y))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -489,7 +489,7 @@
 
 		// the master levels scroll view
 		mixerGUI[\masterLevelsScrollView] = MVC_RoundedScrollView (mixerWindow,
-						Rect(927- ScrollBars.addIfNone(7), 3+menuGap.y, 73, 295-menuGap.y))
+						Rect(927- ScrollBars.addIfNone(7), 13+menuGap.y, 73, 285-menuGap.y))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -500,14 +500,14 @@
 		sv = mixerGUI[\masterLevelsScrollView];
 
 		// levels
-		MVC_FlatDisplay(models[\peakOutL],sv,Rect(3, 23, 7, 192-4-menuGap.y));
-		MVC_FlatDisplay(models[\peakOutR],sv,Rect(12, 23, 7, 192-4-menuGap.y));
-		MVC_Scale(sv,Rect(9+1, 23, 2, 192-7-menuGap.y));
+		MVC_FlatDisplay(models[\peakOutL],sv,Rect(3, 23, 7, 192-10-4-menuGap.y));
+		MVC_FlatDisplay(models[\peakOutR],sv,Rect(12, 23, 7, 192-10-4-menuGap.y));
+		MVC_Scale(sv,Rect(9+1, 23, 2, 192-10-7-menuGap.y));
 
 		// peakLevel
-		MVC_PeakLevel(sv,models[\peakLevel],Rect(56, 27, 13, 184-4-menuGap.y));
+		MVC_PeakLevel(sv,models[\peakLevel],Rect(56, 27, 13, 184-10-4-menuGap.y));
 		// volume
-		MVC_SmoothSlider(models[\volume],sv,Rect(22, 23, 33, 192-4-menuGap.y))
+		MVC_SmoothSlider(models[\volume],sv,Rect(22, 23, 33, 192-10-4-menuGap.y))
 			.labelShadow_(false)
 			.thumbSizeAsRatio_(0.18,8)
 			.numberFunc_(\float2)
@@ -520,7 +520,7 @@
 			.color_(\numberDown,Color.white);
 
 		// mute
-		MVC_OnOffView(models[\mute],sv, Rect(21, 250-4-menuGap.y, 34, 20))
+		MVC_OnOffView(models[\mute],sv, Rect(21, 250-10-4-menuGap.y, 34, 20))
 				.permanentStrings_(["Mute"])
 				.font_(Font("Helvetica-Bold",11))
 				.color_(\on,Color.red)
@@ -529,7 +529,7 @@
 				.canFocus_(false);
 
 
-		MVC_NumberBox(models[\preAmp], sv,Rect(12, 270-menuGap.y, 50, 19),  gui[\syncTheme])
+		MVC_NumberBox(models[\preAmp], sv,Rect(12, 270-10-menuGap.y, 50, 19),  gui[\syncTheme])
 			.postfix_(" db")
 			.color_(\label,Color.white);
 
@@ -540,7 +540,7 @@
 			.action_{ this.fadeIn };
 
 		// fadeOut
-		MVC_FlatButton(sv,Rect(24+1, 206+1+22-4-menuGap.y, 27, 17), mixerGUI[\buttonTheme2 ] ,"down")
+		MVC_FlatButton(sv,Rect(24+1, 206+1+22-10-4-menuGap.y, 27, 17), mixerGUI[\buttonTheme2 ] ,"down")
 			.mode_(\icon)
 			.action_{ this.fadeOut };
 
@@ -775,7 +775,7 @@
 			y = (i*70);
 
 			mixerGUI[id][\scrollView] = MVC_CompositeView(mixerGUI[\instScrollView],
-										Rect(0+y,0,72,450-12), hasBorder:false);
+										Rect(0+y,0,72,450-3), hasBorder:false);
 
 			sv=mixerGUI[id][\scrollView];
 
