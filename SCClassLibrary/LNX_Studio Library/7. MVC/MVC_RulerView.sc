@@ -7,11 +7,11 @@ MVC_RulerView : MVC_View {
 
 	// set your defaults
 	initView{
-		
-		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ] 
+
+		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ]
 		//colors=[Color.ndcOnOffON,Color.ndcOnOffOFF,Color.ndcOnOffText,
 		//		Color.ndcOnOffONUen,Color.ndcOnOffOFFUen,Color.ndcOnOffTextUnen];
-		
+
 		colors=colors++(
 			'background'			: Color.grey/3,
 			'backgroundDisabled'	: Color.grey/2,
@@ -19,9 +19,9 @@ MVC_RulerView : MVC_View {
 			'on'					: Color.orange,
 			'disabled'			: Color(0.4,0.4,0.4)
 		);
-		
 
-		
+
+
 		rulerTemplate=#[
 			[1],  // 1
 			[1,0.25],  // 2
@@ -40,22 +40,23 @@ MVC_RulerView : MVC_View {
 			[1,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25],  // 15
 			[1,0.25,0.25,0.25,0.35,0.25,0.25,0.25,0.5 ,0.25,0.25,0.25,0.35,0.25,0.25,0.25]  // 16
 		];
-		
+
 		font=Font("Helvetica",9);
-		
+
 	}
-	
+
 	// make the view
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					if (showLabelBackground) {
 						Color.black.alpha_(0.2).set;
 						Pen.fillRect(Rect(0,0,w,h));
 					};
-					
+
 					Pen.smoothing_(false);
 					colors[enabled.if(\background,\backgroundDisabled)].set;
 					Pen.fillRect(Rect(0,0,w,h));
@@ -65,25 +66,25 @@ MVC_RulerView : MVC_View {
 						Pen.moveTo((i*buttonWidth)@
 							(h*(1-( rulerTemplate.clipAt(value-1).wrapAt(i) ))));
 						Pen.lineTo((i*buttonWidth)@h);
-						
+
 						if ((i%value)==0) {
 							Pen.fillColor_(colors[\string]);
 							Pen.stringLeftJustIn(((i/value).asInt+1).asString,
 								Rect(i*buttonWidth+1,0,buttonWidth,h));
 							colors[enabled.if(\on,\disabled)].set;
 						};
-							
+
 					});
-					
+
 					Pen.moveTo((steps*buttonWidth-1)@
 						(h*(1-(rulerTemplate.clipAt(value.asInt-1).wrapAt(steps)))));
 					Pen.lineTo((steps*buttonWidth-1)@h);
 					Pen.stroke;
 
 				}; // end.pen
-			};		
+			};
 	}
-	
+
 	// add the controls
 	addControls{
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|

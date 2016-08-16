@@ -759,7 +759,7 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 							sampleBank.otherModels[sampleIndex][\pos].valueAction_(pos,0.2);
 						};
 					};
-					(1/30).wait; // 30 fps (could be lower if needed)
+					(1/20).wait; // 20 fps (could be lower if needed)
 				};
 			}).start(AppClock);
 			lastTask[i]=task;

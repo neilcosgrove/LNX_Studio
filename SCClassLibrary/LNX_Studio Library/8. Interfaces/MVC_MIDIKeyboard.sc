@@ -3,7 +3,7 @@
 
 MVC_MIDIKeyboard {
 
-	var <>keys; 
+	var <>keys;
 	var trackKey, chosenkey, <view;
 	var window, bounds, octaves, startnote;
 	var downAction, upAction, trackAction, spaceBarAction;
@@ -11,56 +11,58 @@ MVC_MIDIKeyboard {
 	var <transpose=0, <>miscKeyAction;
 	var <>keyboardColor, <resize=1;
 	var <>useSelect=false, <>stopGUIUpdate=false;
-	
-	var <>pipeFunc, <lastKeyboardNote;
-	
-	// 3 methods below needs adjusting for key presses & tracking at the same time 
-	
+
+	var <>pipeFunc, <lastKeyboardNote, lazyRefresh;
+
+	// 3 methods below needs adjusting for key presses & tracking at the same time
+
 	outDownAction{|note|
 		downAction.value(note);
 		lastKeyboardNote=note;
 		pipeFunc.value(LNX_NoteOn(note,100,nil,\keyboard));
 	}
-	
-	outUpAction{|note|	
+
+	outUpAction{|note|
 		upAction.value(note);
 		pipeFunc.value(LNX_NoteOff(note,1,nil,\keyboard));
 	}
-	
+
 	outTrackAction{|note|
 		trackAction.value(note);
 		pipeFunc.value(LNX_NoteOn(note,100,nil,\keyboard));
 		pipeFunc.value(LNX_NoteOff(lastKeyboardNote,1,nil,\keyboard));
 		lastKeyboardNote=note;
 	}
-	
-	*new { arg window, bounds, octaves, startnote; 
+
+	*new { arg window, bounds, octaves, startnote;
 		^super.new.init(window, bounds, octaves, startnote);
 	}
-	
+
 	// can use to get lost focus
 	hasFocus{ if (view.notNil) { ^view.hasFocus } {^nil} }
-	
+
 	doResizeAction{ /* to do*/ }
-	
+
 	free {
 		this.remove;
 		view = window = bounds = downAction = upAction =
 		trackAction = keyCodeMap = keyCodesPressed = transpose = miscKeyAction =
 		keyboardColor = nil;
 	}
-	
+
 	init { arg argwindow, argbounds, argoctaves=3, argstartnote;
 		var r, pix, pen, keys2;
 		octaves = argoctaves ? 4;
 		bounds = argbounds ? Rect(20, 10, 364, 60);
-		
+
+        lazyRefresh = MVC_LazyRefresh();
+
 		startnote = argstartnote ? 48;
 		trackKey = 0;
 		//pix = [0, 6, 10, 16, 20, 30, 36, 40, 46, 50, 56, 60];
 		pix = [ 0, 0.1, 0.17, 0.27, 0.33, 0.5, 0.6, 0.67, 0.77, 0.83, 0.93, 1 ]; // as above but normalized
 		keys = List.new;
-		
+
 		// keyCodeMap=[6,1,7,2,8,9,5,11,4,45,38,46,12,19,13,20,14,
 		// 							15,23,17,22,16,26,32,34,25,31,29,35];
 		keys2 = [\Z,\S,\X,\D,\C,\V,\G,\B,\H,\N,\J,\M, //',',\L,'.',';','/',
@@ -69,7 +71,7 @@ MVC_MIDIKeyboard {
 		keyCodeMap = Array.fill(keys2.size, {|i| keys2[i].ascii[0]});
 		keyUpTasks = Array.newClear(128);
 		keyCodesPressed=[];
-		
+
 		keyboardColor=Colour(0.5,0.5,0.5);
 
 		octaves.do({arg j;
@@ -78,47 +80,47 @@ MVC_MIDIKeyboard {
 					r = Rect(	(bounds.left+ (pix[i]*((bounds.width/octaves) -
 								(bounds.width/octaves/7))).round(1) +
 								((bounds.width/octaves)*j)).round(1)+0.5,
-							bounds.top, 
-							bounds.width/octaves/10, 
+							bounds.top,
+							bounds.width/octaves/10,
 							bounds.height/1.7);
 					keys.add(MIDIKey.new(startnote+i+(j*12), r, Color.black));
 				}, {
 					r = Rect((bounds.left+(pix[i]*((bounds.width/octaves) -
 								(bounds.width/octaves/7))).round(1) +
 								((bounds.width/octaves)*j)).round(1)+0.5,
-							bounds.top, 
-							bounds.width/octaves/7, 
+							bounds.top,
+							bounds.width/octaves/7,
 							bounds.height);
 					keys.add(MIDIKey.new(startnote+i+(j*12), r, Color.white));
 				});
 			});
 		});
-		
+
 		window=argwindow;
-		
+
 		if (window.isKindOf(MVC_Window) or:{window.isKindOf(MVC_ScrollView) } ) {
 			window.addView(this);
-		
+
 		}{
 			if (window.notNil) {
 				// i need to work on tabs here
-			
+
 			}{
 				window = GUI.window.new("MIDI Keyboard",
 					Rect(10, 250, bounds.left + bounds.width + 40, bounds.top + bounds.height+30));
 				window.front
-		
+
 			};
 		};
-		
-		
-		
-		
-		
+
+
+
+
+
 	}
-	
+
 	resize_{|int| resize=int; if (view.notClosed) {view.resize_(int)} }
-	
+
 	// create the gui's items that make this MVC
 	create{|argParent|
 		if (view.isClosed) {
@@ -128,14 +130,16 @@ MVC_MIDIKeyboard {
 			"View already exists.".warn;
 		}
 	}
-	
+
 	createView{
-	
+
 		var	pen	= GUI.pen;
-		
+
 		view = UserView.new(window, bounds); // thanks ron!
  		bounds = view.bounds;
-	
+
+        lazyRefresh.refreshFunc_{ if (view.notClosed) { view.refresh } };
+
 		view.canFocus_(true)
 			.focusColor_(Color.clear)
 			.mouseDownAction_({|me, x, y, mod|
@@ -189,66 +193,66 @@ MVC_MIDIKeyboard {
 				}
 			})
 			.drawFunc_({
-				
-				var l,t,w,h,b,m;
 
+				var l,t,w,h,b,m;
+				MVC_LazyRefresh.incRefresh;
 				octaves.do({arg j;
 					// first draw the white keys
 					12.do({arg i;
-						var key;				
+						var key;
 						key = keys[i+(j*12)];
 						if(key.type == Color.white, {
-							
+
 							l = key.rect.left;
 							t = key.rect.top;
 							w = key.rect.width;
 							h = key.rect.height;
 							b = key.rect.bottom;
-							
+
 							pen.color = Color.black;
 							pen.strokeRect(Rect(l+0.5, t+0.5, w+0.5, h-0.5));
 							pen.color = key.color; // white or grey
-							
+
 							pen.fillRect(Rect(l+0.5, t+0.5, w+0.5, h-0.5));
-									
+
 							// finger circle highlight
 							if (key.selectColor.notNil) {
 								pen.color = key.selectColor; // white or grey
 								pen.fillOval( Rect(l+1.5, b-1.5-w, w-3, w-3) );
 							};
-											
+
 						});
 					});
 					// and then draw the black keys on top of the white
 					12.do({arg i;
 						var key;
 						key = keys[i+(j*12)];
-						
+
 						if(key.type == Color.black, {
-							
+
 							l = key.rect.left;
 							t = key.rect.top;
 							w = key.rect.width;
 							h = key.rect.height;
 							b = key.rect.bottom;
-							
+
 							pen.color = key.color;
 							pen.fillRect(Rect(l+0.5, t+0.5, w+0.5, h+0.5));
 																			if (key.selectColor.notNil) {
 								pen.color = key.selectColor; // white or grey
 								pen.fillOval(Rect(l+0.5, b-0.5-w-2, w+1, w+1));
 							};
-							
+
 						});
 					});
-					
+
 					/*
 					(30..50).do{|n| a.a.gui[\keyboard].setStoreColor(n,Color(1,0,0,0.66))};
 					(30..50).do{|n| a.a.gui[\keyboard].setStoreActive(n,0.5.coin)};
 					*/
-										
+
 					12.do({arg i;
-						var key, os;				
+						var key, os;
 						key = keys[i+(j*12)];
 
 						os=#[-1,0,0,0,1,-1,0,0,0,0,0,1][(i+(j*12))%12];
@@ -267,17 +271,17 @@ MVC_MIDIKeyboard {
 							Pen.lineTo((m)@( key.storeActive.if(16.6,10)+t ));
 							Pen.lineTo((m+5)@t);
 							Pen.lineTo((m-5)@t);
-							Pen.fill;		
+							Pen.fill;
 						};
 					});
 				})
 			})
 			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
-			
+
 				var kcm = keyCodeMap.indexOf(key);
-				
+
 				if (modifiers.isXCmd.not) {  // no apple modifier
-				
+
 					if (key.isUp) { miscKeyAction.value(\up)    };
 					if (key.isDown) { miscKeyAction.value(\down)  };
 					if (key.isLeft) { miscKeyAction.value(\left)  };
@@ -286,10 +290,10 @@ MVC_MIDIKeyboard {
 						miscKeyAction.value(\space);
 						spaceBarAction.value;
 					};
-					
+
 					if (key.isAlphaKey('-')) {transpose=(transpose-1).clip(-2,5)};
 					if (key.isAlphaKey('+')) {transpose=(transpose+1).clip(-2,5)};
-					
+
 					// keyboard note pressed
 					if (kcm.isNumber) {
 						var note = (kcm+(transpose*12)).clip(-24,127-24)+24;
@@ -301,12 +305,12 @@ MVC_MIDIKeyboard {
 							keyCodesPressed = keyCodesPressed.add(key); // store for next key test
 						}
 					}
-	
+
 				}
 			}
 			.keyUpAction = {|me, char, modifiers, unicode, keycode, key|
 				var kcm = keyCodeMap.indexOf(key);
-				if (kcm.isNumber) {	
+				if (kcm.isNumber) {
 					var note = (kcm+(transpose*12)).clip(-24,127-24)+24,
 						kb = this;
 					if (keyUpTasks[note].notNil) {
@@ -319,12 +323,12 @@ MVC_MIDIKeyboard {
 						keyCodesPressed.remove(key); // remove from repeat key list
 						nil;
 					}, AppClock).play;
-				}	
+				}
 			};
-			
-	
+
+
 	}
-	
+
 	keyOn{|note|
 		note=note+24;
 		// ("Key On"+(note.asString)).postln;
@@ -337,7 +341,7 @@ MVC_MIDIKeyboard {
 			};
 		}
 	}
-	
+
 	keyOff{|note|
 		note=note+24;
 		// ("Key Off"+(note.asString)).postln;
@@ -350,56 +354,56 @@ MVC_MIDIKeyboard {
 			};
 		}
 	}
-	
+
 	refresh {
-		if (view.notClosed) { view.refresh }
+		lazyRefresh.lazyRefresh
 	}
-	
+
 	focus{
 		if (view.notClosed) { view.focus }
 	}
-	
+
 	keyDown { arg note, color; // midinote
 		if(this.inRange(note), {
 			keys[note - startnote].color = Color.grey;
 		});
 		this.refresh;
 	}
-	
+
 	keyUp { arg note; // midinote
 		if(this.inRange(note), {
 			keys[note - startnote].color = keys[note - startnote].scalecolor;
 		});
-		this.refresh;	
+		this.refresh;
 	}
-	
+
 	spaceBarAction_{|func|
 		spaceBarAction=func;
 	}
-	
+
 	keyDownAction_ { arg func;
 		downAction = func;
 	}
-	
+
 	keyUpAction_ { arg func;
 		upAction = func;
 	}
-	
+
 	keyTrackAction_ { arg func;
 		trackAction = func;
 	}
-	
+
 	showScale {arg argscale, key=startnote, argcolor;
 		var color, scale, counter, transp;
 		this.clear; // erase scalecolors (make them their type)
 		counter = 0;
 		color = argcolor ? Color.red;
 		transp = key%12;
-		scale = argscale + transp + startnote;		
+		scale = argscale + transp + startnote;
 		keys.do({arg key, i;
 			key.color = key.type; // back to original color
 			if(((i-transp)%12 == 0)&&((i-transp)!=0), { counter = 0; scale = scale+12;});			if(key.note == scale[counter], {
-				counter = counter + 1; 
+				counter = counter + 1;
 				key.color = key.color.blend(color, 0.5);
 				key.scalecolor = key.color;
 				key.inscale = true;
@@ -407,7 +411,7 @@ MVC_MIDIKeyboard {
 		});
 		this.refresh;
 	}
-	
+
 	clear {
 		keys.do({arg key, i;
 			key.color = key.type; // back to original color
@@ -417,7 +421,7 @@ MVC_MIDIKeyboard {
 		});
 		this.refresh;
 	}
-	
+
 	// just for fun
 	playScale { arg argscale, key=startnote, int=0.5;
 		var scale = argscale;
@@ -430,7 +434,7 @@ MVC_MIDIKeyboard {
 				int.wait;
 			});		}).start;
 	}
-	
+
 	setColor {arg note, color, blend=0.5;
 		var newcolor;
 		if (this.inRange(note)) {
@@ -445,7 +449,7 @@ MVC_MIDIKeyboard {
 	// select colour //////////////
 
 	pipeIn{|pipe,color,blend=1,select=false|
-		{	
+		{
 			if (select) {
 				if (pipe.isNoteOn)  { this.setSelectColor(pipe.note, pipe[\color]?color, blend)};
 				if (pipe.isNoteOff) { this.removeSelectColor(pipe.note)};
@@ -462,29 +466,29 @@ MVC_MIDIKeyboard {
 			this.refresh;
 		}
 	}
-	
+
 	removeSelectColor {|note|
 		if (this.inRange(note)) {
 			keys[note - startnote].selectColor_(nil);
 			this.refresh;
 		}
 	}
-	
+
 	// the triangle at the top <>storeColor
-	
+
 	setStoreColor {|note, color|
 		if (this.inRange(note)) {
 			keys[note - startnote].storeColor_(color);
 			this.refresh;
 		}
 	}
-	
+
 	setStoreColorNoRefresh {|note, color|
 		if (this.inRange(note)) {
 			keys[note - startnote].storeColor_(color);
 		}
 	}
-	
+
 	removeStoreColor {|note|
 		if (this.inRange(note)) {
 			keys[note - startnote].storeColor_(nil);
@@ -495,21 +499,21 @@ MVC_MIDIKeyboard {
 	clearAllStoreColors{
 		keys.do(_.storeColor_(nil));
 		this.refresh;
-	}	
+	}
 
 	clearAllStoreColorsNoRefresh{
 		keys.do(_.storeColor_(nil));
-	}	
+	}
 
 	// if the triangle is active ie bigger <>storeActive=false
-	
+
 	setStoreActive {|note,bool=true|
 		if (this.inRange(note)) {
 			keys[note - startnote].storeActive_(bool);
 			this.refresh;
 		}
 	}
-	
+
 	removeStoreActive {|note|
 		if (this.inRange(note)) {
 			keys[note - startnote].storeActive_(false);
@@ -520,10 +524,10 @@ MVC_MIDIKeyboard {
 	clearAllStoreActive {
 		keys.do(_.storeActive_(false));
 		this.refresh;
-	}	
+	}
 
 	//////////////////////////////
-	
+
 	getColor { arg note;
 		if (this.inRange(note)) {
 			^keys[note - startnote].color;
@@ -531,12 +535,12 @@ MVC_MIDIKeyboard {
 			^nil
 		}
 	}
-	
-	
+
+
 	getType { arg note;
 		^keys[note - startnote].type;
 	}
-	
+
 	removeColor {arg note;
 		if (this.inRange(note)) {
 			keys[note - startnote].scalecolor = keys[note - startnote].type;
@@ -544,22 +548,22 @@ MVC_MIDIKeyboard {
 			this.refresh;
 		}
 	}
-	
+
 	inScale {arg key;
 		^keys[key-startnote].inscale;
 	}
-	
+
 	retNote {arg key;
 		^keys[key].note;
 	}
-	
+
 	remove {
 		if (view.notClosed) {
 			view.remove;
 			window.refresh;
 		}
 	}
-	
+
 	// local function
 	findNote {arg x, y;
 		var chosenkeys;
@@ -571,23 +575,23 @@ MVC_MIDIKeyboard {
 		});
 		block{|break|
 			chosenkeys.do({arg key;
-				if(key.type == Color.black, { 
-					chosenkey = key; 
+				if(key.type == Color.black, {
+					chosenkey = key;
 					break.value; // the important part
 				}, {
-					chosenkey = key; 
+					chosenkey = key;
 				});
 			});
 		};
 		^chosenkey;
 	}
-	
+
 	// local
 	inRange {arg note; // check if an input note is in the range of the keyboard
 		if (note.isNumber.not) {^false};
 		if((note>=startnote) && (note<(startnote + (octaves*12))), {^true}, {^false});
 	}
-	
+
 
 
 }
@@ -595,9 +599,9 @@ MVC_MIDIKeyboard {
 MIDIKey {
 	var <rect, <>color, <note, <type;
 	var <>scalecolor, <>inscale, <>selectColor, <>storeColor, <>storeActive=false;
-	
+
 	*new { arg note, rect, type; ^super.new.initMIDIKey(note, rect, type) }
-	
+
 	initMIDIKey {arg argnote, argrect, argtype;
 		note = argnote;
 		rect = argrect;
@@ -605,6 +609,6 @@ MIDIKey {
 		color = argtype;
 		scalecolor = color;
 		inscale = false;
-	}	
+	}
 
 }

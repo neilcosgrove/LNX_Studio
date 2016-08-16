@@ -17,15 +17,15 @@ MVC_UserView{
 	*new {|...args| ^super.new.init(*args) }
 
 	init {|...args|
-	
+
 		bounds  = args.findKindOf(Rect);
 		rect = bounds;
 		window  = args.findKindOf(MVC_Window      )  ??
-		         {args.findKindOf(MVC_TabbedView  )} ?? 
+		         {args.findKindOf(MVC_TabbedView  )} ??
 		         {args.findKindOf(MVC_TabView     )} ??
 		         {args.findKindOf(MVC_ExpandView  )} ??
 		         {args.findKindOf(MVC_ScrollView  )};
-				
+
 		// will need to take care of MVC_TabbedViews here
 		if (window.notNil) {
 			parent = window;
@@ -39,14 +39,14 @@ MVC_UserView{
 			if (window.isClosed) {
 				window=nil;	// MVC_ScrollView is not a real view so don't use as a window
 			}{
-				window = window.view;	
+				window = window.view;
 			};
 		}{
 			window=args.findKindOf(Window)
 					?? { args.findKindOf(ScrollView)}
 					?? {args.findKindOf(CompositeView)};
 		};
-		
+
 		// and make it if in a standard window
 		if (window.notNil) { this.create(window) }
 	}
@@ -59,7 +59,7 @@ MVC_UserView{
 	//		"View already exists.".warn;
 	//	}
 	}
-	
+
 	createView{
 		view=UserView(window,rect)
 			.canFocus_(canFocus)
@@ -67,7 +67,7 @@ MVC_UserView{
 			.mouseDownAction_(mouseDownAction)
 			.mouseMoveAction_(mouseMoveAction)
 			.mouseUpAction_(mouseUpAction)
-			.mouseOverAction_(mouseOverAction) 
+			.mouseOverAction_(mouseOverAction)
 			.keyDownAction_(keyDownAction)
 			.keyUpAction_(keyUpAction)
 			.resize_(resize)
@@ -84,53 +84,53 @@ MVC_UserView{
 					.keyDownAction_  (nil)
 					.onClose_        (nil);
 			});
-					
+
 		if (focusColor.notNil){ view.focusColor_(focusColor) };
 	}
-	
+
 	// what i send
 	beginDragAction_{|func|
 		beginDragAction=func;
 		if (view.notClosed) { view.beginDragAction_(func) }
 	}
-	
+
 	// what can i recieve
 	canReceiveDragHandler_{|func|
 		canReceiveDragHandler=func;
 		if (view.notClosed) { view.canReceiveDragHandler_(func) }
 	}
-	
+
 	// what i get passed
 	receiveDragHandler_{|func|
 		receiveDragHandler=func;
 		if (view.notClosed) { view.receiveDragHandler_(func) }
 	}
-	
+
 	drawFunc_{|func|
 		drawFunc=func;
 		if (view.notClosed) { view.drawFunc_(drawFunc).refresh}; // does this need refresh ?
 	}
-	
+
 	mouseDownAction_{|func|
 		mouseDownAction=func;
 		if (view.notClosed) { view.mouseDownAction_(mouseDownAction) };
 	}
-	
+
 	mouseMoveAction_{|func|
 		mouseMoveAction=func;
 		if (view.notClosed) { view.mouseMoveAction_(mouseMoveAction) };
 	}
-	
+
 	mouseUpAction_{|func|
 		mouseUpAction=func;
 		if (view.notClosed) { view.mouseUpAction_(mouseUpAction) };
 	}
-	
+
 	mouseOverAction_{|func|
 		mouseOverAction=func;
 		if (view.notClosed) { view.mouseOverAction_(mouseOverAction) };
 	}
-	
+
 	keyDownAction_{|func|
 		keyDownAction=func;
 		if (view.notClosed) { view.keyDownAction_(keyDownAction) };
@@ -140,82 +140,83 @@ MVC_UserView{
 		keyUpAction=func;
 		if (view.notClosed) { view.keyUpAction_(keyUpAction) };
 	}
-	
+
 	// user can focus on item
 	canFocus_{|bool|
 		canFocus=bool;
 		if (view.notClosed){ view.canFocus_(canFocus) }
 	}
-	
+
 	// set focus to this item
 	focus{ if (view.notClosed) { view.focus } }
-	
+
 	focusColor_{|color|
 		focusColor=color;
 		if (view.notClosed){ view.focusColor_(focusColor) }
 	}
-	
+
 	// you can't use System clock to call refresh
 	refresh{
 		if (view.notClosed) {
-			// exceptions			
+			// exceptions
 			if ( (parent.isKindOf(MVC_TabView))and:{parent.isVisible.not} ) {^this };
 			parentViews.do{|view| if (view.isVisible.not) { ^this }};
 			// now refresh
 			view.refresh;
+			MVC_LazyRefresh.incRefresh;
 		}
 	}
-	
+
 	bounds_{|argRect|
 		bounds=argRect;
 		rect=bounds;
 		if (view.notClosed) { view.bounds_(rect) }
 	}
-	
+
 	bounds{^rect}
-	
+
 	ref{} // what is this used for?
-	
+
 	// resize item
 	resize_{|num|
 		resize=num;
 		if (view.notClosed){ view.resize_(resize) }
 	}
-	
+
 	// from from window
 	remove{
 		if (view.notClosed) { view.free };
 		view=nil;
 	}
-	
+
 	// resize action called by parents
 	doResizeAction{
 		if (this.notClosed) {
 			rect=view.bounds;
 		}
 	}
-	
+
 	// is closed
 	isClosed { if (view.isNil) { ^true } { ^view.isClosed } }
 
 	// is not closed
 	notClosed { ^this.isClosed.not }
-	
-	
-	addParentView{|view| 
+
+
+	addParentView{|view|
 		if (view.isNil) {^this};
-		
+
 		if (view.isCollection) {
 			parentViews=parentViews++view
 		}{
 			parentViews=parentViews.add(view)
 		}
 	}
-	
-	removeParentView{|view| 
+
+	removeParentView{|view|
 		parentViews.remove(view)
 	}
-	
+
 	free{
 		parentViews = parent = window = drawFunc = mouseOverAction = mouseDownAction =
 		mouseMoveAction = mouseUpAction = keyDownAction = keyUpAction = nil;
@@ -228,7 +229,7 @@ MVC_UserView{
 
 (
 	w=MVC_Window.new;
-		
+
 	v=MVC_UserView(w, Rect(10,10,300,300));
 	v.drawFunc={|v|
 			Pen.use{

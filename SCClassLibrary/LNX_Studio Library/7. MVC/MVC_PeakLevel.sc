@@ -13,7 +13,7 @@ w.create;
 MVC_PeakLevel : MVC_View {
 
 	var <>seqItems, lastItem, <>zeroValue;
-	
+
 	var <>direction=\vertical;
 
 	initView{
@@ -25,7 +25,7 @@ MVC_PeakLevel : MVC_View {
 		if (w>h) { direction=\horizontal }{ direction=\vertical };
 
 	}
-	
+
 	// set the bounds, account for direction
 	bounds_{|argRect|
 		rect=argRect;
@@ -37,58 +37,62 @@ MVC_PeakLevel : MVC_View {
 		if (view.notClosed) { view.bounds_(rect) };
 		this.adjustLabels;
 	}
-	
+
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				var val, r,c;
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					Pen.smoothing_(true);
-					
+
 					colors[enabled.if(\background,\disabled)].set;
 					Pen.fillRect(Rect(0,0,w,h));
-					
-					
-					
+
+
+
 					if (midiLearn) {
 						c=colors[\midiLearn];
 					}{
 						c=colors[enabled.if(\slider,\sliderDisabled)]
 					};
-					
+
 					if (controlSpec.notNil) {
 						val=controlSpec.unmap(value); // this will always give (0-1)
 					}{
 						val=value.clip(0,1);
 					};
-					
+
 
 					if (direction==\vertical) {
-						
+
 						r=Rect(0,((h-w)*(1-val)),w,w);
-						
+
 					}{
 						r= Rect( 3,3,  (w-6)*(val), h-6);
-						
+
 					};
-					
+
 
 					Pen.smoothing_(true);
 
 					Pen.fillColor_(c);
 					DrawIcon.symbolArgs(\back,r.insetBy(-5,-5).moveBy(1,0));
-			
-					
+
+
 				};
 			};
 	}
-	
+
 	addControls{
-		
+
+		view.mouseUpAction={ MVC_LazyRefresh.mouseUp };
+
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			var val;
+			MVC_LazyRefresh.mouseDown;
 			if (locked.not) {
 				if (modifiers==524576) { buttonNumber=1  };
 				if (modifiers==262401) { buttonNumber=2  };
@@ -108,7 +112,7 @@ MVC_PeakLevel : MVC_View {
 						if (modifiers==262401) {buttonNumber=2};
 						buttonPressed=buttonNumber;
 						if (buttonPressed==1) {
-							seqItems.do({|i,j|	
+							seqItems.do({|i,j|
 								if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) {
 									lastItem=j;  // draw a line !!!
 								}
@@ -129,7 +133,7 @@ MVC_PeakLevel : MVC_View {
 				};
 			}
 		};
-		
+
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			var thisItem, lastValue, size, thisValue, val;
@@ -179,7 +183,7 @@ MVC_PeakLevel : MVC_View {
 							};
 						};
 						lastItem=thisItem;
-					}{	
+					}{
 						if (buttonPressed!=2) {
 							if (thisValue!=value) {this.viewValueAction_(
 									thisValue,nil,true,false,buttonNumber)};
@@ -189,5 +193,5 @@ MVC_PeakLevel : MVC_View {
 			};
 		}
 	}
-	
+
 }

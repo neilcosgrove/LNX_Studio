@@ -13,11 +13,12 @@ MVC_ProgramChangeMoog : MVC_View {
 		canFocus=false;
 		font=Font("Helvetica",9);
 	}
-	
+
 	createView{
-		
+
 		view=UserView(window,Rect(rect.left,rect.top,((controlSpec.maxval.asInt+1))*20,1*18))
-			.drawFunc_{|me|	
+			.drawFunc_{|me|
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					Pen.smoothing_(false);
@@ -38,7 +39,7 @@ MVC_ProgramChangeMoog : MVC_View {
 								Pen.strokeColor_(Color.black);
 							}{
 								Pen.strokeRect(Rect(x*20,y*18,20,18));
-	
+
 							};
 						}
 					};
@@ -49,12 +50,12 @@ MVC_ProgramChangeMoog : MVC_View {
 							if ((y*16+x)==value) {
 								Pen.fillColor_(Color.white);
 								Pen.stringCenteredIn((x+1).asString,Rect(x*20,y*18,20,18));
-								
-							}{	
+
+							}{
 								Pen.fillColor_(colors[\on]+0.2);
 								Pen.stringCenteredIn((x+1).asString,Rect(x*20,y*18,20,18));
-							};	
-						}	
+							};
+						}
 					};
 				}; // end.pen
 			};
@@ -63,7 +64,7 @@ MVC_ProgramChangeMoog : MVC_View {
 
 	addControls{
 		var val, val2;
-		
+
 		view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 			var val;
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
@@ -84,15 +85,15 @@ MVC_ProgramChangeMoog : MVC_View {
 						this.viewDoValueAction_(val,nil,true,false);
 					}
 				}
-			}				
+			}
 		};
 		view.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			if (modifiers.asBinaryDigits[4]==0) {  // if apple not pressed because of drag
 				if (editMode) { this.moveBy(x-startX,y-startY) };
 			}
-		};	
+		};
 	}
-	
+
 	// make the view cyan / magenta for midiLearn active
 	midiLearn_{|bool|
 		midiLearn=bool;
@@ -110,7 +111,7 @@ MVC_ProgramChangeMoog : MVC_View {
 		};
 		labelGUI.do(_.refresh);
 	}
-	
+
 	// normally called from model
 	value_{|val|
 		val=val.round(1).asInt.clip(0,127);
@@ -120,7 +121,7 @@ MVC_ProgramChangeMoog : MVC_View {
 			this.showValue;
 		};
 	}
-	
+
 	showValue {}
 
 }

@@ -104,17 +104,17 @@ LNX_StartUp {
 
 	*osxStartUp{
 
-		"".postln;
-		"".postln;
-		"If this application repeatedly hangs on opening the following might help...".postln;
-		"===========================================================================".postln;
-		"1. In the preferences of the Mac-OS 'Audio MIDI Setup' application choose".postln;
-		"      'When application launches open MIDI Window'".postln;
-		"2. Remove all MIDI devices & Relaunch LNX_Studio".postln;
-		"3. Open LNX_Studio preferences & Turn on MacOS [MIDI Fix]".postln;
-		"4. Plug all MIDI equipment back in".postln;
-		"5. Quit & Relaunch LNX_Studio".postln;
-		"".postln;
+		// "".postln;
+		// "".postln;
+		// "If this application repeatedly hangs on opening the following might help...".postln;
+		// "===========================================================================".postln;
+		// "1. In the preferences of the Mac-OS 'Audio MIDI Setup' application choose".postln;
+		// "      'When application launches open MIDI Window'".postln;
+		// "2. Remove all MIDI devices & Relaunch LNX_Studio".postln;
+		// "3. Open LNX_Studio preferences & Turn on MacOS [MIDI Fix]".postln;
+		// "4. Plug all MIDI equipment back in".postln;
+		// "5. Quit & Relaunch LNX_Studio".postln;
+		// "".postln;
 
 		studio = LNX_Studio(Server.local); 	// start the studio, use local server
 //		studio = LNX_Studio(Server.internal); // start the studio, use internal server

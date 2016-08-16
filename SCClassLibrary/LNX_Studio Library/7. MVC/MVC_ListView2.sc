@@ -30,17 +30,17 @@ MVC_ListView2 : MVC_View {
 		);
 		canFocus=true;
 		items = items ? [];
-		
+
 		hilite = IdentityDictionary[];
 	}
-	
+
 	hilite_{|key,value|
 		hilite[key.asInt]=value;
 		{
-			if (view.notClosed) { view.refresh };	
+			if (view.notClosed) { view.refresh };
 		}.defer;
 	}
-	
+
 	items_{|array|
 		items=array;
 		if (view.notClosed) {
@@ -48,14 +48,14 @@ MVC_ListView2 : MVC_View {
 			this.autoSize;
 		};
 	}
-	
+
 	itemsMinSize_{|array|
 		items=array;
 		if (view.notClosed) { view.refresh };
 		this.minSize; // fixes bounds bug
 		^this
 	}
-	
+
 	createView{
 		scrollView=ScrollView(window, rect)
 			.hasBorder_(true)
@@ -63,32 +63,33 @@ MVC_ListView2 : MVC_View {
 			.hasHorizontalScroller_(false)
 			.autohidesScrollers_(false)
 			.resize_(5);
-				
+
 		view=UserView(scrollView,Rect(0,0,w,this.internalHeight));
-		
+
 		view.resize_(5);
-		
+
 		view.drawFunc_{|me|
 			//var w,h;
+			MVC_LazyRefresh.incRefresh;
 			if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 			Pen.use{
 				w=scrollView.bounds.width;
-				
+
 				if (me.bounds.width!= w) { {me.bounds_(me.bounds.width_(w)) }.defer  };
-				
+
 				h=me.bounds.height;
-				
+
 				if (showLabelBackground) {
 					Color.black.alpha_(0.2).set;
 					Pen.fillRect(Rect(0,0,w,h));
 				};
-				
+
 				Pen.smoothing_(false);
 				colors[enabled.if(\background,\backgroundDisabled)].set;
 				Pen.fillRect(Rect(0,0,w,h));
 				Pen.font_(font);
 				Pen.smoothing_(true);
-					
+
 				items.do{|item,n|
 					if (n==value) {
 						colors[\hilite].set;
@@ -106,17 +107,17 @@ MVC_ListView2 : MVC_View {
 							Pen.fillColor_(colors[\string]);
 						};
 						Pen.stringLeftJustIn(item,Rect(0,n*fontHeight,w,fontHeight));
-						
+
 					};
-					
+
 				};
 			};
-			
+
 		};
-		
-		
+
+
 	}
-	
+
 	// set the colour in the Dictionary
 	// need to do disable here
 	color_{|key,color|
@@ -124,7 +125,7 @@ MVC_ListView2 : MVC_View {
 		colors[key]=color;
 		this.refresh;
 	}
-	
+
 	autoSize{
 		if (view.notClosed) {
 			view.bounds_(Rect(0,0,w,this.internalHeight+1));
@@ -134,12 +135,12 @@ MVC_ListView2 : MVC_View {
 	internalHeight{
 		^(items.size*fontHeight).clip(h-1,h+(items.size*fontHeight));
 	}
-	
+
 	minSize{
 		view.bounds_(Rect(0,0,w+2,h)); // what is this??
 	}
 
-	showItem{	
+	showItem{
 		if ((value*fontHeight)<(scrollView.visibleOrigin.y)) {
 			scrollView.visibleOrigin_(0@(value*fontHeight))
 		}{
@@ -149,7 +150,7 @@ MVC_ListView2 : MVC_View {
 			}
 		};
 	}
-		
+
 	canSee{
 		if (view.notClosed) {
 			if (items.size==0) {^true};
@@ -166,11 +167,11 @@ MVC_ListView2 : MVC_View {
 		var val, val2, clickCounts;
 
 		view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
-			
+
 			var updateValue=true;
-			
+
 			clickCounts=clickCount;
-			
+
 			if (modifiers==524576) { buttonNumber=1 };
 			if (modifiers==262401) { buttonNumber=2 };
 		// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
@@ -181,25 +182,25 @@ MVC_ListView2 : MVC_View {
 				scrollView.bounds.postln;
 				updateValue=false;
 			};
-			
+
 			if (buttonNumber==2) { this.toggleMIDIactive; updateValue=false; };
-			
+
 			if (clickCount==2) {
 				this.valueActions(\doubleClickAction, this);
 				if (model.notNil) { model.valueActions(\doubleClickAction,this) };
 				updateValue=false;
 			};
-			
+
 			if (clickCount==3) {
 				this.valueActions(\tripleClickAction, this);
 				if (model.notNil) { model.valueActions(\tripleClickAction,this) };
 				updateValue=false;
 			};
-			
+
 			if (updateValue) {
 				this.valueAction_(y.div(fontHeight).clip(0,items.size-1));
 			};
-						
+
 			this.valueActions(\anyClickAction, this, clickCount);
 			if (model.notNil) { model.valueActions(\anyClickAction,this, clickCount) };
 
@@ -207,26 +208,26 @@ MVC_ListView2 : MVC_View {
 		view.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			if (editMode) { this.moveBy(x-startX,y-startY) };
 		};
-		
+
 		view.mouseUpAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 
 			if (clickCounts==1) {
 				this.valueActions(\upSingleClickAction, this);
 				if (model.notNil) { model.valueActions(\upSingleClickAction,this) };
 			};
-						
+
 			if (clickCounts==2) {
 				this.valueActions(\upDoubleClickAction, this);
 				if (model.notNil) { model.valueActions(\upDoubleClickAction,this) };
 			};
-			
+
 			if (clickCounts==3) {
 				this.valueActions(\upTripleClickAction, this);
 				if (model.notNil) { model.valueActions(\upTripleClickAction,this) };
 			};
-			
+
 		};
-		
+
 		// @TODO: new Qt "key" codes
 		view.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 			var index;
@@ -237,7 +238,7 @@ MVC_ListView2 : MVC_View {
 				this.specialActions(\deleteKeyAction, this);
 				//if (model.notNil) { model.valueActions(\deleteKeyAction, this) };
 			};
-			
+
 			// space & return
 			if ((char == $ )||(char == $\n)||(char == $\r)) {
 				if ((SystemClock.now-lastEnterTime)<0.5) {
@@ -263,16 +264,16 @@ MVC_ListView2 : MVC_View {
 			});
 			if (unicode == 16rF700, {
 				this.valueAction =  (this.value.asInt - 1).wrap(0,items.size-1)
-					
+
 			});
 			if (unicode == 16rF703, {
 				this.valueAction =  (this.value.asInt + 1).wrap(0,items.size-1)
-			
+
 			});
 			if (unicode == 16rF701, {
 				this.valueAction =  (this.value.asInt + 1).wrap(0,items.size-1)
 			});
-			
+
 			if (char.isAlpha, {
 				char = char.toUpper;
 				index = items.detectIndex({|item| item.asString.at(0).toUpper >= char });
@@ -283,7 +284,7 @@ MVC_ListView2 : MVC_View {
 
 		}
 	}
-	
+
 	// move gui, label and number also quant to grid
 	moveBy{|x,y|
 		var l,t,nx,ny;
@@ -295,7 +296,7 @@ MVC_ListView2 : MVC_View {
 //			if (isSquare) {
 //				w=(lw+x).clip(0,inf).round(grid);
 //				h=(lh+y).clip(0,inf).round(grid);
-//				w=w.clip(0,h).clip(30,inf);	
+//				w=w.clip(0,h).clip(30,inf);
 //				h=h.clip(0,w).clip(60,inf);
 //			}{
 //				w=(lw+x).round(grid).clip(30,inf);
@@ -311,8 +312,8 @@ MVC_ListView2 : MVC_View {
 		};
 		this.adjustLabels;
 	}
-	
-	
+
+
 	// set the bounds
 	bounds_{|argRect|
 		rect=argRect;
@@ -325,15 +326,15 @@ MVC_ListView2 : MVC_View {
 			view.bounds_(Rect(0,0,w,this.internalHeight));
 		}
 	}
-	
+
 	// resize action called by parents
 	doResizeAction{
 		if (this.notClosed) {
 			//scrollView.bounds.postln; // why is this changing ?
 			//rect=scrollView.bounds; // needed to change this for scrollView
-			
+
 			// i've deactivated the above becasue i can't work it out
-			
+
 			l=rect.bounds.left;
 			t=rect.bounds.top;
 			w=rect.bounds.width;
@@ -342,7 +343,7 @@ MVC_ListView2 : MVC_View {
 			this.adjustLabels;
 		}
 	}
-	
+
 	// make the view cyan / magenta for midiLearn active
 	midiLearn_{|bool|
 		midiLearn=bool;
@@ -353,7 +354,7 @@ MVC_ListView2 : MVC_View {
 		};
 		labelGUI.do(_.refresh);
 	}
-	
+
 	// set the font
 	font_{|argFont|
 		font=argFont;
@@ -361,7 +362,7 @@ MVC_ListView2 : MVC_View {
 		if (view.notClosed) {
 			view.refresh;
 			this.autoSize;
-		};	
+		};
 	}
 
 	// deactivate midi learn from this item
@@ -373,8 +374,8 @@ MVC_ListView2 : MVC_View {
 		};
 		labelGUI.do(_.refresh);
 	}
-		
-	// item is enabled	
+
+	// item is enabled
 	enabled_{|bool|
 		if (enabled!=bool) {
 			enabled=bool;
@@ -387,7 +388,7 @@ MVC_ListView2 : MVC_View {
 			}.defer;
 		}
 	}
-	
+
 	// normally called from model
 	value_{|val|
 		if (items.notNil) {
@@ -400,7 +401,7 @@ MVC_ListView2 : MVC_View {
 			this.refreshValue;
 		};
 	}
-	
+
 	// and action
 	valueAction_{|val|
 		if (controlSpec.notNil) { val=controlSpec.constrain(val) };
@@ -411,10 +412,10 @@ MVC_ListView2 : MVC_View {
 			if (model.notNil) {
 				model.valueAction_(val,nil,true,false);
 			}
-			
+
 		};
 	}
-	
+
 	// fresh the menu value
 	refreshValue{
 		if (view.notClosed) {
@@ -423,7 +424,7 @@ MVC_ListView2 : MVC_View {
 			this.showItem;
 		}
 	}
-	
+
 	// unlike SCView there is no refresh needed
 	refresh{ this.refreshValue }
 

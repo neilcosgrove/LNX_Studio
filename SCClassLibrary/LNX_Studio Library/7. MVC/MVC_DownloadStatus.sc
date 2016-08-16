@@ -4,7 +4,7 @@
 /*
 (
 w=MVC_Window();
-MVC_DownloadStatus(w,Rect(10,10,200,10))
+MVC_DownloadStatus(w,Rect(10,10,200,10));
 w.create;
 )
 */
@@ -12,9 +12,9 @@ w.create;
 MVC_DownloadStatus : MVC_View {
 
 	var <>seqItems, lastItem, <>zeroValue;
-	
+
 	var <>direction=\vertical, <>rounded=false, <>radius=10;
-	
+
 	var <>align = \center;
 
 	initView{
@@ -27,7 +27,7 @@ MVC_DownloadStatus : MVC_View {
 		if (w>h) { direction=\horizontal }{ direction=\vertical };
 
 	}
-	
+
 	// set the bounds, account for direction
 	bounds_{|argRect|
 		rect=argRect;
@@ -38,44 +38,45 @@ MVC_DownloadStatus : MVC_View {
 		if (view.notClosed) { view.bounds_(rect) };
 		this.adjustLabels;
 	}
-	
+
 	createView{
 		view = UserView.new(window,rect)
 			.drawFunc={|me|
 				var val, r,c;
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					Pen.smoothing_(true);
-					
+
 					if (value>=0) {
-					
+
 						val = ((value / 100)*(w-4)).asInt;
-		
+
 						Pen.roundedRect(Rect(2,2,w-4,h-4),radius);
 						Pen.clip;
-	
+
 						colors[\background].set;
 						Pen.fillRect(Rect(2+val,2,w-val,h-4));
-					
+
 						colors[\slider].set;
 						Pen.fillRect(Rect( 2,2,val,h-4));
-		
+
 						Pen.color = colors[\border];
 						Pen.roundedRect(Rect(2,2,w-4,h-4),radius);
 						Pen.stroke;
-		
+
 					}{
-						var string = ["ConnectingÉ","ConvertingÉ","Ok","Failed"]@(value.abs-1);
+						var string = ["Connectingï¿½","Convertingï¿½","Ok","Failed"]@(value.abs-1);
 						val = value.abs-1;
-						
+
 						if (val==2) {
 							var p=(l+w-13)@(t+h-24);
-							
-							
+
+
 							Pen.capStyle_(1);
 							Pen.joinStyle_(1);
 
-							
+
 							Pen.strokeColor = Color.black;
 							Pen.width_(6);
 							Pen.moveTo(p);
@@ -89,30 +90,30 @@ MVC_DownloadStatus : MVC_View {
 							Pen.lineTo(p+(2@2)+(4.5@(-4.5)));
 							Pen.stroke;
 						}{
-						
+
 							Pen.fillColor_(colors[\string]);
 							Pen.font_(Font("Helvetica",9));
-							
+
 							// stringLeftJustIn
 							// stringCenteredIn
 							// stringRightJustIn
-							
-							
+
+
 							if (val==0) { Pen.stringLeftJustIn (string,Rect(0,0,w,h)) };
-							
-							
+
+
 							if (align==\left) {val==1}; // messy code
-							
+
 							if (val==1) { Pen.stringCenteredIn (string,Rect(0,0,w,h)) };
 							//if (val==2) { Pen.stringRightJustIn(string,Rect(0,0,w,h)) };
 							if (val==3) { Pen.stringCenteredIn (string,Rect(0,0,w,h)) };
 						}
 					};
-						
+
 				};
 			};
 	}
-	
+
 	addControls{
 		//
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
@@ -137,7 +138,7 @@ MVC_DownloadStatus : MVC_View {
 						if (modifiers==262401) {buttonNumber=2};
 						buttonPressed=buttonNumber;
 						if (buttonPressed==1) {
-							seqItems.do({|i,j|	
+							seqItems.do({|i,j|
 								if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) {
 									lastItem=j;  // draw a line !!!
 								}
@@ -158,7 +159,7 @@ MVC_DownloadStatus : MVC_View {
 				};
 			}
 		};
-		
+
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			var thisItem, lastValue, size, thisValue, val;
@@ -205,7 +206,7 @@ MVC_DownloadStatus : MVC_View {
 							};
 						};
 						lastItem=thisItem;
-					}{	
+					}{
 						if (buttonPressed!=2) {
 							if (thisValue!=value) {this.viewValueAction_(thisValue,nil,true,false)};
 						};
@@ -213,8 +214,8 @@ MVC_DownloadStatus : MVC_View {
 				};
 			};
 		}
-		
-		
+
+
 	}
-	
+
 }

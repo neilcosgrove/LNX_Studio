@@ -13,15 +13,15 @@ MVC_PopUpMenu3(w,Rect(60,60,100,20))
 w.create;
 )
 */
-// LNX_MyPopUpMenu 
-// also supports mapping and unmapping for the MVC_AudioOutSpec control spec 
+// LNX_MyPopUpMenu
+// also supports mapping and unmapping for the MVC_AudioOutSpec control spec
 
 MVC_PopUpMenu3 : MVC_View {
-	
-	var indexValue=0, <>menuFont, <>style=0, <>staticText, <>showTick=true, <down=false, 
+
+	var indexValue=0, <>menuFont, <>style=0, <>staticText, <>showTick=true, <down=false,
 		<startTime, <textView, <menuRect, <menuWindow, <>updateFunc;
 	var <highlight = 1;
-	
+
 	var <>isPOPcanTurnOnOff = false;
 
 	highlight_{|number|
@@ -35,11 +35,11 @@ MVC_PopUpMenu3 : MVC_View {
 			'string'				: Color.black,
 			'background'			: Color(1,1,0.9),
 			'border'				: Color.black
-			
+
 		);
 		canFocus=true;
 		items=items ? [];
-		
+
 		// @TODO: standardise how we get fonts
 		if (Font.availableFonts.find("HelveticaNeuew").notNil) {
 			menuFont = Font("HelveticaNeue",15);
@@ -47,19 +47,19 @@ MVC_PopUpMenu3 : MVC_View {
 			menuFont = Font.sansSerif(15);
 		};
 	}
-	
+
 	items_{|array|
 		items = array; // use ( and - for disable and break
 		this.refresh;
 	}
-	
+
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc_{|me|
 				var r1=Rect(0,0,w,h);
 				var r2=Rect(0,2,h-3,h-3);
 				var r3=Rect(h-7,0,w-h+5,h-1);
-				
+				MVC_LazyRefresh.incRefresh;
 				Pen.use{
 					Pen.smoothing_(false);
 					if (midiLearn) {
@@ -68,7 +68,7 @@ MVC_PopUpMenu3 : MVC_View {
 						(colors[\background]*(highlight)).set;
 					};
 					Pen.fillRect(r1);
-					
+
 					if(style==0) {
 						Color(1,1,1,0.5).set;
 						Pen.moveTo(0@h);
@@ -85,7 +85,7 @@ MVC_PopUpMenu3 : MVC_View {
 						Pen.strokeRect(r1);
 						Pen.strokeRect(r2.insetBy(2));
 					};
-					
+
 					if (midiLearn) {
 						Color.black.set;
 						Pen.fillColor_(Color.black);
@@ -97,7 +97,7 @@ MVC_PopUpMenu3 : MVC_View {
 					Pen.smoothing_(true);
 					DrawIcon(\down, r2.moveBy(0,-1));
 					// and text
-					
+
 					if (isPOPcanTurnOnOff) {
 						if (value==0) {
 							Pen.width_(1);
@@ -107,7 +107,7 @@ MVC_PopUpMenu3 : MVC_View {
 							Pen.fillRect(r3.insetBy(10,4));
 						};
 						if (value==1) {
-							
+
 							Pen.smoothing_(false);
 							Pen.width_(1);
 																			Color(1,1,1,0.5).set;
@@ -117,29 +117,29 @@ MVC_PopUpMenu3 : MVC_View {
 
 						};
 					};
-					
+
 					Pen.moveTo((h-7)@0);
 					Pen.lineTo((w-2)@0);
 					Pen.lineTo((w-2)@h);
 					Pen.lineTo((h-7)@h);
 					Pen.clip;
-					
+
 					Pen.font_(font);
-					
+
 					Pen.smoothing_(true);
-					
+
 					if (((staticText ? (items[indexValue]) ? "").bounds(font).width)>(w-h)) {
 						Pen.stringLeftJustIn (staticText ? (items[indexValue]) ? "", r3);
 					}{
 						Pen.stringCenteredIn (staticText ? (items[indexValue]) ? "", r3);
 					};
 				};
-				
+
 				updateFunc.value;
-				
+
 			}
 	}
-	
+
 	openMenu{
 		var summary, summaryList;
 		var selectView, selected, class, sB, rect;
@@ -151,7 +151,7 @@ MVC_PopUpMenu3 : MVC_View {
 		onClose={ if (menuWindow.notNil) { menuWindow.close } };
 
 		if (items.size>0) {
-			
+
 			var mousePos, moveY, rect2;
 
 			sB = items.collect{|item| GUI.stringBounds(item,menuFont).rightBottom.asArray };
@@ -159,7 +159,7 @@ MVC_PopUpMenu3 : MVC_View {
 			h = sB.first.last;
 
 			mousePos = Rect(GUI.cursorPosition.x, GUI.cursorPosition.y, 0, 0).convert;
-			
+
 			menuRect=rect=Rect(
 				mousePos.left,
 				mousePos.top,
@@ -185,10 +185,10 @@ MVC_PopUpMenu3 : MVC_View {
 				if (menuWindow.view.view.absoluteBounds.contains(GUI.cursorPosition).not) {
 					// not in bounds
 					if (selected.notNil){
-						selected=nil;	
+						selected=nil;
 						selectView.refresh;
 					};
-					0.1.wait;	
+					0.1.wait;
 				}{
 					if (down) {
 						var cord = GUI.cursorPosition.convert-(menuWindow.bounds.leftTop);
@@ -196,7 +196,7 @@ MVC_PopUpMenu3 : MVC_View {
 						0.05.wait;
 					}{
 						0.1.wait;
-					};	
+					};
 				};
 			}.loop},AppClock).start;
 
@@ -225,12 +225,12 @@ MVC_PopUpMenu3 : MVC_View {
 			MVC_PlainSquare(menuWindow,Rect(w+2,1,1,rect.bounds.height-2))
 				.color_(\on,Color(0,0,0,0.33))
 				.color_(\off,Color(0,0,0,0.33));
-				
+
 			// the mouse over selection view
 			selectView=MVC_UserView(menuWindow,Rect(0,1,w+3,h*(items.size)))
 				.drawFunc_{|me|
 					var bounds=me.bounds;
-					
+
 					if ((selected.notNil)and:{items[selected]!="-"}){
 						Pen.use{
 							Pen.smoothing_(false);
@@ -239,7 +239,7 @@ MVC_PopUpMenu3 : MVC_View {
 						};
 
 					};
-					
+
 					if ((showTick)&&(value.notNil)) {
 						var indexValue;
 						if (controlSpec.isKindOf(MVC_AudioOutSpec)or:
@@ -253,7 +253,7 @@ MVC_PopUpMenu3 : MVC_View {
 						Pen.font_(menuFont);
 						Pen.stringLeftJustIn(" *", Rect(2,indexValue*h+1,w+4,h));
 					};
-					
+
 					items.do{|t,i|
 						if (t=="-") {
 							Color(0,0,0,0.25).set;
@@ -267,7 +267,7 @@ MVC_PopUpMenu3 : MVC_View {
 						};
 					};
 				};
-				
+
 
 			// textView=MVC_View(menuWindow,Rect(22,1,w-20,h*(items.size)))
 			// 	.color_(\background, Color.clear)
@@ -276,7 +276,7 @@ MVC_PopUpMenu3 : MVC_View {
 				textView = MVC_StaticText(menuWindow, Rect(22,2+(h*i),w-20,h))
 					.shadow_(false)
 					.string_(
-						if (s[0]==$() { s=s.drop(1) }; 
+						if (s[0]==$() { s=s.drop(1) };
 						(s=="-").if {""} {s.asString};
 					)
 					.font_(menuFont)
@@ -300,7 +300,7 @@ MVC_PopUpMenu3 : MVC_View {
 						// close the window
 						task.stop;
 						menuWindow.free;
-						this.refreshValue;	
+						this.refreshValue;
 						// call action
 						if (controlSpec.isKindOf(MVC_AudioOutSpec)) {
 							this.viewValueAction_(controlSpec.unmap2(value),nil,true,false);
@@ -313,20 +313,20 @@ MVC_PopUpMenu3 : MVC_View {
 						menuWindow.free;
 					};
 				};
-			
-			menuWindow.create;			
+
+			menuWindow.create;
 			menuWindow.view.alpha_(0.95);
-			
+
 			// must be done here
 			menuWindow.view.endFrontAction_{
 				task.stop;
 				menuWindow.free;
 			};
-			
+
 		};
-		
+
 	}
-	
+
 	addControls{
 		view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 			if (modifiers==524576) { buttonNumber=1 };
@@ -336,14 +336,14 @@ MVC_PopUpMenu3 : MVC_View {
 				lw=lh=nil;
 				startX=x;
 				startY=y;
-			}{	
+			}{
 				if (buttonNumber==2) {
 					this.toggleMIDIactive
 				}{
 					if (modifiers.isXCmd.not) { this.openMenu };
 				};
 				down=true;
-				startTime = SystemClock.now;	
+				startTime = SystemClock.now;
 			};
 
 		}
@@ -359,16 +359,16 @@ MVC_PopUpMenu3 : MVC_View {
 					textView.mouseUpAction.value(textView, cord.x, cord.y);
 				};
 			};
-		}	
+		}
 	}
-	
+
 	// make the view cyan / magenta for midiLearn active
 	midiLearn_{|bool|
 		midiLearn=bool;
 		this.refresh;
 		labelGUI.do(_.refresh);
 	}
-	
+
 	// set the font
 	font_{|argFont|
 		font=argFont;
@@ -381,23 +381,23 @@ MVC_PopUpMenu3 : MVC_View {
 		colors[key]=color;
 		this.refresh;
 	}
-	
+
 	// deactivate midi learn from this item
 	deactivate{
 		midiLearn=false;
 		labelGUI.do(_.refresh);
 		this.refresh;
 	}
-		
-	// item is enabled	
+
+	// item is enabled
 	enabled_{|bool|
 		enabled=bool;
 		this.refresh;
 	}
-	
+
 	// normally called from model
 	value_{|val|
-		
+
 		if (items.notNil) {
 			if (controlSpec.isKindOf(MVC_AudioOutSpec).not){
 				val=val.round(1).asInt.wrap(0,items.size-1);
@@ -412,8 +412,8 @@ MVC_PopUpMenu3 : MVC_View {
 			value=val;
 			this.refreshValue;
 		};
-	}	
-	
+	}
+
 	// fresh the menu value
 	refreshValue{
 		if (controlSpec.isKindOf(MVC_AudioOutSpec)or:
@@ -422,10 +422,10 @@ MVC_PopUpMenu3 : MVC_View {
 		}{
 			indexValue = value.clip(0,items.size-1);
 		};
-		
+
 		{ if (view.notClosed) { view.refresh } }.defer;
 	}
-	
+
 	// unlike SCView there is no refresh needed
 	refresh{ this.refreshValue }
 

@@ -39,7 +39,7 @@ MVC_StaticText : MVC_View {
 	var <canEdit=false,	<>enterStopsEditing = true;
 	var <>tasks,			<>penShadow=false, <>rightIfIcon=false;
 	var <>maxStringSize;
-	
+
 	// add the colour to the Dictionary, no testing to see if its there already
 	addColor_{|key,color|
 		colors[key]=color;
@@ -52,36 +52,36 @@ MVC_StaticText : MVC_View {
 				labelGUI.do(_.refresh);
 			}{
 				this.refresh;
-			};	
+			};
 		}
 	}
-	
+
 	// can the text be edited
 	canEdit_{|bool|
 		canEdit=bool;
 		this.canFocus_(bool);
 	}
-	
+
 	// set the string
 	string_{|argString|
 		string=argString.asString;
 		this.calcCharSizes;
 		this.refresh;
 	}
-	
+
 	// set the font
 	font_{|argFont|
 		font=argFont;
 		this.calcCharSizes;
 		this.refresh;
 	}
-	
+
 	// does widget clip chars on display
 	clipChars_{|bool|
 		clipChars=bool;
 		this.calcCharSizes;
 	}
-	
+
 	// calculate the size of all characters and intergate
 	calcCharSizes{
 		if (clipChars||canEdit) {
@@ -93,26 +93,26 @@ MVC_StaticText : MVC_View {
 		};
 		this.makeClipString;
 	}
-	
+
 	// clip the number of chars displayed
 	makeClipString{
-		if (clipChars) {	
+		if (clipChars) {
 			if (string.size==0) {
 				clipString=string;
 			}{
-				clipString = string[0.. 
+				clipString = string[0..
 				 ( (charSizesIntegral.indexOfNearest(w-5)).clip(0,inf).asInt)];
 			};
 		}{
 			clipString=string;
 		};
 	}
-		
+
 	// start editing the text, called by mouseclick or return on keyboard
 	startEditing{|x|
 		// find index for cursor
 		if (x.isNumber) { cursor = ([0]++charSizesIntegral).indexOfNearest(x) };
-		editing=true; 
+		editing=true;
 		this.calcCharSizes;
 		tasks[\cursorFlash] = {{
 			cursorFlash = cursorFlash.not;
@@ -120,14 +120,14 @@ MVC_StaticText : MVC_View {
 			0.6.wait;
 		}.loop}.fork(AppClock); // start flashing cursor task
 	}
-	
+
 	// stop editing and flashing cursor task
 	stopEditing{
-		editing=false; 
+		editing=false;
 		tasks[\cursorFlash].stop;
 		tasks[\cursorFlash] = nil;
 	}
-	
+
 	// set your defaults
 	initView{
 		charSizes         = [];
@@ -143,18 +143,19 @@ MVC_StaticText : MVC_View {
 		canFocus=true;
 		tasks = IdentityDictionary[];
 	}
-	
+
 	// make the view
 	createView{
 		var r1, align2;
-		
+
 		view=UserView(window,rect)
 			.canFocus_(true) // without focus we can't use keyboard
 			.drawFunc_{|me|
+				MVC_LazyRefresh.incRefresh;
 				if (me.hasFocus.not) {this.stopEditing}; // stop editing if we loose focus
 				if (verbose && (excludeFromVerbose.not)) {
 					[this.class.asString, 'drawFunc', label].postln };
-					
+
 				r1=Rect(0,0,w,h);
 				Pen.use{
 					// draw background
@@ -172,9 +173,9 @@ MVC_StaticText : MVC_View {
 						colors[\border].set;
 						Pen.strokeRect(r1);
 					};
-					
+
 					align2=align;
-					
+
 					// draw user Icon
 					if (colors[\icon].notNil) {
 						if (rightIfIcon) {
@@ -196,7 +197,7 @@ MVC_StaticText : MVC_View {
 						};
 						if (rightIfIcon) {align2='right'};
 					};
-					
+
 					// manually draw shadow
 					Pen.rotate(rotate,w/2,h/2);
 					Pen.fillColor_(Color.black);
@@ -225,14 +226,14 @@ MVC_StaticText : MVC_View {
 					};
 					if (midiLearn) {
 						Pen.fillColor_(colors[\midiLearn]);
-					}{			
+					}{
 						Pen.fillColor_(colors[enabled.if(
 							(down&&(shadowDown.not)&&(colors['stringDown'].notNil)).if(
 								\stringDown,\string),
-						\disabled)]);	
+						\disabled)]);
 					};
 					if (editing) { Pen.fillColor_(colors[\edit])};
-					
+
 					// use pen shadow
 					if (penShadow) {
 						Pen.setShadow((-2)@(-2), 5, Color.black);
@@ -242,7 +243,7 @@ MVC_StaticText : MVC_View {
 					switch (align2)
 						{'left'}  { Pen.stringLeftJustIn (clipString,r1) }
 						{'center'}  { Pen.stringCenteredIn (clipString,r1) }
-						{'rotate'} {				
+						{'rotate'} {
 							Pen.stringCenteredIn(clipString,Rect(0,0,w,h));
 						}
 						{'right'} {
@@ -250,9 +251,9 @@ MVC_StaticText : MVC_View {
 								Pen.stringRightJustIn(clipString,r1.moveBy(-2,0))
 							}{
 								Pen.stringRightJustIn(clipString,r1)
-							};	
+							};
 						};
-					
+
 					// draw cursor
 					if (editing&&cursorFlash) {
 						case {cursor.isNil} { // cursor auto at end
@@ -263,7 +264,7 @@ MVC_StaticText : MVC_View {
 							Pen.smoothing_(false);
 							Pen.strokeColor_(colors[\cursor]);
 							Pen.line((x@1),(x@(h-2)));
-							Pen.stroke;	
+							Pen.stroke;
 						} {cursor.isNumber} { // cursor pos as index, 0 is before 1st char
 							var x = ((([0]++charSizesIntegral)[cursor])?0);
 							if (align=='left') { x=x+3 };
@@ -279,40 +280,40 @@ MVC_StaticText : MVC_View {
 							Pen.line((x@1),(x@(h-2)));
 							Pen.stroke;
 						} {cursor.isCollection} { // cursor is selection [begin,end], to do?
-							
-						};	
+
+						};
 					};
 				}; // end.pen
-			};		
+			};
 	}
-	
+
 	dragControls{
-		
+
 		// what i send
 		if (beginDragAction.notNil) {
-			view.beginDragAction_(beginDragAction); 
-		}{	
+			view.beginDragAction_(beginDragAction);
+		}{
 			view.beginDragAction_{|me|
 				//me.dragLabel_(string); // the drag label
 				string
 			};
 		};
-		
+
 		// what can i recieve
 		if (canReceiveDragHandler.notNil) {
 			view.canReceiveDragHandler_(canReceiveDragHandler);
 		};
-		
+
 		// what i get passed
 		if (receiveDragHandler.notNil) {
 			view.receiveDragHandler_(receiveDragHandler);
 		};
-		
+
 		// these wouldn't normally be created with staticText
 		if (numberGUI.notNil) { numberGUI.beginDragAction_(view.beginDragAction) };
 		labelGUI.do{|labelView| labelView.beginDragAction_(view.beginDragAction) };
 	}
-	
+
 	// align 'left' or 'center'. right not done yet
 	align_{|symbol|
 		align=symbol;
@@ -324,21 +325,21 @@ MVC_StaticText : MVC_View {
 		rotate=angle;
 		if (view.notClosed) { view.refresh };
 	}
-	
+
 	// draw a manual shadow
 	shadow_{|bool|
 		shadow=bool;
 		if (view.notClosed) { view.refresh };
 	}
-	
+
 	// add the controls
 	addControls{
-		
+
 		var didAnything=false, noKeyPresses=0;
-		
+
 		view.mouseDownAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-			didAnything=false; 
+			didAnything=false;
 			this.stopEditing;
 			mouseDownAction.value(me, x, y, modifiers, buttonNumber, clickCount);
 			if (modifiers==524576) { buttonNumber=1 };
@@ -359,19 +360,19 @@ MVC_StaticText : MVC_View {
 			};
 			this.refresh
 		};
-		
+
 		view.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
 			// moving stops us from begin able to edit text. insted we can move insts & fx
 			if (enterStopsEditing && didAnything.not) {
-				didAnything=true; 
+				didAnything=true;
 				this.stopEditing;
 				this.refresh
 			};
 			mouseMoveAction.value(me, x, y, modifiers, buttonNumber, clickCount);
 			if (editMode) {
 				this.moveBy(x-startX,y-startY,buttonPressed)
-			}{				
+			}{
 				if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}and:{evaluateAction}) {
 					if (down.not) {
 						down=true;
@@ -383,9 +384,9 @@ MVC_StaticText : MVC_View {
 						view.refresh;
 					};
 				};
-			};	
+			};
 		};
-		
+
 		view.mouseUpAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
 			if (active) {value=0};
@@ -398,9 +399,9 @@ MVC_StaticText : MVC_View {
 					if (model.notNil){ model.valueActions(\mouseUpDoubleClickAction,model) };
 				}
 			};
-			if ((didAnything.not)&&canEdit) {	
+			if ((didAnything.not)&&canEdit) {
 				switch (align) {'left'} {
-					this.startEditing(x);	
+					this.startEditing(x);
 				}{'center'}{
 					if (clipChars && (clipString.size!=string.size)) {
 						this.startEditing(x);
@@ -409,16 +410,16 @@ MVC_StaticText : MVC_View {
 					};
 				};
 				this.refresh
-			};			
+			};
 			if (alwaysDown) { this.refresh };
 		};
-		
+
 		// @TODO: new Qt "key" codes
 		view.keyDownAction_{|me,char,mod,uni,keycode,key|
 			// help fixes double press bug by see if cmd is pressed
 			if (mod.isXCmd) {
 				noKeyPresses=noKeyPresses+1;
-				case {key.isLeft} { // left	
+				case {key.isLeft} { // left
 					cursor = 0;
 					if (editing.not) {this.startEditing};
 					this.refresh;
@@ -428,11 +429,11 @@ MVC_StaticText : MVC_View {
 					this.refresh;
 				};
 			}{ noKeyPresses=1 };
-			
+
 			if ((Platform.name == \osx).not or: { Platform.name == \osx and: {noKeyPresses.odd} }) { // stops double press bug
 				keyDownAction.value(me,char,mod,uni,keycode);
 				if (mod.isXCmd) { // apple cmd key
-					if (key.isAlphaKey(\C)) { // cmd copy	
+					if (key.isAlphaKey(\C)) { // cmd copy
 						case {cursor.isNil} {
 							Platform.case(
 								\osx, {
@@ -451,25 +452,25 @@ MVC_StaticText : MVC_View {
 									("echo"+string+"| xclip -i -sel c -f | xclip -i -sel p").unixCmd
 								}
 							);
-						} {cursor.isCollection} {	
-							
+						} {cursor.isCollection} {
+
 						};
-					}; 
-					
+					};
+
 					if (editing) {
 						case {key.isAlphaKey(\V)} { // cmd paste
 							var clipboard = Platform.case(
 								\osx, { "pbpaste".unixCmdGetStdOut },
 								\linux, { "xclip -selection clipboard -o".unixCmdGetStdOut }
 							);
-							clipboard = clipboard.select{|char| 
+							clipboard = clipboard.select{|char|
 								(char.isAlphaNum)||(char.isPunct)||(char==($\ ))
 							};
 							case {cursor.isNil} {
 								string=string++clipboard;
 							} {cursor.isNumber} {									string=string.insert(cursor,clipboard);
 								cursor = (cursor+(clipboard.size)).clip(0,string.size);
-							} {cursor.isCollection} {		
+							} {cursor.isCollection} {
 							};
 							this.clipStringToMaxSize;
 							this.calcCharSizes;
@@ -481,15 +482,15 @@ MVC_StaticText : MVC_View {
 								string="";
 							} {cursor.isNumber} {									string = string.drop(cursor);
 								cursor=0;
-							} {cursor.isCollection} {		
-							};	
+							} {cursor.isCollection} {
+							};
 							this.calcCharSizes;
 							this.refresh;
 							this.valueActions(\stringAction,this);
 							if (model.notNil){ model.stringAction_(string,this) };
 							stringAction.value(this,string);
 						}
-					};	
+					};
 				}{ // not cmd key
 					case {key.isUp} { // up
 						this.stopEditing;
@@ -499,22 +500,22 @@ MVC_StaticText : MVC_View {
 						this.stopEditing;
 						this.refresh;
 						downKeyAction.value(this,string);
-					} {key.isLeft} { // left	
+					} {key.isLeft} { // left
 						case {cursor.isNil} {
 							cursor = string.size;
-						} {cursor.isNumber} {	
+						} {cursor.isNumber} {
 							cursor = (cursor-1).clip(0,string.size);
-						} {cursor.isCollection} {	
-							
+						} {cursor.isCollection} {
+
 						};
 						this.refresh;
 					} {key.isRight} { // right
 						case {cursor.isNil} {
 							cursor = string.size;
-						} {cursor.isNumber} {	
+						} {cursor.isNumber} {
 							cursor = (cursor+1).clip(0,string.size);
-						} {cursor.isCollection} {	
-							
+						} {cursor.isCollection} {
+
 						};
 						this.refresh;
 					};
@@ -527,8 +528,8 @@ MVC_StaticText : MVC_View {
 									string = string.select{|i,index| index != (cursor-1) };
 									cursor= (cursor-1).clip(0,string.size);
 								}
-							} {cursor.isCollection} {		
-							};		
+							} {cursor.isCollection} {
+							};
 							this.calcCharSizes;
 							this.refresh;
 							this.valueActions(\stringAction,this);
@@ -539,14 +540,14 @@ MVC_StaticText : MVC_View {
 							if (enterStopsEditing) {this.stopEditing};
 							this.refresh;
 							enterKeyAction.value(this,string);
-						}{ 		
+						}{
 							// alphaNum etc..
 							if ((char.isAlphaNum)||(char.isPunct)||(char==($\ ))) {
 								case {cursor.isNil} {
 									string=string++char;
 								} {cursor.isNumber} {									string=string.insert(cursor,char);
 									this.clipStringToMaxSize;
-								} {cursor.isCollection} {	
+								} {cursor.isCollection} {
 								};
 								this.clipStringToMaxSize;
 								if (cursor.isNumber) {cursor=(cursor+1).clip(0,string.size)};
@@ -563,14 +564,14 @@ MVC_StaticText : MVC_View {
 							this.refresh;
 						};
 					}
-				}	
+				}
 			}
 		};
-		
+
 		view.keyUpAction_{ noKeyPresses=0 }
-		
+
 	}
-	
+
 	clipStringToMaxSize{ if (maxStringSize.isNumber) { string = string[0..(maxStringSize-1)] } }
 
 	down_{|bool|

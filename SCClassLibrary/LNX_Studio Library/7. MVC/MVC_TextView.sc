@@ -79,6 +79,7 @@ MVC_TextView : MVC_View {
 			view.setString(string, rangestart, rangesize);
 			if (autoColorize) {view.syntaxColorize};
 			string=view.string;
+			MVC_LazyRefresh.incRefresh;
 		}
 	}
 
@@ -87,6 +88,7 @@ MVC_TextView : MVC_View {
 			view.setString(string, rangestart, rangesize);
 			if (autoColorize) {view.syntaxColorize};
 			string=view.string;
+			MVC_LazyRefresh.incRefresh;
 			this.valueActions(\stringAction,this);
 			if (model.notNil){ model.stringAction_(string,this) };
 		}

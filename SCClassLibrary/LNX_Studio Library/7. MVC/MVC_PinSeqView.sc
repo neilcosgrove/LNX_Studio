@@ -2,15 +2,15 @@
 // a Circle sequencer view
 
 MVC_PinSeqView : MVC_View {
-	
+
 	var <>seqItems, lastItem, <>zeroValue, <startVal;
 
 	var <down=false;
-	
+
 	var <>hilite=false, <>left=false, <>right=false;
 
 	// set your defaults
-	initView{ 
+	initView{
 		colors=colors++(
 			'background'	: Color.black,
 			'on'			: Color.green,
@@ -18,32 +18,33 @@ MVC_PinSeqView : MVC_View {
 		);
 		isSquare=true;
 	}
-	
+
 	// make the view
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				var w2,h2, rect2, x2;
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
-					
+
 					// clip to a square
 					w2=w.clip(0,h);
 					h2=h.clip(0,w);
 					Pen.smoothing_(true);
-					
+
 					if (enabled) {
 						Color.black.set;
 					}{
 						Color.black.alpha_(0.5).set;
 					};
-					
+
 					Pen.width_(8);
 					if (down) { if (value>0) { x2=5 } { x2=4 } }{ x2=3 };
 					if (left)  { Pen.line((0)@(h2/2),(x2)@(h2/2)) };
 					if (right) { Pen.line((w-x2)@(h2/2),(w)@(h2/2))};
 					Pen.stroke;
-					
+
 					if (midiLearn) {										colors[\midiLearn].set;
 					}{
 						if (enabled) {
@@ -51,12 +52,12 @@ MVC_PinSeqView : MVC_View {
 								colors[\background].set;
 							}{
 								(colors[\background]*0.8).set;
-							}	
+							}
 						}{
 							colors[\background].copy.alpha_(0.4).set;
 						};
 					};
-						
+
 					Pen.width_(2);
 					if (down) {
 						rect2=Rect(4,4,w2-8,h2-8);
@@ -76,7 +77,7 @@ MVC_PinSeqView : MVC_View {
 							Pen.strokeOval(rect2);
 						}
 					};
-					
+
 					if (midiLearn) {										colors[\midiLearn].set;
 					}{
 						if (enabled) {
@@ -87,9 +88,9 @@ MVC_PinSeqView : MVC_View {
 					};
 					Pen.fillOval(rect2.insetBy(2,2));
 				}; // end.pen
-			};		
+			};
 	}
-	
+
 	// add the controls
 	addControls{
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
@@ -107,38 +108,38 @@ MVC_PinSeqView : MVC_View {
 					y=y+t-1;
 					evaluateAction=true;
 					if (buttonPressed==1) {
-						seqItems.do({|i,j|	
+						seqItems.do({|i,j|
 							if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) {
 								lastItem=j;  // this finds this item index
 							}
-						});			
+						});
 						if (value>controlSpec.clipLo) {
 							this.viewValueAction_(controlSpec.clipLo,nil,true,false);
 						}{
 							this.viewValueAction_(controlSpec.clipHi,nil,true,false);
 						};
-						startVal=value;			
-						startY=y;	
+						startVal=value;
+						startY=y;
 					}{
 						if (buttonNumber==2) {
 							this.toggleMIDIactive
 						}{
 							down=true;
 							view.refresh;
-						
+
 						};
 					};
 				}
 			};
-			
+
 		};
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var thisItem, lastValue, size, thisValue, val;
 			var xx=x/w, yy=y/h;
-			
+
 			if (editMode||viewEditMode) {
 				this.moveBy(x-startX,y-startY,buttonPressed)
-			}{				
+			}{
 				if ((buttonPressed==1)and:{seqItems.notNil}) {
 					x=x+l;
 					y=y+t-1;
@@ -174,8 +175,8 @@ MVC_PinSeqView : MVC_View {
 						};
 					};
 					lastItem=thisItem;
-				}{	
-						
+				}{
+
 					if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}and:{evaluateAction}) {
 						if (down.not) {
 							down=true;
@@ -205,7 +206,7 @@ MVC_PinSeqView : MVC_View {
 						this.viewValueAction_((value>0).if(0,1),nil,true,false);
 					};
 				}{
-					this.refresh;	
+					this.refresh;
 				};
 			};
 			if (down==true) {

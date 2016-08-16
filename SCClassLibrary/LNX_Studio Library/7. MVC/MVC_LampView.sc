@@ -5,7 +5,7 @@ MVC_LampView : MVC_View {
 
 	var call=0; // used to tag last update to stop lamp turning off in mid noteOn
 
-	var lastTime=0, nextTime, fps=25; // has its own fps
+	var lazyRefresh;
 
 	// set your defaults
 	initView{
@@ -16,13 +16,15 @@ MVC_LampView : MVC_View {
 			'off'		: Color.ndcLampOFF
 		);
 		isSquare=true;
+		lazyRefresh = MVC_LazyRefresh().refreshFunc_{this.refresh};
 	}
-	
+
 	// make the view
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				var val;
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					Pen.smoothing_(true);
@@ -32,7 +34,7 @@ MVC_LampView : MVC_View {
 					Pen.fillRect(Rect(2,2,w-4,h-4));
 					colors[\background].set;
 					Pen.fillOval(Rect(2,2,w-4,h-4));
-					
+
 					if (controlSpec.notNil) {
 						val=controlSpec.unmap(value); // this will always give (0-1)
 						if (val>0)
@@ -45,9 +47,9 @@ MVC_LampView : MVC_View {
 					};
 					Pen.fillOval(Rect(4,4,w-8,h-8));
 				}; // end.pen
-			};		
+			};
 	}
-	
+
 	// add the controls
 	addControls{
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
@@ -69,12 +71,10 @@ MVC_LampView : MVC_View {
 
 		};
 	}
-	
 
-	
 	on { this.value_(1) }
 	off{ this.value_(0) }
-	
+
 	value_{ |val,d|
 		var c;
 		value=val;
@@ -86,33 +86,17 @@ MVC_LampView : MVC_View {
 		}
 		^this
 	}
-		
+
 	deferOff{|c|
 		if (c==call) {
 			value=0;
 			this.lazyRefresh;
 		}
-	}	
+	}
+
+	viewFree{ lazyRefresh.free }
 
 	// only refresh at a frame rate
-	lazyRefresh{
-		var now;
-		now=SystemClock.seconds;
-		if ((now-lastTime)>(1/fps)) {
-			lastTime=now;
-			nextTime=nil;
-			this.refresh;
-		}{
-			if (nextTime.isNil) {
-				nextTime=lastTime+(1/fps);
-				{
-					this.refresh;
-					nextTime=nil;
-				}.defer(nextTime-now);
-				lastTime=nextTime;
-			}
-		}
-	
-	}
+	lazyRefresh{ lazyRefresh.lazyRefresh }
 
 }

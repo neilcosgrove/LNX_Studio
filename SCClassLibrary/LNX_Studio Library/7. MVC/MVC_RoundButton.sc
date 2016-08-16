@@ -14,7 +14,7 @@ MVC_RoundButton : MVC_View {
 		states=[];
 		canFocus=true;
 	}
-	
+
 	// set the states
 	states_{|array|
 		states=array;
@@ -22,7 +22,7 @@ MVC_RoundButton : MVC_View {
 			view.states_(states);
 		};
 	}
-	
+
 	// create the button
 	createView{
 		view=RoundButton(window, rect)
@@ -49,14 +49,14 @@ MVC_RoundButton : MVC_View {
 				startX=x;
 				startY=y;
 				view.bounds.postln;
-			};	
+			};
 			if (buttonNumber==2) { this.toggleMIDIactive };
 		};
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			if (editMode) { this.moveBy(x-startX,y-startY,buttonPressed) };
-		};	
+		};
 	}
-	
+
 	// normally called from model
 	value_{|val|
 		if (states.notNil) {
@@ -69,13 +69,13 @@ MVC_RoundButton : MVC_View {
 			this.refreshValue;
 		};
 	}
-	
+
 	// fresh the Slider Value
-	refreshValue{ if (view.notClosed) { view.value_(value) } }
-	
+	refreshValue{ if (view.notClosed) { view.value_(value); MVC_LazyRefresh.incRefresh; } }
+
 	// unlike SCView there is no refresh needed with SCSlider
 	refresh{}
-	
+
 }
 
 // everything is relative these days
@@ -87,6 +87,6 @@ MVC_RoundButton : MVC_View {
 		super.init( parent, bounds );
 		super.focusColor = Color.clear;
 	}
-		
+
 }
 

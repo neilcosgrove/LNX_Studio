@@ -6,7 +6,7 @@
 	/////// server controls & studio transport models //////////////////////////////////////////
 
 	makeBatch{
-	
+
 		if (batchOn && (lastBatchFolder.notNil)) {
 			this.guiLoadInstFromLibrary("Library/SC Code/BATCH",LNX_Code,"BATCH");
 			{
@@ -14,7 +14,7 @@
 				lastBatchFolder.folderContents.do{|fileName|
 					insts.visualOrder.last.userBank.guiAddURL(
 						("file:/"++(fileName.dropFolder(5)))
-					);	
+					);
 				};
 			}.fork(AppClock);
 			batchOn=false;
@@ -25,7 +25,7 @@
 
 	initModels {
 		var path;
-								
+
 		// block size
 		models[\blockSize] = [(("blockSize".loadPref?[1])[0]).asInt,[0,4,\lin,1],
 			(\label_:"Block Size", \items_: (2**(5..9)).collect(_.asString) ),
@@ -34,18 +34,18 @@
 				Server.killAll;              // and restart
 				[val].savePref("blockSize"); // save to preferences folder
 			}].asModel;
-		
+
 		// master out level meter
 		models[\peakOutL] = [\unipolar, {|me,val|
 //				~x=val
-			} 
-			].asModel.fps_(20); // fps same as in LNX_Studio:initUGens
+			}
+			].asModel;
 		models[\peakOutR] = [\unipolar,
 			{|me,val|
 //				~y=val;
 //				if (~v.notNil) { {~v.refresh}.defer }
-			} 
-		].asModel.fps_(20); // fps same as in LNX_Studio:initUGens
+			}
+		].asModel;
 
 		// network master voulme and mute controls
 		models[\networkMaterVolume] = [
@@ -84,7 +84,7 @@
 		// stop
 		models[\stop]=[\switch, midiControl, 4, "Stop", {|me,val| this.guiStop}].asModel
 			.automationActive_(false);
-					
+
 		// clock fowards
 		models[\fowards]=[\switch, midiControl, -2, "Forwards", {
 			 this.guiJumpTo((beat+(MVC_Automation.barLength*6)).clip(0,inf)); }].asModel
@@ -93,17 +93,17 @@
 		// clock rewind
 		models[\rewind]=[\switch, midiControl, -3, "Rewind", {
 			 this.guiJumpTo((beat-(MVC_Automation.barLength*6)).clip(0,inf)); }].asModel
-			.automationActive_(false);		
+			.automationActive_(false);
 
 		// record
 		models[\record]=[\switch, midiControl, 2, "Record", (strings_:["Rec","Stop"]),
 			{|me,val|
-				
-				
+
+
 		if (server.serverRunning) {
 			if (me.value == 1) {
 				if (batchOn.not) {
-					path = server.prepareForRecord(	
+					path = server.prepareForRecord(
 						"~/Desktop".standardizePath +/+
 						(this.name) +
 						(Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2)) ++
@@ -113,11 +113,11 @@
 				}{
 					var dir = LNX_BufferProxy.userPath +/+ "BATCH" +/+
 								(this.name) ++"_bin" + batchFolder;
-					
+
 					lastBatchFolder = dir;
-					
+
 					if (dir.pathExists(false).not) { dir.makeDir };
-					path = server.prepareForRecord(	
+					path = server.prepareForRecord(
 						dir +/+
 						(this.name) + (("00"++batch).keep(-3)) ++
 						"." ++ (server.recHeaderFormat)
@@ -125,8 +125,8 @@
 					batch = batch +1;
 					{server.record}.defer(0.15);
 				};
-				
-				
+
+
 			}{
 				server.stopRecording;
 			};
@@ -134,8 +134,8 @@
 			"The server must be booted to record it".postln;
 			me.value_(0);
 		};
-			
-			
+
+
 			}].asModel
 			.automationActive_(false);
 
@@ -179,7 +179,7 @@
 				this.setPVP(\preAmp,val,nil,send);
 				this.setPreAmp;
 			}].asModel;
-	
+
 		// set range of volume
 		server.volume.setVolumeRange(-inf, 0);
 
@@ -296,7 +296,7 @@
 				transmitInstChange=false; // stop this from going over the net
 				insts.do{|i| if (i.isVisible) {anyVisable=true} };
 				if (anyVisable) {
-					insts.do{|i| i.closeWindow.closeEQ } 
+					insts.do{|i| i.closeWindow.closeEQ }
 				}{
 					insts.do(_.openWindow)
 				};
@@ -310,7 +310,7 @@
 			// is user listening to the group song
 			models[\isListening]=[1,\switch, midiControl, -1, "Listen to song",
 				{|me,val| network.isListening_(val.isTrue)}].asModel.automationActive_(false);
-				
+
 			// automation playing back
 			models[\autoOn]=[1,\switch, midiControl, 14, "Automation",
 				{|me,val,latency,send=true,toggle|
@@ -320,13 +320,13 @@
 						this.netSetAuto(val);
 					};
 				}].asModel.automationActive_(false);
-			
+
 			// automation recording
 			models[\autoRecord]=[0,\switch, midiControl, 15, "Auto Record",
 				{|me,val|
 					MVC_Model.isRecording_(val.isTrue);
 				}].asModel.automationActive_(false);
-			
+
 			// ***** midiControls >=16 used in PresetsOfPresets *******
 			LNX_POP.initModels(models, midiControl);
 
@@ -334,10 +334,10 @@
 			alwaysOnTop = ("alwaysOnTop".loadPref ?? [false])[0].isTrue;
 
 	}
-	
+
 	// group sync a command
 	groupCmdSync{|method...args| api.groupCmdSync(method, *args) }
-	
+
 	// set auto On/off
 	netSetAuto{|value|
 		value = value.asInt;
@@ -345,7 +345,7 @@
 		if (value.isFalse) { models[\autoRecord].lazyValueAction_(0)};
 		models[\autoOn].lazyValue_(value,false);
 	}
-	
+
 	// set model from user side
 	setPVP{|model,val,latency,send=true|
 		if (send) {
@@ -625,7 +625,7 @@
 		var window=this.mixerWindow.view;
 
 		var scrollView;
-		
+
 		var gui=IdentityDictionary[];
 
 		gui[\textTheme] = (
@@ -635,7 +635,7 @@
 			\font_    : Font("Helvetica", 12),
 			\colors_  : (\string: Color.black),
 		);
-		
+
 		gui[\sliderTheme] = (
 			\orientation_ : \horizontal,
 			\colors_      : (
@@ -645,7 +645,7 @@
 				\numberUp   : Color.black
 			)
 		);
-		
+
 		gui[\buttonTheme] = (
 			orientation_:\horizontal,
 			rounded_:	true,
@@ -677,7 +677,7 @@
 				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black);
-				
+
 
 			// midi preset controller in
 			LNX_POP.midi.createInGUIA (scrollView, (170-25)@(222-2), false, false);
@@ -688,11 +688,11 @@
 				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black);
-			
+
 			// midi preset controller OUT
 			LNX_POP.midi.createOutGUIA (scrollView, (170)@(242), false);
 			LNX_POP.midi.createOutGUIB (scrollView, (330)@(242), false);
-			LNX_POP.midi.portOutGUI	
+			LNX_POP.midi.portOutGUI
 				.label_("Out")
 				.orientation_(\horiz)
 				.labelShadow_(false)
@@ -731,7 +731,7 @@
 				.controlSpec_([0.05,1,\linear,0.001])
 				.value_(latency)
 				.action_{|me| this.latency_(me.value) };
-				
+
 			// blocksize
 			MVC_PopUpMenu3(models[\blockSize],scrollView,Rect(170,85,75,17),
 				( \font_		 : Font("Arial", 10),
@@ -739,7 +739,7 @@
 				  \orientation_: \horiz,
 				  \colors_     : (\background : Color.ndcMenuBG, \label : Color.black ))
 			);
-			
+
 
 
 			// network networkCntKeyboard
@@ -751,7 +751,7 @@
 				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black);
-				
+
 			// network master volume changes
 			MVC_OnOffView(models[\networkMaterVolume],scrollView,Rect(170, 328, 70, 19),
 				"Network", ( \font_		: Font("Helvetica", 11),
@@ -761,7 +761,7 @@
 				.orientation_(\horiz)
 				.labelShadow_(false)
 				.color_(\label,Color.black);
-						 					   
+
 			// moog sub 37 is visible
 			MVC_OnOffView(scrollView,Rect(311, 299, 72, 19), "Sub 37",
 								( \font_		: Font("Helvetica", 11),
@@ -776,7 +776,7 @@
 					LNX_MoogSub37.isVisiblePref_(me.value.isTrue).saveIsVisiblePref;
 					this.recreateLibraryGUI;
 				};
-				
+
 			// korg volva is visible
 			MVC_OnOffView(scrollView,Rect(311, 328, 72, 19), "Volca",
 								( \font_		: Font("Helvetica", 11),
@@ -791,8 +791,8 @@
 					LNX_VolcaBeats.isVisiblePref_(me.value.isTrue).saveIsVisiblePref;
 					this.recreateLibraryGUI;
 				};
-						 					   
-				
+
+
 			// roland is visible
 			MVC_OnOffView(scrollView,Rect(311, 357, 72, 19), "JP-08",
 								( \font_		: Font("Helvetica", 11),
@@ -807,7 +807,7 @@
 					LNX_RolandJP08.isVisiblePref_(me.value.isTrue).saveIsVisiblePref;
 					this.recreateLibraryGUI;
 				};
-				
+
 			// midi sync latency
 			MVC_SmoothSlider(scrollView, Rect(170, 139,150, 16),gui[\sliderTheme])
 				.numberFunc_(\float3Sign)
@@ -822,8 +822,8 @@
 					LNX_MIDIPatch.midiSyncLatency_(midiSyncLatency);
 					[midiSyncLatency].savePref("MIDI Sync Latency");
 				};
-				
-				
+
+
 			// doubleClickLearn
 			MVC_OnOffView(scrollView,Rect(170, 357, 70, 19), "On",
 								( \font_		: Font("Helvetica", 11),
@@ -837,8 +837,8 @@
 				.action_{|me|
 					MVC_View.doubleClickLearn_(me.value.isTrue);
 				};
-				
-				
+
+
 			// internal midi buses
 			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 386, 70, 17))
 				.items_(["None","1 Bus","2 Buses","3 Buses"
@@ -856,7 +856,7 @@
 				}
 				.value_(noInternalBuses)
 				.font_(Font("Arial", 10));
-			
+
 			// MacOS MIDI Fix
 			MVC_OnOffView(scrollView,Rect(311, 386, 72, 19), "MIDI Fix",
 								( \font_		: Font("Helvetica", 11),
@@ -870,19 +870,19 @@
 				.action_{|me|
 					[me.value.isTrue].savePref("midiBugFix");
 				};
-					
+
 			// scan for new midi equipment
 			MVC_FlatButton(scrollView,Rect(240 ,415, 70, 20),"Scan MIDI",gui[\buttonTheme])
 				.canFocus_(false)
 				.action_{ LNX_MIDIPatch.refreshPorts };
-				
-				
+
+
 			// Ok
 			MVC_FlatButton(scrollView,Rect(332, 415, 50, 20),"Ok",gui[\buttonTheme])
 				.canFocus_(true)
 				.color_(\up,Color.white)
 				.action_{	 midiWin.close };
-						 					   
+
 		}{
 			midiWin.front;
 		}

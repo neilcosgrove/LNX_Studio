@@ -13,10 +13,10 @@ LNX_NetExample : LNX_InstrumentTemplate {
 
 	*isVisible{^false}
 
-	header { 
+	header {
 		// define your document header details
 		instrumentHeaderType="SC NetExample Doc";
-		version="v1.3";		
+		version="v1.3";
 	}
 
 	// the models
@@ -27,32 +27,29 @@ LNX_NetExample : LNX_InstrumentTemplate {
 			[0, \switch, (\strings_:"S"), midiControl, 0, "Solo",
 				{|me,val,latency,send,toggle| this.solo(val,latency,send,toggle) },
 				\action2_ -> {|me| this.soloAlt(me.value) }],
-			
+
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
 				{|me,val,latency,send,toggle| this.onOff(val,latency,send,toggle) },
 				\action2_ -> {|me| this.onOffAlt(me.value) }],
-			
+
 			// 2. ND
 			[ [0,1,\lin,0.01,0] , midiControl, 2, "ND", (\label_:"ND", \numberFunc_:'float2'),
 				{|me,val,latency,send| this.setP(2,val,latency,send) }],
-				
+
 			// 3. GD
 			[ [0,1,\lin,0.01,0] , midiControl, 3, "GD", (\label_:"GD", \numberFunc_:'float2'),
 				{|me,val,latency,send| this.setPGD(3,val,latency,send) }],
-				
+
 			// 4. OD
 			[ [0,1,\lin,0.01,0] , midiControl, 4, "OD", (\label_:"OD", \numberFunc_:'float2'),
 				{|me,val,latency,send| this.setPOD(4,val,latency,send) }],
-				
+
 			// 5. VP
 			[ [0,1,\lin,0.01,0] , midiControl, 5, "VP", (\label_:"VP", \numberFunc_:'float2'),
 				{|me,val,latency,send| this.setPVP(5,val,latency,send) }]
-		
+
 		].generateAllModels;
-
-		models.do(_.fps_(1000)); // to highlight messages going missing in test
-
 
 		// list all parameters you want exluded from a preset change
 		presetExclusion=[0,1];
@@ -62,17 +59,17 @@ LNX_NetExample : LNX_InstrumentTemplate {
 	}
 
 	// GUI
-	
+
 	*thisWidth  {^(210*4)+10}
 	*thisHeight {^290}
-	
-	createWindow{|bounds|	
-		this.createTemplateWindow(bounds,Color(0.15,0.125,0.1,0.5)); 
+
+	createWindow{|bounds|
+		this.createTemplateWindow(bounds,Color(0.15,0.125,0.1,0.5));
 	}
 
 	// create all the GUI widgets while attaching them to models
 	createWidgets{
-	
+
 		gui[\knob2Theme]=(	\labelFont_   : Font("Helvetica",40),
 						\numberFont_	: Font("Helvetica",40),
 						\numberWidth_ : 0,
@@ -80,7 +77,7 @@ LNX_NetExample : LNX_InstrumentTemplate {
 									   \numberDown : Color(1,0.5,0)/4),
 						\resoultion_	: 1.5,
 						\penWidth_	: 20);
-	
+
 		// 2.ND
 		MVC_MyKnob(models[2],window,Rect(15+(210*0),50,190,190),gui[\knob2Theme]);
 		// 3.GD

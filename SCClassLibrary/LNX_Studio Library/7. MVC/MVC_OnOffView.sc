@@ -37,8 +37,9 @@ MVC_OnOffFlatView : MVC_OnOffView {
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
-				
+
 				Pen.use{
 					Pen.smoothing_(false);
 					Color.black.set;
@@ -52,23 +53,23 @@ MVC_OnOffFlatView : MVC_OnOffView {
 						colors[\midiLearn].set;
 					};
 					Pen.fillRect(Rect(1,1,w-2,h-2));
-				
+
 					if (down) {
 						Color(0,0,0,0.55).set;
 						Pen.fillRect(Rect(1,1,w-3,1));
 						Pen.fillRect(Rect(1,1,1,h-3));
-						
+
 						Color(1,1,1,0.15).set;
 						Pen.fillRect(Rect(w-2,2,1,h-3));
 						Pen.fillRect(Rect(2,h-2,w-3,1));
-						
+
 						Color(0,0,0,0.13).setFill;
 						Pen.moveTo(2@2);
 						Pen.lineTo((w-3)@2);
 						Pen.lineTo(2@(h-3));
 						Pen.lineTo(2@2);
 						Pen.fill;
-						
+
 						if (darkerWhenPressed) {
 							if (value==1) {
 								Pen.fillColor_(colors[\on]/1.5)
@@ -80,9 +81,9 @@ MVC_OnOffFlatView : MVC_OnOffView {
 								Pen.fillColor_(colors[\on])
 							}{
 								Pen.fillColor_(colors[\off])
-							};		
+							};
 						};
-						
+
 					}{
 						Color(1,1,1,0.2).set;
 						Pen.fillRect(Rect(1,1,w-3,1));
@@ -90,22 +91,22 @@ MVC_OnOffFlatView : MVC_OnOffView {
 						Color(0,0,0,0.45).set;
 						Pen.fillRect(Rect(w-2,2,1,h-3));
 						Pen.fillRect(Rect(2,h-2,w-3,1));
-						
+
 						Color(1,1,1,0.065).setFill;
 						Pen.moveTo(2@2);
 						Pen.lineTo((w-3)@2);
 						Pen.lineTo(2@(h-3));
 						Pen.lineTo(2@2);
 						Pen.fill;
-						
+
 						if (value==1) {
 							Pen.fillColor_(colors[\on]*flashState)
 						}{
 							Pen.fillColor_(colors[\off]*flashState)
 						};
-						
+
 					};
-					
+
 					case
 						{mode==nil}{
 							Pen.smoothing_(true);
@@ -114,7 +115,7 @@ MVC_OnOffFlatView : MVC_OnOffView {
 							}{
 								Pen.font_(font);
 							};
-								
+
 							if (value==1) {
 								Pen.stringCenteredIn(strings@@1,
 									Rect(down.if(1,0),down.if(1,0),w,h));
@@ -124,20 +125,20 @@ MVC_OnOffFlatView : MVC_OnOffView {
 							};
 						}{
 							Pen.smoothing_(true);
-							if (value>=0.5) {	
+							if (value>=0.5) {
 							DrawIcon.symbolArgs((permanentStrings?strings)|@|1,
 								Rect(down.if(1,0),down.if(1,0),w-1,h).insetBy(insetBy));
 							}{
 							DrawIcon.symbolArgs((permanentStrings?strings)|@|0,
 								Rect(down.if(1,0),down.if(1,0),w-1,h).insetBy(insetBy));
 							};
-						}			
+						}
 				}; // end.pen
 
-		}	
-	}	
-	
-	
+		}
+	}
+
+
 }
 
 
@@ -147,7 +148,7 @@ MVC_OnOffView : MVC_View {
 	var <mode = nil;  // nil = normal, 'play' = play button, 'stop' = stop button, 'icon' < strings
 	var <>mouseMode = 'switch'; // nil = default 'switch', 'button', 'tap', 'multi'
 	var <down=false;
-	var <>permanentStrings; // used primarily in studio_inst onOff button to stop its string changing 
+	var <>permanentStrings; // used primarily in studio_inst onOff button to stop its string changing
 	var <>rounded=false,  <>insetBy = -2, <>hAdjust=0;
 	var <>onValue = 1;
 	var flashState = 1, flashTask, lastFlashTime, <>flashTime = 0.33, <>flashDuration = 1.65;
@@ -155,7 +156,7 @@ MVC_OnOffView : MVC_View {
 	var <>darkerWhenPressed=true;
 
 	flash{
-		if (flashTask.isNil) {	
+		if (flashTask.isNil) {
 			flashState = 1;
 			lastFlashTime = AppClock.now;
 			flashTask = AppClock.sched(0,{
@@ -173,7 +174,7 @@ MVC_OnOffView : MVC_View {
 				}
 			}).play;
 		}{
-			lastFlashTime = AppClock.now;	
+			lastFlashTime = AppClock.now;
 		};
 	}
 
@@ -182,38 +183,39 @@ MVC_OnOffView : MVC_View {
 		colors=colors++(
 			'background'		: Color.black,
 			'on'				: Color.ndcOnOffON,
-			'off'			: Color.ndcOnOffOFF,
+			'off'				: Color.ndcOnOffOFF,
 			'onDisabled'		: Color.ndcOnOffONUen,
 			'offDisabled'		: Color.ndcOnOffOFFUen,
 			'string'			: Color.ndcOnOffText,
 			'stringDisabled'	: Color.ndcOnOffTextUnen,
-			'icon'			: Color.black,
+			'icon'				: Color.black,
 			'iconOff'			: Color.black
 		);
 	}
-	
+
 	// make the view
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					var col;
-					
+
 					if (midiLearn) {
 						col=colors[\midiLearn];
 					}{
 						if (enabled) {
 							if ((mode==='play')or:{mode==='stop'}) {
-								if (value>=0.5) { col=(colors[\on]/3) }{ col=colors[\off] } 
+								if (value>=0.5) { col=(colors[\on]/3) }{ col=colors[\off] }
 							}{
 								col=colors[(value>=0.5).if(\on,\off)];
 							};
 						}{
 							col=colors[(value>=0.5).if(\onDisabled,\offDisabled)];
 						};
-					};	
-				
+					};
+
 					if (rounded) {
 						colors[\background].set;
 						Pen.roundedRect( Rect(1,1,w- 2,h- 2),5 );
@@ -228,7 +230,7 @@ MVC_OnOffView : MVC_View {
 																			Color(0,0,0,0.4).set;
 							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
 							Pen.stroke;
-							
+
 							Color(1,1,1,0.2).set;
 							Pen.roundedRect( Rect(1,1,w-3,h-3),5 );
 							Pen.stroke;
@@ -236,59 +238,59 @@ MVC_OnOffView : MVC_View {
 							Pen.smoothing_(true);
 							Color(1,1,1,0.4).set;
 							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
-							Pen.stroke;	
+							Pen.stroke;
 						};
 						Pen.width_(1.5);
 						Pen.smoothing_(true);
 						colors[\background].set;
 						Pen.roundedRect( Rect(1,1,w-2,h-2),5 );
-						Pen.stroke;	
-					}{	
+						Pen.stroke;
+					}{
 						// flat
 						Pen.smoothing_(false);
-						
+
 						if ((value>0.5)and:{colors[\backgroundOn].notNil}) {
 							colors[\backgroundOn].set;
 						}{
 							colors[\background].set;
 						};
-						
+
 						Pen.fillRect(Rect(0,0,w,h));
-						
+
 						(col*(flashState*0.5+0.5)).set;
-						
-						
-					
+
+
+
 						// draw border
 						if (colors[\border].notNil) {
-							
+
 							Pen.fillRect(Rect(0,0+hAdjust,w,h-hAdjust));
-							
+
 							colors[\border].set;
 							Pen.strokeRect(Rect(0,1,w-1,h-1));
 						}{
-							
+
 							Pen.fillRect(Rect(1,1+hAdjust,w- 2,h- 2-hAdjust));
 						};
-					
-						
+
+
 						if (colors[\innerBorder].notNil) {
 							colors[\innerBorder].set;
 							Pen.strokeRect(Rect(1,2,w-3,h-3));
 						};
 
 					};
-					
+
 					case
 						{mode===nil}{
 							Pen.font_(font);
 							Pen.fillColor_(colors[enabled.if(\string,\stringDisabled)]);
-							Pen.smoothing_(true);	
+							Pen.smoothing_(true);
 							if (permanentStrings.isNil) {
 								Pen.stringCenteredIn(((
-								
+
 									(strings.size!=0).if(strings,["Off","On"])
-									
+
 									)|@|(
 										value.round.asInt)).asString,
 									Rect(0,0,w,h));
@@ -334,28 +336,28 @@ MVC_OnOffView : MVC_View {
 							Pen.fill;
 						}
 						{mode==='icon'}{
-							
+
 							Pen.smoothing_(true);
-							
+
 							if (colors[\iconBackground].notNil) {
 								Pen.fillColor_(colors[\iconBackground]);
-																				if (value>=0.5) {	
+																				if (value>=0.5) {
 								DrawIcon.symbolArgs((permanentStrings?strings)|@|1,
 									Rect(0,0,w,h).insetBy(insetBy-1.75));
 								}{
 								DrawIcon.symbolArgs((permanentStrings?strings)|@|0,
 									Rect(0,0,w,h).insetBy(insetBy-1.75));
 								};
-								
+
 							};
-							
+
 							if ((iconOffColor)and:{value<0.5}) {
 								Pen.fillColor_(colors[\iconOff]);
 							}{
 								Pen.fillColor_(colors[\icon]);
 							};
-							
-							if (value>=0.5) {	
+
+							if (value>=0.5) {
 							DrawIcon.symbolArgs((permanentStrings?strings)|@|1,
 								Rect(0,0,w,h).insetBy(insetBy));
 							}{
@@ -363,13 +365,13 @@ MVC_OnOffView : MVC_View {
 								Rect(0,0,w,h).insetBy(insetBy));
 							};
 						}
-							
+
 				}; // end.pen
-			};		
+			};
 	}
-	
+
 	addControls{
-		
+
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			if (modifiers==524576) { buttonNumber=1 };
@@ -405,11 +407,11 @@ MVC_OnOffView : MVC_View {
 				};
 			}
 		};
-		
+
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
 			var inBounds=(xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1};
-			
+
 			if (editMode||viewEditMode) {
 				this.moveBy(x-startX,y-startY,buttonPressed)
 			}{
@@ -432,27 +434,27 @@ MVC_OnOffView : MVC_View {
 				//};
 			}
 		};
-		
+
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
 			if (editMode.not) {
 				if (mouseMode==\tap) {
 					value=0;
 					view.refresh;
-				}{	
+				}{
 					if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}
 									and:{evaluateAction}and:{editMode.not}) {
 						if (mouseMode==\button) {
 							value=0;
 							this.viewDoValueAction_(0,nil,true,false);
 						}{
-							
+
 							if (mouseMode==\multi) {
-								
+
 																				value=(value.asInt+1).wrap(0,strings.size-1);
 								this.viewDoValueAction_(value,nil,true,false);
 							}{
-							
+
 								if (buttonPressed==0) {
 									this.viewValueAction_((value>=0.5).if(0,onValue),nil,true,false);
 								}{
@@ -461,12 +463,12 @@ MVC_OnOffView : MVC_View {
 											(value>=0.5).if(0,onValue),nil,true,false);
 									}
 								};
-								
+
 							};
 						}
 					};
 
-					
+
 				}
 			};
 			if (down) {
@@ -474,14 +476,14 @@ MVC_OnOffView : MVC_View {
 				this.refresh;
 			};
 		};
-		
+
 	}
 
 	mode_{|symbol|
 		mode=symbol;
 		this.refresh
 	}
-	
+
 	down_{|bool|
 		down=bool;
 		if (view.notClosed) {view.refresh}

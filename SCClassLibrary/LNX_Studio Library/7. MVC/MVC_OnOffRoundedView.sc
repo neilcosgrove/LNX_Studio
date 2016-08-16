@@ -6,7 +6,7 @@ MVC_OnOffRoundedView : MVC_View {
 	var <mode = nil;  // nil = normal, 'play' = play button, 'stop' = stop button, 'icon' < strings
 	var <>mouseMode = 'switch'; // nil = default 'switch', 'button', 'tap'
 	var <down=false;
-	var <>permanentStrings; // used primarily in studio_inst onOff button to stop its string changing 
+	var <>permanentStrings; // used primarily in studio_inst onOff button to stop its string changing
 	var <>rounded=true;
 
 	// set your default colours
@@ -21,29 +21,30 @@ MVC_OnOffRoundedView : MVC_View {
 			'stringDisabled'	: Color.ndcOnOffTextUnen
 		);
 	}
-	
+
 	// make the view
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					var col;
-					
+
 					if (midiLearn) {
 						col=colors[\midiLearn];
 					}{
 						if (enabled) {
 							if ((mode==='play')or:{mode==='stop'}) {
-								if (value>=0.5) { col=(colors[\on]/3) }{ col=colors[\off] } 
+								if (value>=0.5) { col=(colors[\on]/3) }{ col=colors[\off] }
 							}{
 								col=colors[(value>=0.5).if(\on,\off)];
 							};
 						}{
 							col=colors[(value>=0.5).if(\onDisabled,\offDisabled)];
 						};
-					};	
-				
+					};
+
 					if (rounded) {
 						colors[\background].set;
 						Pen.roundedRect( Rect(1,1,w- 2,h- 2),5 );
@@ -58,7 +59,7 @@ MVC_OnOffRoundedView : MVC_View {
 																			Color(0,0,0,0.4).set;
 							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
 							Pen.stroke;
-							
+
 							Color(1,1,1,0.2).set;
 							Pen.roundedRect( Rect(1,1,w-3,h-3),5 );
 							Pen.stroke;
@@ -66,14 +67,14 @@ MVC_OnOffRoundedView : MVC_View {
 							Pen.smoothing_(true);
 							Color(1,1,1,0.4).set;
 							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
-							Pen.stroke;	
+							Pen.stroke;
 						};
 						Pen.width_(1.5);
 						Pen.smoothing_(true);
 						colors[\background].set;
 						Pen.roundedRect( Rect(1,1,w-2,h-2),5 );
-						Pen.stroke;	
-					}{	
+						Pen.stroke;
+					}{
 						// flat
 						Pen.smoothing_(false);
 						colors[\background].set;
@@ -81,17 +82,17 @@ MVC_OnOffRoundedView : MVC_View {
 						col.set;
 						Pen.fillRect(Rect(1,1,w- 2,h- 2));
 					};
-					
+
 					case
 						{mode===nil}{
 							Pen.font_(font);
 							Pen.fillColor_(colors[enabled.if(\string,\stringDisabled)]);
-							Pen.smoothing_(true);	
+							Pen.smoothing_(true);
 							if (permanentStrings.isNil) {
 								Pen.stringCenteredIn(((
-								
+
 									(strings.size!=0).if(strings,["Off","On"])
-									
+
 									)|@|(
 										value.round.asInt)).asString,
 									Rect(0,0,w,h));
@@ -151,13 +152,13 @@ MVC_OnOffRoundedView : MVC_View {
 								DrawIcon.symbolArgs(strings|@|0, Rect(0,0,w,h).insetBy(0,0));
 							};
 						}
-							
+
 				}; // end.pen
-			};		
+			};
 	}
-	
+
 	addControls{
-		
+
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			if (modifiers==524576) { buttonNumber=1 };
@@ -188,11 +189,11 @@ MVC_OnOffRoundedView : MVC_View {
 				};
 			}
 		};
-		
+
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
 			var inBounds=(xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1};
-			
+
 			if (editMode||viewEditMode) {
 				this.moveBy(x-startX,y-startY,buttonPressed)
 			}{
@@ -215,14 +216,14 @@ MVC_OnOffRoundedView : MVC_View {
 				};
 			}
 		};
-		
+
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
 			if (editMode.not) {
 				if (mouseMode==\tap) {
 					value=0;
 					view.refresh;
-				}{	
+				}{
 					if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}
 									and:{evaluateAction}and:{editMode.not}) {
 						if (mouseMode==\button) {
@@ -243,11 +244,11 @@ MVC_OnOffRoundedView : MVC_View {
 						down=false;
 						this.refresh;
 					};
-					
+
 				}
 			}
 		};
-		
+
 	}
 
 	mode_{|symbol|

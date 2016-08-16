@@ -16,7 +16,7 @@ MVC_ListView : MVC_View {
 		canFocus=true;
 		items = items ? [];
 	}
-	
+
 	items_{|array|
 		items=array;
 		if (view.notClosed) {
@@ -24,14 +24,14 @@ MVC_ListView : MVC_View {
 			this.autoSize;
 		};
 	}
-	
+
 	itemsMinSize_{|array|
 		items=array;
 		if (view.notClosed) { view.items_(items) };
 		this.minSize; // fixes bounds bug
 		^this
 	}
-	
+
 	createView{
 		scrollView=ScrollView.new(window, rect)
 			.hasBorder_(true)
@@ -48,7 +48,7 @@ MVC_ListView : MVC_View {
 			.stringColor_(colors[\string])
 			.font_(font);
 	}
-	
+
 		// set the colour in the Dictionary
 	// need to do disable here
 	color_{|key,color|
@@ -56,12 +56,12 @@ MVC_ListView : MVC_View {
 		colors[key]=color;
 		if (key=='focus'      ) { {if (view.notClosed) { view.focusColor_(color) } }.defer };		if (key=='hilite'     ) { {if (view.notClosed) { view.hiliteColor_ (color) } }.defer };
 		if (key=='background' ) { {if (view.notClosed) { view.background_(color) } }.defer };
-		if (key=='string' ) { {if (view.notClosed) { view.stringColor_(color) } }.defer };		if (key=='selectedString' ) { {if (view.notClosed) { 
+		if (key=='string' ) { {if (view.notClosed) { view.stringColor_(color) } }.defer };		if (key=='selectedString' ) { {if (view.notClosed) {
 										view.selectedStringColor_(color) } }.defer };
-		
+
 		if (key=='label') { {labelGUI.do(_.refresh)}.defer };
 	}
-	
+
 
 	autoSize{
 		if (view.notClosed) {
@@ -72,12 +72,12 @@ MVC_ListView : MVC_View {
 	internalHeight{
 		^(items.size*fontHeight).clip(h-1,h+(items.size*fontHeight));
 	}
-	
+
 	minSize{
 		this.bounds_(Rect(0,0,w+2,h));
 	}
 
-	showItem{	
+	showItem{
 		if ((value*fontHeight)<(scrollView.visibleOrigin.y)) {
 			scrollView.visibleOrigin_(0@(value*fontHeight))
 		}{
@@ -86,7 +86,7 @@ MVC_ListView : MVC_View {
 			}
 		};
 	}
-		
+
 	canSee{
 		if (view.notClosed) {
 			if (items.size==0) {^true};
@@ -114,24 +114,24 @@ MVC_ListView : MVC_View {
 				startX=x;
 				startY=y;
 				scrollView.bounds.postln;
-			};	
+			};
 			if (buttonNumber==2) { this.toggleMIDIactive };
-			
+
 			if (clickCount==2) {
 				this.valueActions(\doubleClickAction, this);
 				if (model.notNil) { model.valueActions(\doubleClickAction,this) };
 			};
-			
+
 			if (clickCount==3) {
 				this.valueActions(\tripleClickAction, this);
 				if (model.notNil) { model.valueActions(\tripleClickAction,this) };
 			};
-			
+
 		};
 		view.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			if (editMode) { this.moveBy(x-startX,y-startY) };
 		};
-		
+
 		// @TODO new qt "key" codes
 		view.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 			var index;
@@ -142,7 +142,7 @@ MVC_ListView : MVC_View {
 				this.specialActions(\deleteKeyAction, this);
 				//if (model.notNil) { model.valueActions(\deleteKeyAction, this) };
 			};
-			
+
 			// space & return
 			if ((char == $ )||(char == $\n)||(char == $\r)) {
 				if ((SystemClock.now-lastEnterTime)<0.5) {
@@ -179,7 +179,7 @@ MVC_ListView : MVC_View {
 
 		}
 	}
-	
+
 	// move gui, label and number also quant to grid
 	moveBy{|x,y|
 		var l,t,nx,ny;
@@ -191,7 +191,7 @@ MVC_ListView : MVC_View {
 //			if (isSquare) {
 //				w=(lw+x).clip(0,inf).round(grid);
 //				h=(lh+y).clip(0,inf).round(grid);
-//				w=w.clip(0,h).clip(30,inf);	
+//				w=w.clip(0,h).clip(30,inf);
 //				h=h.clip(0,w).clip(60,inf);
 //			}{
 //				w=(lw+x).round(grid).clip(30,inf);
@@ -207,8 +207,8 @@ MVC_ListView : MVC_View {
 		};
 		this.adjustLabels;
 	}
-	
-	
+
+
 	// set the bounds
 	bounds_{|argRect|
 		rect=argRect;
@@ -221,8 +221,8 @@ MVC_ListView : MVC_View {
 			//view.bounds_(Rect(0,0,w,this.internalHeight));
 		}
 	}
-	
-	
+
+
 	// make the view cyan / magenta for midiLearn active
 	midiLearn_{|bool|
 		midiLearn=bool;
@@ -232,7 +232,7 @@ MVC_ListView : MVC_View {
 		};
 		labelGUI.do(_.refresh);
 	}
-	
+
 	// set the font
 	font_{|argFont|
 		font=argFont;
@@ -240,7 +240,7 @@ MVC_ListView : MVC_View {
 		if (view.notClosed) {
 			view.font_(font);
 			this.autoSize;
-		};	
+		};
 	}
 
 	// deactivate midi learn from this item
@@ -251,8 +251,8 @@ MVC_ListView : MVC_View {
 		};
 		labelGUI.do(_.refresh);
 	}
-		
-	// item is enabled	
+
+	// item is enabled
 	enabled_{|bool|
 		if (enabled!=bool) {
 			enabled=bool;
@@ -264,7 +264,7 @@ MVC_ListView : MVC_View {
 			}.defer;
 		}
 	}
-	
+
 	// normally called from model
 	value_{|val|
 		if (items.notNil) {
@@ -277,7 +277,7 @@ MVC_ListView : MVC_View {
 			this.refreshValue;
 		};
 	}
-	
+
 	// and action
 	valueAction_{|val|
 		if (controlSpec.notNil) { val=controlSpec.constrain(val) };
@@ -288,18 +288,19 @@ MVC_ListView : MVC_View {
 			if (model.notNil) {
 				model.valueAction_(val,nil,true,false);
 			}
-			
+
 		};
 	}
-	
+
 	// fresh the menu value
 	refreshValue{
 		if (view.notClosed) {
 			view.value_(value);
 			this.showItem;
+			MVC_LazyRefresh.incRefresh;
 		}
 	}
-	
+
 	// unlike SCView there is no refresh needed
 	refresh{ this.refreshValue }
 

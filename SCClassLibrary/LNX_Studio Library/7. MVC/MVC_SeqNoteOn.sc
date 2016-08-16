@@ -12,28 +12,29 @@ MVC_SeqNoteOn : MVC_View {
 			'onDisabled'	: Color.grey+0.1
 		);
 		isSquare=true;
-		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ] 
+		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ]
 		// colors=[Color.ndcOnOffON,Color.ndcOnOffOFF,Color.ndcOnOffText,
 		//		Color.ndcOnOffONUen,Color.ndcOnOffOFFUen,Color.ndcOnOffTextUnen];
-		
+
 	}
-	
+
 	// make the view
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					Pen.smoothing_(false);
 					colors[ enabled.if(\background,\disabled)].set;
 					Pen.fillRect(Rect(0,0,w,h));
-					
+
 					if (midiLearn) {
 						colors[\midiLearn].set;
 					}{
 						colors[ enabled.if(\border,\onDisabled)].set;
-					};	
-					Pen.fillRect(Rect(1,1,w- 2,h- 2));				
+					};
+					Pen.fillRect(Rect(1,1,w- 2,h- 2));
 					colors[ enabled.if(\background,\disabled)].set;
 					Pen.fillRect(Rect(2,2,w-4,h-4));
 
@@ -52,9 +53,9 @@ MVC_SeqNoteOn : MVC_View {
 						Pen.fillOval(Rect(5,5,w-10,h-10));
 					};
 				}; // end.pen
-			};		
+			};
 	}
-	
+
 	// add the controls
 	addControls{
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
@@ -78,8 +79,8 @@ MVC_SeqNoteOn : MVC_View {
 		};
 
 	}
-	
-	// set the colour in the Dictionary 
+
+	// set the colour in the Dictionary
 	color_{|key,color|
 		if (key=='slider') {key='on'};
 		if (colors.includesKey(key).not) {^this}; // drop out
@@ -87,7 +88,7 @@ MVC_SeqNoteOn : MVC_View {
 		if (key=='focus') {
 			{
 				if (view.notClosed) { view.focusColor_(color) }
-			}.defer;	
+			}.defer;
 		}{
 			this.refresh;
 		}

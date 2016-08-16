@@ -14,7 +14,7 @@ w.create;
 MVC_FlatSlider : MVC_View {
 
 	var <>seqItems, lastItem, <>zeroValue;
-	
+
 	var <>direction=\vertical, <>rounded=false, <>radius=3;
 
 	initView{
@@ -27,7 +27,7 @@ MVC_FlatSlider : MVC_View {
 		if (w>h) { direction=\horizontal }{ direction=\vertical };
 
 	}
-	
+
 	// set the bounds, account for direction
 	bounds_{|argRect|
 		rect=argRect;
@@ -39,11 +39,12 @@ MVC_FlatSlider : MVC_View {
 		if (view.notClosed) { view.bounds_(rect) };
 		this.adjustLabels;
 	}
-	
+
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				var val, r,c;
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					Pen.smoothing_(false);
@@ -53,55 +54,58 @@ MVC_FlatSlider : MVC_View {
 						colors[\midiLearn].set;
 					}{
 						(colors[enabled.if(\border,\disabled)]).set;
-					};	
+					};
 					Pen.strokeRect(Rect(1,2,w- 3,h- 3));
 					if (midiLearn) {
 						c=colors[\midiLearn];
 					}{
 						c=colors[enabled.if(\slider,\sliderDisabled)]
 					};
-					
+
 					if (controlSpec.notNil) {
 						val=controlSpec.unmap(value); // this will always give (0-1)
 					}{
 						val=value.clip(0,1);
 					};
-					
+
 					if ((zeroValue.notNil) and: {value<zeroValue}) {
 						c=colors[\belowZero];
-						val=1.neg/(h-6);	
+						val=1.neg/(h-6);
 					};
 					if (direction==\vertical) {
 						r=Rect(3,(h-6)*(1-val)+3,w-6,(h-6)*(val));
 					}{
 						r= Rect( 3,3,  (w-6)*(val), h-6);
-						
+
 					};
-					
+
 					if (rounded) {
 						Pen.smoothing_(true);
-						
+
 						Pen.color = c;
 						Pen.roundedRect(r,radius);
 						Pen.fill;
-						
+
 					}{
 						c.set;
 						Pen.fillRect(r);
 					};
-					
+
 				};
 			};
 	}
-	
+
 	addControls{
-		
+
+		view.mouseUpAction={ MVC_LazyRefresh.mouseUp };
+
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			var val, toggle = false;
+			MVC_LazyRefresh.mouseDown;
 			if (locked.not) {
 				if (modifiers==524576) { buttonNumber=1  };
-				
+
 				buttonPressed=buttonNumber;
 				mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 				if (modifiers.asBinaryDigits[4]==0) {  // if apple not pressed because of drag
@@ -118,19 +122,19 @@ MVC_FlatSlider : MVC_View {
 						if (modifiers==262401) {buttonNumber=2};
 						buttonPressed=buttonNumber;
 						if (buttonPressed==1) {
-							seqItems.do({|i,j|	
+							seqItems.do({|i,j|
 								if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) {
 									lastItem=j;  // draw a line !!!
 								}
 							});
 						};
-						
+
 						if (hasMIDIcontrol) {
 							if ((clickCount>1)&&doubleClickLearn){ toggle = true };
 							if (modifiers==262401) { toggle = true  };
 							if (buttonNumber>=1  ) { toggle = true  };
 						};
-								
+
 						if (toggle) {
 							this.toggleMIDIactive
 						}{
@@ -142,12 +146,12 @@ MVC_FlatSlider : MVC_View {
 							if (controlSpec.notNil) { val=controlSpec.map(val) };
 							this.viewValueAction_(val,nil,true,false);
 						};
-						
+
 					};
 				};
 			}
 		};
-		
+
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			var thisItem, lastValue, size, thisValue, val;
@@ -198,7 +202,7 @@ MVC_FlatSlider : MVC_View {
 							};
 						};
 						lastItem=thisItem;
-					}{	
+					}{
 						if (buttonPressed!=2) {
 							if (thisValue!=value) {
 								this.viewValueAction_(thisValue,nil,true,false)
@@ -209,5 +213,5 @@ MVC_FlatSlider : MVC_View {
 			};
 		}
 	}
-	
+
 }

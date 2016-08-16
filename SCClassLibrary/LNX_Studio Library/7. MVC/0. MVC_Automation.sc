@@ -72,8 +72,9 @@ MVC_Automation {
 	classvar <allAutomations, <allEvents, <>isPlaying=true;
 	classvar lastTime=0;
 	classvar <newRef=false, <refBeat, <refAbsTime, <refTime;
-	classvar <>gui, <models, <duration=1, <>fps=20, nextTime;
+	classvar <>gui, <models, <duration=1, <fps=20, nextTime;
 	classvar <zoom=1, <offset=0, <cx, <xc, mouseUp = true, selA, selB;
+	classvar lazyRefresh;
 
 	var <model, <events, <>startValue, <>overwrite=false, owLastTime;
 
@@ -89,6 +90,7 @@ MVC_Automation {
 		api = LNX_API.newPermanent(this, \auto, #[\netNew, \netGCOD, \netDeleteAll, \netEdit]);
 		interface = #[\test, \netAddEvent, \netRRM, \netFreeEvent2, \netAddEventMouse,
 					\netRemoveRangeMouse, \netDelete, \netEdit, \netDrawLine];
+		lazyRefresh = MVC_LazyRefresh().refreshFunc_{ gui[\graph].refresh };
 	}
 
 	*new {|model,startValue,send=true| ^super.new.init(model,startValue,send) }
@@ -1036,12 +1038,14 @@ MVC_Automation {
 						var x=cx.(selA*beatWidth)+1;
 						var w1=cx.((selB)*beatWidth)+1-x;
 						if (selA==selB) {
-							Pen.lineDash_(FloatArray[4,2]);
-							Color(0.8,0.8,1,0.4).set;
-							Pen.moveTo(x@1);
-							Pen.lineTo(x@(h-1));
-							Pen.stroke;
-							Pen.lineDash_(FloatArray[]);
+							Pen.use{
+								Pen.lineDash_(FloatArray[4,2]);
+								Color(0.8,0.8,1,0.4).set;
+								Pen.moveTo(x@1);
+								Pen.lineTo(x@(h-1));
+								Pen.stroke;
+								Pen.lineDash_(FloatArray[]);
+							}
 						}{
 							Pen.fillColor_(Color(0.6,0.6,1,0.2));
 							Pen.fillRect(Rect(x,1,w1,h-1));
@@ -1236,27 +1240,10 @@ MVC_Automation {
 		}
 	}
 
+	*fps_{|n| lazyRefresh.fps_(n) }
+
 	// frame rate, max time & source
-	*lazyRefreshGUI{
-		var now;
-		if ((gui.notNil) and:{gui[\window].notClosed}) {
-			now=SystemClock.seconds;
-			if ((now-lastTime)>(1/fps)) {
-				lastTime=now;
-				nextTime=nil;
-				{gui[\graph].refresh}.defer;
-			}{
-				if (nextTime.isNil) {
-					nextTime=lastTime+(1/fps);
-					{
-						gui[\graph].refresh;
-						nextTime=nil;
-					}.defer(nextTime-now);
-					lastTime=nextTime;
-				}
-			}
-		}
-	}
+	*lazyRefreshGUI{ lazyRefresh.lazyRefresh }
 
 	// network stuff /////////////////////////////////////////////////////////////////////////////
 

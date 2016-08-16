@@ -230,7 +230,7 @@
 			numberGUI = UserView.new(window,numberBounds.moveBy(0,numberOffset))
 				.drawFunc_{|me|
 					var active,col;
-
+					MVC_LazyRefresh.incRefresh;
 					if (verbose) { [this.class.asString, 'numberFunc' , label].postln };
 					if (showLabelBackground) {
 						Color.black.alpha_(0.2).set;
@@ -296,6 +296,7 @@
 	addNumberControls{
 		numberGUI.mouseDownAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
+			MVC_LazyRefresh.mouseDown;
 			startX=x;
 			startY=y;
 			if (editMode)			{view.bounds.postln };
@@ -332,6 +333,7 @@
 			};
 		}
 		.mouseUpAction_{
+			MVC_LazyRefresh.mouseUp;
 			numberHeld=false;
 			numberGUI.refresh;
 		}

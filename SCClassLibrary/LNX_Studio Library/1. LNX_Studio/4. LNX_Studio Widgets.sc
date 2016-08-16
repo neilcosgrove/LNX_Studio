@@ -66,7 +66,7 @@
 			.keyDownAction_{|me, char, modifiers, unicode, keycode|
 				//if (keycode==49) {this.togglePlay}; // space
 			}
-			.color_(\background,Color(4/77,2/103,0,65/77));
+			.color_(\background,Color(4/77,2/103,0)*2.5);
 	}
 
 	// flash the border of the mixer window

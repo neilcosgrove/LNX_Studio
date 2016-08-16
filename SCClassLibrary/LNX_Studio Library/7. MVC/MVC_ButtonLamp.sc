@@ -13,7 +13,7 @@ MVC_ButtonLamp : MVC_View {
 	var <down=false;
 
 	// set your defaults
-	initView{ 
+	initView{
 		colors=colors++(
 			'background'	: Color.black,
 			'down'		: Color.grey+0.1/3,
@@ -24,19 +24,19 @@ MVC_ButtonLamp : MVC_View {
 		);
 		font=Font("Helvetica-Bold",12);
 	}
-	
+
 	// make the view
 	createView{
 		view = UserView.new(window,rect)
 			.drawFunc={|me|
 				var w2,h2;
-				
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					Pen.smoothing_(false);
 					colors[\background].set;
 					Pen.fillRect(Rect(0,0,w,h));
-						
+
 					if (midiLearn) {
 							colors[\midiLearn].set;
 							Pen.fillRect(Rect(1,1,w- 2,h- 2));
@@ -68,17 +68,17 @@ MVC_ButtonLamp : MVC_View {
 						(colors[(value>0).if(\on,\off)]+0.5/1.7).set;
 					};
 					Pen.fillOval(Rect(5,5,w2-10,h2-10));
-					if (strings.size>0) {		
+					if (strings.size>0) {
 						Pen.font_(font);
 						Pen.fillColor_(colors[\string]);
 						Pen.stringLeftJustIn(strings[value.asInt.wrap(0,strings.size-1)],
 							Rect(w2,0,w-w2,h));
 					};
-					
+
 				}; // end.pen
-			};		
+			};
 	}
-	
+
 	// add the controls
 	addControls{
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
@@ -99,13 +99,13 @@ MVC_ButtonLamp : MVC_View {
 					};
 				}
 			};
-			
+
 		};
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
 			if (editMode) {
 				this.moveBy(x-startX,y-startY)
-			}{				
+			}{
 				if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}and:{evaluateAction}) {
 					if (down.not) {
 						down=true;

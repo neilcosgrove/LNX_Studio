@@ -19,7 +19,7 @@ MVC_DialogView : MVC_View {
 		dialog=[];
 
 	}
-	
+
 	// make the view
 	createView{
 		view=TextView.new(window,rect)
@@ -27,11 +27,11 @@ MVC_DialogView : MVC_View {
 			.editable_(false)
 			.font_ (font)
 			.background_(colors[\background])
-			.stringColor_(colors[\string]);		
+			.stringColor_(colors[\string]);
 	}
-	
+
 	addControls{ }
-	
+
 	// set the colour in the Dictionary
 	// need to do disable here
 	color_{|index,color|
@@ -39,7 +39,7 @@ MVC_DialogView : MVC_View {
 		if (index=='string'     ) { {if (view.notClosed) { view.stringColor_(color) } }.defer };
 		if (index=='background' ) { {if (view.notClosed) { view.background_(color)  } }.defer };
 	}
-	
+
 	dialog_{|d,flash=false|
 		var str="";
 		dialog=d;
@@ -53,6 +53,7 @@ MVC_DialogView : MVC_View {
 		string=str;
 		if (view.notClosed) {
 			view.string_(string);
+			MVC_LazyRefresh.incRefresh;
 			if (flash) {
 				if ((lastDisplayTime.isNil) or:{(SystemClock.seconds-lastDisplayTime)>20}) {
 					view.background_(colors[\string])
@@ -63,33 +64,33 @@ MVC_DialogView : MVC_View {
 			};
 		};
 	}
-	
+
 	clear{ this.dialog_([]) }
-	
+
 	addText{|t,flash=false|
-	
+
 		var stringList, toAdd, i, width, str;
-		
+
 		width=w-10;
-		
+
 		stringList=t.split($ ).collect({|i| i++" "});
 		if (stringList.size>0) {
 			stringList[stringList.size-1]=stringList.last.drop(-1);
 		};
-		
+
 		while ( { (stringList.size)>0  },{
-		
+
 			toAdd="";
-		
+
 			i = 0;
 			while ( { (i < (stringList.size)) && (toAdd.bounds(font).width<width) },{
 				toAdd=toAdd++stringList[i];
 				i = i + 1;
 				if (toAdd.bounds(font).width>=width) { i=i-1 };
 			});
-			
+
 			i=i.clip(0,stringList.size);
-			
+
 			if (i>0){
 				toAdd="";
 				i.do({|j|
@@ -104,11 +105,11 @@ MVC_DialogView : MVC_View {
 				stringList.removeAt(0);
 				dialog=dialog++[toAdd];
 			};
-		
+
 		});
-		
+
 		str="";
-		
+
 		lines.clip(0,dialog.size).do({|j|
 			if (j==0) {
 				str=str++dialog[dialog.size-  lines.clip(0,dialog.size) + j ];
@@ -116,9 +117,9 @@ MVC_DialogView : MVC_View {
 				str=str++"\r"++dialog[dialog.size-  lines.clip(0,dialog.size) + j ];
 			};
 		});
-		
+
 		string=str;
-		
+
 		if (view.notClosed) {
 			view.string_(string);
 			if (flash) {
@@ -128,10 +129,10 @@ MVC_DialogView : MVC_View {
 					{view.background_(colors[\background])
 						.stringColor_(colors[\string])}.defer(0.2);
 				};
-			}	
+			}
 		};
 
 		lastDisplayTime=SystemClock.seconds;
 	}
-	
+
 }

@@ -13,9 +13,9 @@ MVC_Slider : MVC_View {
 		);
 
 	}
-	
+
 	createView{
-		view=SCSlider.new(window,rect)
+		view=Slider.new(window,rect)
 			.background_(colors[enabled.if(\background,\backgroundDisabled)])
 			.knobColor_(colors[midiLearn.if(\midiLearn,enabled.if(\knob,\knobDisabled))])
 			.thumbSize_(thumbSize);
@@ -26,7 +26,7 @@ MVC_Slider : MVC_View {
 			view.value_(value.clip(0,1));
 		}
 	}
-	
+
 	// set the bounds, account for direction
 	bounds_{|argRect|
 		rect=argRect;
@@ -38,10 +38,10 @@ MVC_Slider : MVC_View {
 		if (view.notClosed) { view.bounds_(rect) };
 		this.adjustLabels;
 	}
-	
+
 	addControls{
 		view.action_{|me|
-			if ((editMode||viewEditMode).not) { 
+			if ((editMode||viewEditMode).not) {
 				if (controlSpec.notNil) {
 					this.viewValueAction_(controlSpec.map(me.value),nil,true,false);
 				}{
@@ -51,6 +51,7 @@ MVC_Slider : MVC_View {
 		};
 		view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
+			MVC_LazyRefresh.mouseDown;
 			if (modifiers==524576) { buttonNumber=1  };
 			if (modifiers==262401) { clickCount=2  };
 			buttonPressed=buttonNumber;
@@ -63,7 +64,7 @@ MVC_Slider : MVC_View {
 				if (verbose) {view.bounds.postln};
 			}{
 				var toggle = false;
-	
+
 				if (hasMIDIcontrol) {
 					if ((clickCount>1)&&doubleClickLearn){ toggle = true };
 					if (modifiers==262401) { toggle = true  };
@@ -74,13 +75,14 @@ MVC_Slider : MVC_View {
 		};
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			if (editMode||viewEditMode) { this.moveBy(x-startX,y-startY,buttonPressed) };
-		};	
-		
+		};
+
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
+			MVC_LazyRefresh.mouseUp;
 			if (editMode||viewEditMode) { {this.refreshValue}.defer(0.05) };
-		};		
+		};
 	}
-	
+
 	// make the view cyan / magenta for midiLearn active
 	midiLearn_{|bool|
 		midiLearn=bool;
@@ -100,8 +102,8 @@ MVC_Slider : MVC_View {
 		labelGUI.do(_.refresh);
 		this.refresh;
 	}
-		
-	// item is enabled	
+
+	// item is enabled
 	enabled_{|bool|
 		if (enabled!=bool) {
 			enabled=bool;
@@ -131,7 +133,7 @@ MVC_Slider : MVC_View {
 			if (view.notClosed) {view.step_(0)};
 		}
 	}
-	
+
 	// normally called from model
 	value_{|val|
 		if (controlSpec.notNil) { val=controlSpec.constrain(val) };
@@ -141,7 +143,7 @@ MVC_Slider : MVC_View {
 			this.refresh;
 		};
 	}
-	
+
 	// change the thumb size of the knob
 	thumbSize_{|size|
 		thumbSize=size;
@@ -149,7 +151,7 @@ MVC_Slider : MVC_View {
 			view.thumbSize_(size)
 		}
 	}
-	
+
 	// set the colour in the Dictionary
 	// need to do disable here
 	color_{|key,color|
@@ -159,7 +161,7 @@ MVC_Slider : MVC_View {
 		if (key=='background' ) { {if (view.notClosed) { view.background_(color) } }.defer };
 		if (key=='label') { {labelGUI.do(_.refresh)}.defer };
 	}
-	
+
 	// add a dict of colours, useful for colour themes
 	colors_{|dict|
 		dict.pairsDo{|key,color|
@@ -172,18 +174,20 @@ MVC_Slider : MVC_View {
 			}
 		};
 	}
-	
+
 	// fresh the Slider Value
 	refreshValue{
 		if (view.notClosed) {
 			if (controlSpec.notNil) {
 				view.value_(controlSpec.unmap(value));
+				MVC_LazyRefresh.incRefresh;
 			}{
 				view.value_(value);
+				MVC_LazyRefresh.incRefresh;
 			};
 		}
 	}
-	
+
 	// unlike SCView there is no refresh needed with SCSlider
 	// this is not true, valueAction_ calls this and so value does need updating. Changed!
 	refresh{

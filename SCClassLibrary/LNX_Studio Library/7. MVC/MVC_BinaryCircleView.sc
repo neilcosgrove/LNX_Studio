@@ -4,31 +4,33 @@
 MVC_BinaryCircleView : MVC_View {
 
 	var <>down = false;
-	
-	var <>permanentStrings; // used primarily in studio_inst onOff button to stop its string changing 
+
+	var <>permanentStrings; // used primarily in studio_inst onOff button to stop its string changing
 
 
 	// set your default colours
 	initView{
 		colors=colors++(
-			'background'		: Color.black,			
+			'background'		: Color.black,
 			'stringOn'		: Color.ndcOnOffText,
 			'stringOff'		: Color.ndcOnOffText,
 			'upOn'			: Color.ndcOnOffON,
 			'downOn'			: Color.ndcOnOffONUen,
 			'upOff'			: Color.ndcOnOffOFF,
 			'downOff'			: Color.ndcOnOffOFFUen
-			
+
 		);
 	}
-	
+
 	// make the view
 	createView{
 		view = UserView.new(window,rect)
 			.drawFunc={|me|
+				MVC_LazyRefresh.incRefresh;
+
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
-			
+
 				if (down.not) {
 					if (value==1) { (colors[\downOn]/4).set; }{ (colors[\downOff]/4).set };
 				}{
@@ -44,7 +46,7 @@ MVC_BinaryCircleView : MVC_View {
 					}{
 						if (value==1) { colors[\downOn].set; }{ colors[\downOff].set };
 					};
-				};	
+				};
 				Pen.fillOval(Rect(2-0.5,2-0.5,w- 4+1,h- 4+1));
 				Pen.font_(font);
 				Pen.fillColor_((value==1).if(colors[\stringOn],colors[\stringOff]));
@@ -55,11 +57,11 @@ MVC_BinaryCircleView : MVC_View {
 					Pen.stringCenteredIn((permanentStrings?strings)@@1,Rect(0,0,w,h));
 				};
 			}; // end.pen
-		};		
+		};
 	}
-	
+
 	addControls{
-		
+
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			if (editMode) {
@@ -68,7 +70,7 @@ MVC_BinaryCircleView : MVC_View {
 				startY=y;
 				view.bounds.postln;
 			};
-			
+
 			buttonPressed=buttonNumber;
 			evaluateAction=true;
 			if (modifiers==524576) { buttonPressed=1 };
@@ -80,7 +82,7 @@ MVC_BinaryCircleView : MVC_View {
 				me.refresh;
 			};
 		};
-		
+
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
 			if (editMode) { this.moveBy(x-startX,y-startY) };
@@ -95,9 +97,9 @@ MVC_BinaryCircleView : MVC_View {
 					me.refresh;
 				}
 			};
-				
+
 		};
-		
+
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
 			down=false;
@@ -111,7 +113,7 @@ MVC_BinaryCircleView : MVC_View {
 				};
 			};
 		};
-		
+
 	}
 
 

@@ -14,9 +14,9 @@ w.create;
 MVC_NumberBox : MVC_View {
 
 	var startVal, <>resoultion=1,  <align='center', <>visualRound=0, <>moveRound=nil;
-	
+
 	var <>rounded=true, <showBorder=true, <postfix="", <postfixFunc, <step;
-	
+
 	var <>mouseWorks = true;
 
 	showBorder_{|bool|
@@ -34,20 +34,20 @@ MVC_NumberBox : MVC_View {
 		canFocus=true;
 		showNumberBox=false;
 	}
-	
+
 	postfix_{|string|
 		postfix=string;
 		if (view.notClosed) { view.postfix_(postfix) };
 	}
-	
+
 	postfixFunc_{|func|
 		postfixFunc=func;
 		if (view.notClosed) { view.postfixFunc_(postfixFunc) };
 	}
-	
+
 	// make it
 	createView{
-		
+
 		if (rounded) {
 			view=AdjustedRoundNumberBox(window,rect)
 				.postfix_(postfix)
@@ -55,7 +55,7 @@ MVC_NumberBox : MVC_View {
 		}{
 			view=AdjustedSCNumberBox(window,rect);
 		};
-		
+
 		view.background_(colors[midiLearn.if(\midiLearn,
 						enabled.if(\background,\backgroundDisabled))])
 			.value_(value.round(visualRound))
@@ -65,13 +65,13 @@ MVC_NumberBox : MVC_View {
 			.focusColor_(colors[\focus])
 			.font_(font)
 			.showBorder_(showBorder);
-			
-		if (rounded) {	
+
+		if (rounded) {
 			view.align_(align);
 		}{
 			view.setProperty(\align,align);
 		};
-		
+
 		if (controlSpec.notNil) {
 			view.step_(
 				(controlSpec.step==0).if(
@@ -81,11 +81,11 @@ MVC_NumberBox : MVC_View {
 		}{
 			view.step_(1);
 		};
-		
+
 		if (step.notNil) { view.step_(step) }; // overrides controlSpec
-		
+
 	}
-	
+
 	// control it
 	addControls{
 		var val, val2;
@@ -97,11 +97,11 @@ MVC_NumberBox : MVC_View {
 		}
 		.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-			
-			if (modifiers==524576)	{buttonNumber = 1 }; 
+			MVC_LazyRefresh.mouseDown;
+			if (modifiers==524576)	{buttonNumber = 1 };
 			if (modifiers==262401)	{buttonNumber = 2 };
 			buttonPressed = buttonNumber;
-			
+
 			startX=x;
 			startY=y;
 			if (editMode||viewEditMode) {lw=lh=nil;
@@ -109,7 +109,7 @@ MVC_NumberBox : MVC_View {
 					view.bounds.postln
 				//}
 			};
-			if (mouseWorks) {		
+			if (mouseWorks) {
 				mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 				if (buttonNumber==2)	{this.toggleMIDIactive; };
 				if (buttonNumber==0) {
@@ -132,7 +132,7 @@ MVC_NumberBox : MVC_View {
 		}
 		.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			var val,spenRange;
-			
+
 			if (editMode||viewEditMode) {
 				this.moveBy(x-startX,y-startY,buttonPressed)
 			}{
@@ -140,7 +140,7 @@ MVC_NumberBox : MVC_View {
 					val=(startVal+((startY-y)/200/resoultion/(buttonPressed*6+1))).clip(0,1);
 					if (controlSpec.notNil) { val=controlSpec.map(val) };
 					if (moveRound.notNil) { val=val.round(moveRound) };
-					if (val!=value) { 
+					if (val!=value) {
 						this.viewValueAction_(val,nil,true,false);
 						me.value_(val.round(visualRound));
 					};
@@ -151,35 +151,36 @@ MVC_NumberBox : MVC_View {
 			};
 		}
 		.mouseUpAction_{|me, x, y, modifiers, buttonNumber, clickCount|
+			MVC_LazyRefresh.mouseUp;
 			if (mouseWorks) {
 				me.stringColor_(colors[\string]);
 				mouseUpAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 			}
-		};		
+		};
 	}
-	
+
 	// access via themeMethods
 	action1Down_{|func| this.actions_(\action1Down,func)}
 	action2Down_{|func| this.actions_(\action2Down,func)}
-	
+
 	// set the font
 	align_{|argAlign|
 		align=argAlign;
 		if (view.notClosed) { view.align_(align) };
 	}
-	
+
 	// set the font
 	font_{|argFont|
 		font=argFont;
 		if (view.notClosed) { view.font_(font) };
 	}
-	
+
 	// overrides controlSpec step for keyboard
 	step_{|value|
 		step=value;
 		if ((view.notClosed) && (step.notNil)) { view.step_(step) };
 	}
-	
+
 	// make the view cyan / magenta for midiLearn active
 	midiLearn_{|bool|
 		midiLearn=bool;
@@ -198,8 +199,8 @@ MVC_NumberBox : MVC_View {
 		};
 		labelGUI.do(_.refresh);
 	}
-		
-	// item is enabled	
+
+	// item is enabled
 	enabled_{|bool|
 		if (enabled!=bool) {
 			enabled=bool;
@@ -211,7 +212,7 @@ MVC_NumberBox : MVC_View {
 			}.defer;
 		}
 	}
-	
+
 	// assign a ControlSpec to map to
 	controlSpec_{|spec|
 		if (spec.notNil) {
@@ -234,7 +235,7 @@ MVC_NumberBox : MVC_View {
 			};
 		}
 	}
-	
+
 	// normally called from model
 	value_{|val|
 		if (controlSpec.notNil) { val=controlSpec.constrain(val) };
@@ -244,16 +245,17 @@ MVC_NumberBox : MVC_View {
 			this.refresh;
 		};
 	}
-	
+
 	// fresh the Slider Value
 	refreshValue{
 		if (view.notClosed) {
 			view.value_(value.round(visualRound));
+			MVC_LazyRefresh.incRefresh;
 		}
 	}
-	
+
 	// set the colour in the Dictionary
-	// need to do disable here 
+	// need to do disable here
 	color_{|key,color|
 		if (colors.includesKey(key).not) {^this}; // drop out
 		colors[key]=color;
@@ -263,7 +265,7 @@ MVC_NumberBox : MVC_View {
 		if (key=='background' ) { {if (view.notClosed) { view.background_(color) } }.defer };
 		if (key=='typing' ) { {if (view.notClosed) { view.typingColor_(color) } }.defer };
 	}
-	
+
 	// unlike SCView there is no refresh needed with SCSlider
 	// this is not true, valueAction_ calls this and so value does need updating. Changed!
 	refresh{
@@ -272,7 +274,7 @@ MVC_NumberBox : MVC_View {
 		};
 		this.refreshValue;
 	}
-	
+
 	// make just units (has problem, updating model doesn't refresh units)
 	postCreate{
 		if ((view.notClosed)
@@ -283,7 +285,7 @@ MVC_NumberBox : MVC_View {
 			) {
 				if (colors['numberUp'  ].isNil) {colors['numberUp'  ]=Color.white};
 				if (colors['numberDown'].isNil) {colors['numberDown']=Color.black};
-		
+
 				numberFont = numberFont ?? {Font("Helvetica",12)};
 				numberBounds=this.getNumberRect("UNIT");
 				numberGUI=UserView.new(window,numberBounds)
@@ -294,7 +296,7 @@ MVC_NumberBox : MVC_View {
 						//Pen.fillRect(Rect(0,0,numberBounds.width,h)); // to remove
 						active= (midiLearn or: (enabled.not)).not;
 						if (active.not) { col= midiLearn.if(\midiLearn,\disabled) };
-						Pen.smoothing_(true);	
+						Pen.smoothing_(true);
 						numberString=controlSpec.units;
 						Pen.font_(numberFont);
 						Pen.fillColor_(colors[active.if(\numberUp,col)]);
@@ -316,7 +318,7 @@ MVC_NumberBox : MVC_View {
 // adjust so control just goes to action for MVC_View
 
 AdjustedSCNumberBox : NumberBox {
-	
+
 	var <>showBorder = true;
 
 	*viewClass { ^NumberBox }
@@ -329,7 +331,7 @@ AdjustedSCNumberBox : NumberBox {
 	}
 	mouseMove{arg x, y, modifiers, buttonNumber, clickCount;
 		mouseMoveAction.value(this, x, y, modifiers, buttonNumber, clickCount);
-	}	
+	}
 
 }
 
@@ -339,20 +341,20 @@ AdjustedRoundNumberBox : RoundNumberBox {
 
 	mouseDown { arg x, y, modifiers, buttonNumber, clickCount;
 		if( enabled )
-		{	
+		{
 			hit = Point(x,y);
 			startHit = hit;
-			if (scroll == true, { inc = this.getScale(modifiers) });			
+			if (scroll == true, { inc = this.getScale(modifiers) });
 			// stops double press and midi active works
 			// mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 		};
 	}
-	
+
 	mouseMove { arg x, y, modifiers;
 //		var direction;
 //		var angle;
 //		if( enabled ) {
-//		
+//
 //		if (scroll == true, {
 //			direction = 1.0;
 //				// horizontal or vertical scrolling:
@@ -360,7 +362,7 @@ AdjustedRoundNumberBox : RoundNumberBox {
 //			inc = this.getScale( modifiers );
 //			angle = ((x@y) - hit).theta.wrap(-0.75pi, 1.25pi);
 //			//angle = angle = ((x@y) - startHit).theta.wrap(-0.75pi, 1.25pi);
-//			direction = 
+//			direction =
 //				case { angle.inclusivelyBetween( -0.6pi, 0.1pi ) }
 //					{ 1.0 }
 //					{ angle.inclusivelyBetween( 0.4pi, 1.1pi )  }
@@ -372,9 +374,9 @@ AdjustedRoundNumberBox : RoundNumberBox {
 //			hit = Point(x, y);
 //		});
 //		//mouseMoveAction.value(this, x, y, modifiers);
-//			
+//
 //		};
-		
+
 	}
 
 
@@ -383,7 +385,7 @@ AdjustedRoundNumberBox : RoundNumberBox {
 //	}
 //	mouseMove{arg x, y, modifiers, buttonNumber, clickCount;
 //		mouseMoveAction.value(this, x, y, modifiers, buttonNumber, clickCount);
-//	}	
+//	}
 
 
 }

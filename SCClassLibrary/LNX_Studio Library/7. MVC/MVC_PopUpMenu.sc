@@ -1,6 +1,6 @@
 
-// LNX_MyPopUpMenu 
-// also supports mapping and unmapping for the MVC_AudioOutSpec control spec 
+// LNX_MyPopUpMenu
+// also supports mapping and unmapping for the MVC_AudioOutSpec control spec
 
 MVC_PopUpMenu : MVC_View {
 
@@ -13,30 +13,30 @@ MVC_PopUpMenu : MVC_View {
 		canFocus=true;
 		items=items ? [""];
 	}
-	
+
 	items_{|array|
 		items=array.collect{|item| item.replace("(","") }
 		           .collect{|item| (item=="-").if("",item) };
 		if (view.notClosed) { view.items_(items) };
 		// this.value_(value); // this is causing problems with samples in gsR
-		// can't see any bad side effects of removing this 
+		// can't see any bad side effects of removing this
 	}
-	
+
 	createView{
 		view = PopUpMenu.new(window,rect)
 			.background_(colors[midiLearn.if(\midiLearn,
 						enabled.if(\background,\backgroundDisabled))])
 			.items_(items)
-			
+
 			.enabled_(enabled)
 			.stringColor_(colors[\string])
 			.font_(font);
-			
+
 		if (controlSpec.isKindOf(MVC_AudioOutSpec)) {
 			view.value_(controlSpec.map2(value))
 		}{
 			view.value_(value)
-		};		
+		};
 	}
 
 	addControls{
@@ -57,11 +57,11 @@ MVC_PopUpMenu : MVC_View {
 				startX=x;
 				startY=y;
 				view.bounds.postln;
-			};	
+			};
 			if (buttonNumber==2) { this.toggleMIDIactive };
-		};		
+		};
 	}
-	
+
 	// make the view cyan / magenta for midiLearn active
 	midiLearn_{|bool|
 		midiLearn=bool;
@@ -71,7 +71,7 @@ MVC_PopUpMenu : MVC_View {
 		};
 		labelGUI.do(_.refresh);
 	}
-	
+
 	// set the font
 	font_{|argFont|
 		font=argFont;
@@ -85,7 +85,7 @@ MVC_PopUpMenu : MVC_View {
 		if (key=='focus'      ) { {if (view.notClosed) { view.focusColor_(color ) } }.defer };		if (key=='string'     ) { {if (view.notClosed) { view.stringColor_(color) } }.defer };
 		if (key=='background' ) { {if (view.notClosed) { view.background_(color ) } }.defer };
 	}
-	
+
 
 	// deactivate midi learn from this item
 	deactivate{
@@ -95,8 +95,8 @@ MVC_PopUpMenu : MVC_View {
 		};
 		labelGUI.do(_.refresh);
 	}
-		
-	// item is enabled	
+
+	// item is enabled
 	enabled_{|bool|
 		if (enabled!=bool) {
 			enabled=bool;
@@ -109,10 +109,10 @@ MVC_PopUpMenu : MVC_View {
 			}.defer;
 		}
 	}
-	
+
 	// normally called from model
 	value_{|val|
-		
+
 		if (items.notNil) {
 			if (controlSpec.isKindOf(MVC_AudioOutSpec).not){
 				val=val.round(1).asInt.wrap(0,items.size-1);
@@ -127,21 +127,23 @@ MVC_PopUpMenu : MVC_View {
 			value=val;
 			this.refreshValue;
 		};
-	}	
-	
+	}
+
 	// fresh the menu value
 	refreshValue{
-				
+
 		if (view.notClosed) {
 			if (controlSpec.isKindOf(MVC_AudioOutSpec)or:
 					{controlSpec.isKindOf(MVC_AudioOutMasterSpec)}) {
-				view.value_(controlSpec.map2(value))
+				view.value_(controlSpec.map2(value));
+				MVC_LazyRefresh.incRefresh;
 			}{
-				view.value_(value.clip(0,items.size-1))
+				view.value_(value.clip(0,items.size-1));
+				MVC_LazyRefresh.incRefresh;
 			}
 		}
 	}
-	
+
 	// unlike SCView there is no refresh needed
 	refresh{}
 

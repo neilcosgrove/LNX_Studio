@@ -14,7 +14,7 @@ w.create;
 MVC_PinSlider : MVC_FlatSlider {
 
 	var down=false, <>width=6, <>hilite=false, <>hiliteMode='innner', <>zeroValue;
-	
+
 	var <>left=false, <>right=false;
 
 	initView{
@@ -28,61 +28,61 @@ MVC_PinSlider : MVC_FlatSlider {
 		if (w>h) { direction=\horizontal }{ direction=\vertical };
 
 	}
-	
+
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				var w2,h2, rect2, x2, zeroVal, val;
-				
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
-				
+
 				if (controlSpec.notNil) { val = controlSpec.unmap(value) }{ val = value };
-							
-				zeroVal=zeroValue ? 0;	
-						
+
+				zeroVal=zeroValue ? 0;
+
 				Pen.use{
 					if (showLabelBackground) {
 						Color.black.alpha_(0.2).set;
 						Pen.fillRect(Rect(0,0,w,h));
 					};
-					
-					
+
+
 					Pen.smoothing_(true);
-					
-					
+
+
 					Color(0,0,0,0.25).set;
-					
-					
+
+
 					x2=(w/2);
 					h2=h.clip(0,w);
-					
-					
+
+
 					if (left)  {
 						Pen.fillRect(Rect(0,6,x2,h-(h2/2)-5 ));
 					};
 					if (right) {
 						Pen.fillRect(Rect(w-x2,6,x2,h-(h2/2)-5 ));
 					};
-					
-					
-					
+
+
+
 					if (midiLearn) {
 						colors[\midiLearn].set;
 					}{
 						colors[enabled.if(\background,\disabled)].set;
 					};
-					
+
 					Pen.width_(width);
-			
+
 					Pen.line((w/2)@width,(w/2)@(h-width));
 
 					Pen.addWedge((w/2)@width,width/200,0,-2pi/2);
 					Pen.addWedge((w/2)@(h-width),width/200,0, 2pi/2);
 					Pen.stroke;
-					
-					
+
+
 					Pen.stroke;
-					
+
 					if (midiLearn) {
 						colors[\background].set;
 					}{
@@ -90,15 +90,15 @@ MVC_PinSlider : MVC_FlatSlider {
 							{ colors[\hilite].alpha_(1).set }
 							{ (colors[\hilite].alpha_(0.5)*0.5).set };
 					};
-					
+
 					Pen.width_(width-3);
 					Pen.capStyle_(1);
-					
+
 					Pen.line((w/2)@(val.map(1,0,width+1,h-width-1)),
 						(w/2)@(h-width-1));
-					
+
 					Pen.stroke;
-					
+
 					if ((hilite)and:{hiliteMode!='inner'}and:{val>zeroVal}) {
 						colors[\hiliteTrue].set;
 					}{
@@ -108,18 +108,18 @@ MVC_PinSlider : MVC_FlatSlider {
 							colors[enabled.if(\background,\disabled)].set;
 						};
 					};
-					
+
 					w2=w.clip(0,h);
 					h2=h.clip(0,w);
-					
+
 					Pen.width_(2);
-					
+
 					rect2=Rect(0,(h-h2)*(1-val),w2,h2);
-					
+
 					if ((down)and:{val>zeroVal}) { rect2=rect2.insetBy(2) };
-					
+
 					if (val==0) { rect2=rect2.insetBy(3) };
-					
+
 					Pen.fillOval(rect2);
 					if (val>zeroVal) {
 						if (midiLearn) {
@@ -128,7 +128,7 @@ MVC_PinSlider : MVC_FlatSlider {
 							if (enabled) { colors[\on].set } { colors[\on].alpha_(0.5).set };
 						};
 						Pen.fillOval(rect2.insetBy(2,2));
-						
+
 						if ((hilite)and:{hiliteMode=='inner'}and:{val>zeroVal}) {
 							colors[\hiliteTrue].set;
 						}{
@@ -137,21 +137,22 @@ MVC_PinSlider : MVC_FlatSlider {
 							}{
 								colors[enabled.if(\background,\disabled)].set;
 							};
-						}; 
+						};
 						Pen.fillOval(rect2.insetBy(4,4));
 					};
-					
-					
+
+
 				}
-				
+
 			};
 	}
-	
+
 	addControls{
-		
+
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			var val;
+			MVC_LazyRefresh.mouseDown;
 			mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 			if (modifiers.asBinaryDigits[4]==0) {  // if apple not pressed because of drag
 				if (editMode||viewEditMode) {
@@ -167,7 +168,7 @@ MVC_PinSlider : MVC_FlatSlider {
 					if (modifiers==262401) {buttonNumber=2};
 					buttonPressed=buttonNumber;
 					if (buttonPressed==1) {
-						seqItems.do({|i,j|	
+						seqItems.do({|i,j|
 							if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) {
 								lastItem=j;  // draw a line !!!
 							}
@@ -189,7 +190,7 @@ MVC_PinSlider : MVC_FlatSlider {
 				};
 			};
 		};
-		
+
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			var thisItem, lastValue, size, thisValue, val;
@@ -235,23 +236,24 @@ MVC_PinSlider : MVC_FlatSlider {
 						};
 					};
 					lastItem=thisItem;
-				}{	
+				}{
 					if (buttonPressed!=2) {
 						if (thisValue!=value) {this.viewValueAction_(thisValue,nil,true,false)};
 					};
 				};
 			};
 		};
-		
+
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
+			MVC_LazyRefresh.mouseUp;
 			if (down==true) {
 				down=false;
 				this.refresh;
 			};
 		};
-		
-				
+
+
 	}
 
-	
+
 }

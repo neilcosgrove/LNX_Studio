@@ -795,9 +795,10 @@ LNX_PianoRollSequencer{
 		allPianoRolls.remove(this);
 		score.free;
 		scores.do(_.free);
+		lazyRefresh.free;
 		id = score = api = noteIDObject = snapToGrid = quantiseStep =
 		gui = colors = notesSelected = gridW = gridH = noteRects =
-		lastDuration = lastVelocity = scores = nil;
+		lastDuration = lastVelocity = scores = lazyRefresh = nil;
 	}
 
 	freeAutomation{} // there is none, but just incase it gets called

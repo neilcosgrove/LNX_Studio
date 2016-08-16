@@ -1,10 +1,11 @@
-   //                                //        //||     //  || //                               .
+   //                                //        //||     //  || //
   // ****************************** //        // ||    //   ||//
  //     LNX_STUDIO Version 2.0     //        //  ||   //    |//
 // ****************************** //        //   ||  //     //|
 //                               //        //    || //     //||
 //   2016 by neil cosgrove      //======= //     ||//     // ||
-//     for Mac & Linux
+//        & andrew lambert
+//   for Mac & Linux
 //
 // Linux port (andrew lambert)
 //
@@ -46,7 +47,6 @@
 // You can only have 1 instance of LNX_Studio.
 //
 // Many thanks to the following people for their help and their lovely code.
-// Andrew         : For putting up with me going on about LNX all the time + the ideas
 // Juan           : Too many things to mention
 // Tillman        : Much testing
 // BlackRain      : NetAddr extensions
@@ -58,10 +58,7 @@
 // Josh           : helping with the SC side of OscGroups
 // and nonprivate : sound advice.
 //
-// also thanks to Southern express, Themes Link and Gatwick Express for the time
-//
-// Unsolved BUG LOG:
-// WebView crashes ramdomly in Cocoa.
+// also thanks to Southern, Themes Link and Gatwick Express for the time
 //
 // enjoy, love neil x (lnx)
 //
@@ -186,6 +183,8 @@ LNX_Studio {
 	// start all services
 
 	init {|server|
+
+		MVC_LazyRefresh.startRefreshWatchingTask;
 
 		menuGap = 0@0;
 		this.initInstance;			 // initialise this instance of the studio
@@ -586,6 +585,7 @@ LNX_Studio {
 		this.startResponders;		 // for levels back into SCLang
 		insts.do(_.cmdPeriod);
 		{this.restartDSP}.defer(0.5);
+		MVC_LazyRefresh.startRefreshWatchingTask;
 	}
 
 	// and this on close

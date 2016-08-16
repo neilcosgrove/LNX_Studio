@@ -16,11 +16,12 @@ MVC_NoteView : MVC_View {
 			'border'		: Color.black
 		);
 	}
-	
+
 	// make the view
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					Pen.smoothing_(false);
@@ -33,13 +34,14 @@ MVC_NoteView : MVC_View {
 					Pen.fillColor_(colors[\string]);
 					Pen.stringCenteredIn(if(value>=0,value.asNote,"---"),Rect(0,0,w,h));
 				}; // end.pen
-			};		
+			};
 	}
-	
+
 	// add the controls
 	addControls{
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
+			MVC_LazyRefresh.mouseDown;
 			if (modifiers==524576) { buttonNumber=1 };
 			if (modifiers==262401) { buttonNumber=2 };
 			buttonPressed=buttonNumber;
@@ -59,18 +61,19 @@ MVC_NoteView : MVC_View {
 				this.moveBy(x-startX,y-startY,buttonPressed)
 			}{
 				val=((startValue+((startY-y)/5)).asInt).clip(-1,127);
-				
+
 				if (controlSpec.notNil) { val= controlSpec.constrain(val) };
-				
+
 				if (val!=value) {
 					this.viewValueAction_(val,nil,true,false);
 				};
 			};
 		};
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
+			MVC_LazyRefresh.mouseUp;
 			this.valueActions(\upAction,this);
 			if (model.notNil) {model.valueActions(\upAction,model)};		};
-			
+
 		// @TODO: new QT "key" codes
 		view.keyDownAction={|me, char, modifiers, unicode, keycode, key|
 			//[modifiers, unicode, keycode].postln;
@@ -83,7 +86,7 @@ MVC_NoteView : MVC_View {
 				this.valueActions(\keyAction,this);
 				if (model.notNil) {model.valueActions(\keyAction,model)};
 			};
-			
+
 			// down
 			if (keycode==125) {
 				val=value-1;
@@ -92,10 +95,10 @@ MVC_NoteView : MVC_View {
 				this.valueActions(\keyAction,this);
 				if (model.notNil) {model.valueActions(\keyAction,model)};
 			};
-		
-		
+
+
 		};
-		
+
 	}
 
 }

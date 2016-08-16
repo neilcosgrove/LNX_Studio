@@ -16,11 +16,12 @@ MVC_ProgramChangeMain : MVC_View {
 		canFocus=false;
 		font=Font("Helvetica",12);
 	}
-	
+
 	createView{
 
 		view=UserView(window,Rect(rect.left,rect.top,ww,hh*noPOP+1))
-			.drawFunc_{|me|	
+			.drawFunc_{|me|
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					Pen.smoothing_(false);
@@ -45,11 +46,11 @@ MVC_ProgramChangeMain : MVC_View {
 								Pen.strokeColor_(Color.black);
 							};
 							Pen.strokeRect(Rect(0,y*hh,ww,hh));
-	
-							
+
+
 						};
 					};
-					
+
 					Pen.fillColor_(colors[\on]+0.2);
 					Pen.smoothing_(true);
 
@@ -61,18 +62,18 @@ MVC_ProgramChangeMain : MVC_View {
 								Pen.fillColor_(Color.white);
 							};
 							Pen.stringCenteredIn((y+1).asString,Rect(0,y*hh,ww,hh));
-							
-						}{	
+
+						}{
 							if (y==model.value) {
 								Pen.fillColor_(Color.white*((1-flash)+1/2));
-							}{	
+							}{
 								Pen.fillColor_(colors[\off]+0.2);
 							};
-							
+
 							Pen.stringCenteredIn((y+1).asString,Rect(0,y*hh+1,ww,hh));
-						};	
-					}	
-					
+						};
+					}
+
 				}; // end.pen
 			};
 
@@ -80,7 +81,7 @@ MVC_ProgramChangeMain : MVC_View {
 
 	addControls{
 		var val, val2;
-		
+
 		view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 			var val;
 			y=y-3;
@@ -102,34 +103,34 @@ MVC_ProgramChangeMain : MVC_View {
 						this.viewDoValueAction_(val,nil,true,false);
 					}
 				}
-			}				
+			}
 		};
 		view.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			if (modifiers.asBinaryDigits[4]==0) {  // if apple not pressed because of drag
 				if (editMode) { this.moveBy(x-startX,y-startY) };
 			}
-		};	
+		};
 	}
-	
+
 	actualProgram_{|prg|
 		actualProgram=prg;
 		{this.refresh}.defer;
 	}
-	
+
 	noPOP_{|num|
 		if (noPOP!=num) {
-			noPOP=num;	
+			noPOP=num;
 			{
 				if (view.notNil) { this.bounds_(Rect(rect.left,rect.top,ww,hh*noPOP+1)) };
 			}.defer;
 		};
 	}
-	
+
 	flash_{|f|
 		flash=f;
 		{this.refresh}.defer;
 	}
-		
+
 	// make the view cyan / magenta for midiLearn active
 	midiLearn_{|bool|
 		midiLearn=bool;
@@ -147,7 +148,7 @@ MVC_ProgramChangeMain : MVC_View {
 		};
 		labelGUI.do(_.refresh);
 	}
-	
+
 	// normally called from model
 	value_{|val|
 		val=val.round(1).asInt.clip(0,noPOP-1);

@@ -4,13 +4,13 @@
 MVC_PosView : MVC_View {
 
 	var <>buttonWidth=18, <highlight, <>gap=1, <>type='rect';
-	
+
 	var <>extend=false;
 
 	// set your defaults
 	initView{
-	
-		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ] 
+
+		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ]
 		colors=colors++(
 			'background'			: Color.grey/3,
 			'backgroundDisabled'	: Color.grey/2,
@@ -18,13 +18,14 @@ MVC_PosView : MVC_View {
 			'disabled'			: Color(0.4,0.4,0.4),
 			'highLight'			: Color.orange*1.2
 		);
-	
+
 	}
 
 	// make the view
 	createView{
 		view=UserView.new(window,extend.if(rect.resizeBy(0,4),rect))
 			.drawFunc={|me|
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					if (showLabelBackground) {
@@ -36,7 +37,7 @@ MVC_PosView : MVC_View {
 					Pen.fillRect(Rect(0,0,w,h));
 
 					colors[enabled.if(\on,\disabled)].set;
-					
+
 					if (type=='rect') {
 						Pen.fillRect(Rect(buttonWidth*(value.round(1))+gap,gap,
 							buttonWidth-1,h-(gap*2)));
@@ -45,7 +46,7 @@ MVC_PosView : MVC_View {
 						Pen.fillOval(Rect(buttonWidth*(value.round(1))+gap,gap-1,
 							buttonWidth-1,h-(gap*2)).centerSquare);
 					};
-					
+
 					if (highlight.notNil) {
 						colors['highLight'].set;
 						if (type=='rect') {
@@ -55,12 +56,12 @@ MVC_PosView : MVC_View {
 											.centerSquare);
 						};
 					};
-					
-					
+
+
 				}; // end.pen
-			};		
+			};
 	}
-	
+
 	// add the controls
 	addControls{
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
@@ -72,7 +73,7 @@ MVC_PosView : MVC_View {
 			if (modifiers==262401) {buttonNumber=2};
 			if (buttonNumber==2) { this.toggleMIDIactive };
 			mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
-			
+
 		};
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			if (editMode) { this.moveBy(x-startX,y-startY) };

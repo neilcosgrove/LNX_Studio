@@ -66,8 +66,7 @@
 	// set the position of the transport marker
 	pos_{|x|
 		pos =  x;
-        //if (gui.notNil) { gui[\notesPosAndMouse].refresh }
-        lazyRefresh.lazyRefresh;
+        if (lazyRefresh.notNil) {  lazyRefresh.lazyRefresh };
 	}
 
 	// gui call to enter fullscreen mode
@@ -371,6 +370,7 @@
 	.drawFunc_{|me|
 		var bounds, w, h, svb, x1, x2, voL,voR, voT, voB, vBars, vNum;
 		var spo = this.spo;
+		var noRect=0;
 
 		svb=gui[\scrollView].bounds.resizeBy(sb.neg);
 		visibleOrigin=gui[\scrollView].visibleOrigin;
@@ -489,14 +489,17 @@
 						Pen.fillRect(rect.insetBy(1,1));
 					};
 
-
 					Pen.lineDash_(selectDash);
 					colors[\durDiv].set;
 					dur=(rect.right)-((rect.width*0.25));//.clip(0,gridW));
 					Pen.line(dur@(rect.top+2), dur@(rect.bottom-1));
 					Pen.stroke;
+
+					noRect = noRect + 1;
 				};
 			};
+
+			MVC_LazyRefresh.incRefreshN(noRect/10);
 
 			// the selction rect
 			if (selectRect.notNil) {
@@ -558,6 +561,8 @@
 		//mods256:none,131330:shift,8388864:func,262401:ctrl,524576:alt,1048840:apple
 		var val, minX,maxX,minY,maxY;
 		var noteSelected, downNoteRect;
+
+		MVC_LazyRefresh.mouseDown;
 
 		if (modifiers==131330)  { buttonNumber=1 };
 		if (modifiers==8388864) { buttonNumber=1 };
@@ -734,6 +739,8 @@
 	// UP /////////////////////////////////////////////////////////////////
 
 	.mouseUpAction_{|me, x, y, modifiers, buttonNumber, clickCount|
+
+		MVC_LazyRefresh.mouseUp;
 
 		if (mouseMode==\select){ selectRect=nil }; // remove the select rect
 

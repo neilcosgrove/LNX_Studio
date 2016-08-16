@@ -7,7 +7,7 @@ MVC_IconButton : MVC_View {
 
 	// set your defaults
 	initView{
-		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ] 
+		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ]
 		colors=colors++(
 			'background'	: Color.black,
 			'down'		: Color.green+0.1/3,
@@ -15,19 +15,20 @@ MVC_IconButton : MVC_View {
 			'iconUp'		: Color.black,
 			'iconDown'	: Color.black
 		);
-		font=Font("Helvetica",12);		
+		font=Font("Helvetica",12);
 	}
-	
+
 	// make the view
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					Pen.smoothing_(false);
 					colors[\background].set;
 					Pen.fillRect(Rect(0,0,w,h));
-						
+
 					if (midiLearn) {
 							colors[\midiLearn].set;
 							Pen.fillRect(Rect(1,1,w- 2,h- 2));
@@ -47,7 +48,7 @@ MVC_IconButton : MVC_View {
 							colors[\disabled].set;
 							Pen.fillRect(Rect(1,1,w- 2,h- 2));
 						};
-						
+
 					};
 					if (enabled) {
 						if (down) {
@@ -58,12 +59,12 @@ MVC_IconButton : MVC_View {
 					}{
 						(colors[\disabled]/2).set;
 					};
-					Pen.smoothing_(true);			
+					Pen.smoothing_(true);
 					DrawIcon.symbolArgs(icon,Rect(0,0,w,h));
 				}; // end.pen
-			};		
+			};
 	}
-	
+
 	// add the controls
 	addControls{
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
@@ -84,13 +85,13 @@ MVC_IconButton : MVC_View {
 					};
 				}
 			};
-			
+
 		};
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
 			if (editMode) {
 				this.moveBy(x-startX,y-startY)
-			}{				
+			}{
 				if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}and:{evaluateAction}) {
 					if (down.not) {
 						down=true;
@@ -118,7 +119,7 @@ MVC_IconButton : MVC_View {
 		down=bool;
 		if (view.notClosed) {view.refresh}
 	}
-	
+
 	// set the icon
 	icon_{|symbol|
 		icon=symbol;

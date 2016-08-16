@@ -14,11 +14,12 @@ MVC_NoteSeqView : MVC_View {
 			'belowZero'		: Color.red
 		);
 	}
-	
+
 	createView{
 		view=UserView.new(window,rect)
 			.drawFunc={|me|
 				var val;
+				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					Pen.smoothing_(false);
@@ -28,7 +29,7 @@ MVC_NoteSeqView : MVC_View {
 						colors[\midiLearn].set;
 					}{
 						(colors[enabled.if(\border,\disabled)]).set;
-					};	
+					};
 					Pen.strokeRect(Rect(1,1,w- 3,h- 3));
 					if (midiLearn) {
 						colors[\midiLearn].set;
@@ -46,15 +47,15 @@ MVC_NoteSeqView : MVC_View {
 						val=value.clip(0,1);
 					};
 
-					
+
 					ah=h-6-buttonWidth;
-					
+
 					if ((zeroValue.notNil) and: {value<zeroValue}) {
 						// filled rect below zero
 						colors[\belowZero].set;
 						val=1.neg/(h-6);
 						Pen.fillRect(Rect(3,(h-6)*(1-val)+3,w-6,(h-6)*(val)));
-					}{			
+					}{
 						if (enabled) {
 							Pen.fillRect(Rect(3,(ah*(1-val)+3).asInt,w-6,buttonWidth));
 							if (midiLearn.not) {
@@ -66,29 +67,32 @@ MVC_NoteSeqView : MVC_View {
 							Pen.fillRect(Rect(3,(ah*(1-val)+3).asInt,w-6,buttonWidth));
 						};
 					};
-					
+
 					if ((enabled) && (value>=zeroValue) && (midiLearn.not)) {
 						colors[\slider].set;
 						Pen.fillRect(Rect(4,(ah*(1-val)+3).asInt+1,w-8,buttonWidth-2));
-						
+
 						Color(colors[\slider].red/2,colors[\slider].green/2,
 							colors[\slider].blue/2).set;
 						Pen.fillRect(Rect(5,(ah*(1-val)+3).asInt+2,w-10,buttonWidth-4));
 					};
-					
-					
+
+
 				};
 			};
 	}
-	
+
 	// this is a copy of flatslider controls
 	// and doesn't take the button width into account, to do later, maybe
-		
+
 	addControls{
-		
+
+		view.mouseUpAction={ MVC_LazyRefresh.mouseUp };
+
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			var val;
+			MVC_LazyRefresh.mouseDown;
 			if (modifiers.asBinaryDigits[4]==0) {  // if apple not pressed because of drag
 				if (editMode) {
 					lw=lh=nil;
@@ -102,15 +106,15 @@ MVC_NoteSeqView : MVC_View {
 					if (modifiers==524576) { buttonNumber=1  };
 					if (modifiers==262401) {buttonNumber=2};
 					buttonPressed=buttonNumber;
-					
+
 					if (buttonPressed==1) {
-						seqItems.do({|i,j|	
+						seqItems.do({|i,j|
 							if ((x>=(i.l))and:{(x<=((i.l)+(i.w)))}) {
 								lastItem=j;  // draw a line !!!
 							}
 						});
 					};
-					
+
 					if ((buttonNumber==2)and:{hasMIDIcontrol}) {
 						this.toggleMIDIactive;
 					}{
@@ -121,7 +125,7 @@ MVC_NoteSeqView : MVC_View {
 				};
 			};
 		};
-		
+
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			var thisItem, lastValue, size, thisValue, val;
@@ -163,20 +167,20 @@ MVC_NoteSeqView : MVC_View {
 						};
 					};
 					lastItem=thisItem;
-				}{	
+				}{
 					if (buttonPressed!=2) {
 						if (thisValue!=value) {this.viewValueAction_(thisValue,nil,true,false)};
 					};
 				};
 			};
 		};
-				
+
 	}
-	
+
 	// width of button
 	buttonWidth_{|width|
 		buttonWidth=width;
 		if (view.notClosed) {view.refresh};
 	}
-	
+
 }
