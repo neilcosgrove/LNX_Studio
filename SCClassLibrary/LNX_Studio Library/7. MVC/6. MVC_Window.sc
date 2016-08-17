@@ -88,7 +88,7 @@ MVC_Window {
 		suppressTime = AppClock.now;
 
 		// the window
-		view = Window.new(name++" ",bounds.convert, resizable, border, nil, scroll)
+		view = Window.new(name++" ",bounds.convert.moveBy(0,24), resizable, border, nil, scroll)
 			.userCanClose_(userCanClose)
 			.alwaysOnTop_(alwaysOnTop)
 			.drawFunc_(drawHook)

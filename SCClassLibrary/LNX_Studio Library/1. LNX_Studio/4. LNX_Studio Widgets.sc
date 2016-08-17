@@ -55,7 +55,7 @@
 		var bounds, width=1012+71 - ScrollBars.addIfNone(7), height=494;
 
 		bounds = this.savedWindowBounds ? Rect(osx,0,width,height);
-		bounds = bounds.setExtent(width,height).moveBy(0,0);
+		bounds = bounds.setExtent(width,height);
 
 		mixerWindow = MVC_Window("LNX_Studio",bounds, resizable: true)
 			.userCanClose_(false)
