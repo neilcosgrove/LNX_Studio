@@ -1621,7 +1621,6 @@ LNX_Studio {
 
 	loadDemoSong{
 		if (this.canLoadSong) {
-			"loading demo".postln;
 			this.loadPath(Platform.lnxResourceDir+/+"demo song",false);
 		};
 	}
@@ -2054,8 +2053,7 @@ LNX_Studio {
 			.color_(\off,Color(1,1,1,0.5))
 			.action_{
 				gui[\window].close;
-				CmdPeriod.run;
-				{ 0.exit }.defer(0.2);
+				this.doQuit;
 		};
 
 		// Cancel
@@ -2064,6 +2062,18 @@ LNX_Studio {
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
 			.action_{	 gui[\window].close };
+	}
+
+	doQuit{
+		{
+			CmdPeriod.run;
+			0.25.wait;
+			this.free;
+			0.25.wait;
+			Server.quitAll;
+			0.exit;
+		}.fork(AppClock);
+
 	}
 
 }

@@ -22,7 +22,7 @@ MVC_LazyRefresh.mouseUp;
 
 MVC_LazyRefresh{
 
-	classvar <>verbose = true;
+	classvar <>verbose = false;
 
     classvar <>globalFPS, <refreshCount=0, <lastRefreshCount=0, <task, <taskRate=1, <rateAdjust=1;
 

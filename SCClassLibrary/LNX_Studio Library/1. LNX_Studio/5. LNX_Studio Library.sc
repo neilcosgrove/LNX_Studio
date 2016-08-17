@@ -3,62 +3,64 @@
 
 + LNX_Studio {
 	// make all the folders for the instrument library ////////////////////////////////////////////
-	
+
+	openLibraryFolderInOS{ libraryFolder.openOS }
+
 	initLibrary{|forceRestore=false|
 		// master
 		var masterDir = Platform.lnxResourceDir++"/default library/".absolutePath;
 		if (masterDir.pathExists(false).not) { masterDir.makeDir };
-		
+
 		// ******************************************
 		// vvvv The user library folder *************
-		
+
 		libraryFolder = Platform.userHomeDir+/+"Music/LNX_Studio Library";
-		
+
 		// ^^^^ The user library folder **************
 		// ******************************************
-		
+
 		visibleTypes.collect(_.studioName).do{|name|
 			// the directory
 			var dir = masterDir++name++"/";
 			// create it if absent
 			if (dir.pathExists(false).not) { dir.makeDir };
 		};
-		
+
 		// actual
 		instLibraryFileNames = IdentityDictionary[];
 		visibleTypes.collect(_.studioName).do{|name|
-			
+
 			// the directory
 			var dir = libraryFolder+/+name++"/";
-			
+
 			// create & copy from master if absent
 			if ((dir.pathExists(false).not)||forceRestore) {
-				
+
 				if (dir.pathExists(false).not) { dir.makeDir };
-				
+
 				// check file is Ok to copy else delete...
 				(masterDir++name++"/").folderContents(0).select(_.isFile).do{|file|
 					var loadList = file.loadList;
-					if  ((loadList.size>1) and:{loadList[0].size>2} 
+					if  ((loadList.size>1) and:{loadList[0].size>2}
 										and:{loadList[0][0..2]=="SC "}) {
 						// do nothing
 					}{
 						file.removeFile(true,false,false);
 					};
 				};
-				
+
 				// now copy remaining
 				(masterDir++name++"/").folderContents(0).select(_.isFile).do{|file|
 					file.copyToDir(dir,silent:true,overwrite:false)
 				};
 			};
 		};
-		
+
 		instTypes.collect(_.studioName).do{|name|
-						
+
 			// the directory
 			var dir = libraryFolder+/+name++"/";
-			
+
 			// get all files in that dir
 			instLibraryFileNames[name.asSymbol] =
 				dir.folderContents(0).select(_.isFile).collect(_.basename).sort({|a,b|
@@ -66,7 +68,7 @@
 				});
 		};
 	}
-	
+
 	// remove & remake the entire library gui, used when showing / hiding moog & korg
 	recreateLibraryGUI{
 		this.createInstrumentList;
@@ -77,11 +79,11 @@
 		this.autoSizeGUI;
 		this.libraryGUIBugFix;
 	}
-		
+
 	// scroll view for library widgets
 	createLibraryScrollView{
 		// the library scroll view
-		mixerGUI[\libraryScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(11, 34+menuGap.y, 190, 324))
+		mixerGUI[\libraryScrollView] = MVC_RoundedScrollView (mixerWindow,Rect(11, 13+menuGap.y, 190, 324+21))
 			.resizeList_([1,1,1,1,1]) //  0:view 1:left 2:top 3:right 4:bottom
 			.hasBorder_(false)
 			.addFlowLayout(nil,1@1)
@@ -92,13 +94,13 @@
 			.color_(\border,Color(6/11,42/83,29/65))
 			.hasHorizontalScroller_(false);
 	}
-	
+
 	// make the gui
 	createLibraryWidgets{
-		
+
 		libraryGUI       = IdentityDictionary[];
 		visibleTypesGUI  = IdentityDictionary[];
-		
+
 		visibleTypes.do{|type|
 			var view;
 			var typeSymbol = type.studioName.asSymbol;
@@ -106,11 +108,11 @@
 
 			// the expand view
 			visibleTypesGUI[typeSymbol] =
-				MVC_ExpandView( mixerGUI[\libraryScrollView], 
-				(186)@((files.size)*19+18), 
+				MVC_ExpandView( mixerGUI[\libraryScrollView],
+				(186)@((files.size)*19+18),
 				(186)@18)
 					.color_(\background,Color(0.88,0.88,0.88));
-			
+
 			// the main instrument text
 			MVC_StaticText(visibleTypesGUI[typeSymbol],Rect(0,1,125 + ScrollBars.addIfNone(7),16))
 				.canBeHidden_(false)
@@ -118,7 +120,7 @@
 				.shadow_(false)
 				.color_(\string,Color.black)
 				.string_(type.studioName.asString);
-				
+
 			// the main instrument add button
 			MVC_FlatButton(visibleTypesGUI[typeSymbol],Rect(128 + ScrollBars.addIfNone(7),0,30,17)).strings_("Add")
 				.canBeHidden_(false)
@@ -129,23 +131,23 @@
 				.action_({
 					this.guiAddInst(type);
 				});
-				
+
 			this.addLibraryWidgets(type);
 
 		};
 	}
-	
+
 	// add the library widgets to the gui
 	addLibraryWidgets{|type|
-		
+
 		var typeSymbol = type.studioName.asSymbol;
-		
+
 		// the library widgets
-	
+
 		libraryGUI[typeSymbol]=IdentityDictionary[];
-		
+
 		instLibraryFileNames[type.studioName.asSymbol].do{|file,i|
-			
+
 			// lib inst name
 			libraryGUI[typeSymbol][(file++"_text").asSymbol] =
 				MVC_StaticText(visibleTypesGUI[typeSymbol],
@@ -154,7 +156,7 @@
 					.shadow_(false)
 					.color_(\string,Color.black)
 					.string_(file);
-			
+
 			// add / load inst from library
 			libraryGUI[typeSymbol][(file++"_button").asSymbol] =
 				MVC_FlatButton(visibleTypesGUI[typeSymbol],
@@ -180,16 +182,16 @@
 						(libraryFolder+/+(type.studioName)+/+file).deleteList;
 						{this.refreshLibrary(type)}.defer(0.1);
 					});
-					
+
 		};
 	}
-	
-	// temp fix to gui which displays beyond bounds 
+
+	// temp fix to gui which displays beyond bounds
 	libraryGUIBugFix{
 		visibleTypesGUI.do(_.expand);
 		visibleTypesGUI.do(_.collapse);
 	}
-	
+
 	// gui call to load an intrument from the library
 	guiLoadInstFromLibrary{|filename,type,name|
 		var list;
@@ -202,12 +204,12 @@
 			}
 		}
 	}
-	
+
 	// gui call to save the current instrument to the library
 	guiSaveInstToLibrary{
-		
+
 		var window, scrollView, class, saveList, filename, studioName;
-			
+
 		if (insts.selectedInst.notNil) {
 			class      = insts.selectedInst.class;
 			LNX_MIDIControl.autoSave_(false); // disable save with Automation
@@ -215,10 +217,10 @@
 			LNX_MIDIControl.autoSave_(true);  // enable save with Automation
 			filename   = insts.selectedInst.name;
 			studioName = insts.selectedInst.studioName;
-			
+
 			window = MVC_ModalWindow(mixerWindow.view, 195@90);
 			scrollView = window.scrollView;
-	
+
 			// text field for the instrument / filename
 			MVC_Text(scrollView,Rect(10,21,142,16))
 				.string_(filename)
@@ -238,49 +240,49 @@
 					filename=string.filenameSafe;
 					me.string_(filename);
 				}
-				.enterKeyAction_{|me,string|	
+				.enterKeyAction_{|me,string|
 					filename=string.filenameSafe;
 					me.string_(filename);
 					window.close;
 					{this.saveInstToLibrary(class, saveList, filename, studioName)}.defer(0.1);
 				}
-				.focus.startEditing;	
-	
+				.focus.startEditing;
+
 			// Cancel
 			MVC_OnOffView(scrollView,Rect(130-11-60, 55-11, 55, 20),"Cancel")
-				.rounded_(true)  
+				.rounded_(true)
 				.color_(\on,Color(1,1,1,0.5))
 				.color_(\off,Color(1,1,1,0.5))
 				.action_{	 window.close };
-				
+
 			// Ok
 			MVC_OnOffView(scrollView,Rect(130-11, 55-11, 50, 20),"Ok")
-				.rounded_(true)  
+				.rounded_(true)
 				.color_(\on,Color(1,1,1,0.5))
 				.color_(\off,Color(1,1,1,0.5))
-				.action_{	
+				.action_{
 					window.close;
 					{this.saveInstToLibrary(class, saveList, filename, studioName)}.defer(0.1);
 				};
-				
+
 		}
-			
+
 	}
-	
+
 	// save this instrument to the library
 	saveInstToLibrary{|class, saveList, filename, studioName|
 		saveList.saveList(libraryFolder+/+studioName+/+filename);
 		visibleTypesGUI[class.studioName.asSymbol].expand;
 		{this.refreshLibrary(class)}.defer(0.1);
 	}
-	
+
 	// refresh the instrument library for this class only
 	refreshLibrary{|class,forceRestore=false|
 		var typeSymbol=class.studioName.asSymbol;
 		// remove old widgets
 		libraryGUI[typeSymbol].do(_.free);
-		
-		// refresh the filelist	
+
+		// refresh the filelist
 		this.initLibrary(forceRestore);
 		// change the bounds
 		visibleTypesGUI[typeSymbol].bounds_(
@@ -293,16 +295,16 @@
 
 	// restore inst library
 	restoreLibraryDefaults{
-		visibleTypes.do{|class|			
+		visibleTypes.do{|class|
 			var typeSymbol=class.studioName.asSymbol;
 			// remove old widgets
 			libraryGUI[typeSymbol].do(_.free);
 		};
-		// refresh the filelist	
+		// refresh the filelist
 		this.initLibrary(true);
-		
-		visibleTypes.do{|class|	
-			var typeSymbol=class.studioName.asSymbol;	
+
+		visibleTypes.do{|class|
+			var typeSymbol=class.studioName.asSymbol;
 			// change the bounds
 			visibleTypesGUI[typeSymbol].bounds_(
 				visibleTypesGUI[typeSymbol].bounds.height_(
@@ -312,7 +314,7 @@
 			this.addLibraryWidgets(class);
 		};
 	}
-	
+
 	// comment this neil!!
 	checkForLibraryUpdates{
 		var internetLibraryIndex;
@@ -354,15 +356,15 @@
 							this.dialog1(
 						"Failed connecting to http://lnxstudio.sourceforge.net",Color.white);
 							this.dialog2("",Color.white);
-						};	
+						};
 					};
 				};
 			}.fork(AppClock);
 		};
 	}
-	
+
 	// comment this neil!!
-	downLoadUpdates{|internetLibraryIndex|	
+	downLoadUpdates{|internetLibraryIndex|
 		var folder = String.scDir++"/default library".absolutePath;
 		internetLibraryIndex.collect{|file|
 			if ((folder+/+file).pathExists(false).not) {
@@ -374,7 +376,7 @@
 					++ folder+/+file
 					++"\""
 				).unixCmd;
-				(0.25/4).wait;		
+				(0.25/4).wait;
 			};
 		};
 		this.dialog1("Installing... ",Color.white);
@@ -383,7 +385,7 @@
 		this.restoreLibraryDefaults;
 		this.dialog1("Finished",Color.white);
 	}
-	
+
 	backupLibrary{
 		// desktop folder
 		var folder = "~/".absolutePath +/+ "Desktop/LNX_Studio Library" + (Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2));

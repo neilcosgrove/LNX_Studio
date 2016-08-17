@@ -235,9 +235,9 @@ MVC_StaticText : MVC_View {
 					if (editing) { Pen.fillColor_(colors[\edit])};
 
 					// use pen shadow
-					if (penShadow) {
-						Pen.setShadow((-2)@(-2), 5, Color.black);
-					};
+//					if (penShadow) {
+//						Pen.setShadow((-2)@(-2), 5, Color.black);
+//					};
 
 					// draw text
 					switch (align2)

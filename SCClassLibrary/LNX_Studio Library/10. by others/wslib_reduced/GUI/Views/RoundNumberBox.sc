@@ -192,10 +192,10 @@ RoundNumberBox : RoundView {
 					{
 					Pen.use({
 						Pen.roundedRect( rect.insetBy(border - 0.1, border - 0.1), radius ).clip;
-						if( innerShadow.isNumber )
-								{ Pen.setShadow( innerShadow@(innerShadow.neg), innerShadow, 
-									Color.black.alpha_(0.5) ); }
-								{ Pen.setShadow( *innerShadow.asCollection );  };
+// 						if( innerShadow.isNumber )
+//								{ Pen.setShadow( innerShadow@(innerShadow.neg), innerShadow, 
+//									Color.black.alpha_(0.5) ); }
+// 								{ Pen.setShadow( *innerShadow.asCollection );  };
 						Pen.width = 5;
 						Pen.color = Color.black;
 						Pen.roundedRect(  rect.insetBy( border - 3.5, border - 3.5 ),

@@ -3,7 +3,178 @@
 
 LNX_AppMenus {
 
-	var lnx;
+	classvar >studio;
+
+	*initClass { Class.initClassTree(Menu) }
+
+	// new sc1.8 style menus //////////////////////////////////////////////////////////
+
+	*menus{
+		^[
+			// main menu
+			Menu(
+				Action("About",       { "About".postln }),
+				Action.separator,
+				Action("Preferences", { studio.preferences }),
+				Action.separator,
+				Action("Quit",        { studio.quit }).shortcut_("Ctrl+Q")
+			).title_("SuperCollider"),
+
+			// file menu
+			Menu(
+				Action("Open",				{ studio.loadDialog }).shortcut_("Ctrl+O"),
+				Action("Open Last Song",	{ studio.quickLoad }).shortcut_("Ctrl+Shift+O"),
+				Action("Open Demo Song",	{ studio.loadDemoSong }),
+				Action.separator,
+				Action("Save",				{ studio.saveDialog }).shortcut_("Ctrl+S"),
+				Action("Save As...",		{ studio.saveAsDialog }).shortcut_("Ctrl+Shift+S"),
+				Action.separator,
+				Action("Close Song", 		{ studio.guiCloseStudio }).shortcut_("Ctrl+Shift+W"),
+			).title_("File"),
+
+			// edit menu
+			Menu(
+				Action("Stop Audio",			{CmdPeriod.run}).shortcut_("Ctrl+."),
+				Action.separator,
+				Action("Copy Instrument",		{ studio.guiCopy }).shortcut_("Ctrl+Shift+C"),
+				Action("Paste Instrument",		{ studio.guiPaste }).shortcut_("Ctrl+Shift+V"),
+				Action("Duplicate Instrument",	{ studio.guiDuplicate }).shortcut_("Ctrl+Shift+D"),
+				Action.separator,
+				Action("Delete Instrument",		{ studio.guiDeleteInst }).shortcut_("Ctrl+Shift+Backspace"),
+				Action.separator,
+				Action("Clear Instrument Sequencer", {
+					if (studio.insts.selectedInst.notNil) {
+						studio.insts.selectedInst.clearSequencer
+					}
+				}),
+				Action("Clear All Sequencers",			{ studio.insts.do(_.clearSequencer) }),
+				Action("Clear Instrument Automation",	{
+/*					if (studio.insts.selectedInst.notNil) {
+						studio.insts.selectedInst.freeAutomation
+					}*/
+				}),
+				Action("Clear Studio Automation",		{
+					//studio.freeAutomation
+				}),
+				Action("Clear All Automation",			{
+					//studio.freeAllAutomation
+				}),
+				Action.separator,
+				Action("All MIDI Controls",		{ studio.editMIDIControl }).shortcut_("Ctrl+M"),
+
+			).title_("Edit"),
+
+			// library menu
+			Menu(
+				Action("Add Instrument to Library",	{ studio.guiSaveInstToLibrary }).shortcut_("Ctrl+L"),
+				Action.separator,
+				Action("Backup Library to Desktop", { studio.backupLibrary }),
+				Action("Restore Library Defaults",	{ studio.restoreLibraryDefaults }),
+				Action("Check For Library Updates",	{ studio.checkForLibraryUpdates }),
+				Action("Open Library Folder",		{ studio.openLibraryFolderInOS }),
+			).title_("Library"),
+
+			// network menu
+			Menu(
+				Action("Open Network", 	{ studio.network.guiConnect }).shortcut_("Ctrl+N"),
+				Action.separator,
+				Action("Leave Colaboration",	{ studio.network.collaboration.guiLeave }),
+				Action("Close Network",			{ studio.network.disconnect }),
+				Action.separator,
+				Action("Network prefereces",	{ studio.network.preferences }),
+			).title_("Network"),
+
+			//  dev menu
+			Menu(
+				Action("Code Window",{
+					TextView().enterInterpretsSelection_(true).front;
+				}).shortcut_("Ctrl+1"),
+
+				Action("Recompile Class Libray",{thisProcess.platform.recompile}).shortcut_("Ctrl+Shift+L"),
+
+				Action.separator,
+				Action("Save interval / Stop",{ studio.saveInterval }),
+				Action("Start Batch Recording",{
+					studio.hackOn_(true);
+					studio.batchOn_(true);
+					studio.batch_(1);
+					studio.batchFolder_(studio.batchFolder+1)
+				}),
+				Action("Stop Batch Recording",{
+					studio.batchOn_(false);
+					studio.hackOn_(false);
+				}),
+				Action("Reset Batch",{ studio.batchFolder_(0) }),
+				Action.separator,
+				Action("My Hack",{
+					studio.hackOn_(true);
+					studio.myHack[\window].create.front;
+				}),
+				Action("Index all help files",{  SCDoc.indexAllDocuments }),
+				Action("Render all help files",{ SCDoc.renderAll }),
+				Action("Open Browser",{ ~b=LNX_WebBrowser().open }).shortcut_("Ctrl+0"),
+				Action.separator,
+				Action("Quarks",{ Quarks.gui }),
+				Action.separator,
+				Action("MVC Verbose",{ MVC_View.verbose_(MVC_View.verbose.not) }),
+				Action("MVC Show Background",{
+					MVC_View.showLabelBackground_(MVC_View.showLabelBackground.not)
+				}),
+				Action("MVC Edit / Resize",{
+					if (MVC_View.editMode==false) {
+						MVC_View.editResize=false;
+						MVC_View.editMode_(true);
+						"Edit mode: On".postln;
+						"MVC_View.grid_(1)".postln;
+					}{
+						if (MVC_View.editResize==false) {
+							MVC_View.editResize=true;
+							"Edit mode: Resize".postln;
+						}{
+							MVC_View.editMode_(false);
+							"Edit mode: Off".postln;
+						};
+					};
+				}).shortcut_("Ctrl+R"),
+				Action("ColorPicker",{ ColorPicker() }),
+				Action.separator,
+				Action("Server Window",{ studio.server.makeWindow }),
+				Action("Network Verbose",{
+					studio.network.socket.verbose_(studio.network.socket.verbose.not);
+				}),
+				Action.separator,
+			).title_("Dev"),
+
+			//  windows menu
+			Menu(
+				Action("Minimise",					{}),
+				Action("Enter / exit full screen",	{}),
+				Action("Arrange",					{}),
+				Action("Close Window",				{}),
+			).title_("Windows"),
+
+			//  help menu
+			Menu(
+				Action("Help with LNX_Studio",		{studio.openHelp}).shortcut_("Ctrl+D"),
+				Action("Help with Supercollider",	{Help.help}),
+				Action.separator,
+			).title_("Help"),
+
+		];
+	}
+
+/*
+
+			//  menu
+			Menu(
+				Action("",				{}).shortcut_("Ctrl+"),
+				Action("",				{}),
+				Action.separator,
+			).title_("Name"),
+*/
+
+
+	///////////////////////////////////////////////////////////////////////////////////////
 
 	// application menus for the standalone release
 
