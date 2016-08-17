@@ -85,7 +85,7 @@
 
 	// text that says "Instruments"... on empty song
 	updateMixerInfoText{
-/*		mixerGUI[\instInfoText].hidden_(insts.mixerInstruments.size>0);
+		mixerGUI[\instInfoText].hidden_(insts.mixerInstruments.size>0);
 		mixerGUI[\fxInfoText].hidden_(insts.effects.size>0);
 		mixerGUI[\midiInfoText].hidden_(insts.midi.size>0);
 		mixerGUI[\everythingInfoText].hidden_(insts.size>0);
@@ -97,7 +97,7 @@
 			mixerGUI[\everythingInfoText].bounds_(
 				Rect(155+ (mixerGUI[\presetTab].bounds.width-492/2), 212, 148, 34)
 			);
-		};*/
+		};
 	}
 
 	editMIDIControl{
@@ -327,14 +327,14 @@
 			.adjustments_([nil, Rect(83-10,0,-83+10,0),nil,nil])
 			.value_(0)
 			.resizeAction_{
-/*				if (insts.size<1) {
+				if (insts.size<1) {
 					mixerGUI[\instInfoText].bounds_(
 						Rect(155+ (mixerGUI[\instScrollView].bounds.width-492/2), 210, 163, 30)
 					);
 					mixerGUI[\everythingInfoText].bounds_(
 						Rect(155+ (mixerGUI[\presetTab].bounds.width-492/2), 212, 148, 34)
 					);
-				};*/
+				};
 			};
 
 		mixerGUI[\masterTabs].focusActions_([{},{
@@ -420,8 +420,8 @@
 			.color_(\background, Color(6/11,42/83,29/65));
 
 		// instrument logo
-/*		mixerGUI[\instInfoText] = MVC_ImageView(mixerGUI[\instScrollView],Rect(155, 212, 163, 30))
-			.image_("fontImages/Instruments.tiff");*/
+		mixerGUI[\instInfoText] = MVC_ImageView(mixerGUI[\instScrollView],Rect(155, 212, 163, 30))
+			.image_("fontImages/Instruments.png");
 
 		// the fx scroll view
 		mixerGUI[\fxScrollView] = MVC_RoundedScrollView (mixerWindow,
@@ -434,8 +434,8 @@
 			.hasVerticalScroller_(true);
 
 		// effects logo
-/*		mixerGUI[\fxInfoText] = MVC_ImageView(mixerGUI[\fxScrollView],Rect(49, 130, 80, 27))
-			.image_("fontImages/Effects.tiff");*/
+		mixerGUI[\fxInfoText] = MVC_ImageView(mixerGUI[\fxScrollView],Rect(49, 130, 80, 27))
+			.image_("fontImages/Effects.png");
 
 		// the midi scroll view
 		mixerGUI[\midiScrollView] = MVC_RoundedScrollView (mixerWindow,
@@ -449,8 +449,8 @@
 			.hasHorizontalScroller_(false);
 
 		// MIDI logo
-/*		mixerGUI[\midiInfoText] = MVC_ImageView(mixerGUI[\midiScrollView],Rect(88, 71, 59, 26))
-			.image_("fontImages/MIDI.tiff");*/
+		mixerGUI[\midiInfoText] = MVC_ImageView(mixerGUI[\midiScrollView],Rect(88, 71, 59, 26))
+			.image_("fontImages/MIDI.png");
 
 		// the master levels scroll view
 		mixerGUI[\masterLevelsScrollView] = MVC_RoundedScrollView (mixerWindow,
@@ -518,12 +518,12 @@
 		LNX_POP.createWidgets( mixerGUI[\popProgramsScrollView], mixerGUI[\presetTab]);
 
         // everthing text
-		mixerGUI[\everythingInfoText] = MVC_StaticText(mixerGUI[\presetTab], mixerGUI[\textTheme],
-			Rect(20, 190, 369, 43)).string_("Everything");
+/*		mixerGUI[\everythingInfoText] = MVC_StaticText(mixerGUI[\presetTab], mixerGUI[\textTheme],
+			Rect(20, 190, 369, 43)).string_("Everything");*/
 
-/*        // Everything logo
+        // Everything logo
 		mixerGUI[\everythingInfoText] = MVC_ImageView(mixerGUI[\presetTab],Rect(155, 212, 148, 34))
-			.image_("fontImages/Everything.tiff");*/
+			.image_("fontImages/Everything.png");
 
 		// auto On (play)
 		mixerGUI[\autoPlay] = MVC_OnOffFlatView(models[\autoOn],mixerWindow,Rect(722+71, 468, 19, 19))

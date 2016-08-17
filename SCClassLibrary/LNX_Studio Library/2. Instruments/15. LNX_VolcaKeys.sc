@@ -612,8 +612,8 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 			.autohidesScrollers_(false);
 
 		// logo
-/*		MVC_ImageView(gui[\controlsTab],Rect(8, 231, 135, 29))
-			.image_("fontImages/Volca Keys.tiff");*/
+		MVC_ImageView(gui[\controlsTab],Rect(8, 231, 135, 29))
+			.image_("fontImages/Volca Keys.png");
 
 		gui[\sequencerTab] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(1),Rect(4,4,654,269))
 			.color_(\border, Color(0.6 , 0.562, 0.5))

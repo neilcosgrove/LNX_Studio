@@ -739,8 +739,8 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		MVC_PlainSquare(gui[\scrollView], Rect(0,217,735,5), gui[\plainTheme]);
 
 		// logo
-/*		MVC_ImageView(gui[\scrollView],Rect(543, 226, 166, 30))
-			.image_("fontImages/Moog Sub 37.tiff");	*/
+		MVC_ImageView(gui[\scrollView],Rect(543, 226, 166, 30))
+			.image_("fontImages/Moog Sub 37.png");
 
 		// levels
 		MVC_FlatDisplay(this.peakLeftModel,gui[\scrollView],Rect(718, 224, 6, 51));

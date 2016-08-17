@@ -252,8 +252,8 @@ LNX_POP {
 			};
 
 		// logo
-/*		MVC_ImageView(gui[\window],Rect(3, 9, 70, 21))
-			.image_("fontImages/Program.tiff");*/
+		MVC_ImageView(gui[\window],Rect(3, 9, 70, 21))
+			.image_("fontImages/Program.png");
 
 		// 23.program number (to become)
 		gui[\program]=MVC_ProgramChangeMain(studioModels[\toBecome],gui[\window],

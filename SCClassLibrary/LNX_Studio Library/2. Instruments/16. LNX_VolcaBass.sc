@@ -577,8 +577,8 @@ LNX_VolcaBass : LNX_InstrumentTemplate {
 			.autohidesScrollers_(false);
 
 		// logo
-/*		MVC_ImageView(gui[\controlsTab],Rect(11, 235, 126, 25))
-			.image_("fontImages/Volca Bass.tiff");*/
+		MVC_ImageView(gui[\controlsTab],Rect(11, 235, 126, 25))
+			.image_("fontImages/Volca Bass.png");
 
 		gui[\sequencerTab] = MVC_RoundedCompositeView(gui[\masterTabs].mvcTab(1),Rect(4,4,654,269))
 			.color_(\border,  Color(0.6 , 0.562, 0.5))

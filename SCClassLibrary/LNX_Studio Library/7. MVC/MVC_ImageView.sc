@@ -8,8 +8,8 @@ MVC_ImageView : MVC_View {
 	var <image="lnx.jpg", scimage;
 
 	*initClass{
-/*		lnx = Image.new(Platform.lnxResourceDir +/+ "lnx.jpg");*/
-		// gs = SCImage.new(String.scDir +/+ "GS Rhythm.jpg");
+		lnx = Image.open(Platform.lnxResourceDir +/+ "lnx.png");
+		// gs = SCImage.open(String.scDir +/+ "GS Rhythm.jpg");
 	}
 
 	// set your defaults
@@ -17,7 +17,7 @@ MVC_ImageView : MVC_View {
 		if (image=="lnx.jpg") {
 			scimage = lnx
 		} {
-			scimage = Image.new(Platform.lnxResourceDir +/+ image)
+			scimage = Image.open(Platform.lnxResourceDir +/+ image)
 		}
 	}
 

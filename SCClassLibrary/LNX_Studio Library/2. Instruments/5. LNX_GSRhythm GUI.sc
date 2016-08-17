@@ -309,8 +309,8 @@
 		tab=gui[\tabView2].mvcTab(8);
 
 		// logo
-/*		MVC_ImageView(tab,Rect(226, 165, 241, 36))
-			.image_("fontImages/GS Rhythm Box.tiff");*/
+		MVC_ImageView(tab,Rect(226, 165, 241, 36))
+			.image_("fontImages/GS Rhythm Box.png");
 
 		// MIDI Settings
  		MVC_FlatButton(tab,Rect(10, 1, 43, 19),"MIDI")

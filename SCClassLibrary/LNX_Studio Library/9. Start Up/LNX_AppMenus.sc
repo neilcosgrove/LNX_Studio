@@ -13,7 +13,7 @@ LNX_AppMenus {
 		^[
 			// main menu
 			Menu(
-				Action("About",       { "About".postln }),
+				Action("About",       { LNX_SplashScreen.init(studio,true) }),
 				Action.separator,
 				Action("Preferences", { studio.preferences }),
 				Action.separator,

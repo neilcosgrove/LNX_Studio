@@ -614,8 +614,8 @@ LNX_Melody : LNX_InstrumentTemplate {
 			.color_(\label,Color.black);
 
 		// logo
-/*		MVC_ImageView(gui[\scrollView],Rect(654, 411, 118, 21))
-			.image_("fontImages/Melody Maker.tiff");*/
+		MVC_ImageView(gui[\scrollView],Rect(654, 411, 118, 21))
+			.image_("fontImages/Melody Maker.png");
 
 		// 1.on/off
 		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(4, 7,22,18),gui[\onOffTheme1])

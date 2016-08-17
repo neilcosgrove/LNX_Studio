@@ -275,8 +275,8 @@
 			.color_(\on,border);
 
 		// logo
-/*		MVC_ImageView(gui[\controlsView],Rect(7,5, 106, 22))
-			.image_("fontImages/Bum Note 2.tiff");*/
+		MVC_ImageView(gui[\controlsView],Rect(7,5, 106, 22))
+			.image_("fontImages/Bum Note 2.png");
 		// the high pass filter ///////////////////////////////////////////////////////////////////
 
 		MVC_StaticText(gui[\controlsView], Rect(215, 11, 81, 18),gui[\labelTheme])

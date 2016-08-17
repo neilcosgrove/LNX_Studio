@@ -894,8 +894,8 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		MVC_PlainSquare(gui[\scrollView], Rect(697,127,3,116), gui[\plainTheme2]);
 
 		// logo
-/*		MVC_ImageView(gui[\scrollView],Rect(2, 249, 168, 27))
-			.image_("fontImages/JP08.tiff");*/
+		MVC_ImageView(gui[\scrollView],Rect(2, 249, 168, 27))
+			.image_("fontImages/JP08.png");
 
 		// levels
 		MVC_FlatDisplay(this.peakLeftModel,gui[\scrollView],Rect(365, 147, 6, 80));

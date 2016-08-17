@@ -739,8 +739,8 @@ MVC_Automation {
 												\off: Color(1,1,1,0.5)));
 
 		// logo
-/*		MVC_ImageView(gui[\window],Rect(33, 3, 107, 22))
-			.image_("fontImages/Automation.tiff");	*/
+		MVC_ImageView(gui[\window],Rect(33, 3, 107, 22))
+			.image_("fontImages/Automation.png");
 
 		// pen mode (write, erase, slect, value)
 		gui[\write] = MVC_OnOffView(gui[\window],Rect(10, 91, 49, 19), gui[\themeOnOff])

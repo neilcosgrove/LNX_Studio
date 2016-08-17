@@ -568,8 +568,8 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 		gui[\scrollView] = window;
 
 		// logo
-/*		MVC_ImageView(gui[\scrollView],Rect(4, 182, 140, 26))
-			.image_("fontImages/Volca Beats.tiff");*/
+		MVC_ImageView(gui[\scrollView],Rect(4, 182, 140, 26))
+			.image_("fontImages/Volca Beats.png");
 
 		// 3. in
 		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(5,5,70,17), gui[\menuTheme ] );

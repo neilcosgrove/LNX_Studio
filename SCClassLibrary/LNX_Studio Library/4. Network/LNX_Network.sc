@@ -934,7 +934,7 @@ LNX_Network {
 				.color_(\iconDown,Color.grey/2);
 				
 			MVC_ImageView(gui[\bg],Rect(10,7,25,35))
-				.image_("lnx.jpg");
+				.image_("lnx.png");
 			
 			s=		"          "++
 					"Room"++
