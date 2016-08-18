@@ -3,7 +3,7 @@
 
 MVC_Window {
 
-	classvar windows;
+	classvar windows, <frontWindow;
 
 	var <view, bounds, <name, <resizable, <>border, <>scroll;
 	var <>onClose, <userCanClose=true;
@@ -95,6 +95,7 @@ MVC_Window {
 			.acceptsMouseOver_(acceptsMouseOver)
 			.acceptsClickThrough_(acceptsClickThrough)
 			.toFrontAction_{
+				frontWindow = this;
 				isFront = true;
 				bounds = view.bounds.convert;
 				if (missFirstToFront) {
@@ -208,6 +209,8 @@ MVC_Window {
 	// and close it
 	close{ if (this.notClosed) { view.close } }
 
+	guiClose { if(userCanClose) { this.close} }
+
 	// bring window to front
 	front{
 		if (keepClosed.not) {
@@ -306,6 +309,12 @@ MVC_Window {
 		}
 	}
 
+	// hides the window, only keeping its representation in the dock, taskbar, etc..
+	minimize{ if (this.notClosed) { view.minimize } }
+
+	// restores the window's previous state after being minimized.
+	unminimize{if (this.notClosed) { view.unminimize } }
+
 	// refresh the view
 	refresh{ if (this.notClosed) {view.refresh} }
 
@@ -348,7 +357,7 @@ MVC_Window {
 	}
 
 	// get the bounds
-	bounds {
+	bounds{
 		if (created) {
 			if (this.isVisible) {
 				^view.bounds.convert

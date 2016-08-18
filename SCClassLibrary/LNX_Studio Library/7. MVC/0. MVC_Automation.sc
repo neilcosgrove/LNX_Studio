@@ -689,7 +689,7 @@ MVC_Automation {
 
 		gui[\window] = window;
 
-		gui[\items] = MVC_ListView2(gui[\window],Rect(205, 5, 273, 110))
+		gui[\items] = MVC_ListView2(gui[\window],Rect(205, 5, 273+71, 110))
 			.items_(gui[\names])
 			.font_(Font("Helvetica",11))
 			.action_{
@@ -833,7 +833,7 @@ MVC_Automation {
 				};
 
 		// offset
-		gui[\offset] = MVC_SmoothSlider(gui[\window],models[\offset],Rect(135, 405+15, 343, 20))
+		gui[\offset] = MVC_SmoothSlider(gui[\window],models[\offset],Rect(135, 405+15, 343+71, 20))
 			.thumbSizeAsRatio_(1)
 			.resize_(5)
 			.color_(\knob,Color(1,1,1,86/125))
@@ -892,7 +892,7 @@ MVC_Automation {
 				gui[\offset].thumbSizeAsRatio_(1/(models[\zoom].value));
 			};
 
-		gui[\graph] = MVC_UserView(gui[\window], Rect(10, 120, 468, 280+15) )
+		gui[\graph] = MVC_UserView(gui[\window], Rect(10, 120, 468+71, 280+15) )
 
 		// 0.0625 is max resoultion we would need when drawing
 

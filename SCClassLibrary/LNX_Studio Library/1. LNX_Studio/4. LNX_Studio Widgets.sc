@@ -1152,7 +1152,7 @@
 
 				// MIDI icon
 				mixerGUI[id][\midi]=MVC_OnOffView(inst.onOffModel,sv,
-											Rect(151,3,39,16))
+											Rect(151,3,83,16))
 					.permanentStrings_(["MIDI"])
 					.canFocus_(false)
 					.color_(\on, Color(0.2,0.3,0.5))

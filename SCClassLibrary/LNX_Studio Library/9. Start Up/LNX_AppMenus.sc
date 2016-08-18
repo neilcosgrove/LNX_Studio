@@ -13,7 +13,7 @@ LNX_AppMenus {
 		^[
 			// main menu
 			Menu(
-				Action("About",       { LNX_SplashScreen.init(studio,true) }),
+				Action("About LNX_Studio",       { LNX_SplashScreen.init(studio,true) }),
 				Action.separator,
 				Action("Preferences", { studio.preferences }),
 				Action.separator,
@@ -60,7 +60,7 @@ LNX_AppMenus {
 					//studio.freeAllAutomation
 				}),
 				Action.separator,
-				Action("All MIDI Controls",		{ studio.editMIDIControl }).shortcut_("Ctrl+M"),
+				Action("All MIDI Controls",		{ studio.editMIDIControl }).shortcut_("Ctrl+Shift+M"),
 
 			).title_("Edit"),
 
@@ -79,9 +79,9 @@ LNX_AppMenus {
 				Action("Open Network", 	{ studio.network.guiConnect }).shortcut_("Ctrl+N"),
 				Action.separator,
 				Action("Leave Colaboration",	{ studio.network.collaboration.guiLeave }),
-				Action("Close Network",			{ studio.network.disconnect }),
+				Action("Close Network",			{ studio.network.disconnect }).shortcut_("Ctrl+Shift+N"),
 				Action.separator,
-				Action("Network prefereces",	{ studio.network.preferences }),
+				Action("Network Prefereces",	{ studio.network.preferences }),
 			).title_("Network"),
 
 			//  dev menu
@@ -147,10 +147,9 @@ LNX_AppMenus {
 
 			//  windows menu
 			Menu(
-				Action("Minimise",					{}),
-				Action("Enter / exit full screen",	{}),
+				Action("Minimise",					{ MVC_Window.frontWindow.minimize }).shortcut_("Ctrl+M"),
 				Action("Arrange",					{}),
-				Action("Close Window",				{}),
+				Action("Close Window",				{ MVC_Window.frontWindow.guiClose }),
 			).title_("Windows"),
 
 			//  help menu
