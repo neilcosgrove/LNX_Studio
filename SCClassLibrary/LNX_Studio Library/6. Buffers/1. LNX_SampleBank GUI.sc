@@ -6,40 +6,40 @@
 	// now i can add a samplesWidgets
 	// what about later when i want to do this in other gui's? needs to true mvc some how.
 	//////////////////////////////////////////////////////////////////////////////////////////
-		
+
 	// calls update func in all gui's
 	*callUpdate{|buffer| {updateFuncs.do{|f| f.value(buffer)}}.defer; }
-	
+
 	window_{|argWindow| window = argWindow }
-		
+
 	isOpen{ ^((window.notNil)and:{window.isClosed.not}) }
-	
+
 	// select the sample in this gui
 	selectSample{|i,focus=false,send=true|
 		i=i.clip(0,samples.size-1);
 		selectedSampleNo=i;
 		selectedAction.value(this,selectedSampleNo,send);
-		// + update gui		
+		// + update gui
 		guiList.do{|gui,j|
 			if (i==j) {
-				gui[\compositeView].color_(\background, Color(1,1,1,0.8));
-				
+				gui[\compositeView].color_(\background, Color(0.8,0.8,0.8));
+
 				if (gui[\compositeView2].notNil) {
-					gui[\compositeView2].color_(\background, Color(1,1,1,0.8));
+					gui[\compositeView2].color_(\background, Color(0.8,0.8,0.8));
 				};
-				
+
 				if (focus) {gui[\mouseActions].focus};
 			}{
-				gui[\compositeView].color_(\background, Color(1,1,1,0.3));
-				
+				gui[\compositeView].color_(\background, Color(0.4,0.4,0.4));
+
 				if (gui[\compositeView2].notNil) {
-					gui[\compositeView2].color_(\background, Color(1,1,1,0.3));
+					gui[\compositeView2].color_(\background, Color(0.7,0.7,0.7));
 				};
-				
+
 			};
 		};
 	}
-	
+
 	// used to update the selected sample in GSRhythm
 	updateSelectedSample{|i|
 		i=i.clip(0,samples.size-1);
@@ -49,59 +49,59 @@
 
 	// used to update the sample name list in GSRhythm
 	updateList{|send=true, updateBank=true| itemAction.value(this,this.names,send,updateBank) }
-		 
+
 	// this is called by putLoadListURL
 	updateGUI{|updateBank=true| this.updateList(false,updateBank) }
-	
+
 	// swap samples i & j (this is really move not swap!)
 	guiSwap{|i,j| api.groupCmdOD(\netSwap,i,j) }
-	
+
 	// net version of above
 	netSwap{|i,j|
 		i=i.asInt;
 		j=j.asInt;
-		
+
 		guiList     = guiList.move(i,j);
 		samples     = samples.move(i,j);
 		metaModels  = metaModels.move(i,j);
 		otherModels  = otherModels.move(i,j);
-		
+
 		guiList.do{|gui,i| gui[\i]=i }; // aline gui index numbers
-		
-		this.adjustViews;			
-		this.updateList(false);		
+
+		this.adjustViews;
+		this.updateList(false);
 	}
-	
+
 	// play the buffer
 	play{|i,loop=false|
 		var otherModel = otherModels[i];
-		
+
 		if (samples[i].isLoaded.not) {^nil}; // drop out
-		
+
 		this.stop;
-		
+
 		lastModel=otherModel;
-		
+
 		lastSynth=samples[i].play(loop, this.amp(i).dbamp, this.start(i));
-		
+
 		// for the gui playback
 		task= Task({
 			var startTime = AppClock.now;
-			var dur = samples[i].duration;	
+			var dur = samples[i].duration;
 			var s   = this.start(i);
-			inf.do{ 
+			inf.do{
 				if  ((loop.not)and:{((AppClock.now-startTime)>(dur*(1-s)))}) {
 					otherModel[\pos2].valueAction_(-1,0,true);
 					task.stop;
-				}{	
+				}{
 					otherModel[\pos2].valueAction_((AppClock.now-startTime/dur+s).wrap(0,1));
 				};
 				(1/30).wait;
 			};
 		}).start(AppClock);
-		
+
 	}
-	
+
 	// stop playback
 	stop{
 		task.stop; // clear the playback markers just in case
@@ -112,17 +112,17 @@
 		lastModel = nil;
 		lastSynth = nil;
 	}
-	
+
 	// play the currently selected sample
 	playSelectedSample{ if (selectedSampleNo.notNil) { this.play(selectedSampleNo)} }
-	
+
 	// for tuning samples
 	*initUGens{|server|
 		SynthDef("tune",{ arg freq=440, amp=1;
 			Out.ar(0, Mix( LFTri.ar(freq * [1,2,3], 0, amp* [0.1,0.055,0.035]) ).dup);
 		}).send(server);
 	}
-	
+
 	// adjust the position of the gui items, i.e when moving or deleting
 	adjustViews{
 		var w = window.bounds.width;
@@ -132,24 +132,24 @@
 			i = gui[\i];
 			t = i * h;
 			gui[\compositeView].bounds_(Rect(0,t,w,h-1));
-			
-			// and scCode interface list if it exists 
+
+			// and scCode interface list if it exists
 			if (gui[\compositeView2].notNil) {
 				var w = window2.bounds.width;
 				var h = 20;
 				var t = i * h;
 				gui[\compositeView2].bounds_(Rect(0,t,w,h-1));
 			};
-		};	
+		};
 	}
-	
+
 	// open the metadata editor for this sample
 	openSelectedMeta{|window|
 		if (this.size>0) {
 			this.openMetadataEditor(window.view, selectedSampleNo);
 		}
 	}
-	
+
 	// create the widgets for the sampleLIst item i
 	addSampleWidgets{|i,select=true|
 		var buf = samples[i];
@@ -158,38 +158,38 @@
 		var w = window.bounds.width;
 		var gui=();
 		var moved=false;
-		
+
 		var playingSynth;
-		
+
 		h=h-1;
-		
+
 		gui[\i]=i; // used to store i because it can change
-		
+
 		// the composite view
 		gui[\compositeView] = MVC_CompositeView(window, Rect(0,t,w,h-1), false)
 			.hasBorder_(false)
 			.color_(\background, Color(1,1,1,0.3));
-			
+
 		// the name
 		gui[\name] = MVC_StaticText(gui[\compositeView],Rect(2,0,w-4,18))
 			.string_(buf.name)
 			.shadow_(false)
 			.color_(\string,Color.black)
 			.font_(Font("Helvetica",12));
-			
-		// % complete	
+
+		// % complete
 		gui[\percentageComplete] = MVC_DownloadStatus(gui[\compositeView], Rect(2,19,w-8,10),
 				buf.models[\percentageComplete])
 			.locked_(true);
-						
+
 		gui[\line] = MVC_PlainSquare(gui[\compositeView], Rect(0,h,w,1))
 			.color_(\on,Color.black)
-			.color_(\off,Color.black);		
+			.color_(\off,Color.black);
 
 		gui[\line2] = MVC_PlainSquare(gui[\compositeView], Rect(0,0,w,1))
 			.color_(\on,Color(1,1,1,0.33))
 			.color_(\off,Color(1,1,1,0.33));
-	
+
 		// this is over the top
 		gui[\mouseActions] = MVC_UserView(gui[\compositeView], Rect(0,0,w,h))
 			.canFocus_(true)
@@ -209,7 +209,7 @@
 					}{
 						// i need to document why is this here? to check
 						selectMeFunc.value(selectedSampleNo);
-						moved=false;		
+						moved=false;
 					};
 				}
 			}
@@ -260,33 +260,33 @@
 					{124} {}
 					{};
 			};
-			
+
 		// the 2nd list in SCCode
-			
-			
+
+
 		if (window2.notNil) {
 			var h = 20;
 			var t = i * h;
 			var w = window2.bounds.width;
-			
-			
+
+
 			gui[\numberBoxTheme] = (
 				font_:Font("Helvetica",12),
 				colors_:(\background:Color(0,0,0,0),\typing:Color.orange/2),
 				visualRound_:0.01,
 				showBorder_:false,
 				mouseDownAction_:{ this.allInterfacesSelect(gui[\i]) }
-			);	
-			
+			);
+
 			// the composite view
 			gui[\compositeView2] = MVC_CompositeView(window2, Rect(0,t,315,h), false)
 				.hasBorder_(false)
 				.color_(\background, Color(1,1,1,0.3));
-				
+
 			gui[\line] = MVC_PlainSquare(gui[\compositeView2], Rect(0,0,w,1))
 				.color_(\on,Color.black)
-				.color_(\off,Color.black);		
-	
+				.color_(\off,Color.black);
+
 			gui[\line2] = MVC_PlainSquare(gui[\compositeView2], Rect(0,1,w,1))
 				.color_(\on,Color(1,1,1,0.33))
 				.color_(\off,Color(1,1,1,0.33));
@@ -302,7 +302,7 @@
 				.font_(Font("Helvetica",12))
 				.mouseDownAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 					this.allInterfacesSelect(gui[\i]);
-					moved=false;					
+					moved=false;
 				}
 				.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 					var j=(gui[\i]+((y/h).floor)).clip(0,samples.size-1);
@@ -320,12 +320,12 @@
 					};
 					moved=false;
 				}
-		
+
 				.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 					// 49 space, 36 return, 51 delete, up,down,left,right 126,125,123,124
 					switch (keycode)
 						{49} { // space
-							this.playSelectedSample	
+							this.playSelectedSample
 						}
 						{36} { // return
 							this.allInterfacesSelect(
@@ -338,8 +338,8 @@
 									window2.visibleOrigin_(0@
 										(guiList[selectedSampleNo][\compositeView2]
 										.bounds.top)
-									);			
-							};	
+									);
+							};
 						}
 						{51} { // delete
 							this.guiRemove(selectedSampleNo);
@@ -368,14 +368,14 @@
 									window2.visibleOrigin_(0@
 										(guiList[selectedSampleNo][\compositeView2]
 										.bounds.top)
-									);	
-									
+									);
+
 							};
 						}
 						{123} {} // left
 						{124} {} // right
 				};
-			
+
 			// the sample amp
 			gui[\listAmp] = MVC_NumberBox(gui[\compositeView2],metaModels[i][\amp],
 						Rect(186-15,2, 61, 16),gui[\numberBoxTheme])
@@ -386,13 +386,13 @@
 					this.play( gui[\i], true);
 					speakerIcon.color_(\iconUp,Color.green);
 				}.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
-					
-					
+
+
 					lastSynth.set(\mul,me.value.dbamp);
-					
+
 					//lastSynth=samples[i].play(loop, this.amp(i).dbamp
-					
-					
+
+
 					//playingSynth.set(\freq,me.value.midicps);
 				}
 				.mouseUpAction_{|me, x, y, modifiers, buttonNumber, clickCount|
@@ -400,7 +400,7 @@
 					speakerIcon.color_(\iconUp,Color.black);
 				};
 
-			// the sample pitch	
+			// the sample pitch
 			gui[\listPitch] = MVC_NumberBox(gui[\compositeView2],metaModels[i][\pitch],
 						Rect(247-15, 2, 75, 16),gui[\numberBoxTheme])
 				.postfixFunc_{|val| (val.asNote)++"  "}
@@ -420,28 +420,28 @@
 					playingSynth=nil;
 					speakerIcon.color_(\iconUp,Color.black);
 				};
-			
+
 		};
 
-		window.visibleOrigin_(0@((gui[\i]+1)*h));		
+		window.visibleOrigin_(0@((gui[\i]+1)*h));
 		guiList = guiList.add(gui);
 		if (select) { this.selectSample(gui[\i],false,false)};
-		
+
 	}
-	
+
 	// select sample
 	allInterfacesSelect{|i,send=false|
 		this.selectSample(i,send);
 		this.updateSelectedSample(i);
 		selectSampleFuncs.do{|func| func.value(i) };	// this is a problem
 	}
-	
-	
+
+
 	// gui call for setting the interval
 	guiInterval{|parentWindow|
-		
+
 		var window, scrollView;
-		
+
 		window = MVC_ModalWindow(parentWindow, 195@90);
 		scrollView = window.scrollView;
 
@@ -453,65 +453,65 @@
 
 		// Cancel
 		MVC_OnOffView(scrollView,Rect(5, 44, 55, 20),"Cancel")
-			.rounded_(true)  
+			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
 			.action_{	 window.close };
-			
+
 		// Ok
 		MVC_OnOffView(scrollView,Rect(119, 44, 50, 20),"Set")
-			.rounded_(true)  
+			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
-			.action_{	
+			.action_{
 				this.setInterval(iModel.value.asInt);
 				window.close;
 			};
-		
+
 	}
-	
+
 	// set the pitch interval between each sample
-	setInterval{|interval|		
+	setInterval{|interval|
 		if (this.notEmpty) {
 			var s = (selectedSampleNo?0).asInt;
 			var v = this.pitch(s);
 			this.size.do{|i| this.pitch_(i, (i-s) * interval + v ) };
 		}
 	}
-	
+
 	// *** Deleting while someone else on collaboration is still using will cause a crash !!!1
 
 	// MetaData Widgets //////////////////////////////////////////////////////////////////////
 	// this need to be more modular
 	// so i can use anywhere
 	//////////////////////////////////////////////////////////////////////////////////////////
-	
+
 	// i can have an option to add multiple of the same so we can use many offset
 	// play and edit can just be buttons in the browser gui thinie
-	
+
 	// adding a download from search in the metaeditor doesn't update when loaded
 	// use select same item when finishing downloads
-	
+
 	openMetadataEditor{|window,i,search=false,webBrowser,argColors,x=0|
-		
+
 		var buffer, models, otherModel, size, numChannels,  gui, colors, width, zoom, offset,
 			setVarsFunc, setModelsFunc, selectSampleFunc, lastPlayValue=false,
 			pos=(-1), pos2=(-1), scrollTask, moveIDX=0, status=(-5);
-		
+
 		// used after a buffer has loaded to update gui
 		var updateFunc={|buf|
-			if (buf==buffer) {	
+			if (buf==buffer) {
 				setVarsFunc.value;
 				setModelsFunc.value;
 				gui[\sampleView].refresh;
 			};
 		};
 		updateFuncs = updateFuncs.add(updateFunc);
-		
+
 		i=i.asInt.clip(0,this.size-1);
-		
+
 		// Functions used with the GUI
-		
+
 		// set the vars
 		setVarsFunc={
 			if (this.notEmpty) {
@@ -519,7 +519,7 @@
 				models = metaModels[i];
 				otherModel = otherModels[i];
 				if (buffer.buffer.isNil) {
-					numChannels = 1; 
+					numChannels = 1;
 					size = 1;
 				}{
 					numChannels = buffer.numChannels;
@@ -531,13 +531,13 @@
 				buffer = ();
 				models = ();
 				otherModel = ();
-				numChannels = 1; 
+				numChannels = 1;
 				size = 1;
 			}
 		};
-		
+
 		setVarsFunc.value;
-		
+
 		// set the models (used when selecting differt samples and the gui needs updating)
 		setModelsFunc={
 			if (this.notEmpty) {
@@ -584,7 +584,7 @@
 				gui[\numChannels].string_("-");
 			}
 		};
-		
+
 		// select sample from within this method (there is 1 @ the bottom for outside this method
 		selectSampleFunc={|j|
 			i=(j.asInt).wrap(0,samples.size-1);
@@ -594,9 +594,9 @@
 			this.selectSample(i,true);
 			this.updateSelectedSample(i);
 		};
-		
+
 		selectSampleFuncs = selectSampleFuncs.add(selectSampleFunc);
-		
+
 		// the gui itself
 		gui = ();
 		colors = (
@@ -605,14 +605,14 @@
 			border1: 			Color(0,1/103,3/77,65/77),
 			menuBackground:	Color(0.9,1,1)
 		) ++ ( argColors ? () );
-		
+
 		gui[\knobTheme1]=(
-			\colors_		: (\on : Color(50/77,61/77,1), 
+			\colors_		: (\on : Color(50/77,61/77,1),
 						   \numberUp:Color.black,
 						   \numberDown:Color.white),
 			\numberFont_  : Font("Helvetica",11));
-								
-		gui[\infoTheme]=(				
+
+		gui[\infoTheme]=(
 			\orientation_ : \horiz,
 			\labelShadow_ : false,
 			\labelFont_ : Font("Helvetica", 10),
@@ -621,9 +621,9 @@
 			\colors_	: (\string : Color.black, \label : Color.black),
 			\font_ : Font("Helvetica", 10)
 		);
-						
+
 		width = 560+x;
-		
+
 		// the zoom model
 		zoom = [1,[ (  (width/16/size).clip(0,1)   ),1,2]].asModel.action_{|me,value|
 			if (this.notEmpty) {
@@ -632,15 +632,15 @@
 				offset.controlSpec_([0,1-value]);
 			};
 		};
-		
+
 		// the offset model
 		offset = [0, [0,1-(zoom.value)]].asModel.action_{
 			if (this.notEmpty) {gui[\sampleView].refresh}
 		};
-			
+
 //******** needs some work
-		
-		if (window.isKindOf(MVC_CompositeView)) {	
+
+		if (window.isKindOf(MVC_CompositeView)) {
 			gui[\window] = window;
 			gui[\scrollView] = window;
 		}{
@@ -651,7 +651,7 @@
 				};
 			gui[\scrollView] = gui[\window].scrollView;
 		};
-			
+
 		// name
 		gui[\name] = MVC_StaticText( gui[\scrollView], Rect(42,5,490+x,18),
 						models[\name]??{"Press search to add samples -->".asModel})
@@ -659,7 +659,7 @@
 			.align_(\center)
 			.color_(\string,Color.black)
 			.font_(Font("Helvetica-Bold", 13));
-			
+
 		// path
 		gui[\path] = MVC_StaticText( gui[\scrollView], Rect(42,27,490+x,18))
 			.string_((this.notEmpty).if {buffer.url}{""})
@@ -669,8 +669,8 @@
 			.font_(Font("Helvetica", 10))
 			.mouseDownAction_{ gui[\path].color_(\string,Color.white) }
 			.mouseUpAction_{  gui[\path].color_(\string,Color.black);this.path(i).revealInFinder};
-		
-		// search the web button	
+
+		// search the web button
 		if (search) {
 				MVC_FlatButton(gui[\scrollView] ,Rect(546+x, 12, 20, 20),"search")
 					.color_(\up,Color(35/48,35/48,40/48)/3 )
@@ -680,10 +680,10 @@
 					.mode_(\icon)
 					.action_{ webBrowser.open };
 		};
-					
+
 		// up
 		MVC_OnOffView(gui[\scrollView],Rect(11, 4, 20, 20),"up")
-			.rounded_(true) 
+			.rounded_(true)
 			.mode_(\icon)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
@@ -691,29 +691,29 @@
 
 		// down
 		MVC_OnOffView(gui[\scrollView],Rect(11, 27, 20, 20),"down")
-			.rounded_(true) 
+			.rounded_(true)
 			.mode_(\icon)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
 			.action_{	 if (this.notEmpty) {selectSampleFunc.value(i+1)} };
-						
+
 		// play
 		gui[\play] = MVC_OnOffView(gui[\scrollView],Rect(12, 145+30, 20, 20),"play")
 			.mode_(\icon)
-			.rounded_(true)  
+			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
 			.action_{	 if (this.notEmpty) {this.play(i)} };
-						
+
 		// stop
 		gui[\stop] = MVC_OnOffView(gui[\scrollView],Rect(12+23, 145+30, 20, 20),"stop")
 			.insetBy_(0)
 			.mode_(\icon)
-			.rounded_(true)  
+			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
 			.action_{	 if (this.notEmpty) {this.stop} };
-					
+
 		// offset
 		gui[\offset] = MVC_SmoothSlider(gui[\scrollView],offset,Rect(61, 175, 436+x, 20))
 			.thumbSizeAsRatio_(zoom.value)
@@ -721,13 +721,13 @@
 			.color_(\hilite,Color(0,0,0,0.5))
 			.color_(\numberUp,Color.black)
 			.color_(\numberDown,Color.white);
-		
+
 		// zoom out
 		MVC_OnOffView(gui[\scrollView],Rect(472+30+x, 145+30, 20, 20),"-")
-			.rounded_(true)  
+			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
-			.action_{	
+			.action_{
 				if (this.notEmpty) {
 					zoom.multipyValueAction_(2);
 					if ((follow.value.isFalse) or: ({pos<0 and: {pos2<0}})) {} {
@@ -739,13 +739,13 @@
 					}
 				}
 			};
-		
+
 		// zoom in
 		MVC_OnOffView(gui[\scrollView],Rect(472+24+30+x, 145+30, 20, 20),"+")
-			.rounded_(true)  
+			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
-			.action_{	
+			.action_{
 				if (this.notEmpty) {
 					zoom.multipyValueAction_(0.5);
 					if ((follow.value.isFalse) or: ({pos<0 and: {pos2<0}})) {
@@ -759,18 +759,18 @@
 					};
 				}
 			};
-			
+
 		// zoom to fit
 		MVC_OnOffView(gui[\scrollView],Rect(550+x, 145+30, 20, 20),"=")
-			.rounded_(true)  
+			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
 			.action_{	 if (this.notEmpty) {zoom.valueAction_(1)} };
-		
+
 		// update the start position
 		gui[\sampleStartAdaptor] = MVC_FuncAdaptor ( models[\start] )
 			.func_{ if (this.notEmpty) {gui[\sampleView].refresh} };
-			
+
 		// update the position and use to colour play button
 		gui[\samplePosAdaptor2] = MVC_FuncAdaptor ( otherModel[\pos2] )
 			.func_{|me,value,delta|
@@ -801,7 +801,7 @@
 					}.defer(delta?0);
 				}
 			};
-			
+
 		// update the position and use to colour play button (from meta player?)
 		gui[\samplePosAdaptor] = MVC_FuncAdaptor ( otherModel[\pos] )
 			.func_{|me,value,delta|
@@ -838,34 +838,34 @@
 					}
 				}
 			};
-		
-		// % complete	
+
+		// % complete
 		gui[\percentageComplete] = MVC_FuncAdaptor(
 				(buffer.models.notNil).if{buffer.models[\percentageComplete]}{-5.asModel})
 			.func_{|me,value,delta|
 				status = value;
 				gui[\sampleView].refresh;
-		};		
-		
+		};
+
 		// the sample view
 		gui[\sampleView] = MVC_UserView(gui[\scrollView],Rect(10,50,width,120))
 
 			.drawFunc_{|me|
-		
+
 				var w = me.bounds.width;
-				var h = me.bounds.height; 
+				var h = me.bounds.height;
 				var h2= h/2;
 				var channelsToDraw=numChannels.clip(1,2);
-	
+
 				width = w; // incase of resize
 
 				// the background
 				Pen.width_(3);
 				Pen.smoothing_(true);
-				
+
 				Color(0,0,0).set;
 				Pen.strokeRect(Rect(0,0,w,h));
-				
+
 				Color(0,0,0,0.75).set;
 				Pen.fillRect(Rect(0,0,w,h));
 
@@ -873,37 +873,37 @@
 
 				Pen.smoothing_(false);
 				Pen.width_(1);
-				
-				Color.black.set;	
-		
+
+				Color.black.set;
+
 				Pen.moveTo(2@(h2.asInt));
 				Pen.lineTo(w@(h2.asInt));
 				Pen.stroke;
-				
-				(Color(0.8,0.8,0.8,0.8)/3).set;	
-				
+
+				(Color(0.8,0.8,0.8,0.8)/3).set;
+
 				Pen.moveTo(2@(h2.asInt+1));
 				Pen.lineTo(w@(h2.asInt+1));
 				Pen.stroke;
-				
+
 				if (channelsToDraw==2) {
 					Color.black.set;
 				}{
 					Color(0,0,0,0.33).set;
 				};
-				
+
 				Pen.moveTo(2@((h*0.75).asInt));
 				Pen.lineTo(w@((h*0.75).asInt));
 				Pen.moveTo(2@((h*0.25).asInt));
 				Pen.lineTo(w@((h*0.25).asInt));
 				Pen.stroke;
-				
+
 				if (channelsToDraw==2) {
-					(Color(0.8,0.8,0.8,0.8)/3).set;	
+					(Color(0.8,0.8,0.8,0.8)/3).set;
 				}{
 					Color(0.8,0.8,0.8,0.1).set;
 				};
-				
+
 				Pen.moveTo(2@((h*0.75+1).asInt));
 				Pen.lineTo(w@((h*0.75+1).asInt));
 				Pen.moveTo(2@((h*0.25+1).asInt));
@@ -918,21 +918,21 @@
 					var start = this.start(i);
 					var y;
 					var visualOffset;
-					
+
 					if (buffer.buffer.notNil) {
-						
+
 						// should lead to LNX_BufferArray.sampleData
 						sD=buffer.buffer.sampleData;
-						
+
 						if (sD.notNil) {
-						
+
 							// the wave form
 							Pen.smoothing_(true);
 							Pen.width_(1.5);
 							Color(0.7,0.8,1,0.8).set;
-							
+
 							channelsToDraw.do{|channelNo|
-							
+
 								var h4, h3;
 								h4 = h2 / channelsToDraw;
 								if (channelsToDraw==2) {
@@ -940,15 +940,15 @@
 								}{
 									h3 = h2;
 								};
-							
+
 								// *2 because w/2 in below do
 								visualOffset =  (o * size).round(w2*2);
-								
+
 								Pen.moveTo(2@((sD.atI(visualOffset,
 									numChannels, channelNo) )*h4+h3));
-									
+
 								(w/2).do{|i|
-									i=i*2;				
+									i=i*2;
 									Pen.lineTo((i+2)@((
 										sD.atI(
 											( i * w2 ) + visualOffset, numChannels, channelNo
@@ -956,63 +956,63 @@
 									)*h4+h3));
 								};
 								Pen.stroke;
-									
+
 							};
 						};
-					
+
 					};
-						
+
 					// the start index
 					y = start * w / z - ( o * w / z) + 2;
 					Color.white.set;
 					Pen.moveTo(y@1);
 					Pen.lineTo(y@(h-2));
 					Pen.stroke;
-					
+
 					if(pos>=0) {
-						
+
 						// the playbackIndex index
 						y = pos * w / z - ( o * w / z) + 2;
 						Color.yellow.set;
 						Pen.moveTo(y@1);
 						Pen.lineTo(y@(h-2));
-						
+
 					};
-					
+
 					if(pos2>=0) {
-					
+
 						y = pos2 * w / z - ( o * w / z) + 2;
 						Color.yellow.set;
 						Pen.moveTo(y@1);
 						Pen.lineTo(y@(h-2));
-					
+
 					};
-					
+
 					Pen.stroke;
-									
+
 					sD=nil; // release so it can be freed
-									
+
 				};
-				
+
 				if (status!=(-5)) {
 					if (status>=0) {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
-						Pen.stringCenteredIn ("DownloadingÉ "++(status.asInt)
+						Pen.stringCenteredIn ("Downloadingï¿½ "++(status.asInt)
 												++"%",Rect(0,0,w,h));
 					};
 					if (status==(-1)) {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
-						Pen.stringCenteredIn ("ConnectingÉ",Rect(0,0,w,h));
+						Pen.stringCenteredIn ("Connectingï¿½",Rect(0,0,w,h));
 					};
 					if (status==(-2)) {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
-						Pen.stringCenteredIn ("ConvertingÉ",Rect(0,0,w,h));
+						Pen.stringCenteredIn ("Convertingï¿½",Rect(0,0,w,h));
 					};
 					if (status==(-4)) {
 						Pen.smoothing_(true);
@@ -1021,38 +1021,38 @@
 						Pen.stringCenteredIn ("Download Failed.",Rect(0,0,w,h));
 					};
 				};
-			
+
 			}
-			.mouseDownAction_{|me,x,y|			
+			.mouseDownAction_{|me,x,y|
 				var w = me.bounds.width-4;
 				var z = zoom.value;
 				var o = offset.value;
 				var index = ((x-2).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
-				
+
 				if (this.notEmpty) {
-					
+
 					models[\start].valueAction_(index,0,true);
-					
+
 			         // scroll when off edge
 					scrollTask=Task({inf.do{
 						(1/30).wait;
 						if ((follow.value.isFalse) or: ({pos<0 and: {pos2<0}})) {
-							if (moveIDX!=0) {	
+							if (moveIDX!=0) {
 								offset.valueAction_(offset.value+(zoom.value/20*moveIDX));
 								models[\start].valueAction_(
 									models[\start].value+(zoom.value/20*moveIDX));
 							};
-						};	
+						};
 					}}).start(AppClock);
-					
+
 				}
 			}
-			.mouseMoveAction_{|me,x,y|			
+			.mouseMoveAction_{|me,x,y|
 				var w = me.bounds.width-4;
 				var z = zoom.value;
-				var o = offset.value;				
+				var o = offset.value;
 				var index = ((x-2).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
-				
+
 				if (this.notEmpty) {
 					moveIDX=0;
 					if (x<0) { moveIDX = -1 * ((x).abs/40+0.25) };
@@ -1085,31 +1085,31 @@
 					}
 					{126} { selectSampleFunc.value(i-1) }
 					{125} { selectSampleFunc.value(i+1) }
-			} 
+			}
 			.focusColor_(Color.clear)
 			.canFocus_(true)
 			.focus;
-			
-			
-		if (window.isKindOf(MVC_CompositeView).not) {	
-			
+
+
+		if (window.isKindOf(MVC_CompositeView).not) {
+
 			// interface in GSRythmn
-				
+
 			// sampleRate
 			gui[\sampleRate] = MVC_StaticText( gui[\scrollView], Rect(297,196,65,18),
 								gui[\infoTheme])
 				.label_("Sample Rate:");
-				
+
 			// duration
 			gui[\duration] = MVC_StaticText( gui[\scrollView], Rect(431,196,65,18),
 								gui[\infoTheme])
 				.label_("Duration:");
-				
+
 			//numChannels
 			gui[\numChannels] = MVC_StaticText( gui[\scrollView], Rect(182,196,65,18),
 								gui[\infoTheme])
 				.label_("Num Channels:");
-				
+
 			if ((this.notEmpty) and:{ buffer.isLoaded}) {
 				gui[\sampleRate].string_((buffer.sampleRate/1000).asString+"kHz");
 				gui[\duration].string_((buffer.duration.round(0.01)).asString+"sec(s)");
@@ -1118,106 +1118,106 @@
 				gui[\sampleRate].string_("- kHz");
 				gui[\duration].string_("- sec(s)");
 				gui[\numChannels].string_("-");
-			};		
-			
+			};
+
 			// the sample amp
 			gui[\amp] = MVC_MyKnob3(gui[\scrollView], models[\amp], Rect(18,213, 28, 28),
 				gui[\knobTheme1])
 				.label_("Amp");
-				
+
 //			// the sample pitch
 //			gui[\pitch] = MVC_MyKnob3(gui[\scrollView], models[\pitch],
 //								Rect(18+(45*1),213, 28, 28),
 //				gui[\knobTheme1])
 //				.label_("Pitch");
-					
+
 			// the sample start
 			gui[\start] = MVC_MyKnob3(gui[\scrollView], models[\start],
 								Rect(18+(45*1),213, 28, 28),
 				gui[\knobTheme1])
 				.label_("Start");
-						
+
 			// the sample loop
 			gui[\loop]= MVC_OnOffView(gui[\scrollView], models[\loop],
 										Rect(265,225, 40, 20),"Loop")
-				.rounded_(true)  
+				.rounded_(true)
 				.color_(\on,Color(50/77,61/77,1))
-				.color_(\off,Color(1,1,1,0.88)/4);	
-				
+				.color_(\off,Color(1,1,1,0.88)/4);
+
 			// follow
 			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(520+x, 206, 50, 20),
 									"Follow", follow)
-				.rounded_(true)  
+				.rounded_(true)
 				.color_(\on,Color(0.5,1,0.5,0.88))
 				.color_(\off,Color(1,1,1,0.88)/4);
-									
+
 			// Ok
 			MVC_OnOffView(gui[\scrollView],Rect(520, 230, 50, 20),"Ok")
-				.rounded_(true)  
+				.rounded_(true)
 				.color_(\on,Color(1,1,1,0.5))
 				.color_(\off,Color(1,1,1,0.5))
-				.action_{	
+				.action_{
 					gui[\window].close;
 					// gui.do(_.free);  // this causes a crash?
 				};
 		}{
-			
+
 			// interface in SCCode
-			
+
 			// follow
 			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(562, 200, 50, 20),"Follow", follow)
-				.rounded_(true)  
+				.rounded_(true)
 				.color_(\on,Color(0.5,1,0.5,0.88))
 				.color_(\off,Color(1,1,1,0.88)/4);
-		
+
 			// the sample amp
 			gui[\amp] = MVC_MyKnob3(gui[\scrollView], models[\amp], Rect(496,282, 28, 28),
 				gui[\knobTheme1])
 				.label_("Amp");
-				
+
 			// the sample pitch
 			gui[\pitch] = MVC_MyKnob3(gui[\scrollView], models[\pitch], Rect(539,282, 28, 28),
 				gui[\knobTheme1])
 				.label_("Pitch");
-			
+
 			// set interval
 			gui[\interval] = MVC_OnOffView(gui[\scrollView],Rect(489, 234, 77, 20),
 									"Set interval")
-				.rounded_(true)  
+				.rounded_(true)
 				.color_(\on,Color(1,1,1,0.5))
 				.color_(\off,Color(1,1,1,0.5))
 				.action_{ this.guiInterval(
 						window.parent.parent.parent.parent.findWindow; // should be it
-					
+
 					)  };
-		
+
 			// the sample start
 			gui[\start] = MVC_MyKnob3(gui[\scrollView], models[\start], Rect(584, 282, 28, 28),
 				gui[\knobTheme1])
 				.label_("Start");
-						
+
 			// the sample loop
 			gui[\loop]= MVC_OnOffView(gui[\scrollView], models[\loop],
 										Rect(574, 234, 46, 20),"Loop")
-				.rounded_(true)  
+				.rounded_(true)
 				.color_(\on,Color(50/77,61/77,1))
-				.color_(\off,Color(1,1,1,0.88)/4);	
-			
+				.color_(\off,Color(1,1,1,0.88)/4);
+
 			// sampleRate
 			gui[\sampleRate] = MVC_StaticText( gui[\scrollView], Rect(322,196,65,18),
 										gui[\infoTheme])
 				.label_("Sample Rate:");
-				
+
 			// duration
 			gui[\duration] = MVC_StaticText( gui[\scrollView], Rect(477,196,65,18),
 										gui[\infoTheme])
 				.label_("Duration:");
-				
+
 			//numChannels
 			gui[\numChannels] = MVC_StaticText( gui[\scrollView], Rect(144,196,65,18),
 										gui[\infoTheme])
 				.label_("Num Channels:");
-				
+
 			if ((this.notEmpty) and:{ buffer.isLoaded}) {
 				gui[\sampleRate].string_((buffer.sampleRate/1000).asString+"kHz");
 				gui[\duration].string_((buffer.duration.round(0.01)).asString+"sec(s)");
@@ -1226,8 +1226,8 @@
 				gui[\sampleRate].string_("- kHz");
 				gui[\duration].string_("- sec(s)");
 				gui[\numChannels].string_("-");
-			};					
-			
+			};
+
 		}
 
 		// i'm returning extra stuff so the web browser can update gsRythmns sample only
@@ -1238,9 +1238,9 @@
 				setModelsFunc.value;
 				gui[\sampleView].refresh;
 			};
-				
+
 		} ];
-		
+
 	}
 }
 
@@ -1253,14 +1253,14 @@
 		var index1 = index.asInteger * numChannels + channel;
 		^ this.clipAt(index1 + numChannels);
 	}
-	
+
 	// simple linear interpolation into a flat multichannel FloatArray
 	atL{|index, numChannels=1, channel=0|
 		var i= index.frac;
 		var index1 = index.asInteger * numChannels + channel;
 		^ (( this.clipAt(index1 + numChannels) )*i)+( ( this.clipAt(index1) )*(1-i));
 	}
-	
+
 }
 
 // used for... remove gui[\i] = Number which isn't a widget. Number doesn't respond to remove.

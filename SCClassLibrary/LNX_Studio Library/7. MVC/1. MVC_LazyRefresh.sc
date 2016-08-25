@@ -38,7 +38,7 @@ MVC_LazyRefresh{
 	*mouseDown{ globalFPS = 5  }
 
 	// this global FPS is released with mouse up events
-	*mouseUp  { globalFPS = nil}
+	*mouseUp{ globalFPS = nil}
 
 	// a task that adjusts the lazyRefresh rate of the whole gui according to how many freshCount
 	// have been had, this helps stop the gui from freezing if to many refreshes are called

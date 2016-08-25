@@ -373,6 +373,7 @@ MVC_OnOffView : MVC_View {
 	addControls{
 
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
+			MVC_LazyRefresh.mouseDown;
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			if (modifiers==524576) { buttonNumber=1 };
 			if (modifiers==262401) { buttonNumber=2 };
@@ -437,6 +438,7 @@ MVC_OnOffView : MVC_View {
 
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
+			MVC_LazyRefresh.mouseUp;
 			if (editMode.not) {
 				if (mouseMode==\tap) {
 					value=0;

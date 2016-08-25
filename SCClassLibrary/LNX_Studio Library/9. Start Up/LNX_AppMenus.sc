@@ -17,7 +17,18 @@ LNX_AppMenus {
 				Action.separator,
 				Action("Preferences", { studio.preferences }),
 				Action.separator,
+				Action("Hide LNX_Studio", {
+					Platform.case(\osx,{
+						"osascript -e 'tell application \"Finder\"' -e 'set visible of process \"LNX_Studio\" to false' -e 'end tell'".unixCmd
+					});
+				}).shortcut_("Ctrl+H"),
+				Action.separator,
 				Action("Quit",        { studio.quit }).shortcut_("Ctrl+Q")
+
+
+
+
+
 			).title_("SuperCollider"),
 
 			// file menu
@@ -119,7 +130,7 @@ LNX_AppMenus {
 				Action("MVC Verbose",{ MVC_View.verbose_(MVC_View.verbose.not) }),
 				Action("MVC Show Background",{
 					MVC_View.showLabelBackground_(MVC_View.showLabelBackground.not)
-				}),
+				}).shortcut_("Ctrl+B"),
 				Action("MVC Edit / Resize",{
 					if (MVC_View.editMode==false) {
 						MVC_View.editResize=false;

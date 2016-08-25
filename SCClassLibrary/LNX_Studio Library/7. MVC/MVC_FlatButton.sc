@@ -144,7 +144,7 @@ MVC_FlatButton : MVC_View {
 	addControls{
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 		// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-
+			MVC_LazyRefresh.mouseDown;
 
 			if (modifiers==524576) { buttonNumber=1 };
 			if (modifiers==262401) { buttonNumber=2 };
@@ -195,6 +195,7 @@ MVC_FlatButton : MVC_View {
 		};
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
+			MVC_LazyRefresh.mouseUp;
 			if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}and:{evaluateAction}and:{editMode.not}) {
 				down=false;
 				this.viewDoValueAction_((value+1).asInt.wrap(0,strings.size-1),nil,true,false);

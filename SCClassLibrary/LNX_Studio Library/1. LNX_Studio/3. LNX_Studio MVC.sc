@@ -155,7 +155,7 @@
 			.automationActive_(false);
 
 		// tempo
-		models[\tempo]=[bpm,[10,1000], midiControl, 7, "Tempo", (moveRound_:1,resoultion_:10),
+		models[\tempo]=[bpm,[10,500], midiControl, 7, "Tempo", (moveRound_:1,resoultion_:10),
 			{|me,val| this.guiSetBPM(val) }].asModel;
 
 		// tap

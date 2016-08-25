@@ -11,13 +11,13 @@
 v.html_("Not found")
 
 
-*/ 
+*/
 
 MVC_WebView{
 
 	var <window, bounds, <view, <rect;
-	var <canFocus=false, <focusColor, <drawFunc;
-	var <resize=5, <editable=false;
+	var <canFocus=true, <focusColor, <drawFunc;
+	var <resize=5, <editable=true;
 	var <url, <onLoadFinished, <onLoadFailed, <onLinkActivated, <enterInterpretsSelection=false;
 
 	title{ if (this.isOpen) {^view.title} {""} }
@@ -26,7 +26,7 @@ MVC_WebView{
 		url=path;
 		if (this.isOpen) {view.url_(url) };
 	}
-	
+
 	onLoadFinished_{|action|
 		onLoadFinished=action;
 		if (this.isOpen) {view.onLoadFinished_(action)};
@@ -41,26 +41,26 @@ MVC_WebView{
 		onLinkActivated=action;
 		if (this.isOpen) {view.onLinkActivated_(action)};
 	}
-	
+
 	enterInterpretsSelection_{|bool|
 		enterInterpretsSelection=bool;
 		if (this.isOpen) {view.enterInterpretsSelection_(bool)};
 	}
-	
+
 	editable_{|bool|
 		editable=bool;
 		if (this.isOpen) {view.editable_(bool)}
 	}
-	
+
 	selectedText { if (this.isOpen) {^view.getProperty(\selectedText)} {^""} }
-	
+
 	forward { if (this.isOpen) {view.forward} }
 	back    { if (this.isOpen) {view.back   } }
 	reload  { if (this.isOpen) {view.reload } }
 	didLoad { onLoadFinished.value(this); }
 	didFail { onLoadFailed.value(this); }
 	linkActivated {|linkString| onLinkActivated.value(this, linkString) }
-	
+
 	// Get the displayed content in html form.
 	html { if (this.isOpen) {^view.html} {^""} }
 
@@ -68,15 +68,15 @@ MVC_WebView{
 	html_ {|htmlString|
 		if (this.isOpen) {view.html_(htmlString)};
 	}
-	
+
 	findText { arg string, reverse = false;
 		if (this.isOpen) {view.findText(string, reverse) };
 	}
-	
+
 	*new {|...args| ^super.new.init(*args) }
 
 	init {|...args|
-	
+
 		bounds  = args.findKindOf(Rect);
 		rect = bounds;
 		window  = args.findKindOf(MVC_Window)
@@ -99,7 +99,7 @@ MVC_WebView{
 					?? { args.findKindOf(ScrollView)}
 					?? {args.findKindOf(CompositeView)};
 		};
-		
+
 		// and make it if in a standard window
 		if (window.notNil) { this.create(window) }
 	}
@@ -112,67 +112,68 @@ MVC_WebView{
 			"View already exists.".warn;
 		}
 	}
-	
+
 	createView{
-		
+
 		view = WebView(window,rect)
+			.editable_(editable)
 			.canFocus_(canFocus)
 			.resize_(resize)
 			.onLoadFinished_(onLoadFinished)
 			.onLoadFailed_(onLoadFailed)
 			.onLinkActivated_(onLinkActivated)
 			.enterInterpretsSelection_(enterInterpretsSelection);
-			
+
 			if (url.notNil) {view.url_(url)};
-		
+
 	}
-	
+
 	// user can focus on item
 	canFocus_{|bool|
 		canFocus=bool;
 		if (view.notClosed){ view.canFocus_(canFocus) }
 	}
-	
+
 	// set focus to this item
 	focus{ if (view.notClosed) { view.focus } }
-	
+
 	focusColor_{}
-	
+
 	refresh{ if (view.notClosed) { view.refresh } }
-	
+
 	bounds_{|argRect|
 		bounds=argRect;
 		rect=bounds;
 		if (view.notClosed) { view.bounds_(rect) }
 	}
-	
+
 	bounds{^rect}
-	
+
 	// resize item
 	resize_{|num|
 		resize=num;
 		if (view.notClosed){ view.resize_(resize) }
 	}
-	
+
 	// from from window
 	remove{
 		if (view.notClosed) { view.free };
 		view=nil;
 	}
-	
+
 	// resize action called by parents
 	doResizeAction{
 		if (this.notClosed) {
 			rect=view.bounds;
 		}
 	}
-	
+
 	// is closed
 	isClosed { if (view.isNil) { ^true } { ^view.isClosed } }
 
 	// is not closed
 	notClosed { ^this.isClosed.not }
-	
+
 	isOpen { ^this.notClosed }
 
 }

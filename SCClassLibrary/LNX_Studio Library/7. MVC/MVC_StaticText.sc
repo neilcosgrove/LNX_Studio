@@ -40,6 +40,8 @@ MVC_StaticText : MVC_View {
 	var <>tasks,			<>penShadow=false, <>rightIfIcon=false;
 	var <>maxStringSize;
 
+	var lazyRefresh;
+
 	// add the colour to the Dictionary, no testing to see if its there already
 	addColor_{|key,color|
 		colors[key]=color;
@@ -66,7 +68,7 @@ MVC_StaticText : MVC_View {
 	string_{|argString|
 		string=argString.asString;
 		this.calcCharSizes;
-		this.refresh;
+		lazyRefresh.lazyRefresh;
 	}
 
 	// set the font
@@ -142,6 +144,7 @@ MVC_StaticText : MVC_View {
 		colors['cursor']         = Color(0,0,0);
 		canFocus=true;
 		tasks = IdentityDictionary[];
+		lazyRefresh = MVC_LazyRefresh().refreshFunc_{ this.refresh };
 	}
 
 	// make the view

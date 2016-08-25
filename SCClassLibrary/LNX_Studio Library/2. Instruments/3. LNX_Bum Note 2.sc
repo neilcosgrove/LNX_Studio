@@ -976,8 +976,8 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 	filter_{|valLow,valHigh,argNoteID|
 		if  (((this.isMono)and:{ argNoteID==0}) or: {noteID==argNoteID}) {
 			{
-				lowModel.valueAction_(valLow,nil,false);
-				highModel.valueAction_(valHigh,nil,false);
+				lowModel.lazyValueAction_(valLow,nil,false);
+				highModel.lazyValueAction_(valHigh,nil,false);
 			}.defer;
 		}
 	}
