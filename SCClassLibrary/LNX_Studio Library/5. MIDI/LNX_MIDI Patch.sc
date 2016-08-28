@@ -13,13 +13,13 @@ LNX_MIDIPatch {
 			<noInPorts, 		<noOutPorts,
 			<midiSourceNames, 	<midiDestinationNames,
 			<midiSourceUIDs, 	<midiDestinationUIDs,
-			<inPortsActive,	<outPortsActive,
-			<inPoints,		<outPoints,
+			<inPortsActive,		<outPortsActive,
+			<inPoints,			<outPoints,
 			<outs,
 
 			noInternalBuses=3, <noteOnTrigFunc;
 
-	classvar	nextUnusedIn= -1,	nextUnusedOut= -1;
+	classvar nextUnusedIn= -1,	nextUnusedOut= -1;
 
 	classvar <>verbose = false;
 
@@ -28,12 +28,12 @@ LNX_MIDIPatch {
 	var		<>patchNo,
 
 			<midiIn,	  		<midiOut,
-			<uidIn,			<uidOut,
-			<midiInChannel,	<midiOutChannel,
-			<midiInName,       <midiOutName,
+			<uidIn,				<uidOut,
+			<midiInChannel,		<midiOutChannel,
+			<midiInName,		<midiOutName,
 
 			<>noteOnFunc,		<>noteOffFunc,
-			<>controlFunc, 	<>bendFunc,
+			<>controlFunc, 		<>bendFunc,
 			<>touchFunc,		<>programFunc,
 			<>sysrtFunc,		<>internalFunc,
 			<>sysexFunc,
@@ -42,7 +42,7 @@ LNX_MIDIPatch {
 
 			<>previousInUID,	<>previousOutUID,
 
-			<portInGUI,		<portOutGUI,
+			<portInGUI,			<portOutGUI,
 			channelInGUI,		channelOutGUI,
 
 			<window,			<>action;
@@ -790,44 +790,6 @@ LNX_MIDIPatch {
 			}
 		});
 
-		//["remove:",removalsOut,newDestinations].postln;
-
-		/////// and warn user //////////////////////////////////////
-
-//		if (((removalsIn.size)>0)||((removalsOut.size)>0)) {
-//
-//		 	text="";
-//		 	if (removalsIn.size>0) {
-//				text=text++"\nMIDI Sources:\n";
-//				removalsIn.do({|i| text=text++"     "++midiSourceNames[i]++("\n"); });
-//			};
-//		 	if (removalsOut.size>0) {
-//				text=text++"\nMIDI Destinations:\n";
-//				removalsOut.do({|i| text=text++"     "++midiDestinationNames[i]++("\n"); });
-//			};
-//
-//	 		win=Window.new("MIDI / Pitch",
-//			Rect(200,600, 460, 200), resizable: false);
-//			win.view.background = Gradient(Color.ndcBack2,Color.ndcBack3);
-//			win.front.alwaysOnTop_(true);
-//
-//			StaticText.new(win,Rect(20, 10, 460, 42))
-//			.string_("                                                         WARNING !\n"
-//				++"The following MIDI Device(s) have been removed from the system.")
-//			.stringColor_(Color.white);
-//
-//			TextView.new(win,Rect(50, 60, 350, 87))
-//			.hasVerticalScroller_(true)
-//			.editable_(false)
-//			.string_(text);
-//
-//			Button.new(win,Rect(373, 158, 60, 25))
-//			.states_([ [ "OK", Color(1.0, 1.0, 1.0, 1.0), Color.ndcDarkButtonBG ]])
-//			.action_{win.close}
-//			.focus;
-//
-//		};
-
 		//////// then test all in & outs removed to capture the others //
 
 		removalsIn=Set[];
@@ -1366,7 +1328,7 @@ NoMIDI {
 	*midiClockLatency{}
 	*endPoint{}
 	*device  {}
-//	*name    {}
+	*name    {^"NoMIDI"}
 	*uid     {}
 	*isSameDevice{|endPoint| ^(endPoint === this) }
 	*isSameName{|endPoint| ^(endPoint === this) }

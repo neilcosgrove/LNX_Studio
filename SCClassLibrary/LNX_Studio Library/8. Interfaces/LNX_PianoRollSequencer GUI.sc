@@ -188,19 +188,19 @@
 				\velocity:    Color.orange,
 				\velocityBG:  Color(0.08,0.27,0.37)*0.7,
 				\velocitySel: Color.orange*1.78,
-				\marker:		Color(1,1,1,0.5)
+				\marker:	  Color(1,1,1,0.5)
 			)++(argColors?IdentityDictionary[]);
 
 			gui[\buttonTheme]=(
-						\rounded_ : true,
-						\canFocus_: false,
-						\colors_      : (\on:colors[\buttons],\off:colors[\buttons]));
+						\rounded_ 		: true,
+						\canFocus_		: false,
+						\colors_  	    : (\on:colors[\buttons],\off:colors[\buttons]));
 
 			gui[\nBoxTheme]=(
-						\orientation_ : \horiz,
+						\orientation_ 	: \horiz,
 						\rounded_		: true,
-						\font_		: Font("Helvetica", 10),
-						\colors_      : (\focus:Color.clear, \string:Color.white,
+						\font_			: Font("Helvetica", 10),
+						\colors_      	: (\focus:Color.clear, \string:Color.white,
 									   \typing:Color.yellow, \background: colors[\boxes]));
 
 			gui[\snap]=MVC_OnOffRoundedView(window,
@@ -257,14 +257,12 @@
 					};
 			}{
 
-
 				gui[\speed]=MVC_PopUpMenu3(models[\speed], window,
 					Rect(bounds.right-202, bounds.top-5, 39, 15))
 					.font_(Font("Helvetica", 10))
 					.color_(\background,colors[\boxes])
 					.color_(\string,Color.white)
 					.resize_(3);
-
 
 				gui[\menu]=MVC_PopUpMenu3(window,
 					Rect(bounds.left, bounds.top-6+1, 60, 16))

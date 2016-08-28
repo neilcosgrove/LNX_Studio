@@ -14,7 +14,7 @@ MVC_OnOffRoundedView : MVC_View {
 		colors=colors++(
 			'background'		: Color.black,
 			'on'				: Color.ndcOnOffON,
-			'off'			: Color.ndcOnOffOFF,
+			'off'				: Color.ndcOnOffOFF,
 			'onDisabled'		: Color.ndcOnOffONUen,
 			'offDisabled'		: Color.ndcOnOffOFFUen,
 			'string'			: Color.ndcOnOffText,
@@ -56,14 +56,15 @@ MVC_OnOffRoundedView : MVC_View {
 						if (down) {
 							Pen.width_(1.5);
 							Pen.smoothing_(true);
-																			Color(0,0,0,0.4).set;
+							Color(0,0,0,0.4).set;
 							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
 							Pen.stroke;
 
 							Color(1,1,1,0.2).set;
 							Pen.roundedRect( Rect(1,1,w-3,h-3),5 );
 							Pen.stroke;
-						}{													Pen.width_(1.5);
+						}{
+							Pen.width_(1.5);
 							Pen.smoothing_(true);
 							Color(1,1,1,0.4).set;
 							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
@@ -119,7 +120,8 @@ MVC_OnOffRoundedView : MVC_View {
 							Pen.lineTo(3@(h-3));
 							Pen.fill;
 						}
-						{mode==='stop'}{										Color.black.set;
+						{mode==='stop'}{
+							Color.black.set;
 							Pen.fillRect(Rect(2,2,w-4,h-4));
 							if (midiLearn) {
 								colors[\midiLearn].set;

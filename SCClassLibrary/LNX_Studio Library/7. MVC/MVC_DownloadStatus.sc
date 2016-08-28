@@ -72,10 +72,8 @@ MVC_DownloadStatus : MVC_View {
 						if (val==2) {
 							var p=(l+w-13)@(t+h-24);
 
-
 							Pen.capStyle_(1);
 							Pen.joinStyle_(1);
-
 
 							Pen.strokeColor = Color.black;
 							Pen.width_(6);
@@ -98,9 +96,7 @@ MVC_DownloadStatus : MVC_View {
 							// stringCenteredIn
 							// stringRightJustIn
 
-
 							if (val==0) { Pen.stringLeftJustIn (string,Rect(0,0,w,h)) };
-
 
 							if (align==\left) {val==1}; // messy code
 

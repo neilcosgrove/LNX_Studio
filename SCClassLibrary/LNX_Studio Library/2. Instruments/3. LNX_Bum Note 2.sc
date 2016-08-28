@@ -11,15 +11,15 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 
 	var	<defaultSteps=32, 		<defaultChannels=5;
 
-	var	<notesOn, 			recordIndex=0,	lastKeyboardNote,
+	var	<notesOn, 				recordIndex=0,		lastKeyboardNote,
 	 	lastNotePlayedBySeq,	writeIndexModel,	lastNotePlayedByMIDI,		isKeyboardWriting=false;
 
-	var	<ampGateOpen=false,	<notePlaying,		<keyPlaying,
+	var	<ampGateOpen=false,		<notePlaying,		<keyPlaying,
 		<sequencers, 			<lfoModelA, 		<lfoModelB,
-		<lowModel, 			<highModel, 		<pianoRoll,
-		<lfoBus, 				<lfoSynth, 		<lfoNodeID,
+		<lowModel, 				<highModel, 		<pianoRoll,
+		<lfoBus, 				<lfoSynth, 			<lfoNodeID,
 		<voicer,				<monoSynth, 		<monoSynthNode,
-		<phase=1,				<noteID=0,		<noteIDServer=0;
+		<phase=1,				<noteID=0,			<noteIDServer=0;
 
 	*new{ arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -995,14 +995,14 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 
 			arg	lfoFreqA=1, 		lfoSlopeA=1,		lfoWaveA=0,
 				lfoSandHA=0,		lfoFreqB=1, 		lfoSlopeB=1,
-				lfoWaveB=0,		lfoSandHB=0,		clockIn,
-				lfoOutChannel,	id,
+				lfoWaveB=0,			lfoSandHB=0,		clockIn,
+				lfoOutChannel,		id,
 
 				lfoSyncOnA, 		lfoSyncDurA=1, 	lfoSyncGateA=0,
 
 				lfoSyncOnB, 		lfoSyncDurB=1, 	lfoSyncGateB=0;
 
-			var	lfoOutA,	lfoOutB, sig;
+			var	lfoOutA, lfoOutB, sig;
 
 			// LFO A
 			lfoOutA = Select.ar(lfoSyncOnA, [
@@ -1033,8 +1033,8 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 
 			lfoOutB = (lfoOutB.abs**lfoSlopeB) * (lfoOutB.sign); // slope
 			lfoOutB = Select.ar(lfoWaveB, [
-				sin (lfoOutB + 1 * (0.5 * 2pi)),	// sine
-				(lfoOutB.neg),				// saw down
+				sin (lfoOutB + 1 * (0.5 * 2pi)),// sine
+				(lfoOutB.neg),					// saw down
 				lfoOutB,						// saw up
 				(lfoOutB<0.025)*2-1,			// square
 				LFNoise0.ar(lfoFreqB*2),		// noise 0
@@ -1057,33 +1057,33 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 		SynthDef("BumNote_PolyBody", {
 
 			arg	outputChannels=0,	gate=1,
-				pw=0.5,			velocity=0,		filterFq=0,
-				q=0.3,			qAmp=1,			filterEnv=1,
-				hpSelectLFO=0,	lpSelectLFO=0,	pitchSelectLFO=0,
-				pwmSelectLFO=0,	lfoOutChannel=0,	filterLFO=0,
-				osc1Pitch=0,		osc2Pitch=0,		kybd=1,
+				pw=0.5,				velocity=0,		filterFq=0,
+				q=0.3,				qAmp=1,			filterEnv=1,
+				hpSelectLFO=0,		lpSelectLFO=0,	pitchSelectLFO=0,
+				pwmSelectLFO=0,		lfoOutChannel=0,filterLFO=0,
+				osc1Pitch=0,		osc2Pitch=0,	kybd=1,
 				filterLag=0,
 				pGate=0,			eq=1,
-				eqHi=1,			linkOsc=0,		freqSeq=0,
-				pulseAmp=0,		sawAmp=0,			noise=0,
-				fmAmp=0,			fmMod=0,			velAmp=1,
-				filterFqHP=(-45),	qHP=0.3,			qAmpHP=1,
-				filterEnvHP=1,	kybdHP=0, 		filterLFOHP=0,
-				freqSeqHP=0,		filterGate=0,		pwm=0,
-				id=0,			pitch=34,			slide=0,
-				modAmp=0,			noteID=0,			phase=1;
+				eqHi=1,				linkOsc=0,		freqSeq=0,
+				pulseAmp=0,			sawAmp=0,		noise=0,
+				fmAmp=0,			fmMod=0,		velAmp=1,
+				filterFqHP=(-45),	qHP=0.3,		qAmpHP=1,
+				filterEnvHP=1,		kybdHP=0, 		filterLFOHP=0,
+				freqSeqHP=0,		filterGate=0,	pwm=0,
+				id=0,				pitch=34,		slide=0,
+				modAmp=0,			noteID=0,		phase=1;
 
 			var	ampEnv, 			env2,			out,
-			 	out1, 			out2, 			out3,
-				lfoOutA, 			lfoOutB,			lfoOutFilterLP,
-				lfoOutPW,			sawFreq,			pulseFreq,
-			    	envctl, 			myEnv,			lfoPitch,
-			    	envctl2, 			myEnv2, 			filterResponse,
-			    	pEnv, 			pc,
-			    	pitch1,			pitch2,			myEnv2HP,
-			    	envctl2HP,		env2HP,			lfoOutFilterHP,
-			    	outPink,			outFM,			filterResponseHP,
-			    	lfoPWM,			in;
+			 	out1, 				out2, 			out3,
+				lfoOutA, 			lfoOutB,		lfoOutFilterLP,
+				lfoOutPW,			sawFreq,		pulseFreq,
+			    envctl, 			myEnv,			lfoPitch,
+			    envctl2, 			myEnv2, 		filterResponse,
+			    pEnv, 				pc,
+			    pitch1,				pitch2,			myEnv2HP,
+			    envctl2HP,			env2HP,			lfoOutFilterHP,
+			    outPink,			outFM,			filterResponseHP,
+			    lfoPWM,				in;
 
 			// amp envelope
 			myEnv  = Env.adsr(0.001, 2  , 0, 0.04,  1, -4);
@@ -1191,33 +1191,33 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 		SynthDef("BumNote_MonoBody", {
 
 			arg	outputChannels=0,	gate=1,
-				pw=0.5,			velocity=0,		filterFq=0,
-				q=0.3,			qAmp=1,			filterEnv=1,
-				hpSelectLFO=0,	lpSelectLFO=0,	pitchSelectLFO=0,
-				pwmSelectLFO=0,	lfoOutChannel=0,	filterLFO=0,
-				osc1Pitch=0,		osc2Pitch=0,		kybd=1,
+				pw=0.5,				velocity=0,		filterFq=0,
+				q=0.3,				qAmp=1,			filterEnv=1,
+				hpSelectLFO=0,		lpSelectLFO=0,	pitchSelectLFO=0,
+				pwmSelectLFO=0,		lfoOutChannel=0,filterLFO=0,
+				osc1Pitch=0,		osc2Pitch=0,	kybd=1,
 				filterLag=0,
 				pGate=0,			eq=1,
-				eqHi=1,			linkOsc=0,		freqSeq=0,
-				pulseAmp=0,		sawAmp=0,			noise=0,
-				fmAmp=0,			fmMod=0,			velAmp=1,
-				filterFqHP=(-45),	qHP=0.3,			qAmpHP=1,
-				filterEnvHP=1,	kybdHP=0, 		filterLFOHP=0,
-				freqSeqHP=0,		filterGate=0,		pwm=0,
-				id=0,			pitch=34,			slide=0,
+				eqHi=1,				linkOsc=0,		freqSeq=0,
+				pulseAmp=0,			sawAmp=0,		noise=0,
+				fmAmp=0,			fmMod=0,		velAmp=1,
+				filterFqHP=(-45),	qHP=0.3,		qAmpHP=1,
+				filterEnvHP=1,		kybdHP=0, 		filterLFOHP=0,
+				freqSeqHP=0,		filterGate=0,	pwm=0,
+				id=0,				pitch=34,		slide=0,
 				modAmp=0,			noteID=0;
 
 			var	ampEnv, 			env2,			out,
-			 	out1, 			out2, 			out3,
-				lfoOutA, 			lfoOutB,			lfoOutFilterLP,
-				lfoOutPW,			sawFreq,			pulseFreq,
-			    	envctl, 			myEnv,			lfoPitch,
-			    	envctl2, 			myEnv2, 			filterResponse,
-			    	pEnv, 			pc,
-			    	pitch1,			pitch2,			myEnv2HP,
-			    	envctl2HP,		env2HP,			lfoOutFilterHP,
-			    	outPink,			outFM,			filterResponseHP,
-			    	lfoPWM,			in;
+			 	out1, 				out2, 			out3,
+				lfoOutA, 			lfoOutB,		lfoOutFilterLP,
+				lfoOutPW,			sawFreq,		pulseFreq,
+			    envctl, 			myEnv,			lfoPitch,
+			    envctl2, 			myEnv2, 		filterResponse,
+			    pEnv, 				pc,
+			    pitch1,				pitch2,			myEnv2HP,
+			    envctl2HP,			env2HP,			lfoOutFilterHP,
+			    outPink,			outFM,			filterResponseHP,
+			    lfoPWM,				in;
 
 			// amp envelope
 			myEnv  = Env.adsr(0.001, 2  , 0, 0.04,  1, -4);

@@ -16,50 +16,42 @@
 
 MVC_View {
 
-	classvar	<>editMode=false,		<>grid=1,	 		<>labelActivatesMIDI=true;
-	classvar 	<>verbose=false,		<>editResize=true,	<>showLabelBackground=false;
+	classvar <>editMode=false,		<>grid=1,	 		<>labelActivatesMIDI=true;
+	classvar <>verbose=false,		<>editResize=true,	<>showLabelBackground=false;
 	classvar <doubleClickLearn;
 
 	var	<model;
 
 	var	<parent,		<>window, 	<rect,	<parentViews,
-		<l, 			<t, 			<w, 		<h,
-		<view,		<enabled=true,<canFocus=false,
+		<l, 			<t, 		<w, 	<h,
+		<view,			<enabled=true,		<canFocus=false,
 		<string,		<>onClose,	<strings,
 		<colors,		<font,		buttonPressed,
 		lw, 			lh,			<visible=true,
 		<orientation=\vertical,		isSquare=false,
 		<layout=\normal;
 
-	var	<value=0,		<controlSpec, <items;
-
-	var	<>action,		<>action2	,	<actions;
-
+	var	<value=0,		<controlSpec, 	<items;
+	var	<>action,		<>action2,		<actions;
 	var	<startX,		<startY,		<startVal;
 
 	var	<midiLearn=false,	<>evaluateAction=true, 	<>hasMIDIcontrol=false;
-
 	var	<midiLearn2=false,	<>hasMIDIcontrol2=false;
 
-	var	<resize=1,		<>resizeAction;
+	var	<resize=1,			<>resizeAction;
 
-	var	<label, <>labelFont, <labelShadow=true, <labelBounds, <labelGUI;
-
-	var	<numberFunc,		<numberString="",	<numberGUI,    <>numberFont,
+	var	<label, <>labelFont, <labelShadow=true, <labelBounds,	<labelGUI;
+	var	<numberFunc,		<numberString="",	<numberGUI,		<>numberFont,
 		numberHeld=false,	<>numberWidth=0 ,	<numberBounds,  <showNumberBox=true,
 		<showUnits=true;
 
 	var	<>boundsAction, 	<>mouseDownAction, <>mouseMoveAction, <>mouseUpAction,
-		<>mouseOverAction, <>colorAction;
+		<>mouseOverAction,	<>colorAction;
 
-	var	<>viewEditMode=false,	<>viewGrid=1,		<>viewEditResize=false;
-
-	var	<hidden=false, <hiddenBounds, <>canBeHidden=true;
-
-	var <>locked = false, <>numberOffset = 0;
-
-	var <beginDragAction, <canReceiveDragHandler, <receiveDragHandler;
-
+	var	<>viewEditMode=false,	<>viewGrid=1,	<>viewEditResize=false;
+	var	<hidden = false,		<hiddenBounds,	<>canBeHidden=true;
+	var <>locked = false, 		<>numberOffset = 0;
+	var <beginDragAction, 		<canReceiveDragHandler, <receiveDragHandler;
 
 	*initClass{
 		Class.initClassTree(LNX_File);
@@ -121,11 +113,11 @@ MVC_View {
 		// standard colours for all views
 		colors=(
 			'background'	: Color.black.alpha_(0.5),
-			'disabled'	: Color(0.3,0.3,0.3),
-			'midiLearn'	: Color.ndcMIDIActive,
-			'label'		: Color.white,
+			'disabled'		: Color(0.3,0.3,0.3),
+			'midiLearn'		: Color.ndcMIDIActive,
+			'label'			: Color.white,
 			'focus'  		: Color.clear
-		//	'main'		: Color(0.65,1,0.8) // to use as main color
+		//	'main'			: Color(0.65,1,0.8) // to use as main color
 		);
 		labelGUI=IdentityDictionary[];
 		actions=IdentityDictionary[];

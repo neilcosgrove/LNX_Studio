@@ -11,10 +11,10 @@ MVC_NumberCircle : MVC_View {
 
 	initView{
 		colors=colors++(
-			'focus'				: Color.clear,
+			'focus'					: Color.clear,
 			'backgroundDisabled'	: Color(1,1,1,0.3),
 			'string'				: Color.white,
-			'down'				: Color.orange,
+			'down'					: Color.orange,
 			'background'			: Color(0.1,0.1,0.1,0.67),
 			'backgroundDown'		: Color(0.1,0.1,0.1,0.85),
 			'circleFocus'			: Color(1,1,1,0.66),

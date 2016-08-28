@@ -286,24 +286,7 @@
 			.color_(\background, background1 )
 			.color_(\border, border )
 			.width_(6);
-//
-//		MVC_UserView(gui[\filterViewHP], Rect(66+12,25+4,98-24,70-7))
-//			.parent_(gui[\masterTabs].mvcTab(0))
-//			.drawFunc_{|me|
-//				Pen.use{
-//					var w = me.bounds.width;
-//					var h = me.bounds.height-3;
-//					Color(1,1,1,0.25).set;
-//					Pen.width_(3);
-//					Pen.lineDash_(FloatArray[2,3]);
-//					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
-//					Pen.stroke;
-//					Color(1,1,1,0.15).set;
-//					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
-//					Pen.fill;
-//				};
-//			};
-//
+
 		// filter response HP
 		MVC_FlatDisplay(gui[\filterViewHP],highModel,Rect(5, 3, 7, 114)).invert_(true)
 			.color_(\slider,Color(0.25,0.75,1)*1.5);
@@ -347,23 +330,6 @@
 			.color_(\background, background1 )
 			.color_(\border, border )
 			.width_(6);
-//
-//		MVC_UserView(gui[\filterView], Rect(66+12,25+4,98-24,70-7))
-//			.parent_(gui[\masterTabs].mvcTab(0))
-//			.drawFunc_{|me|
-//				Pen.use{
-//					var w = me.bounds.width;
-//					var h = me.bounds.height-3;
-//					Pen.width_(3);
-//					Color(1,1,1,0.25).set;
-//					Pen.lineDash_(FloatArray[2,3]);
-//					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
-//					Pen.stroke;
-//					Color(1,1,1,0.15).set;
-//					Pen.moveTo(0@h).lineTo((w/2)@0).lineTo(w@h).lineTo(0@h);
-//					Pen.fill;
-//				};
-//			};
 
 		// filter response LP
 		MVC_FlatDisplay(gui[\filterView],lowModel,Rect(5, 3, 7, 114))

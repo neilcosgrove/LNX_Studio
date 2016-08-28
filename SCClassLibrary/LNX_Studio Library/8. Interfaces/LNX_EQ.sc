@@ -229,8 +229,7 @@ LNX_EQ {
 	*initUGens{|server|
 
 		// the synth def
-		SynthDef( "param_beq", {|in=0, gate=1, fadeTime=0.05, doneAction=2, lag=0.1, clip=0,
-			preAmp=1|
+		SynthDef( "param_beq", {|in=0, gate=1, fadeTime=0.05, doneAction=2, lag=0.1, clip=0, preAmp=1|
 
 			var frdb, input, env;
 

@@ -4,7 +4,7 @@
 MVC_FuncAdaptor : MVC_View {
 
 	var <>func;
-	
+
 	// set your defaults
 	initView{ }
 
@@ -18,18 +18,17 @@ MVC_FuncAdaptor : MVC_View {
 			func.value(this,val,delta);
 			value=val;
 		};
-		
 	}
-	
+
 	// just do it, no testing for !=
 	valueDo_{|val,delta|
 		if (controlSpec.notNil) { val=controlSpec.constrain(val) };
 		func.value(this,val,delta);
 		value=val;
 	}
-	
+
 	freshAdaptor{ this.valueDo_(model.value) }
-	
+
 	viewFree{ func=nil }
 
 }
@@ -39,9 +38,9 @@ MVC_FuncAdaptor : MVC_View {
 MVC_ColorAdaptor : MVC_View {
 
 	var <>views, <>colorIndex;
-	
+
 	// set your defaults
-	initView{ 
+	initView{
 		colors=colors++(
 			'on'			: Color.green,
 			'off'		: Color.black
@@ -63,13 +62,13 @@ MVC_ColorAdaptor : MVC_View {
 					views[val]
 						.hilite_(true)
 						.color_(colorIndex,colors[\on]); // put new
-				};	
+				};
 			};
 			value=val;
 		};
-		
+
 	}
-	
+
 	pause{
 		if (views.notNil) {
 			views[value]
@@ -77,7 +76,7 @@ MVC_ColorAdaptor : MVC_View {
 				.refresh
 		}
 	}
-	
+
 	// just do it, no testing for !=
 	valueDo_{|val|
 		if (controlSpec.notNil) { val=controlSpec.constrain(val) };
@@ -87,7 +86,7 @@ MVC_ColorAdaptor : MVC_View {
 		};
 		value=val;
 	}
-	
+
 	viewFree{
 		views=colorIndex=nil;
 	}
@@ -115,7 +114,7 @@ MVC_HiliteAdaptor : MVC_View {
 			value=val;
 		};
 	}
-	
+
 	pause{
 		if (views.notNil) {
 			views[value]
@@ -123,7 +122,7 @@ MVC_HiliteAdaptor : MVC_View {
 				.refresh
 		}
 	}
-	
+
 	viewFree{ views=nil }
 
 }

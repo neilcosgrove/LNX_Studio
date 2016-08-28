@@ -17,10 +17,8 @@ MVC_RulerView : MVC_View {
 			'backgroundDisabled'	: Color.grey/2,
 			'string'				: Color.black,
 			'on'					: Color.orange,
-			'disabled'			: Color(0.4,0.4,0.4)
+			'disabled'				: Color(0.4,0.4,0.4)
 		);
-
-
 
 		rulerTemplate=#[
 			[1],  // 1

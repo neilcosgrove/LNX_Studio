@@ -29,42 +29,41 @@ q.samples
 
 LNX_SampleBank{
 
-	classvar	>network, <sampleBanks, <masterMeta, <masterMetaKeys;
+	classvar >network, <sampleBanks, <masterMeta, <masterMetaKeys;
 	classvar >updateFuncs, >clipboard, >studio;
 	classvar <waitingToEmptyTrash = false;
-	
+
 	var <api, <id;
-	
+
 	var <server,		<>updateFunc,		<freed=false,
 	    <samples,		<metaModels, 		<otherModels,
-	    <>title="",	<isLoading=false;
-	
+	    <>title="",		<isLoading=false;
+
 	var <window, <guiList, <selectedSampleNo=0, <lastSynth,
 	    <task, <lastModel, follow, iModel, >selectSampleFuncs;
-	
+
 	var <>window2,  <zeroBuffer, <>speakerIcon,
 	    <>selectedAction, <>itemAction, <>loadedAction, <>selectMeFunc;
-	
+
 	// init the class
 	*initClass {
 		sampleBanks=Set[];
 		updateFuncs=Set[];       // update sample func for each gui (loading)
-		
-		
+
 		// do not add to this metadata without changing the saveList
 		masterMeta = (
-			name:	"",   // rename sample
-			pitch:	60.0, // nearest pitch
-			amp:		1,    // adjust amp
-			loop:	0,    // loop sample
-			start:	0,    // start frame
-			end:		1,    // end frame (1 is end of sample)
-			active:	1,    // on/off (mute)
-			velocity:	100,  // nearest velocity
-			markers:	[],   // list of markers 
-			bpm:		120   // the bpm
+			name:		"",     // rename sample
+			pitch:		60.0,   // nearest pitch
+			amp:		1,      // adjust amp
+			loop:		0,      // loop sample
+			start:		0,      // start frame
+			end:		1,      // end frame (1 is end of sample)
+			active:		1,      // on/off (mute)
+			velocity: 	100,	// nearest velocity
+			markers: 	[],		// list of markers
+			bpm:		120		// the bpm
 		);
-		
+
 		masterMetaKeys = masterMeta.keys.asArray.sort; // for saving & loading
 	}
 
@@ -72,7 +71,7 @@ LNX_SampleBank{
 	addMetaModel{
 		var metaModel = ();
 		var otherModel = ();
-		
+
 		metaModel[\name    ] =        "".asModel;            // rename sample
 		metaModel[\pitch   ] =     \midi.asModel;            // nearest pitch
 		metaModel[\amp     ] =      \db6.asModel;            // need to change loading
@@ -83,33 +82,33 @@ LNX_SampleBank{
 		metaModel[\velocity] = [100,[0,127]].asModel;        // nearest velocity
 		metaModel[\markers ] = [];                           // list of markers (not a model yet)
 		metaModel[\bpm]      = \bpm.asModel;                 // the bpm
-		
+
 		// network stuff
 		[\pitch,\amp,\loop,\start,\end,\active,\velocity,\bpm].do{|key|
 			metaModel[key].action_{|me,val,latency,send,toggle|
 				this.setModelVP(this.geti(metaModel),key,val,latency,send);
 			}
 		};
-		
+
 		otherModel[\pos] = \bipolar.asModel.value_(-1); // -1 is not playing
 		otherModel[\pos2] = \bipolar.asModel.value_(-1); // -1 is not playing
-		
+
 		metaModels=metaModels.add(metaModel);
 		otherModels=otherModels.add(otherModel);
-		
+
 		^metaModel;
 	}
 
 	// find index model
 	geti{|metaModel| ^metaModels.indexOf(metaModel) }
-		
+
 	// variable parameter uses send until end value is sent using sendOD via host
 	setModelVP{|index,key,value,latency,send=true|
 		if (send) {
 			api.sendVP(id++key++"_vp_"++index,'netSetModelVP',index,key,value);
 		};
 	}
-	
+
 	// net reciever of all the 5 methods above
 	netSetModelVP{|index,key,value|
 		key=key.asSymbol;
@@ -119,64 +118,64 @@ LNX_SampleBank{
 	}
 
 	// easy access data. anything you might want to know
-	
-	@			{|i|	^samples[i] }
-	at			{|i|	^samples[i] }
-	sample		{|i|	^samples.wrapAt(i)}	
-	size			{	^samples.size}
-	notEmpty      { ^(samples.size>0) }
+
+	@			{|i| ^samples[i] }
+	at			{|i| ^samples[i] }
+	sample		{|i| ^samples.wrapAt(i)}
+	size		{ ^samples.size}
+	notEmpty    { ^(samples.size>0) }
 	isEmpty		{ ^(samples.size<=0) }
-	
-	path			{|i|	^samples.wrapAt(i).path }
+
+	path		{|i|	^samples.wrapAt(i).path }
 	paths		{|i|	^samples.collect(_.path) }
-	numChannels   {|i| ^samples.wrapAt(i).numChannels}
+	numChannels {|i| ^samples.wrapAt(i).numChannels}
 	selectedSample{ if (selectedSampleNo.notNil) { ^this.sample(selectedSampleNo) }{ ^nil }}
-	
-	metaModel		{|i| ^metaModels.wrapAt(i) }
-	
-	name			{|i|	^metaModels.wrapAt(i)[\name    ].string }
-	names		{	^metaModels.collect{|b| b.name.string}   }
+
+	metaModel	{|i| ^metaModels.wrapAt(i) }
+
+	name		{|i| ^metaModels.wrapAt(i)[\name    ].string }
+	names		{ ^metaModels.collect{|b| b.name.string}   }
 	name_		{|i,string| metaModels[i][\name].string_(string) }
-	
-	pitch		{|i|	^metaModels.wrapAt(i)[\pitch   ].value }
-	pitches		{	^metaModels.collect{|b| b.pitch.value } }
+
+	pitch		{|i| ^metaModels.wrapAt(i)[\pitch   ].value }
+	pitches		{ ^metaModels.collect{|b| b.pitch.value } }
 	pitch_		{|i,value| metaModels[i][\pitch].value_(value) }
-	
-	amp			{|i|	^metaModels.wrapAt(i)[\amp     ].value }
-	amps			{	^metaModels.collect{|b| b.amp.value   } }
-	amp_			{|i,value| metaModels[i][\amp].value_(value) }
-	
-	loop			{|i|	^metaModels.wrapAt(i)[\loop    ].value }
-	loops		{	^metaModels.collect{|b| b.loop.value    } }
+
+	amp			{|i| ^metaModels.wrapAt(i)[\amp     ].value }
+	amps		{ ^metaModels.collect{|b| b.amp.value   } }
+	amp_		{|i,value| metaModels[i][\amp].value_(value) }
+
+	loop		{|i| ^metaModels.wrapAt(i)[\loop    ].value }
+	loops		{ ^metaModels.collect{|b| b.loop.value    } }
 	loop_		{|i,value| metaModels[i][\loop].value_(value) }
-	
-	start		{|i|	^metaModels.wrapAt(i)[\start   ].value }
-	starts		{	^metaModels.collect{|b| b.start.value} }
+
+	start		{|i| ^metaModels.wrapAt(i)[\start   ].value }
+	starts		{ ^metaModels.collect{|b| b.start.value} }
 	start_		{|i,value| metaModels[i][\start].value_(value) }
-	
-	end			{|i|	^metaModels.wrapAt(i)[\end     ].value }
-	ends			{	^metaModels.collect{|b| b.end.value    } }
-	end_			{|i,value| metaModels[i][\end].value_(value) }
-	
-	active		{|i|	^metaModels.wrapAt(i)[\active  ].value }
-	actives		{	^metaModels.collect{|b| b.active.value  } }
+
+	end			{|i| ^metaModels.wrapAt(i)[\end     ].value }
+	ends		{ ^metaModels.collect{|b| b.end.value    } }
+	end_		{|i,value| metaModels[i][\end].value_(value) }
+
+	active		{|i| ^metaModels.wrapAt(i)[\active  ].value }
+	actives		{ ^metaModels.collect{|b| b.active.value  } }
 	active_		{|i,value| metaModels[i][\active].value_(value) }
-	
-	velocity		{|i|	^metaModels.wrapAt(i)[\velocity].value }
-	velocities	{	^metaModels.collect{|b| b.velocity} }
-	velocity_		{|i,value| metaModels[i][\start].value_(value) }
-	
-	bpm			{|i|	^metaModels.wrapAt(i)[\bpm   ].value }
-	bpms			{	^metaModels.collect{|b| b.bpm.value } }
-	bpm_			{|i,value| metaModels[i][\bpm].value_(value) }
-	
+
+	velocity	{|i| ^metaModels.wrapAt(i)[\velocity].value }
+	velocities	{ ^metaModels.collect{|b| b.velocity} }
+	velocity_	{|i,value| metaModels[i][\start].value_(value) }
+
+	bpm			{|i| ^metaModels.wrapAt(i)[\bpm   ].value }
+	bpms		{ ^metaModels.collect{|b| b.bpm.value } }
+	bpm_		{|i,value| metaModels[i][\bpm].value_(value) }
+
 	url			{|i| ^samples[i].url}
-	urls			{|i| ^samples.collect(_.url)}
-		
+	urls		{|i| ^samples.collect(_.url)}
+
 	numFrames{|i| ^this.sample(i).numFrames }
-	
+
 	markers { ^metaModels.collect( _.markers ) }
-	
+
 	addMarker{|i,pos|
 		var markers = metaModels.wrapAt(i)[\markers];
 		markers = markers.add(pos);
@@ -187,15 +186,15 @@ LNX_SampleBank{
 	}
 	removeAllMarkers{|i|
 		metaModels.wrapAt(i)[\markers] = [];
-	}	
-	
+	}
+
 	// music instrument (give args on desired note and sample bank will return bufNumbers & rate)
 	getMusicInst{|note,root,spo,transpose,static|
-		
+
 		var i, sampleArray, left, right, rate, dur;
-		
+
 		if (this.isEmpty||isLoading) { ^[0,0,0,0,0,0,0,0] }; // drop out
-		
+
 		note  = note + transpose - static;		                      // apply trans & static
 		note  = (note - root) / spo * 12 + root;                        // adjust note to steps/oct
 		i     = this.pitches.indexOfNearest(note);                      // find the nearest sample
@@ -212,35 +211,35 @@ LNX_SampleBank{
 		}{
 			^[0,0,0,0,0,0,0,0] // drop out
 		};
-	
+
 	}
 
 	// sample List (as getMusicInst but for a simple list with no change to rate)
 	getSampleList{|note,root,spo,transpose,static|
-	
+
 		var i, sampleArray, left, right, rate=1, dur;
-		
+
 		if (this.isEmpty||isLoading) { ^[0,0,0,0,0,0,0,0] }; // drop out
-		
+
 		i = (note - root).asInt.wrap(0,samples.size-1);      // find sample at index
 		sampleArray = samples[i].buffer;                     // get the bufferArray
-		if (sampleArray.notNil) {		
+		if (sampleArray.notNil) {
 			left  = sampleArray.bufnum(0);                  // the left buffer
 			right = sampleArray.bufnum(1) ? left;           // the right buffer
 			dur = sampleArray.duration*rate;                // the duration @ this rate
 			^[left, right, rate, this.amp(i),
 				this.start(i)*(sampleArray.numFrames),this.start(i),this.loop(i), dur ];
 			// ^[bufL, bufR, bufRate, bufAmp, bufStartFrame, bufStartPos, bufLoop, bufDur]
-		}{	
-			^[0,0,0,0,0,0,0,0] // drop out	
+		}{
+			^[0,0,0,0,0,0,0,0] // drop out
 		};
-				
+
 	}
-	
+
 	// init the class //////////////////////////////////////////////////////////////////
 
 	*new {arg server=Server.default, path, apiID; ^super.new.init(server, path, apiID) }
-	
+
 	init{|argServer,path,apiID|
 		id          = UniqueID.next; // each sampleBank has a UniqueID
 		server      = argServer;
@@ -252,10 +251,10 @@ LNX_SampleBank{
 		follow = \switch.asModel;                   // the follow waveform model
 		iModel = [1,[1,24,\lin,1,1]].asModel;       // not sure what this is
 	}
-		
+
 	// init the lists / arrays
 	initVars{
-		samples     = [];	
+		samples     = [];
 		metaModels  = [];
 		otherModels = [];
 		guiList     = [];
@@ -263,20 +262,20 @@ LNX_SampleBank{
 	}
 
 	////////////// load ///////////////////
-	
+
 	// load a bank only from a dialog, clears what was there previously
 	loadDialog{
 		if (server.serverRunning) {
-			Dialog.getPaths({ arg path;	
+			Dialog.getPaths({ arg path;
 				var g,l,i;
-				path=path@0;			
+				path=path@0;
 				g = File(path,"r"); /////// open
 					l=[g.getLine];
 					if (l[0]=="SC Sample Bank Doc v1.0") {
 						loadedAction={};
 						i = g.getLine;
-						while ( { (i.notNil)&&(i!="*** END ***")  }, { 
-							l=l.add(i); 
+						while ( { (i.notNil)&&(i!="*** END ***")  }, {
+							l=l.add(i);
 							i = g.getLine;
 						});
 						this.putLoadList(l,fromApp:false);
@@ -285,7 +284,7 @@ LNX_SampleBank{
 			},allowsMultiple:true);
 		}
 	}
-	
+
 	// load only a bank from a saved bank file
 	loadFile{|path|
 		var g,l,i;
@@ -295,8 +294,8 @@ LNX_SampleBank{
 				if (l[0]=="SC Sample Bank Doc v1.0") {
 					loadedAction={ };
 					i = g.getLine;
-					while ( { (i.notNil)&&(i!="*** END ***")  }, { 
-						l=l.add(i); 
+					while ( { (i.notNil)&&(i!="*** END ***")  }, {
+						l=l.add(i);
 						i = g.getLine;
 					});
 					this.putLoadList(l);
@@ -304,10 +303,10 @@ LNX_SampleBank{
 			g.close; /////////////////// close
 		}
 	}
-	
+
 	// put in the load list, used by addDialog, loadDialog or loadFile
 	putLoadList{|l,clear=true,fromApp=true|
-		var n,p;	
+		var n,p;
 		l=l.reverse;
 		if ((l.popS)=="SC Sample Bank Doc v1.0") {
 			isLoading=true;
@@ -317,7 +316,7 @@ LNX_SampleBank{
 			p=[];
 			n.do ({|i| p=p.add(l.pop) });
 			this.loadBuffers(p,true,fromApp);  // true because we will overwrite info with load
-			
+
 			n.do{|i|
 				//var metadata     = this.addMetadata; // add the default metadata
 				var metaModel    = this.addMetaModel;
@@ -328,12 +327,12 @@ LNX_SampleBank{
 			};
 		};
 	}
-	
+
 	// save old style ///////////////////////////////////////////////////////////////
-	
+
 	// save bank as a file
 	saveDialog{
-		CocoaDialog.savePanel({|path|	
+		CocoaDialog.savePanel({|path|
 			var f,g,saveList;
 			saveList=this.getSaveList;
 			f = File(path,"w");  //////////// open
@@ -341,40 +340,40 @@ LNX_SampleBank{
 				saveList.do{|i| f.write(i.asString++"\n") };
 				this.title_(path.basename);
 			f.close; /////////////////////// close
-		});	
+		});
 	}
-	
+
 	// get the save list from the old style SampleBank
 	getSaveList{
 		var saveList;
 		saveList=["SC Sample Bank Doc v1.0",title.asSymbol,this.size];
 		this.size.do{|i|
 			saveList=saveList.add(samples[i].path);
-		};					
+		};
 		this.size.do{|i|
 			saveList=saveList.add(this.name(i));
 			saveList=saveList.add(this.pitch(i));
 			saveList=saveList.add(this.amp(i));
-			saveList=saveList.add(this.loop(i));	
+			saveList=saveList.add(this.loop(i));
 		};
 		saveList=saveList.add("*** END ***");
-		^saveList	
+		^saveList
 	}
-	
+
 	// load old style //////////////////////////////////////////////////////////////
-	
+
 	// add a bank, sample or samples from a dialog
 	addDialog{
 		var file,list,item;
-		if (server.serverRunning) {	
+		if (server.serverRunning) {
 			CocoaDialog.getPaths({ arg paths; //get soundfiles;
 				file = File(paths@0,"r"); /////// open
 					list=[file.getLine];
 					if (list[0]=="SC Sample Bank Doc v1.0") { // add a Sample Bank
 						loadedAction={};
 						item = file.getLine;
-						while ( { (item.notNil)&&(item!="*** END ***")  }, { 
-							list=list.add(item); 
+						while ( { (item.notNil)&&(item!="*** END ***")  }, {
+							list=list.add(item);
 							item = file.getLine;
 						});
 						this.putLoadList(list,false,false);
@@ -382,62 +381,62 @@ LNX_SampleBank{
 					}{
 						file.close; /////////////////// close / or add samples
 						isLoading=true;
-						loadedAction={};			
+						loadedAction={};
 						this.loadBuffers(paths,false,false);
 						updateFunc.value(this);
 					};
 			},{},allowsMultiple:true);
 		}
-	}		
-	
+	}
+
 	// recursive addition of buffers to help reduce load on server
 	loadBuffers{|paths, justSamples=false, fromApp=true|  // justSamples because of loading a bank
 		var path, buffer, metadata, metaModel;
-		
+
 		studio.flashServerIcon; // gui
-			
+
 		if (paths.size>0) {
-			
-			path = paths[0];			
+
+			path = paths[0];
 			if (fromApp) { path=Platform.lnxResourceDir+/+path }; // add the lnx sample directory
-			
-			if (path.isSoundFile) {					
+
+			if (path.isSoundFile) {
 				// in future i might not want 2 do above test (these are local files ie 808 only)
-				
+
 				buffer=LNX_BufferProxy.read(server, path, action: {
 
-					samples = samples.add(buffer);	
-										
+					samples = samples.add(buffer);
+
 					if (justSamples.not) {
 						//metadata        = this.addMetadata;  // add the default metadata
 						metaModel       = this.addMetaModel;
 						metaModel[\name].string_( path.split.pop.splitext[0].asString);
 					};
-					
-					paths.removeAt(0);		
+
+					paths.removeAt(0);
 					this.loadBuffers(paths, justSamples);
 				});
 			}{ // else.if not a sound file
-				paths.removeAt(0);				
+				paths.removeAt(0);
 				this.loadBuffers(paths, justSamples);
-			};	
+			};
 		}{ // else.if paths.size==0
 			this.finishedLoading;
 			loadedAction.value(this);
 			loadedAction=nil;
 		}; // end.if paths.size
 	}
-	
+
 	// URL's //////////////////////////////////////////////////////////////////////////////////
-	
-	// add a url buffer (used in LNX_WebBrowser) 
+
+	// add a url buffer (used in LNX_WebBrowser)
 	// an orderedSet of paths really
-	
+
 	// this is used by both load & web, need to seperate for API
 	guiAddURL{|url,select=true|
 		api.groupCmdOD(\netAddURL,url,select,network.thisUser.id);
 	}
-		
+
 	// this still needs user id to go with preview
 	netAddURL{|url,select=true,uid|
 		// make onComplete Func
@@ -452,7 +451,7 @@ LNX_SampleBank{
 					// used only in scCode at mo
 					if (window2.notNil) {
 						selectSampleFuncs.do{|func| func.value(selectedSampleNo) }
-					};		
+					};
 				}.defer;  // will this work with many users?
 			};
 			{
@@ -460,12 +459,12 @@ LNX_SampleBank{
 				// used only in scCode at mo
 				if (window2.notNil) {
 					selectSampleFuncs.do{|func| func.value(selectedSampleNo) }
-				};	
+				};
 			}.defer;   // will this work with many users?
 		};
 		this.addURL(url.asString,action,select.isTrue); // now add it
 	}
-	
+
 	// add a url as a buffer. We maybe offline or it may not exist or not be in the cashe
 	addURL{|url,action,select=true,updateBank=true|  // select sample
 
@@ -473,7 +472,7 @@ LNX_SampleBank{
 
 		// check to see if it already exists in this bank
 		samples.do{|buf,i|
-			if (buf.url == url) {			
+			if (buf.url == url) {
 				buffer = buf;		// the one in existence is now this buffer also
 				alreadyExists = true;
 				if (select) {this.selectSample(i,false,false) };
@@ -487,7 +486,7 @@ LNX_SampleBank{
 			buffer          = buffer ?? {LNX_BufferProxy.url(server,url,action,true)};
 			path            = buffer.path;
 			samples         = samples.add(buffer);
-			metaModel       = this.addMetaModel; 
+			metaModel       = this.addMetaModel;
 			metaModel[\name].string_(path.basename);
 
 			this.updateList(false,updateBank); // add to list
@@ -495,20 +494,20 @@ LNX_SampleBank{
 				this.selectSample(samples.size-1,false,false); // select in...
 				selectMeFunc.value(samples.size-1); // select in...
 			};
-			
+
 			this.addSampleWidgets(samples.size-1,select); // add the widgets
-			
+
 		};
-		
+
 		if (alreadyExists) { action.value(buffer) }; // if it exists we have it and can use it now
-		
+
 	}
-	
+
 	// get the save list from the new style URL SampleBank
 	getSaveListURL{
 		var saveList;
 		saveList=["SC URL Bank Doc v1.1",title.asSymbol,this.size];
-		
+
 		samples.do{|sample,i|
 			saveList=saveList.add(samples[i].url);
 			masterMetaKeys.do{|key|
@@ -524,28 +523,28 @@ LNX_SampleBank{
 				}
 			};
 		};
-		
+
 		saveList=saveList.add("*** END URL Bank Doc ***");
-		^saveList	
+		^saveList
 	}
-	
+
 
 	// put the load list from the new style URL SampleBank
 	putLoadListURL{|l,clear=true,updateBank=true|
-		var n,p, version, versionString;	
+		var n,p, version, versionString;
 		l=l.reverse;
-		
+
 		versionString=l.popS;
 		version=versionString.version;
-		
+
 		if (versionString[..14]=="SC URL Bank Doc") {
 			isLoading=true;
-			
-			
+
+
 			if (clear) { this.removeAllSamples }; // carefull with this
-			
-			
-			
+
+
+
 			this.title_(l.popS);
 			n=l.popI;
 			if ((n>0)and:{freed.not}) {
@@ -554,20 +553,20 @@ LNX_SampleBank{
 				this.finishedLoading;
 			};
 		};
-		
+
 	}
-	
+
 	// recursive add each url sample
 	recursiveLoadURL{|n,i,l,version,updateBank=true|
-		
+
 		var metadata, metaModel;
 
 		studio.flashServerIcon; // gui
-		
+
 		this.addURL(l.popS,{},false,updateBank); // add this URL
 
 		metaModel = metaModels.last;  // its the last one added in addURL
-		
+
 		// add metadata
 		masterMetaKeys.do{|key|
 			if ((version==1)and:{key==\bpm}) {
@@ -582,22 +581,22 @@ LNX_SampleBank{
 					}{
 						if (masterMeta[key].isInteger) {    // if master is integer
 							metaModel[key].value_(l.popF); // pop a float as well (why?)
-						}{	
+						}{
 							metaModel[key].string_(l.popS); // else pop a string
 						}
 					};
 				};
 			};
 		};
-		
+
 		// recursive add each buffer to reduce load on cpu
-		{	
+		{
 			if (freed.not) {
 				if ((i+1)<n) {
 					{
-						if (freed.not) { 
+						if (freed.not) {
 							this.recursiveLoadURL(n,i+1,l,version,updateBank)
-						}{				
+						}{
 							this.finishedLoading;
 						};
 					}.defer; // add one by one
@@ -608,9 +607,9 @@ LNX_SampleBank{
 				};
 			};
 		}.defer( studio.isPlaying.if(0.025,0.005)); // use different rates depending on isPlaying
-			
+
 	}
-	
+
 	// this sampleBank has now finished loading
 	finishedLoading{
 		isLoading=false;
@@ -629,11 +628,11 @@ LNX_SampleBank{
 			LNX_BufferProxy.emptyTrash;	// if no banks are loading then just empty now
 		}{
 			waitingToEmptyTrash=true; // else wait for them to finish 1st
-		}	
+		}
 	}
-	
+
 	//////////////////////////////////////////////////////////////////////////////////
-	
+
 	// delete the selected sample from the bank
 	deleteSelectedSample{
 		if (this.size>0) {
@@ -645,35 +644,35 @@ LNX_SampleBank{
 			};
 		}
 	}
-	
+
 	// gui remove item from
 	guiRemove{|i|
 		if(i<(this.size)) {
 			api.groupCmdOD(\netRemove,i);
-		}	
+		}
 	}
-	
+
 	// the net version
 	netRemove{|i|
 		if(i<(this.size)) {
-			
+
 			guiList[i].do(_.free);
 			guiList.removeAt(i);
 			guiList.do{|gui,i| gui[\i]=i }; // aline gui index numbers
-			
+
 			this.adjustViews;
-			
+
 			samples[i].freeNow;
 			samples.removeAt(i);
-			
+
 			// do i want to free all models, this will remove gui as well.
 			metaModels.removeAt(i);
 			otherModels.removeAt(i);
-						
+
 			this.updateList(false);
 		};
 	}
-	
+
 	// remove all samples, doesn't update list because maybe loading new
 	removeAllSamples{
 		samples.do(_.free);
@@ -681,9 +680,9 @@ LNX_SampleBank{
 		metaModels  = [];
 		otherModels = [];
 	}
-	
+
 	clear{ this.removeAllSamples } // same thing, different name
-	
+
 	// free this and all the samples
 	free{
 		freed=true;
@@ -694,18 +693,18 @@ LNX_SampleBank{
 		this.finishedLoading;
 		//gui.postln.do(_.free); // this will cause a crash, should find out why at some point
 	}
-	 	
+
 	// copy buffers
 	copyAll{ clipboard = [ this.urls, metaModels.collect{|c| c.collect(_.value)} ] }
-	
+
 	// and paste them
 	pasteAll{
 		if (clipboard.notNil) {
 			clipboard[0].do{|path| this.guiAddURL(path) };
-		
+
 			// need to do metadata too.
 		};
-	} 	
-	 		
+	}
+
 } ////////////////////////////// end.SampleBank Object
 

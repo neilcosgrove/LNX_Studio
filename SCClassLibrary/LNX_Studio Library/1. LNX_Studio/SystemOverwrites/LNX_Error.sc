@@ -1,21 +1,21 @@
 
-// error handling
+// error handling. reports are itercepted so they can be shown in LNX_Code
 
 LNX_Error {
-	
+
 	classvar >reportTo;
-	
+
 	*reportError{|error|
 		if (reportTo.notNil) {
 			reportTo.value(error);
 			reportTo=nil;
 		}
 	}
-	
+
 	*remove{|func|
-		if (reportTo==func) { reportTo=nil };	
+		if (reportTo==func) { reportTo=nil };
 	}
-	
+
 }
 
 + SynthDef {
@@ -45,11 +45,11 @@ LNX_Error {
 		LNX_Error.reportError("ERROR:"++this);
 	}
 }
-	
+
 + Exception {
-	
+
 	reportError {
-		var s; 
+		var s;
 		s = this.errorString.postln;
 		this.dumpBackTrace;
 		LNX_Error.reportError(s);
@@ -64,34 +64,34 @@ LNX_Error {
 		s = this.errorString.postln;
 		"RECEIVER:\n".post;
 		receiver.dump;
-		this.dumpBackTrace;		
+		this.dumpBackTrace;
 		s=(s.asString++"\n".findReplace("\n"," ")++"\nRECEIVER: "++(receiver.asString));
 		LNX_Error.reportError(s);
 	}
-	
+
 }
 
 + DoesNotUnderstandError {
-	
+
 	reportError {
 		var s;
-		
+
 		s=this.errorString.postln;
-		
+
 		"RECEIVER:\n".post;
-		
+
 		s=s++(" RECEIVER: ");
 		s=s++(receiver.asString);
-		
+
 		receiver.dump;
 		"ARGS:\n".post;
 		args.dumpAll;
-		
+
 		this.dumpBackTrace;
-		
+
 		LNX_Error.reportError(s);
 	}
-	
+
 }
 
 

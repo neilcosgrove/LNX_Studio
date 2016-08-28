@@ -31,7 +31,7 @@ MVC_Model {
 		<>maxStringSize;
 
 	var	<midiLearn=false, 		<hasMIDIcontrol=false,
-		<controlID,			<controlGroup,
+		<controlID,				<controlGroup,
 		<>resoultion=200,		<>defaultControlType=0;  // resoultion might be removed
 
 	var	<>inheritSpec = true,	<controlSpec, <themeMethods, <>constrain = true;
@@ -43,7 +43,7 @@ MVC_Model {
 
 	var lazyRefresh;
 
-	// maths support & logic support (more to add)
+	// maths & logic support (more to add)
 
 	+{|aNumber|  ^value + aNumber}
 	-{|aNumber|  ^value - aNumber}

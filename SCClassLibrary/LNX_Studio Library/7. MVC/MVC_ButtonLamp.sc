@@ -16,10 +16,10 @@ MVC_ButtonLamp : MVC_View {
 	initView{
 		colors=colors++(
 			'background'	: Color.black,
-			'down'		: Color.grey+0.1/3,
+			'down'			: Color.grey+0.1/3,
 			'up'			: Color.grey+0.1/1.5,
 			'on'			: Color.green,
-			'off'		: Color.black,
+			'off'			: Color.black,
 			'string'		: Color.black
 		);
 		font=Font("Helvetica-Bold",12);

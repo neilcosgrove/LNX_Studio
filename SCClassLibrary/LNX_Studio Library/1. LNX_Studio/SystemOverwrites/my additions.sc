@@ -23,7 +23,6 @@
 	}
 }
 
-
 // intercept the demo song link
 
 + HelpBrowser {
@@ -68,24 +67,6 @@
 		}
 	}
 }
-
-// stop server windows from been made
-// + OSXPlatform {
-// 	startup {
-// 		if(Platform.ideName == "scapp"){
-// 			Document.implementationClass.startup;
-// 			// make server window
-// 			//Server.internal.makeWindow;
-// 			//Server.local.makeWindow;
-// 		};
-// 		this.loadStartupFiles;
-// 		if(Platform.ideName == "scapp"){
-// 			//if (LNX_Studio.isStandalone.not) {
-// 				Help.addToMenu;
-// 			//};
-// 		};
-// 	}
-// }
 
 // just add UGens to help
 
@@ -168,32 +149,6 @@
 
 }
 
-// fix for ascii 13
-// @TODO: maybe a problem for xplatform?
-/*+ UnixFILE {
-	getLine { arg maxSize=1024;
-		var string,line;
-		string = String.newClear(maxSize);
-		line = this.prGetLine(string);
-
-		^Platform.case(
-			\osx, {
-				if ((line.isString) and: {line.last.ascii==13}) {
-					^line.drop(-1)
-				}{
-					^line;
-				};
-			},
-			\linux, {
-				^line;
-			},
-			\windows, {
-				^line;
-			}
-		);
-	}
-}*/
-
 // fix for 1 ! inf;
 
 + Object {
@@ -218,7 +173,7 @@
 	// 	this.all.do(_.changed(\default));
 	// }
 
-	// to use LNX_Audio
+	// to use LNX_Audio as a name, I may not do this anymore. think about it
 
 	// *initClass {
 	// 	Class.initClassTree(ServerOptions);

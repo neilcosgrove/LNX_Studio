@@ -11,14 +11,13 @@ MVC_BinaryCircleView : MVC_View {
 	// set your default colours
 	initView{
 		colors=colors++(
-			'background'		: Color.black,
+			'background'	: Color.black,
 			'stringOn'		: Color.ndcOnOffText,
 			'stringOff'		: Color.ndcOnOffText,
 			'upOn'			: Color.ndcOnOffON,
-			'downOn'			: Color.ndcOnOffONUen,
+			'downOn'		: Color.ndcOnOffONUen,
 			'upOff'			: Color.ndcOnOffOFF,
-			'downOff'			: Color.ndcOnOffOFFUen
-
+			'downOff'		: Color.ndcOnOffOFFUen
 		);
 	}
 

@@ -50,8 +50,6 @@ MVC_PeakLevel : MVC_View {
 					colors[enabled.if(\background,\disabled)].set;
 					Pen.fillRect(Rect(0,0,w,h));
 
-
-
 					if (midiLearn) {
 						c=colors[\midiLearn];
 					}{
@@ -64,22 +62,16 @@ MVC_PeakLevel : MVC_View {
 						val=value.clip(0,1);
 					};
 
-
 					if (direction==\vertical) {
-
 						r=Rect(0,((h-w)*(1-val)),w,w);
-
 					}{
-						r= Rect( 3,3,  (w-6)*(val), h-6);
-
+						r=Rect( 3,3,  (w-6)*(val), h-6);
 					};
-
 
 					Pen.smoothing_(true);
 
 					Pen.fillColor_(c);
 					DrawIcon.symbolArgs(\back,r.insetBy(-5,-5).moveBy(1,0));
-
 
 				};
 			};

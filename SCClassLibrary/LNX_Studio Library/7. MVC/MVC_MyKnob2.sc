@@ -1,8 +1,5 @@
 
-
 // MVC_MyKnob2RangeView need to be added to mvc_windows in a seperate way and free'd with window
-
-
 
 // LNX_MyKnob2View
 
@@ -15,8 +12,8 @@ MVC_MyKnob2 : MVC_View {
 	initView{
 		// 0: Color.ndcKnobOn, 1: Color.ndcKnobOff, 2: Color.ndcKnobPin, 3: Color.ndcKnobText
 		colors=colors++(
-			'on' 		: Color.ndcKnobOn,
-			'off'		: Color.ndcKnobOff,
+			'on' 			: Color.ndcKnobOn,
+			'off'			: Color.ndcKnobOff,
 			'midiLearn2'	: Color.magenta,
 			//'pin'		: Color.ndcKnobOn,  // if 'pin' not defined then it uses 'on' instead
 			'centre'		: Color.ndcKnobPin,

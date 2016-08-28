@@ -28,19 +28,18 @@ MVC_Text : MVC_StaticText {}
 
 MVC_StaticText : MVC_View {
 
-	var <align='left', 	<shadow=true, 	<>noShadows=1;
-	var <rotate=0,		<down=false, 		<>shadowDown=true;
-	var clicks, 			<>downColor, 		<>active=true;	var <>alwaysDown=false,	<>excludeFromVerbose=false;
-	var <>keyDownAction, 	<>keyUpAction, 	<>upKeyAction;
+	var <align='left', 		<shadow=true, 		<>noShadows=1;
+	var <rotate=0,			<down=false, 		<>shadowDown=true;
+	var clicks, 			<>downColor, 		<>active=true;
+	var <>alwaysDown=false,	<>excludeFromVerbose=false;
+	var <>keyDownAction, 	<>keyUpAction, 		<>upKeyAction;
 	var <>downKeyAction, 	<>enterKeyAction, 	<>stringAction;
 	var <clipChars=false,	<charSizes, 		<charSizesIntegral;
 	var <clipString, 		<>hasBorder=false;
 	var <editing=false, 	<cursor=nil, 		<cursorFlash=false;
-	var <canEdit=false,	<>enterStopsEditing = true;
-	var <>tasks,			<>penShadow=false, <>rightIfIcon=false;
-	var <>maxStringSize;
-
-	var lazyRefresh;
+	var <canEdit=false,		<>enterStopsEditing = true;
+	var <>tasks,			<>penShadow=false, 	<>rightIfIcon=false;
+	var <>maxStringSize,	lazyRefresh;
 
 	// add the colour to the Dictionary, no testing to see if its there already
 	addColor_{|key,color|

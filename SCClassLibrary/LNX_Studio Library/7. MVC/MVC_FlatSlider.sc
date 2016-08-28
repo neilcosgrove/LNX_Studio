@@ -22,7 +22,7 @@ MVC_FlatSlider : MVC_View {
 			'slider'			: Color.orange,
 			'border'			: Color.grey,
 			'sliderDisabled'	: Color.grey*1.2,
-			'belowZero'		: Color.red
+			'belowZero'			: Color.red
 		);
 		if (w>h) { direction=\horizontal }{ direction=\vertical };
 
@@ -76,16 +76,13 @@ MVC_FlatSlider : MVC_View {
 						r=Rect(3,(h-6)*(1-val)+3,w-6,(h-6)*(val));
 					}{
 						r= Rect( 3,3,  (w-6)*(val), h-6);
-
 					};
 
 					if (rounded) {
 						Pen.smoothing_(true);
-
 						Pen.color = c;
 						Pen.roundedRect(r,radius);
 						Pen.fill;
-
 					}{
 						c.set;
 						Pen.fillRect(r);

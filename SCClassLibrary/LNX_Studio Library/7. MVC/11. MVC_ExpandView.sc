@@ -20,21 +20,21 @@ ColorPicker(v[0]);
 MVC_ExpandView {
 
 	var	<parent,		<>window, 	<rect,	<view,   <parentViews;
-	
-	var	<smallBounds, <collapsed, button;
-		
+
+	var	<smallBounds, 	<collapsed, button;
+
 	var	<hasBorder=true,
-		<autoScrolls=false,			<autohidesScrollers=true,
+		<autoScrolls=false,				<autohidesScrollers=true,
 		<hasHorizontalScroller=false,	<hasVerticalScroller=false;
-		
+
 	var	<gui, 		<colors;
-	
+
 	var	<resize=1,	<>resizeAction, <>expandAction, <>collapseAction;
-	
+
 	var <editMode=false,	<grid=1,		<editResize=false; // view editing
-	
+
 	var visibleOrigin;
-	
+
 	expand{
 		collapsed=false;
 		if (view.notClosed) {
@@ -42,7 +42,7 @@ MVC_ExpandView {
 			view.expand;
 		};
 	}
-	
+
 	collapse{
 		collapsed=true;
 		if (view.notClosed) {
@@ -50,18 +50,18 @@ MVC_ExpandView {
 			view.collapse;
 		};
 	}
-	
+
 	expanded{^collapsed.not}
-			
+
 	editMode_{|bool|
 		editMode=bool;
 		gui.do{|view|
 			if (view.isKindOf(MVC_View)) {
 				view.viewEditMode_(editMode)
-			};		
+			};
 		};
 	}
-	
+
 	editResize_{|bool|
 		editResize=bool;
 		gui.do{|view|
@@ -70,7 +70,7 @@ MVC_ExpandView {
 			};
 		};
 	}
-	
+
 	grid_{|pixels|
 		grid=pixels;
 		gui.do{|view|
@@ -79,20 +79,20 @@ MVC_ExpandView {
 			};
 		};
 	}
-		
+
 	*new {|view,bounds,smallBounds, collapsed = true, button = true| ^super.new.init(view,bounds,smallBounds, collapsed, button) }
-		
+
 	init {|argView,bounds,small,coll, but|
-		
+
 		collapsed=coll;
-		
+
 		button = but;
 
 		 case
 			{argView.isKindOf(Rect)} {
 				rect=argView;
 				smallBounds=bounds;
-				
+
 			}
 			{argView.isKindOf(MVC_Window)} {
 				window=nil;
@@ -127,17 +127,17 @@ MVC_ExpandView {
 				rect=bounds;
 				smallBounds=small;
 			};
-		
+
 		colors=(\background:Color.white.alpha_(0.5));
 		gui=[];
 
 		visibleOrigin=0@0;
-		
+
 		if (window.notNil) { this.create(window) }
 	}
 
 	// add or remove an MVC_View to the view, all views will be created this scrollView
-	
+
 	addView{|view|
 		gui=gui.add(view);
 		if (view.isKindOf(MVC_View)) {
@@ -145,7 +145,7 @@ MVC_ExpandView {
 		};
 	}
 	removeView{|view| gui.remove(view) }
-	
+
 	// create the gui's items that make this MVC_View
 	create{|argParent|
 		if (view.isClosed) {
@@ -158,10 +158,10 @@ MVC_ExpandView {
 			"View already exists.".warn;
 		}
 	}
-	
+
 	// override this
 	createView{
-		
+
 		view=ExpandView(window,rect,smallBounds,collapsed,button)
 			.resize_(resize)
 			.expandAction_{
@@ -173,71 +173,71 @@ MVC_ExpandView {
 				collapseAction.value;
 				collapsed=true;
 				{gui.do{|view| view.hidden_(true)}}.defer(0.075);
-			};		
-		
+			};
+
 		if (colors[\background].notNil) {
 			view.background_(colors[\background])
 		};
-				
+
 		gui.do(_.create(view)); // now make all views inside this view
-	
+
 	}
 
 	// get properties
-	
+
 	isClosed { ^view.isClosed }
 	notClosed { ^view.notClosed }
 	bounds { if (view.notClosed) {^view.bounds} {^rect} }
 	visibleOrigin { if (view.notClosed) {^visibleOrigin=view.visibleOrigin} { visibleOrigin=0@0 } }
-	
+
 	// set properties
-	
+
 	// set the bounds
 	bounds_{|argRect|
 		rect=argRect;
 		if (view.notClosed) {^view.bigBounds_(rect)};
 	}
-	
+
 	visibleOrigin_{|point|
 		visibleOrigin=point;
 		if (view.notClosed) { view.visibleOrigin_(point) }
 	}
-	
+
 	// boarder
 	hasBorder_{|bool|
 		hasBorder=bool;
 		if (view.notClosed) {	view.hasBorder_(bool) }
 	}
-	
+
 	// auto scroll
 	autoScrolls_{|bool|
 		autoScrolls=bool;
 		if (view.notClosed) {	view.(bool) }
 	}
-	
+
 	// has Horizontal Scroller
 	hasHorizontalScroller_{|bool|
 		hasHorizontalScroller=bool;
 		if (view.notClosed) {	view.hasHorizontalScroller_(bool) }
 	}
-	
+
 	// has Vertical Scroller
 	hasVerticalScroller_{|bool|
 		hasVerticalScroller=bool;
 		if (view.notClosed) {	view.hasVerticalScroller_(bool) }
 	}
-	
+
 	// auto hides scrollers (this causes many redraws)
 	autohidesScrollers_{|bool|
 		autohidesScrollers=bool;
 		//if (view.notClosed) {	view.autohidesScrollers_(bool) }
 	}
-	
+
 	resize_{|num|
 		resize=num;
 		if (view.notClosed) {	view.resize_(resize) }
 	}
-	
+
 	doResizeAction{
 		if (this.notClosed) {
 			rect=view.bounds;
@@ -247,7 +247,7 @@ MVC_ExpandView {
 			}
 		}
 	}
-	
+
 	// delete this object
 	free{
 		gui.do{|i| i.free};
@@ -256,7 +256,7 @@ MVC_ExpandView {
 		parent=nil;
 		window=nil;
 	}
-	
+
 	// from from window
 	remove{
 		if (view.notClosed) {
@@ -264,18 +264,18 @@ MVC_ExpandView {
 			view=nil;
 		}
 	}
-	
-	// set the color in the Dictionary 
+
+	// set the color in the Dictionary
 	color_{|index,color...more|
 		colors[index]=color;
 		if ((index=='background') and:{ view.notClosed}) {
-			{view.background_(color)}.defer;	
+			{view.background_(color)}.defer;
 		}
 	}
-	
+
 	// refresh the view
 	refresh{ if (view.notClosed) {view.refresh} }
-	
+
 	refreshColors{
 		if (this.notClosed) {
 			if (colors[\background].notNil) {
@@ -283,7 +283,7 @@ MVC_ExpandView {
 			};
 		}
 	}
-	
+
 	// does rect intersect other gui items? (warning labels are created after view?)
 	intersects{|rect|
 		var i=0,	j;
@@ -306,14 +306,14 @@ MVC_ExpandView {
 		});
 		^false;
 	}
-	
+
 }
 
 + ExpandView {
 	isClosed { if (view.notNil) { ^view.isClosed } {^true} }
 	notClosed {^this.isClosed.not}
 	remove {composite.remove}
-	
+
 }
 
 

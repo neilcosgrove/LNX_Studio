@@ -36,16 +36,8 @@
 			}].asModel;
 
 		// master out level meter
-		models[\peakOutL] = [\unipolar, {|me,val|
-//				~x=val
-			}
-			].asModel;
-		models[\peakOutR] = [\unipolar,
-			{|me,val|
-//				~y=val;
-//				if (~v.notNil) { {~v.refresh}.defer }
-			}
-		].asModel;
+		models[\peakOutL] = \unipolar.asModel;
+		models[\peakOutR] = \unipolar.asModel;
 
 		// network master voulme and mute controls
 		models[\networkMaterVolume] = [
@@ -98,7 +90,6 @@
 		// record
 		models[\record]=[\switch, midiControl, 2, "Record", (strings_:["Rec","Stop"]),
 			{|me,val|
-
 
 		if (server.serverRunning) {
 			if (me.value == 1) {
@@ -395,7 +386,6 @@
 	safeModeSaveDialog{
 		var path, window, scrollView, filename;
 
-
 		if (songPath.isNil) {
 			filename = "";
 		}{
@@ -536,7 +526,7 @@
 
 	autoSizeGUI{
 		var h;
-		h=network.collaboration.autoSizeGUI(menuGap.y);
+		h=network.collaboration.autoSizeGUI(0);
 		mixerGUI[\libraryScrollView].bounds_(Rect(11, 13, 190, 269+15-h+8+30+21));
 		gui[\netScrollView].bounds_(Rect(11,319+30+15-h+8,190,105));
 	}
@@ -615,278 +605,6 @@
 
 	// align the instrument gui including any gaps from delete
 	alignInstGUI{ this.alignMixerGUI }
-
-	///////// preferences //////////////////////////////////////////////////////////////////
-
-	// this is all old school gui stuff...
-
-	preferences {
-
-		var window=this.mixerWindow.view;
-
-		var scrollView;
-
-		var gui=IdentityDictionary[];
-
-		gui[\textTheme] = (
-			\canEdit_ : false,
-			\shadow_  : false,
-			\align_   : 'left',
-			\font_    : Font("Helvetica", 12),
-			\colors_  : (\string: Color.black),
-		);
-
-		gui[\sliderTheme] = (
-			\orientation_ : \horizontal,
-			\colors_      : (
-				\background : Color.grey/2,
-				\knob       : Color.white,
-				\numberDown : Color.black,
-				\numberUp   : Color.black
-			)
-		);
-
-		gui[\buttonTheme] = (
-			orientation_:\horizontal,
-			rounded_:	true,
-			colors_: (up:Color(0.9,0.9,0.9), down:Color(0.9,0.9,0.9)/2)
-		);
-
-		gui[\labelTheme]=( \font_		:  Font("Helvetica-Bold", 14),
-						\align_		: \left,
-						\shadow_		: false,
-						\noShadows_	: 0,
-						\colors_		: (\string : Color.black));
-
-		if ( (midiWin.isNil) or: {midiWin.window.isClosed } ) {
-
-			midiWin = MVC_ModalWindow(
-				(mixerWindow.isVisible).if(mixerWindow.view,window.view),
-				(420)@(468));
-			scrollView = midiWin.scrollView.view;
-
-			MVC_StaticText(scrollView, Rect(10, 10, 170, 18),gui[\labelTheme])
-			.string_("LNX_Studio Preferences");
-
-			// MIDI Controller Keyboard In
-			midi.createInGUIA (scrollView, (170-25)@(272-2), false, false);
-			midi.createInGUIB (scrollView, (330-25)@(272-2), false, false);
-			midi.action_{|me| this.saveControllerKeyboardPrefs};
-			midi.portInGUI
-				.label_("MIDI Controller Keyboard In")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black);
-
-
-			// midi preset controller in
-			LNX_POP.midi.createInGUIA (scrollView, (170-25)@(222-2), false, false);
-			LNX_POP.midi.createInGUIB (scrollView, (330-25)@(222-2), false, false);
-			LNX_POP.midi.action_{|me| LNX_POP.saveMIDIPrefs };
-			LNX_POP.midi.portInGUI
-				.label_("Program Launchpad In")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black);
-
-			// midi preset controller OUT
-			LNX_POP.midi.createOutGUIA (scrollView, (170)@(242), false);
-			LNX_POP.midi.createOutGUIB (scrollView, (330)@(242), false);
-			LNX_POP.midi.portOutGUI
-				.label_("Out")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black);
-
-			// midi clock
-			midiClock.createInGUIA (scrollView, (170-25)@(168-2), false);
-			midiClock.createOutGUIA (scrollView, (170)@(188), false);
-			midiClock.action_{|me| this.saveMIDIprefs };
-			midiClock.portInGUI
-				.label_("MIDI Clock In")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black);
-			midiClock.portOutGUI
-				.label_("Out")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black);
-
-			// audio devices
-			LNX_AudioDevices.audioHardwareGUI(scrollView,(170-10)@(36-25))
-				.action_{|devices|
-					//LNX_AudioDevices.changeAudioDevices(server,devices,{this.postBootFuncs});
-					LNX_AudioDevices.changeAudioDevices(server,devices)
-				};
-
-			// latency
-			MVC_SmoothSlider(scrollView, Rect(170,117,150, 16), gui[\sliderTheme])
-				.label_("Latency (secs)")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black)
-				.color_(\numberUp,Color.black)
-				.numberFunc_(\float3)
-				.controlSpec_([0.05,1,\linear,0.001])
-				.value_(latency)
-				.action_{|me| this.latency_(me.value) };
-
-			// blocksize
-			MVC_PopUpMenu3(models[\blockSize],scrollView,Rect(170,85,75,17),
-				( \font_		 : Font("Arial", 10),
-				  \labelShadow_: false,
-				  \orientation_: \horiz,
-				  \colors_     : (\background : Color.ndcMenuBG, \label : Color.black ))
-			);
-
-
-
-			// network networkCntKeyboard
-			MVC_OnOffView(models[\networkCntKeyboard],scrollView,Rect(170, 299, 70, 19),
-				"Network", ( \font_		: Font("Helvetica", 11),
-								 \colors_     : (\on : Color.orange+0.25,
-						 					   \off : Color.grey/2)))
-				.label_("Controller Keyboard")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black);
-
-			// network master volume changes
-			MVC_OnOffView(models[\networkMaterVolume],scrollView,Rect(170, 328, 70, 19),
-				"Network", ( \font_		: Font("Helvetica", 11),
-								 \colors_     : (\on : Color.orange+0.25,
-						 					   \off : Color.grey/2)))
-				.label_("Master Volume & Mute")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black);
-
-			// moog sub 37 is visible
-			MVC_OnOffView(scrollView,Rect(311, 299, 72, 19), "Sub 37",
-								( \font_		: Font("Helvetica", 11),
-								 \colors_     : (\on : Color.orange+0.25,
-						 					   \off : Color.grey/2)))
-				.value_(LNX_MoogSub37.isVisiblePref.asInt)
-				.label_("Moog")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black)
-				.action_{|me|
-					LNX_MoogSub37.isVisiblePref_(me.value.isTrue).saveIsVisiblePref;
-					this.recreateLibraryGUI;
-				};
-
-			// korg volva is visible
-			MVC_OnOffView(scrollView,Rect(311, 328, 72, 19), "Volca",
-								( \font_		: Font("Helvetica", 11),
-								 \colors_     : (\on : Color.orange+0.25,
-						 					   \off : Color.grey/2)))
-				.value_(LNX_VolcaBeats.isVisiblePref.asInt)
-				.label_("Korg")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black)
-				.action_{|me|
-					LNX_VolcaBeats.isVisiblePref_(me.value.isTrue).saveIsVisiblePref;
-					this.recreateLibraryGUI;
-				};
-
-
-			// roland is visible
-			MVC_OnOffView(scrollView,Rect(311, 357, 72, 19), "JP-08",
-								( \font_		: Font("Helvetica", 11),
-								 \colors_     : (\on : Color.orange+0.25,
-						 					   \off : Color.grey/2)))
-				.value_(LNX_RolandJP08.isVisiblePref.asInt)
-				.label_("Roland")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black)
-				.action_{|me|
-					LNX_RolandJP08.isVisiblePref_(me.value.isTrue).saveIsVisiblePref;
-					this.recreateLibraryGUI;
-				};
-
-			// midi sync latency
-			MVC_SmoothSlider(scrollView, Rect(170, 139,150, 16),gui[\sliderTheme])
-				.numberFunc_(\float3Sign)
-				.controlSpec_([-0.1,0.1,\linear,0.001,0])
-				.value_(midiSyncLatency)
-				.label_("MIDI Sync Latency Adj (secs)")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black)
-				.action_{|me|
-					midiSyncLatency=me.value;
-					LNX_MIDIPatch.midiSyncLatency_(midiSyncLatency);
-					[midiSyncLatency].savePref("MIDI Sync Latency");
-				};
-
-
-			// doubleClickLearn
-			MVC_OnOffView(scrollView,Rect(170, 357, 70, 19), "On",
-								( \font_		: Font("Helvetica", 11),
-								 \colors_     : (\on : Color.orange+0.25,
-						 					   \off : Color.grey/2)))
-				.value_(MVC_View.doubleClickLearn.asInt)
-				.label_("Double Click to MIDI Learn")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black)
-				.action_{|me|
-					MVC_View.doubleClickLearn_(me.value.isTrue);
-				};
-
-
-			// internal midi buses
-			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 386, 70, 17))
-				.items_(["None","1 Bus","2 Buses","3 Buses"
-						 ,"4 Buses","5 Buses","6 Buses","7 Buses","8 Buses"
-						 ,"9 Buses","10 Buses","11 Buses","12 Buses","13 Buses"
-						 ,"14 Buses","15 Buses","16 Buses"])
-				.color_(\background,Color.ndcMenuBG)
-				.label_("No. of Internal MIDI Buses")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black)
-				.action_{|me|
-					this.guiNoInternalBuses_(me.value);
-					this.saveMIDIprefs;
-				}
-				.value_(noInternalBuses)
-				.font_(Font("Arial", 10));
-
-			// MacOS MIDI Fix
-			MVC_OnOffView(scrollView,Rect(311, 386, 72, 19), "MIDI Fix",
-								( \font_		: Font("Helvetica", 11),
-								 \colors_     : (\on : Color.orange+0.25,
-						 					   \off : Color.grey/2)))
-				.value_(("midiBugFix".loadPref ? [false])[0].isTrue.asInt)
-				.label_("MacOS")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black)
-				.action_{|me|
-					[me.value.isTrue].savePref("midiBugFix");
-				};
-
-			// scan for new midi equipment
-			MVC_FlatButton(scrollView,Rect(240 ,415, 70, 20),"Scan MIDI",gui[\buttonTheme])
-				.canFocus_(false)
-				.action_{ LNX_MIDIPatch.refreshPorts };
-
-
-			// Ok
-			MVC_FlatButton(scrollView,Rect(332, 415, 50, 20),"Ok",gui[\buttonTheme])
-				.canFocus_(true)
-				.color_(\up,Color.white)
-				.action_{	 midiWin.close };
-
-		}{
-			midiWin.front;
-		}
-	}
 
 }
 

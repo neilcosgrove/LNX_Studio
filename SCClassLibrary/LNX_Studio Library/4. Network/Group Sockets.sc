@@ -92,7 +92,7 @@ LNX_LANGroup {
 			.reverse
 			.collect{|ip| NetAddr(ip.replace("addr:", ""),port) }
 			.reject {|addr| addr.digit(0)==127 or: { addr.digit(4)==0 }} // remove 127. so not selected by mistake
-			.reverse 						   // this put 192 at the top of the list for me
+			.reverse // this put 192 at the top of the list for me
 			;
 		// is local if size>0
 		if (myAddrs.size>0) {

@@ -31,7 +31,8 @@ MVC_Window {
 
 	// new only creates an instance of MVC_Window
 	// use .create .open or .front to bring to the front
-	*new {|name="mvc_panel", bounds, resizable = true, border = true, server, scroll = false| 		^super.new.init(name, bounds, resizable, border, scroll)
+	*new {|name="mvc_panel", bounds, resizable = true, border = true, server, scroll = false|
+		^super.new.init(name, bounds, resizable, border, scroll)
 	}
 
 	init {|argName, argBounds, argResizable, argBorder, argScroll|

@@ -1,122 +1,4 @@
 // all my additions to the standard sc library
-//
-// Protect{
-//     *new{|signal,clip=2|
-//         ^Select.ar(CheckBadValues.ar(signal, 0, 0)>0, [signal,DC.ar(0)]).clip2(clip);
-//     }
-//
-//     *newNoClip{|signal,clip=2|
-//         ^Select.ar(CheckBadValues.ar(signal, 0, 0)>0, [signal,DC.ar(0)]);
-//     }
-//
-// }
-//
-// // easy stereo output for mono, stereo or multichannel signals to out channel
-// // & effect send with pan pos
-// // options in protect, mix down multichannel and scale multichannel volume
-//
-// LNX_Out{
-//     *new{|signal,out,amp,pan=0,sendOut,sendAmp,protect=true,mix=true,scaleVolume=true,leak=false|
-//         var sigOut = signal;
-//         var size = signal.size;
-//         var leftPan, rightPan;
-//         // mix it
-//         if (mix) {
-//             sigOut = sigOut.oddEvenMix; // mixes to a stereo pair
-//             // and scale volume
-//             if((scaleVolume)&&(size>2)) {
-//                 if (amp.isNumber) {
-//                     amp=amp/(size/2);	// if amp is number adjust amp
-//                 }{
-//                     sigOut=sigOut/(size/2); // else scale now
-//                 };
-//             };
-//         };
-//         // reduce to an OutputProxy or [ an OutputProxy, an OutputProxy ]
-//         case {sigOut.size==1} {
-//             sigOut=sigOut[0];
-//         }
-//         {sigOut.size>2} {
-//             sigOut=sigOut[0..1];
-//         };
-//         // apply amp
-//         if (amp.notNil) { sigOut = sigOut * amp };
-//         // do protect
-//         if (protect) { sigOut = Protect(sigOut) };	// filters bad numbers
-//         // do leak
-//         if (leak) { sigOut = LeakDC.ar(sigOut) }; // leak any dc offset
-//         // if mono
-//         case {sigOut.size==0} {
-//             sigOut=Pan2.ar(sigOut, pan); // pan it
-//             OffsetOut.ar(out,sigOut);	 // output
-//             if ((sendOut.notNil) && (sendAmp.notNil)) {
-//                 OffsetOut.ar(sendOut, sigOut * sendAmp );   // effect send
-//             };
-//         }{ // else stereo
-//             leftPan= (pan*2-1).clip(-1,1);   // left pos
-//             rightPan= (pan*2+1).clip(-1,1);  // right pos
-//             sigOut=LinPan2.ar(sigOut[0], leftPan) + LinPan2.ar(sigOut[1], rightPan); // pair
-//             OffsetOut.ar(out,sigOut);	 // output
-//             if ((sendOut.notNil) && (sendAmp.notNil)) {
-//                 OffsetOut.ar(sendOut, sigOut * sendAmp );   // effect send
-//             };
-//         };
-//         ^signal;	// return the signal, unchanged
-//     }
-// }
-//
-// LNX_FXOut{
-//     *new{|signal, signalIn, on, out, amp, pan=0, sendOut, sendAmp, protect=true, mix=true,
-//         scaleVolume=true, leak=false|
-//         var sigOut = signal;
-//         var size = signal.size;
-//         var leftPan, rightPan;
-//         // mix it
-//         if (mix) {
-//             sigOut = sigOut.oddEvenMix; // mixes to a stereo pair
-//             // and scale volume
-//             if((scaleVolume)&&(size>2)) {
-//                 if (amp.isNumber) {
-//                     amp=amp/(size/2);	// if amp is number adjust amp
-//                 }{
-//                     sigOut=sigOut/(size/2); // else scale now
-//                 };
-//             };
-//         };
-//         // reduce to an OutputProxy or [ an OutputProxy, an OutputProxy ]
-//         case {sigOut.size==1} {
-//             sigOut=sigOut[0];
-//         }
-//         {sigOut.size>2} {
-//             sigOut=sigOut[0..1];
-//         };
-//         // do protect
-//         if (protect) { sigOut = Protect(sigOut) };	// filters bad numbers
-//         // do leak
-//         if (leak) { sigOut = LeakDC.ar(sigOut) }; // leak any dc offset
-//         // if mono
-//         case {sigOut.size==0} {
-//             sigOut=Pan2.ar(sigOut, pan); // pan it
-//             sigOut = SelectX.ar(on.lag,[signalIn,sigOut]); // on
-//             if (amp.notNil) { sigOut = sigOut * amp }; // apply amp
-//             OffsetOut.ar(out,sigOut);	 // output
-//             if ((sendOut.notNil) && (sendAmp.notNil)) {
-//                 OffsetOut.ar(sendOut, sigOut * sendAmp );   // effect send
-//             };
-//         }{ // else stereo
-//             leftPan= (pan*2-1).clip(-1,1);   // left pos
-//             rightPan= (pan*2+1).clip(-1,1);  // right pos
-//             sigOut=LinPan2.ar(sigOut[0], leftPan) + LinPan2.ar(sigOut[1], rightPan); // pair
-//             sigOut = SelectX.ar(on.lag,[signalIn,sigOut]); //on
-//             if (amp.notNil) { sigOut = sigOut * amp }; // apply amp
-//             OffsetOut.ar(out,sigOut);	 // output
-//             if ((sendOut.notNil) && (sendAmp.notNil)) {
-//                 OffsetOut.ar(sendOut, sigOut * sendAmp );   // effect send
-//             };
-//         };
-//         ^signal;	// return the signal, unchanged
-//     }
-// }
 
 // not used yet
 SendTrigID {
@@ -260,8 +142,8 @@ gives min, max, averages and total
 
 + Object{
 
-  asFunc{ |methodName|
-         ^{ |�args| this.performList(methodName,args) }
+  asFunc{|methodName|
+         ^{ |args| this.performList(methodName,args) }
    }
 
 }
@@ -355,11 +237,10 @@ gives min, max, averages and total
 	*ndcStudioText    {^Color(1, 0.5, 0.5, 1)}
 	*ndcStudioButton  {^Color(0.7, 0.25, 0.25, 1)}
 
-	//*ndcStudioText0   {^Color(0.5, 0.25, 0.25, 1)}
 	*ndcStudioText1   {^Color(0.5, 0.35, 0.25, 1)}
 	*ndcStudioText2   {^Color(1, 1, 1, 1)}
 	*ndcStudioSelect  {^Color(0.6, 0.35, 0.25, 1)} // {^Color(0.48, 0.06, 0.06, 1)}
-	*ndcStudioBG	    {^Color(0.3, 0.2, 0.2, 1)}
+	*ndcStudioBG	  {^Color(0.3, 0.2, 0.2, 1)}
 
 	*ndcStudioOnOffBack {^Color(0.4, 0.15, 0.15, 1)}
 
@@ -390,55 +271,43 @@ gives min, max, averages and total
 
 	*ndcWaveform      {^Color(0.5686,0.5373,0.3412)}
 
-	*ndcOnOffON		{^Color(1, 0.9, 0.3)}
-	*ndcOnOffOFF		{^Color(0.3686,0.3373,0.2412)}
-	*ndcOnOffText		{^Color(0,  0, 0)}
-	*ndcOnOffONUen	{^Color(0.5, 0.5, 0.5)}
-	*ndcOnOffOFFUen	{^Color(0.2, 0.2, 0.2)}
-	*ndcOnOffTextUnen	{^Color(0.35,0.35,0.35)}
+	*ndcOnOffON		  {^Color(1, 0.9, 0.3)}
+	*ndcOnOffOFF	  {^Color(0.3686,0.3373,0.2412)}
+	*ndcOnOffText	  {^Color(0,  0, 0)}
+	*ndcOnOffONUen	  {^Color(0.5, 0.5, 0.5)}
+	*ndcOnOffOFFUen	  {^Color(0.2, 0.2, 0.2)}
+	*ndcOnOffTextUnen {^Color(0.35,0.35,0.35)}
 
-	*ndcOnOffON2		{^Color(0.25, 1, 0.25)}
+	*ndcOnOffON2	  {^Color(0.25, 1, 0.25)}
 
-	*ndcSoloBG		{^Color(1,0.2,0.2)}
-	*ndcUpdateBG		{^Color(0.95,0.55,0.3)}
+	*ndcSoloBG		  {^Color(1,0.2,0.2)}
+	*ndcUpdateBG	  {^Color(0.95,0.55,0.3)}
 
-	*ndcLampBG		{^Color(0,0,0)}
-	*ndcLampON		{^Color(1,0,0)}
-	*ndcLampOFF		{^Color(0.3,0,0)}
-	*ndcLampBorder	{^Color(1,1,1,0.6)}
+	*ndcLampBG		  {^Color(0,0,0)}
+	*ndcLampON		  {^Color(1,0,0)}
+	*ndcLampOFF		  {^Color(0.3,0,0)}
+	*ndcLampBorder	  {^Color(1,1,1,0.6)}
 
-	*ndcKnobOff		{^Color(0, 0, 0 )}
-	*ndcKnobOn		{^Color(1, 0.9, 0.3)}
-	*ndcKnobPin		{^Color(0,   0,   0)}
-	*ndcKnobText		{^Color(0, 0, 0)}
-	*ndcKnobOn2		{^Color(1, 0.6, 0.25)}
-	*tabText			{^Color(1, 0.9, 0.3)}
-	*tabText2			{^Color(1, 0.6, 0.2)}
+	*ndcKnobOff		  {^Color(0, 0, 0 )}
+	*ndcKnobOn		  {^Color(1, 0.9, 0.3)}
+	*ndcKnobPin		  {^Color(0,   0,   0)}
+	*ndcKnobText	  {^Color(0, 0, 0)}
+	*ndcKnobOn2		  {^Color(1, 0.6, 0.25)}
+	*tabText		  {^Color(1, 0.9, 0.3)}
+	*tabText2		  {^Color(1, 0.6, 0.2)}
 
-	*ndcNameText		{^Color(0.6275,0.6039,0.4902)}
-	*ndcNameText2		{^Color(0.4196,0.3843,0.2706)}
-	*ndcNameBG		{^Color(0.15,0.07,0.07)}
-	*ndcNameBG2		{^Color(0.3686,0.3373,0.2012)}
+	*ndcNameText	  {^Color(0.6275,0.6039,0.4902)}
+	*ndcNameText2	  {^Color(0.4196,0.3843,0.2706)}
+	*ndcNameBG		  {^Color(0.15,0.07,0.07)}
+	*ndcNameBG2		  {^Color(0.3686,0.3373,0.2012)}
 
-	*ndcMIDIActive	{^Color(0,1,1)}
-	*ndcMIDIActive2	{^Color(1,0,1)}
+	*ndcMIDIActive	  {^Color(0,1,1)}
+	*ndcMIDIActive2	  {^Color(1,0,1)}
 
-	*ndcDark 			{^Color(0.1176,0.1176,0.0627)}
-	*ndcDark2			{^Color(0.2386,0.2073,0.1412)}
+	*ndcDark 		  {^Color(0.1176,0.1176,0.0627)}
+	*ndcDark2		  {^Color(0.2386,0.2073,0.1412)}
 
 }
-
-//+ ServerOptions {
-//	*outDevices{ ^["Built-in Audio","Soundflower (2ch)"] }
-//	*inDevices{ ^["Built-in Audio","Soundflower (2ch)"] }
-//	*devices{ ^["Built-in Audio","Soundflower (2ch)"] }
-//} // intel testing of ppc audio settings
-
-//+ ServerOptions {
-//	*outDevices{ ^[ "Built-in Output", "Built-in Line Output", "Built-in Digital Output" ] }
-//	*inDevices{ ^[ "Built-in Line Input", "Built-in Digital Input" ] }
-//	*devices{ ^[ "Built-in Line Input", "Built-in Digital Input", "Built-in Output", "Built-in Line Output", "Built-in Digital Output"] }
-//} // intel testing of audio settings 4 richie's computer
 
 // isTrue & isFalse
 
@@ -504,12 +373,6 @@ gives min, max, averages and total
 	}
 
 	dr2{ if (this==0) { ^this }{ ^this.wrap(1,9) } }
-
-/*
-	(0..100).collect(_.dr2);
-	(-50..50).collect{|x| (x**5)-(x**4*3)-(x**3)+(x**2*4)+(x*1)+1;}.collect(_.dr2).plot;
-*/
-
 
 }
 
@@ -1179,30 +1042,6 @@ gives min, max, averages and total
 		);
 	}
 }
-
-// + TextField {
-
-// 	background_{|c|
-// 		if (Main.versionAtMost(3,2)) {
-// 			this.setProperty(\boxColor,c)
-// 		}{
-// 			super.background_(c);
-// 		}
-// 	} // backwards compatability to v3.2
-
-// }
-
-/*+ Quarks {
-	*initClass {
-		folder = Platform.lnxResourceDir +/+ "downloaded-quarks";
-		additionalFolders = additionalFolders ? [];
-		if(File.exists(folder).not, {
-			folder.mkdir();
-		});
-		cache = Dictionary.new;
-	}
-}*/
-
 
 ////////////////////////////////////////////////
 

@@ -15,7 +15,7 @@ MVC_Scale : MVC_View {
 
 	initView{
 		colors=colors++(
-			'background'	: Color.black.alpha_(0.4),
+			'background': Color.black.alpha_(0.4),
 			'marks'		: Color.black
 		);
 		if (w>h) { direction=\horizontal }{ direction=\vertical };

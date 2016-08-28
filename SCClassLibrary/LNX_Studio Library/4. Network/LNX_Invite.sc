@@ -8,55 +8,55 @@ LNX_Invite{
 	classvar >network;
 
 	var	<id,
-		<hostID,			<hostName,
+		<hostID,		<hostName,
 		<roomList,		<invitedUsers,
-		<rejects,			<wishList,
+		<rejects,		<wishList,
 
 		<lastPingTime,	<tasks,
-		
+
 		<>cancelAction,	<window,
-		
+
 		<versionMajor,	<versionMinor;
-		
+
 	*new{|inviteTX| ^super.new.init(inviteTX) }
 
 	init{|inviteTX|
 		tasks=IdentityDictionary[];
 		this.update(inviteTX);
 	}
-	
+
 	update{|inviteTX|
 		var i;
-	
+
 		inviteTX=inviteTX.reverse;
-		
+
 		id=inviteTX.pop.asSymbol;
 		hostID=inviteTX.pop.asSymbol;
 		hostName=inviteTX.popS;
-		
+
 		versionMajor=inviteTX.popI;
 		versionMinor=inviteTX.popI;
-		
+
 		i=inviteTX.popI;
 		roomList=inviteTX.popNS(i);
 		roomList[3]=roomList[3].asSymbol;
-		
+
 		wishList=IdentityDictionary[];
 		i=inviteTX.popI;
 		i.do{ wishList[inviteTX.pop.asSymbol]=inviteTX.popS };
-		
+
 		i=inviteTX.popI;
 		invitedUsers=inviteTX.popNS(i).collect(_.asSymbol);
-		
+
 		i=inviteTX.popI;
 		rejects=inviteTX.popNS(i).collect(_.asSymbol);
-		
+
 		lastPingTime=SystemClock.now;
-		
+
 		this.wasIaccepted;
-		
+
 	}
-	
+
 	wasIaccepted{
 		if (tasks[\accept_invite].notNil) {
 			if (invitedUsers.includes(~thisUserID)) {
@@ -65,11 +65,11 @@ LNX_Invite{
 			}
 		};
 	}
-	
+
 	includes{|person| ^(wishList.includesKey(person.id)) }
-	
+
 	confirms{|person| ^(invitedUsers.includes(person.id)) }
-	
+
 	inviteString{
 		var string="";
 		string=string++hostName.asString;
@@ -84,15 +84,15 @@ LNX_Invite{
 			string=string++" @ ";
 			string=string++(roomList[0]);
 		};
-		^string; 
+		^string;
 	}
-	
+
 	close{
 		tasks.do(_.stop);
 		{window.close}.defer;
 		this.free;
 	}
-	
+
 	start{
 		if (tasks[\accept_invite].notNil) {
 			tasks[\accept_invite].stop;
@@ -100,12 +100,12 @@ LNX_Invite{
 		};
 		{window.string2_("Starting...")}.defer;
 	}
-	
+
 	connected{
 		tasks.do(_.stop);
 		{ window.close }.defer
 	}
-	
+
 	createGUI{
 		{
 			window=LNX_InviteInterface(network.window,this.inviteString,
@@ -119,7 +119,7 @@ LNX_Invite{
 						20.do{
 							network.socket.sendBundle(nil,
 								['decline_invite',id,network.thisUser.id]);
-							0.2.wait;	
+							0.2.wait;
 						};
 					}.fork;
 					tasks[\waiting].stop;
@@ -131,7 +131,7 @@ LNX_Invite{
 							loop {
 								network.socket.sendBundle(nil,
 									['accept_invite',id,network.thisUser.id]);
-								0.2.wait;	
+								0.2.wait;
 							};
 						}.fork(AppClock);
 					};
@@ -148,7 +148,7 @@ LNX_Invite{
 			).onCloseIndex_(0);
 			tasks[\waiting]=Task({
 				var i = 0;
-				loop { 
+				loop {
 					window.iconName = ("wait_" ++ (i = i+(1/16))).asSymbol;
 					0.1.wait;
 				};
@@ -157,13 +157,13 @@ LNX_Invite{
 			// auto start if all below are true
 			if ((network.studio.isStandalone.not)
 				&& (network.autoJoin)) { window.hit };
-			
+
 		}.defer
 	}
-	
+
 	refresh{
 		{
-			if (window.win.isClosed.not) {	
+			if (window.win.isClosed.not) {
 				window.wishList_(wishList)
 					.invitedUsers_(invitedUsers)
 					.rejects_(rejects)
@@ -172,7 +172,7 @@ LNX_Invite{
 			}
 		}.defer;
 	}
-	
+
 	dump{
 		"Instance of LNX_Invite ------------".postln;
 		("ID: "++id).postln;

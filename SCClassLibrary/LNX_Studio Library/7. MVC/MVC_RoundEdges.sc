@@ -41,7 +41,6 @@ MVC_RoundEdges : MVC_View {
 
 					};
 
-
 					Pen.perform(\fill);
 
 				}; // end.pen

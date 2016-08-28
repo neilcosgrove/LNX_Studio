@@ -14,7 +14,7 @@ MVC_FlatButton : MVC_View {
 		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ]
 		colors=colors++(
 			'background'	: Color.black,
-			'down'		: Color.green+0.1/3,
+			'down'			: Color.green+0.1/3,
 			'up'			: Color.green+0.1/1.5,
 			'string'		: Color.black
 		);
@@ -43,7 +43,6 @@ MVC_FlatButton : MVC_View {
 
 					};
 
-
 					if (rounded) {
 						Pen.roundedRect( Rect(1,1,w- 2,h- 2),5 );
 						if (down) {
@@ -66,7 +65,7 @@ MVC_FlatButton : MVC_View {
 							Color(1,1,1,0.5).set;
 							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
 							Pen.stroke;
-												//							Pen.roundedRect( Rect(3,3,w-4,h-4),5 );
+//							Pen.roundedRect( Rect(3,3,w-4,h-4),5 );
 //							Pen.stroke;
 						};
 						Pen.width_(1.5);
@@ -77,7 +76,6 @@ MVC_FlatButton : MVC_View {
 //						Pen.roundedRect( Rect(1,1,w-2,h-2),5 );
 //						Pen.stroke;
 					}{
-
 
 						colors[\background].set;
 						Pen.fillRect(Rect(0,0,w,h));

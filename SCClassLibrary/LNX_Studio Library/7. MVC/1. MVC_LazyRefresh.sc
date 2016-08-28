@@ -19,7 +19,6 @@ MVC_LazyRefresh.mouseDown;
 MVC_LazyRefresh.mouseUp;
 */
 
-
 MVC_LazyRefresh{
 
 	classvar <>verbose = false;

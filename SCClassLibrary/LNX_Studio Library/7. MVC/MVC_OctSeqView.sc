@@ -17,9 +17,9 @@ MVC_OctSeqView : MVC_View {
 			'background'	: Color.black,
 			'background2'	: Color(0.22, 0.18, 0.18)+0.3,
 			'background3'	: Color.black,
-			'white'		: Color.white,
+			'white'			: Color.white,
 			'on'			: Color.green,
-			'off'		: Color.black
+			'off'			: Color.black
 		);
 		//isSquare=true;
 	}

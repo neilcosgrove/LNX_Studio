@@ -30,7 +30,7 @@ MVC_PipeLampView : MVC_View {
 			'background'	: Color.ndcLampBG,
 			'border'		: Color.ndcLampBorder,
 			'on'			: Color.yellow,
-			'off'		: Color.black
+			'off'			: Color.black
 		);
 		isSquare=true;
 		lazyRefresh = MVC_LazyRefresh().refreshFunc_{this.refresh};
@@ -46,12 +46,6 @@ MVC_PipeLampView : MVC_View {
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
 					Pen.smoothing_(true);
-//					Color(0.1,0.1,0.1,0.4).set;
-//					Pen.fillRect(Rect(0,0,w,h));
-//					colors[\border].set;
-//					Pen.fillRect(Rect(2,2,w-4,h-4));
-//					colors[\background].set;
-//					Pen.fillOval(Rect(2,2,w-4,h-4));
 
 					if (border) {
 						Color.black.set;

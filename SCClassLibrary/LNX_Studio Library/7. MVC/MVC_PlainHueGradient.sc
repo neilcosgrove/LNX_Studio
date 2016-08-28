@@ -26,19 +26,11 @@ MVC_PlainHueGradient : MVC_View {
 				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				Pen.use{
-
-
 					Pen.smoothing_(false);
-
 					steps.do{|i|
-
 						Color.hsv(i/(steps),sat,val,alpha).set;
-
-
 						Pen.fillRect(Rect(w/steps*i,0,w/steps,h));
 					};
-
-
 				}; // end.pen
 			};
 	}

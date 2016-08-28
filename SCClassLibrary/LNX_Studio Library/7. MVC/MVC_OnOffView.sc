@@ -141,8 +141,6 @@ MVC_OnOffFlatView : MVC_OnOffView {
 
 }
 
-
-
 MVC_OnOffView : MVC_View {
 
 	var <mode = nil;  // nil = normal, 'play' = play button, 'stop' = stop button, 'icon' < strings

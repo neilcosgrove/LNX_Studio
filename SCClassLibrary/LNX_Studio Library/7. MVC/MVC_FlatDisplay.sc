@@ -17,7 +17,7 @@ MVC_FlatDisplay : MVC_View {
 
 	initView{
 		colors=colors++(
-			'border'	: Color.black.alpha_(0.75),
+			'border'		: Color.black.alpha_(0.75),
 			'background'	: Color.black.alpha_(0.2),
 			'slider'		: Color.orange*1.33
 		);
@@ -91,16 +91,12 @@ MVC_FlatDisplay : MVC_View {
 					hv = ((h-4)*(1-val)+2).ceil;
 
 					if (invert) {
-
 						r2.set( 2, 2, w-4, hv-2);
 						r3.set( 1, 1, w-2, hv);
-
 					}{
 						r2.set( 2, hv, w-4, h-hv-2);
 						r3.set( 1, hv-1, w-2, h-hv);
-
 					};
-
 
 					colors[\border].set;
 					Pen.fillRect(r3);

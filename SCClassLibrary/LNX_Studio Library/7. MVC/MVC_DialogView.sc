@@ -11,7 +11,7 @@ MVC_DialogView : MVC_View {
 	initView{
 		colors=colors++(
 			'background'	: Color(0.05,0.05,0.1),
-			'string'      : Color(0.5, 0.5, 1, 1)
+			'string'     	: Color(0.5, 0.5, 1, 1)
 		);
 		canFocus=false;
 		if (string.isNil) {string=""};

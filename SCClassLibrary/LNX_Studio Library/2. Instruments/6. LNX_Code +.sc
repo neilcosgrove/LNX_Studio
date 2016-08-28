@@ -9,7 +9,7 @@ Protect{
 	*newNoClip{|signal,clip=2|
 		^Select.ar(CheckBadValues.ar(signal, 0, 0)>0, [signal,DC.ar(0)]);
 	}
-	
+
 }
 
 // easy stereo output for mono, stereo or multichannel signals to out channel
@@ -21,12 +21,12 @@ LNX_Out{
 		var sigOut = signal;
 		var size = signal.size;
 		var leftPan, rightPan;
-		
+
 		// stop the following from working. This is now done by the mixer synthDef
 		amp=1;
 		pan=0;
 		sendAmp=0;
-			
+
 		// mix it
 		if (mix) {
 			sigOut = sigOut.oddEvenMix; // mixes to a stereo pair
@@ -55,11 +55,11 @@ LNX_Out{
 		// if mono
 		case {sigOut.size==0} {
 			OffsetOut.ar(out,sigOut!2);	 // just output
-		}{ // else stereo	
+		}{ // else stereo
 			OffsetOut.ar(out,sigOut);	     // just output
 		};
 		^signal;	// return the signal, unchanged
-	}	
+	}
 }
 
 
@@ -69,7 +69,7 @@ LNX_InstOut{
 		var size = signal.size;
 		var leftPan, rightPan;
 		var amp=1;
-		
+
 		// mix it
 		if (mix) {
 			sigOut = sigOut.oddEvenMix; // mixes to a stereo pair
@@ -84,7 +84,7 @@ LNX_InstOut{
 			sigOut=sigOut[0..1];
 		};
 		// apply amp
-		sigOut = sigOut * amp; 
+		sigOut = sigOut * amp;
 		// do protect
 		if (protect) { sigOut = Protect(sigOut) };    // filters bad numbers
 		// do leak
@@ -92,11 +92,11 @@ LNX_InstOut{
 		// if mono
 		case {sigOut.size==0} {
 			OffsetOut.ar(out,sigOut!2);	 // just output
-		}{ // else stereo	
+		}{ // else stereo
 			OffsetOut.ar(out,sigOut);	     // just output
 		};
 		^signal;	// return the signal, unchanged
-	}	
+	}
 }
 
 
@@ -147,10 +147,10 @@ LNX_FXOut{
 			OffsetOut.ar(out,sigOut);	 // output
 			if ((sendOut.notNil) && (sendAmp.notNil)) {
 				OffsetOut.ar(sendOut, sigOut * sendAmp );   // effect send
-			};		
+			};
 		};
 		^signal;	// return the signal, unchanged
-	}	
+	}
 }
 
 LNX_SynthDefID {
@@ -160,13 +160,13 @@ LNX_SynthDefID {
 }
 
 LNX_SynthDefControl : ControlName {
-	
+
 	var <>type, <>controlSpec;
 
 	*new { arg name, index, rate, defaultValue, argNum, lag, type, controlSpec ;
 		^super.newCopyArgs(name.asSymbol, index, rate, defaultValue, argNum, lag ? 0.0, type, controlSpec)
 	}
-	
+
 	printOn { arg stream;
 		stream << "LNX_SynthDefControl  P " << index.asString;
 		if (name.notNil) { stream << " " << name; };
@@ -195,11 +195,11 @@ LNX_SynthDefControl : ControlName {
 //}
 
 + ControlName {
-	
+
 	asSynthDefControl{|type,spec|
 		^LNX_SynthDefControl(name, index, rate, defaultValue, argNum, lag, type, spec)
 	}
-	
+
 }
 
 + LNX_Code {
@@ -212,84 +212,84 @@ LNX_SynthDefControl : ControlName {
 "// A simple SynthDef template
 
 SynthDef(\"MySaw\", {|out, gate, midi, vel, filtFreq=2000, q=0.5, dur=0.5|
-	
-	var signal;
-	
-	signal = Saw.ar(midi.midicps, 0.33);
-	signal = DFM1.ar(signal, filtFreq * vel, q);
-	signal = signal * EnvGen.ar(Env.adsr(0,0,1,1), gate, vel, 0, dur, 2);
-	
-	LNX_InstOut(signal, out);
-	
+
+    var signal;
+
+    signal = Saw.ar(midi.midicps, 0.33);
+    signal = DFM1.ar(signal, filtFreq * vel, q);
+    signal = signal * EnvGen.ar(Env.adsr(0,0,1,1), gate, vel, 0, dur, 2);
+
+    LNX_InstOut(signal, out);
+
 }, metadata: ( specs: ( filtFreq: \\freq ) ) )
 "
 		.asModel;
-		
+
 	}
-	
+
 	// Build & Exeception errors
 
 	clearError{
 		errorModel.dependantsPerform(\color_,\string,Color.black);
 		errorModel.string_("");
-		
+
 	}
 
 	successError{
 		errorModel.dependantsPerform(\color_,\string,Color.black);
 		errorModel.string_((p[14]==1).if("[Auto] Build successful.","Build successful."));
-		
+
 	}
-	
+
 	warnFromError{|error|
 		errorModel.dependantsPerform(\color_,\string,Color.red);
 		errorModel.string_(error);
 	}
-	
+
 	warnNotSynthDef{|def|
 		if (def.isNil) {
 			if (LNX_Studio.isStandalone.not) {
-				"¥ ERROR: Parse error in code.".error
+				"ï¿½ ERROR: Parse error in code.".error
 			};
-			this.warnFromError("¥ ERROR: Parse error in code.");
+			this.warnFromError("ï¿½ ERROR: Parse error in code.");
 		}{
 			if (LNX_Studio.isStandalone.not) {
-				"¥ ERROR: Recieved: "++(def.asString)++", is not a SynthDef.".error;
+				"ï¿½ ERROR: Recieved: "++(def.asString)++", is not a SynthDef.".error;
 			};
 			this.warnFromError(
-				"¥ ERROR: Recieved: "++(def.asString)++", is not a SynthDef."
+				"ï¿½ ERROR: Recieved: "++(def.asString)++", is not a SynthDef."
 			);
 		}
 	}
-	
+
 	warnMissingArgs{|missingArgs|
-		("¥ ERROR: The following compulsory arguments are missing: "++(missingArgs.asString)).error;
+		("ï¿½ ERROR: The following compulsory arguments are missing: "++(missingArgs.asString)).error;
 		this.warnFromError(
-			"¥ ERROR: The following compulsory arguments are missing: "++(missingArgs.asString));
+			"ï¿½ ERROR: The following compulsory arguments are missing: "++(missingArgs.asString));
 	}
-	
+
 	warnSpec{|spec|
 		("The spec: "++(spec.asString)++" is not defined.").error;
-		this.warnFromError("¥ The spec: "++(spec.asString)++" is not defined.");
+		this.warnFromError("ï¿½ The spec: "++(spec.asString)++" is not defined.");
 	}
-	
+
 	warnNoRelease{
 		("ERROR: This synth cannot be released.").error;
-		this.warnFromError("¥ ERROR: This synth cannot be released.");
+		this.warnFromError("ï¿½ ERROR: This synth cannot be released.");
 	}
-	
+
 	warnKeyword{|word|
 		("ERROR: Cannot use the keyword: "++word).error;
-		this.warnFromError("¥ ERROR: Cannot use the keyword: "++word);
+		this.warnFromError("ï¿½ ERROR: Cannot use the keyword: "++word);
 	}
-	
+
 	postPoll{|string|
 		{
 			errorModel.dependantsPerform(\color_,\string,Color.black);
 			errorModel.string_(string.asString);
 		}.defer;
-		
+
 	}
-	
+
 } // end ////////////////////////////////////
-	
+

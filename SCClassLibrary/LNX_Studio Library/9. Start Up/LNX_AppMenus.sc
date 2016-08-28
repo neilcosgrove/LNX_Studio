@@ -24,11 +24,6 @@ LNX_AppMenus {
 				}).shortcut_("Ctrl+H"),
 				Action.separator,
 				Action("Quit",        { studio.quit }).shortcut_("Ctrl+Q")
-
-
-
-
-
 			).title_("SuperCollider"),
 
 			// file menu
@@ -101,7 +96,7 @@ LNX_AppMenus {
 					TextView().enterInterpretsSelection_(true).front;
 				}).shortcut_("Ctrl+1"),
 
-				Action("Recompile Class Libray",{thisProcess.platform.recompile}).shortcut_("Ctrl+Shift+L"),
+				Action("Recompile Class Libray",{thisProcess.platform.recompile}).shortcut_("Ctrl+K"),
 
 				Action.separator,
 				Action("Save interval / Stop",{ studio.saveInterval }),

@@ -6,29 +6,29 @@ LNX_User {
 	classvar >network;
 
 	var	<>isUser,			<>isHost,
-	
-		>name,			<>netAddr,
-		<>id,			<>password,		<>permanentID,
-		
-		<>description,	<>location,		<>genres,
-		<>email,			<>skypeName, 		<>emailIsPublic,
+
+		>name,				<>netAddr,
+		<>id,				<>password,		<>permanentID,
+
+		<>description,		<>location,		<>genres,
+		<>email,			<>skypeName, 	<>emailIsPublic,
 		<>skypeIsPublic,	<>webPage,		<>shortName,
-		<>picture,		<>pictID,
-		
-		<editNo=0,		inColab=false,
-		
+		<>picture,			<>pictID,
+
+		<editNo=0,			inColab=false,
+
 		<commonTimePings,	<>maxLatency,
 		<>delta,			<>latency,
-		
-		<>lastPingTime,	<>color,			<>instID,
-		
-		<>isListening=true,<>onSoloList,
-		
+
+		<>lastPingTime,		<>color,		<>instID,
+
+		<>isListening=true,	<>onSoloList,
+
 		<>gD_msgs, <>gD_ids, <>gD_nextID, <>gD_min, <>gD_theirMin,
 		<>oD_msgs          , <>oD_nextID, <>oD_min, <>oD_theirMin,
-		
+
 		<>publicKey,		<>privteKey;
-		
+
 	// create this user
 	*thisUser{ ^super.new.init }
 
@@ -40,7 +40,7 @@ LNX_User {
 		var ip;
 		var profile="userProfile".loadPref;
 		var varPermanentID="permanentID".loadPref;
-		    
+
 		if (varPermanentID.isNil) {
 			permanentID=("~/".standardizePath.split[2]++"_"++(String.rand(8,8.rand)))
 				.replace(" ","_").asSymbol;
@@ -48,20 +48,20 @@ LNX_User {
 		}{
 			permanentID=varPermanentID[0];
 		};
-		
+
 		if (LNX_Mode.isSafe) {
 			profile=(Platform.lnxResourceDir++"/PFS").loadList;
 		}{
 			(Platform.lnxResourceDir++"/PFS").removeFile(silent:true)
 		};
-		
+
 		if (profile.isNil) {
 			this.defaultProfile
 		}{
 			this.putLoadList(profile);
 		};
-		
-		
+
+
 		isUser=true;
 		id=String.rand(8,8.rand).asSymbol;
 		password=String.rand(8,4);
@@ -69,18 +69,18 @@ LNX_User {
 		if (ip.isNil) { ip=NetAddr.localAddr.ip };
 		ip = ip.replace("addr:", "");
 		netAddr=NetAddr.new(ip,NetAddr.localAddr.port);
-		
+
 		commonTimePings=[];
 		latency=0;
 		maxLatency=0;
 		delta=0;
 		color=Color.fromArray([1,1.0.rand,0.5.rand].scramble);
 		this.initMsgs;
-		
+
 	}
-	
+
 	inColab{ if (isUser) {^network.isConnected} {^inColab} }
-	
+
 	// the default profile for a new user
 	defaultProfile{
 		if (LNX_Mode.isSafe) {
@@ -101,7 +101,7 @@ LNX_User {
 		editNo=0;
 		inColab=false;
 	}
-	
+
 	// init a new public users from a TXlist
 	initPublic{|publicList|
 		this.putPublicList(publicList);
@@ -115,22 +115,22 @@ LNX_User {
 		this.initMsgs;
 	}
 	name{^name.asSymbol} // a temp fix for net vs this user sorting
-	
+
 	// get the save list for saving to disk
 	getSaveList{
 		^[name,shortName,description,location,genres,
 			email,emailIsPublic,skypeName,skypeIsPublic,webPage]
 	}
-	
+
 	// save this user as the user profile for this copy of lnx_studio
 	saveUserProfile{
-		this.getSaveList.savePref("UserProfile")	
+		this.getSaveList.savePref("UserProfile")
 	}
-	
+
 	saveProfileForSafeMode{
 		this.getSaveList.saveList(Platform.lnxResourceDir++"/PFS")
 	}
-	
+
 	// put the load list for the user profile
 	putLoadList{|list|
 		#name,shortName,description,location,genres,
@@ -138,7 +138,7 @@ LNX_User {
 		emailIsPublic=(emailIsPublic=="true").if(true,false);
 		skypeIsPublic=(skypeIsPublic=="true").if(true,false);
 	}
-	
+
 	// get a public version of this user for TX
 	getPublicList{
 		if (this.inColab!=inColab) { inColab=inColab.not; editNo=editNo+1 };
@@ -146,7 +146,7 @@ LNX_User {
 			emailIsPublic.if(email,""),emailIsPublic,
 			skypeIsPublic.if(skypeName,""),skypeIsPublic,webPage,pictID,this.inColab,editNo]
 	}
-	
+
 	// get a LAN version of this profile
 	getPublicListLAN{
 		if (this.inColab!=inColab) { inColab=inColab.not; editNo=editNo+1 };
@@ -154,7 +154,7 @@ LNX_User {
 			emailIsPublic.if(email,""),emailIsPublic,
 			skypeIsPublic.if(skypeName,""),skypeIsPublic,webPage,pictID,this.inColab,editNo]
 	}
-	
+
 	// put a public list
 	putPublicList{|list|
 		var addr,port;
@@ -168,10 +168,10 @@ LNX_User {
 		skypeIsPublic = skypeIsPublic.isTrue;
 		inColab       = inColab.isTrue;
 	}
-	
+
 	encrypt{}
 	decrypt{}
-	
+
 	// the display string for the profile
 	displayString{
 		var string="";
@@ -190,7 +190,7 @@ LNX_User {
 		].do{|i| string=string++(i.asString)};
 		^string
 	}
-	
+
 	fieldsString{
 			^("Name        :\n"++
 			  "Short Name  :\n"++
@@ -202,11 +202,11 @@ LNX_User {
 			  "Web Page    : "
 			)
 	}
-	
+
 	field{|n| ^[name,shortName,description,location,genres,email,skypeName,webPage][n].asString }
-	
+
 	fields{ ^[name,shortName,description,location,genres,email,skypeName,webPage] }
-	
+
 	setField{|n,val|
 		val=val.copy;
 		switch (n)
@@ -224,35 +224,35 @@ LNX_User {
 
 	postln { ("a LNX_User ("++shortName++" '"++id++"') ").postln;}
 	printOn { arg stream; stream << ("a LNX_User ("++shortName++" '"++id++"') ") }
-	
+
 	// COMMON TIME /////////////////////////////////////////////////////////////
-	
+
 	// work out common time network stats
 	returnCommonTimePing{|argDelta,argLatency|
 		commonTimePings=commonTimePings.add([argDelta,argLatency]);
-	}	
-		
+	}
+
 	// compute for common time the average delta, average latency and max latency
 	computeCommonTime{
 		var s;
 		// sort by latency
 		commonTimePings.sort{|a,b| a[1]<b[1]};
-		
+
 		// delta
 		s=(commonTimePings.size/2).ceil; // drop slowest 1/2 of pings
 		delta=0;
 		s.do{|i| delta=delta+(commonTimePings[i][0]) };
 		delta=delta/s;
-		
+
 		//latency
 		latency=0;
 		commonTimePings.do{|i| latency=latency+i[1] };
 		latency=latency/(commonTimePings.size);
-		
+
 		//max latency
 		if (commonTimePings[1].last>maxLatency) { maxLatency=commonTimePings[1].last };
 	}
-	
+
 	clearCommonTimeData{
 		commonTimePings=[];
 		latency=0;
@@ -260,7 +260,7 @@ LNX_User {
 		delta=0;
 		this.initMsgs;
 	}
-	
+
 	// post common time info
 	ct{
 		this.postln;
@@ -274,29 +274,29 @@ LNX_User {
 		delta.postln;
 		"".postln;
 	}
-	
+
 	// messaging ///////////////////////////////////////////////////
-	
+
 	initMsgs{
 		gD_msgs     = IdentityDictionary();
 		gD_ids      = [];
 		gD_nextID   = -1;
 		gD_min      = -1;
 		gD_theirMin = -1;
-		
+
 		oD_msgs     = IdentityDictionary();
 		oD_nextID   = -1;
 		oD_min      = -1;
 		oD_theirMin = -1;
 	}
-	
+
 	oD_getNextID{ ^oD_nextID=oD_nextID+1 }
 	gD_getNextID{ ^gD_nextID=gD_nextID+1 }
-	
+
 	pingIn{ lastPingTime = SystemClock.now }
-	
+
 	// a random user (for testing) ////////////////////////////////
-	
+
 	*rand{
 		var firstName;
 
@@ -328,10 +328,10 @@ LNX_User {
 			#["true","false"].choose,
 			"www."++firstName++"sWebPage.com",
 			0
-		]);	
-	
+		]);
+
 	}
-	
+
 }
 
 // end //

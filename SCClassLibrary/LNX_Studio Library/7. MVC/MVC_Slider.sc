@@ -7,9 +7,9 @@ MVC_Slider : MVC_View {
 
 	initView{
 		colors=colors++(
-			'knob'				: Color.orange,
+			'knob'					: Color.orange,
 			'backgroundDisabled'	: Color.grey/2,
-			'knobDisabled'		: Color.grey*1.2
+			'knobDisabled'			: Color.grey*1.2
 		);
 
 	}

@@ -7,8 +7,8 @@
 
 LNX_InstrumentTemplate {
 
-	classvar templateVersion="v1.3", <>noInternalBuses=3;
-	classvar <onSoloGroup,			<>verbose=false;
+	classvar templateVersion="v1.3",	<>noInternalBuses=3;
+	classvar <onSoloGroup,				<>verbose=false;
 	classvar fxFakeOnOffModel;
 
 	var <lastTemplateLoadVersion=1.3;
@@ -18,44 +18,44 @@ LNX_InstrumentTemplate {
 		<thisWidth, 			<thisHeight, 		defaultP;
 
 	// inst vars
-	var	server,			studio, 			<id,
+	var	server,				studio, 			<id,
 		network,			api,
 
 		<>models,			<>defaults,
-		<instNoModel,		<nameModel,		<controlTitle="",
+		<instNoModel,		<nameModel,			<controlTitle="",
 		<>p,
 
 		<window,			<>bounds,			<>onOpen,
-		<gui,			<hidden=false,	<hiddenBounds,
+		<gui,				<hidden=false,		<hiddenBounds,
 		<tasks,
 
-		<midi, 			<midiControl,
+		<midi, 				<midiControl,
 
-		<isLoading=false, 	<>loadedAction,
+		<isLoading=false,	<>loadedAction,
 
-		<notesOn, 		<synthsOn, 		<releaseTimes,
+		<notesOn, 			<synthsOn, 			<releaseTimes,
 		<instOnSolo,
 
-		<presetView,		<presetMemory,	<presetExclusion,
-		<>presetNames,	<presetInterface,	<randomExclusion,
-		<autoExclusion,	<presetsOfPresets,
+		<presetView,		<presetMemory,		<presetExclusion,
+		<>presetNames,		<presetInterface,	<randomExclusion,
+		<autoExclusion,		<presetsOfPresets,
 
 		<>groups,			<>groupIDs,
 
 		// to be replaced by groups & groupIDs above;
 		<>lfoGroup,
 		<>instGroup, 		<>instGroupID,
-		<>instOutGroup,	<>instOutGroupID,	<>instOutSynth,
-		<>fxGroup, 		<>fxGroupID,
+		<>instOutGroup,		<>instOutGroupID,	<>instOutSynth,
+		<>fxGroup, 			<>fxGroupID,
 		<>gsrFilterGroup,	<>gsrFilterGroupID,
 
 		scCodeGroup, 		scCodeGroupID,  // scCode has it' own group to help io
-		<synth,            <node,
+		<synth,				<node,
 		<bpm=120,			<absTime=0.5,
 
-		<hack,			<>toFrontAction,
+		<hack,				<>toFrontAction,
 
-		<peakLeftModel,	<peakRightModel,
+		<peakLeftModel,		<peakRightModel,
 
 		<eq;
 
@@ -103,28 +103,28 @@ LNX_InstrumentTemplate {
 		], this.interface);
 
 		this.header;				// header info for inst
-		this.initMIDI;			// i need this 1st becuase of midi in the model
-		this.initPreModel; 		// anything needed before the models are made
-		this.initModel;    		// subclass override this
+		this.initMIDI;				// i need this 1st becuase of midi in the model
+		this.initPreModel; 			// anything needed before the models are made
+		this.initModel;    			// subclass override this
 		this.initGroups;			// start groups
-		this.initVars;			// init superclass vars
-		this.iInitVars;			// init instrument vars
-		this.iInitMIDI;			// start midi
+		this.initVars;				// init superclass vars
+		this.iInitVars;				// init instrument vars
+		this.iInitMIDI;				// start midi
 		this.createWindow(bounds);	// create window (this doesn't open it)
-		this.createWidgets;		// create the widgets for it
+		this.createWidgets;			// create the widgets for it
 
 		studio.insts.addInst(this,id);		// add to instruments
-		studio.createMixerInstWidgets(this);	// make the mixer widgets
+		studio.createMixerInstWidgets(this);// make the mixer widgets
 
 		if (loadList.notNil) { this.putLoadList(loadList,updateDSP:false)} {this.noPutList};
 
 		this.startInstOutDSP;		// start the instrument out group if it has one
-		this.startDSP;			// start any dsp
-		this.updateDSP;			// update that dsp
-		this.iPostInit;			// anything that needs doing after init
+		this.startDSP;				// start any dsp
+		this.updateDSP;				// update that dsp
+		this.iPostInit;				// anything that needs doing after init
 		this.deferOpenWindow;		// now open window after a defer to help stop lates
 		if (new) { this.iPostNew };	// anything that needs doing after new creation
-		this.eqName;
+		this.eqName;				// name the eq window
 
 	}
 

@@ -82,7 +82,8 @@ MVC_PopUpMenu : MVC_View {
 	color_{|key,color|
 		if (colors.includesKey(key).not) {^this}; // drop out
 		colors[key]=color;
-		if (key=='focus'      ) { {if (view.notClosed) { view.focusColor_(color ) } }.defer };		if (key=='string'     ) { {if (view.notClosed) { view.stringColor_(color) } }.defer };
+		if (key=='focus'      ) { {if (view.notClosed) { view.focusColor_(color ) } }.defer };
+		if (key=='string'     ) { {if (view.notClosed) { view.stringColor_(color) } }.defer };
 		if (key=='background' ) { {if (view.notClosed) { view.background_(color ) } }.defer };
 	}
 

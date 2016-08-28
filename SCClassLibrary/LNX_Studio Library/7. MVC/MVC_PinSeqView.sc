@@ -14,7 +14,7 @@ MVC_PinSeqView : MVC_View {
 		colors=colors++(
 			'background'	: Color.black,
 			'on'			: Color.green,
-			'off'		: Color.black
+			'off'			: Color.black
 		);
 		isSquare=true;
 	}
@@ -45,7 +45,7 @@ MVC_PinSeqView : MVC_View {
 					if (right) { Pen.line((w-x2)@(h2/2),(w)@(h2/2))};
 					Pen.stroke;
 
-					if (midiLearn) {										colors[\midiLearn].set;
+					if (midiLearn) {colors[\midiLearn].set;
 					}{
 						if (enabled) {
 							if (value>0) {
@@ -78,7 +78,7 @@ MVC_PinSeqView : MVC_View {
 						}
 					};
 
-					if (midiLearn) {										colors[\midiLearn].set;
+					if (midiLearn) {colors[\midiLearn].set;
 					}{
 						if (enabled) {
 							(colors[(value>0).if(\on,\off)]*(value.map(0,1,0.6,1))).set;

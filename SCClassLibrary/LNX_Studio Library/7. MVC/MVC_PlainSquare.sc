@@ -6,7 +6,7 @@ MVC_PlainSquare : MVC_View {
 	// set your defaults
 	initView{
 		colors=colors++(
-			'on'		: Color.green,
+			'on'	: Color.green,
 			'off'	: Color.red
 		);
 	}

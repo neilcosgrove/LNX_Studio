@@ -13,7 +13,7 @@ MVC_LampView : MVC_View {
 			'background'	: Color.ndcLampBG,
 			'border'		: Color.ndcLampBorder,
 			'on'			: Color.ndcLampON,
-			'off'		: Color.ndcLampOFF
+			'off'			: Color.ndcLampOFF
 		);
 		isSquare=true;
 		lazyRefresh = MVC_LazyRefresh().refreshFunc_{this.refresh};

@@ -10,10 +10,10 @@ MVC_IconButton : MVC_View {
 		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ]
 		colors=colors++(
 			'background'	: Color.black,
-			'down'		: Color.green+0.1/3,
+			'down'			: Color.green+0.1/3,
 			'up'			: Color.green+0.1/1.5,
 			'iconUp'		: Color.black,
-			'iconDown'	: Color.black
+			'iconDown'		: Color.black
 		);
 		font=Font("Helvetica",12);
 	}

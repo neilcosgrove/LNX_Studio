@@ -1,58 +1,43 @@
-/*
-
-GrainBuf
-
-Meta_Buffer:readChannel
-
-Buffer.readChannel (server, path, startFrame: 0, numFrames: -1, channels, action, bufnum)
-
-channels:[0]
-channels:[1] 
-or channels:[0,1]
-
-ContiguousBlockAllocator
-
-*/
 
 // loads each channel into adjcent buffers on the server ////////////////////////////////
 
 LNX_BufferArray {
-	
+
 	var <>verbose=false;
-	
+
 	var <buffers, <numChannels, <numFrames, <sampleRate, <duration, <sampleData;
-	
+
 	*read {|server,path,action| ^super.new.init(server,path,action) }
-	
+
 	init{ |server, path, action|
-		
+
 		var bufnum;
 		var soundFile = SoundFile();
 		var done;
-		
+
 		soundFile.openRead(path);
 		numChannels = soundFile.numChannels;
 		numFrames   = soundFile.numFrames;
 		sampleRate  = soundFile.sampleRate;
 		duration    = soundFile.duration;
 		//sampleData  = FloatArray[0]; // temp
-		
+
 		sampleData  = FloatArray.fill(numFrames*numChannels,0); // causes lates with large samples
-		
+
 		// fast but causes lates
 		soundFile.readData(sampleData);
-		
+
 //		// slow causes less lates
-//		soundFile.readByChunks(action:{|data| 
+//		soundFile.readByChunks(action:{|data|
 //			//sampleData=data;
 //			if (verbose) {path.postln};
 //			soundFile.close;
-//		}, floatArray:sampleData);	
-		
+//		}, floatArray:sampleData);
+
 		bufnum = server.bufferAllocator.alloc(numChannels); // make sure buffers are adj
-		
+
 		done = 1 ! numChannels; // reverse of normal 0 = done
-		
+
 		// maybe action should only call after all have loaded
 		numChannels.do{|i|
 			buffers = buffers.add(
@@ -72,9 +57,9 @@ LNX_BufferArray {
 
 			)
 		};
-		
+
 	}
-	
+
 	// play this buffer
 	play {|loop = false, mul = 1, offset=0|
 	 	if (buffers.notNil) {
@@ -85,25 +70,25 @@ LNX_BufferArray {
 		 	}
 		 }{ ^nil }
 	}
-	
+
 	getWithRef{|idx,action,ref1,ref2,channel|
 		buffers[channel].getWithRef(idx,action,ref1,ref2)
 	}
 	bufnum {|i=0| if (buffers[i].notNil) {^buffers[i].bufnum }{^nil} }
-	
+
 	free{
 		buffers.do(_.free);
 		sampleData = nil;
 	}
-	 
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 + Buffer {
-	
+
 	// adjust this so mono files play in stereo, and new stereo array
-	
+
 	playPan { arg loop = false, mul = 1, pan=0;
 		^{ var player;
 			player = PlayBuf.ar(numChannels,bufnum,BufRateScale.kr(bufnum),
@@ -112,7 +97,7 @@ LNX_BufferArray {
 			Pan2.ar(player * mul, pan);
 		}.play(server,fadeTime:0);
 	}
-	
+
 	playMono { arg loop = false, mul = 1, offset=0;
 		^{|mul=1| var player;
 			player = PlayBuf.ar(1,bufnum,BufRateScale.kr(bufnum),
@@ -121,8 +106,8 @@ LNX_BufferArray {
 			loop.not.if(FreeSelfWhenDone.kr(player));
 			[player * mul].dup;
 		}.play(server,fadeTime:0, args:[\mul:mul]);
-		
-		
+
+
 	}
 
 	playStereo { arg loop = false, mul = 1, offset=0;
@@ -136,11 +121,11 @@ LNX_BufferArray {
 			loop.not.if(FreeSelfWhenDone.kr(player));
 			player * mul;
 		}.play(server,fadeTime:0, args:[\mul:mul]);
-	}	
-	
+	}
+
 }
- 
- 
+
+
 /*
 
 f = SoundFile.openRead("/Users/neilcosgrove/Desktop/acid tracks/walking from hassocks.aiff");
@@ -155,19 +140,19 @@ f.readByChunks(action: { |data|
 */
 
 + SoundFile {
-	
+
 	// by hjh. Thankyou, it helps a little.
-	
+
 	readByChunks { |startFrame = 0, numFrames = -1, chunkSize = 1048576,
 					wait = 0.02, action, updateAction, floatArray|
-	
+
 		var data, chunk, readFrames = 0, readSize;
-		
+
 		if(numFrames < 0) { numFrames = this.numFrames - startFrame };
 		chunkSize = chunkSize.round(this.numChannels).asInteger;
 		this.seek(startFrame, 0);
 		data = floatArray ? FloatArray.newClear(numFrames * this.numChannels);
-		
+
 		{
 			while {
 				readFrames < numFrames and: { // do nothing when we've read enough frames
@@ -188,39 +173,39 @@ f.readByChunks(action: { |data|
 			};
 			action.value(data);
 		}.fork(AppClock);
-	
+
 	}
-	
+
 }
-	
+
 /*
 
 Buffer.readChannelByChunk(s,"/Users/neilcosgrove/Desktop/acid tracks/walking from hassocks.aiff", 0, -1, 0, false, [0,1], nil, {|buf| b=buf; b.play; "done".postln}, 2**20);
 
 */
-		
-+ Buffer {	
-		
+
++ Buffer {
+
 	*readChannelByChunk{|server, path, startFrame = 0, numFrames = -1, bufStartFrame = 0,
 					leaveOpen = false, channels, bufnum, action, chunkSize = 1048576|
-	
+
 		var sf, numCh, buf, incr = 0;
-			
+
 		sf = SoundFile.openRead(path);
-	
+
 		if(sf.isOpen) {
-		
+
 			numCh = sf.numChannels;
 			if(numFrames < 0) {
 				numFrames = sf.numFrames - startFrame;
 			}{
 				numFrames = min(numFrames, sf.numFrames - startFrame);
 			};
-		
+
 			sf.close;
 
 			buf = Buffer.alloc(server, numFrames, channels.size,nil,bufnum);
-			
+
 			{
 				server.sync;
 				(numFrames / chunkSize).roundUp.do{
@@ -235,13 +220,13 @@ Buffer.readChannelByChunk(s,"/Users/neilcosgrove/Desktop/acid tracks/walking fro
 				};
 				action.value(buf);
 			}.fork(AppClock);
-		
+
 			^buf;
-		
+
 		}
-			
+
 	}
-	
+
 }
 
 

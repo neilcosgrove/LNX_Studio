@@ -9,7 +9,7 @@ MVC_Icon : MVC_View {
 	initView{
 		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ]
 		colors=colors++(
-			'iconUp'		: Color.black,
+			'iconUp'	: Color.black,
 			'iconDown'	: Color.black
 		);
 		font=Font("Helvetica",12);

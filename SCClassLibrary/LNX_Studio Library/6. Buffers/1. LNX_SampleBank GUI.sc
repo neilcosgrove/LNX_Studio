@@ -386,13 +386,8 @@
 					this.play( gui[\i], true);
 					speakerIcon.color_(\iconUp,Color.green);
 				}.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
-
-
 					lastSynth.set(\mul,me.value.dbamp);
-
 					//lastSynth=samples[i].play(loop, this.amp(i).dbamp
-
-
 					//playingSynth.set(\freq,me.value.midicps);
 				}
 				.mouseUpAction_{|me, x, y, modifiers, buttonNumber, clickCount|
@@ -856,6 +851,8 @@
 				var h = me.bounds.height;
 				var h2= h/2;
 				var channelsToDraw=numChannels.clip(1,2);
+
+				MVC_LazyRefresh.incRefresh;
 
 				width = w; // incase of resize
 

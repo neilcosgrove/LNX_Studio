@@ -184,7 +184,7 @@ MVC_Automation {
 		if (beat.notNil) {
 			// set dureation of overwtite time to 1 sec after last valueIn_ event
 			if (owLastTime.isNil) {
-				overwrite  = true; 			// start overwriting
+				overwrite  = true; 				// start overwriting
 				owLastTime = now;				// last overwrite time is now
 
 				MVC_Automation.fps_(1);
@@ -198,10 +198,10 @@ MVC_Automation {
 				{
 					var now = SystemClock.now;
 					if (now-owLastTime>=1) {	// have we gone over 1 complete second?
-						overwrite  = false;	// we are no longer overwriting
+						overwrite  = false;		// we are no longer overwriting
 						owLastTime = nil;		// reset for next time
 						MVC_Automation.fps_(20).lazyRefreshGUI;
-						nil           		// stop scheduling now
+						nil           			// stop scheduling now
 					}{
 						(1-(now-owLastTime))	// next time to sched for 1 complete second
 					}
@@ -231,8 +231,8 @@ MVC_Automation {
 		allEvents[beatInt]=allEvents[beatInt].add(autoEvent);
 
 		// update stuff
-		duration=duration.max(beat);   // update duration if increased
-		MVC_Automation.lazyRefreshGUI; // should say source to lazy refresh to prevent updates ?
+		duration=duration.max(beat);     // update duration if increased
+		MVC_Automation.lazyRefreshGUI;   // should say source to lazy refresh to prevent updates ?
 		studio.mixerGUI[\autoRec].flash; // flash the mixer record widget
 
 	}
@@ -382,7 +382,7 @@ MVC_Automation {
 		allEvents[beatInt]=allEvents[beatInt].add(autoEvent);    // + to all for *clockIn3
 	}
 
-	checkDuration{|beat| if (beat>duration) {duration=beat} } // update if needed
+	checkDuration{|beat| if (beat>duration) {duration=beat} }    // update if needed
 
 	// reset allAutomations to start values, happens when stop button is pressed twice
 	*reset{
@@ -731,7 +731,7 @@ MVC_Automation {
 										\string : Color.black,
 										\focus : Color(0,0,0,0.5)));
 
-		gui[\themeOnOff] = (	\mouseMode_:		\multi,
+		gui[\themeOnOff] = (\mouseMode_:		\multi,
 							\labelShadow_:	false,
 							\rounded_: 		true,
 							\orientation_: 	\horiz,

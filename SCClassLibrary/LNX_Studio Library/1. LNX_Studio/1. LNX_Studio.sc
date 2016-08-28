@@ -68,50 +68,50 @@ LNX_Studio {
 	//// class ////////////////////////////////////////////////////
 
 	classvar	<>versionMajor=2,	<>versionMinor=0,	<version,
-			<internetVersion,	<fileLoadVersion=3;
+				<internetVersion,	<fileLoadVersion=3;
 
 	classvar	studios,			<instTypes,
-			<thisWidth=212, 	<thisHeight,		<defaultHeight=374,
-			<>osx=0,			<visibleTypes,	<instLibraryFileNames, menuGap,
-			<libraryFolder;
+				<thisWidth=212, 	<thisHeight,		<defaultHeight=374,
+				<>osx=0,			<visibleTypes,		<instLibraryFileNames,
+				<libraryFolder;
 
-	classvar <>verbose=false;
+	classvar 	<>verbose=false;
 
 	//// instruments & main studio ///////////////////////////////
-	var	<server,			<songPath	,		<title="LNX_Studio",
-		<insts,			<onSoloGroup,		<>groups,
-		<>groupIDs,		<serverBootNo,     <channelOutSynths;
+	var	<server,			<songPath,			<title="LNX_Studio",
+		<insts,				<onSoloGroup,		<>groups,
+		<>groupIDs,			<serverBootNo,		<channelOutSynths;
 
 	//// groups // to be replaced by groups & groupIDs above;
 	var	<instGroup, 		<fxGroup,			<channelOutGroup,
-		<scCodeGroup,		<instOutGroup,	<gsrFilterGroup,
-		<lfoGroup,		<eqGroup;
+		<scCodeGroup,		<instOutGroup,		<gsrFilterGroup,
+		<lfoGroup,			<eqGroup;
 
 	//// midi
-	var	<midi,			<noInternalBuses=3,
+	var	<midi,				<noInternalBuses=3,
 		midiWin, 			<midiClock, 		noInternalBusesGUI,
-		<autoMapGroup,	autoMapOn=true,
+		<autoMapGroup,		autoMapOn=true,
 		<midiControl,		<controlTitle="Studio + All Instruments",
 		<latency=0.2,		<syncDelay=0,		<midiSyncLatency= -0.022,
 		<midiCnrtLastNote;
 
 	//// gui stuff
-	var	<gui,			<models,
-		<>frontWindow,	<show1=false, 	<showNone=false, <showDev=true,
+	var	<gui,				<models, 			<showDev=true,
+		<>frontWindow,		<show1=false, 		<showNone=false,
 		<visibleTypesGUI,	<libraryGUI,		<alwaysOnTop=false,
 		<mixerWindow,		<mixerGUI;
 
 	//// clipboard
-	var	clipboard, 		netClipboard;
+	var	clipboard, 			netClipboard;
 
 	//// loading, transport & misc
-	var	<isLoading=false,	<>loadedAction,	songToLoad,
-		<bpm=135, 		<absTime,
+	var	<isLoading=false,	<>loadedAction,		songToLoad,
+		<bpm=135, 			<absTime,
 		<extClock=false, 	<>beat=0,			<>instBeat=0,
 		<isPlaying=false,
-		lastPos=0,		extBeat=0, 		<extIsPlaying=false,
-		noTaps=0, 		firstTapTime=0, 	lastTapTime=0,
-		totalTapTime=0,    <extTiming,		tasks,
+		lastPos=0,			extBeat=0, 			<extIsPlaying=false,
+		noTaps=0, 			firstTapTime=0, 	lastTapTime=0,
+		totalTapTime=0,    <extTiming,			tasks,
 		<>batchOn=false,	<>batch,			<>batchFolder=0,
 		<lastBatchFolder,	jumpTo;
 
@@ -119,62 +119,9 @@ LNX_Studio {
 	var	<network, 		<netTransport=true,	// transport on network
 		<api,			transmitInstChange=true;
 
-	var <>myHack,			<>hackOn=false; // for my own hacking of lnx, to remove
+	var <>myHack,		<>hackOn=false; // for my own hacking of lnx, to remove
 
-	//////////////////////////////////////////////////////////////////////////////////////////
-
-	var midi2, padNotes;
-
-	// temp for CARBON ************
-	// LNX_POP changed
-	// LNX_Instruments:move changed
-	// LNX_Studio:stop
-
-	initPadMixerMIDI{
-
-		// note value of pads left to right, top to bottom
-		padNotes =  #[
-//			0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,
-//			32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
-			64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
-			96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119 ];
-
-		midi2 = LNX_POP.midi;
-
-		midi2.noteOnFunc_{|src, chan, note, vel ,latency|
-			var inst, index = padNotes.indexOf(note);
-			if (index.notNil) {
-				inst = insts.mixerInstruments[index];
-				if (inst.notNil) {
-					inst.onOffModel.lazyValueAction_(1 -(inst.onOffModel.value) );
-				};
-			};
-
-		};
-
-	}
-
-	updatePadMixer{|inst|
-		var index = insts.mixerInstruments.indexOf(inst);
-		if (index.notNil and:{padNotes[index].notNil}) {
-			if (inst.onOffModel.isTrue) {
-				midi2.noteOn(padNotes[index],48, latency) ; // green
-			}{
-				midi2.noteOn(padNotes[index],0, latency) ; // off
-			}
-		};
-	}
-
-	updateAllPadMixer{ insts.mixerInstruments.do{|inst| this.updatePadMixer(inst) } }
-
-	addMixerPaddDependant{|inst|
-		var index = insts.mixerInstruments.indexOf(inst);
-		if (index.notNil) {
-			inst.onOffModel.addDependant{
-				this.updatePadMixer(inst)
-			}
-		};
-	}
+	var midi2, padNotes; // temp for CARBON ************
 
 	// create a new studio ///////////////////////////////////////////////////////
 
@@ -184,14 +131,11 @@ LNX_Studio {
 
 	init {|server|
 
-		MVC_LazyRefresh.startRefreshWatchingTask;
-
-		menuGap = 0@0;
 		this.initInstance;			 // initialise this instance of the studio
 		this.createInstrumentList;   // create the lists of instruments available
 		this.initLibrary;            // make all the files & folders for the inst library
-		this.initVars;			 // all the main vars are initialised here
-		this.initMIDI;			 // start all midi services
+		this.initVars;				 // all the main vars are initialised here
+		this.initMIDI;				 // start all midi services
 
 		this.initNetwork;			 // initialise the network
 		this.startResponders;		 // start responders for SCSynth >> SCLang
@@ -208,11 +152,12 @@ LNX_Studio {
 		this.autoSizeGUI;			 // autosize to number of users. (to add widgets & remove)
 		mixerWindow.create;          // now make the window
 
-		// this.libraryGUIBugFix;       // a bug fix
-		// LNX_SplashScreen.init(this); // start splash screen
+		LNX_SplashScreen.init(this); // start splash screen
 		CmdPeriod.add(this);		 // add this object to CmdPeriod
 
-		//	 this.startClockOff;          // and start off_clock for client side lfos
+		this.startClockOff;          // and start off_clock for client side lfos
+
+		MVC_LazyRefresh.startRefreshWatchingTask; // start the lazy refresh task
 
 	}
 
@@ -223,19 +168,11 @@ LNX_Studio {
 	*isStandalone{^true} // dev is now standalone
 
 	*versionAtLeast { |maj, min|
-		^if((maj==versionMajor) and:{min.notNil}){
-			versionMinor >= min
-		}{
-			versionMajor >= maj
-		};
+		^if((maj==versionMajor) and:{min.notNil}){ versionMinor >= min }{ versionMajor >= maj };
 	}
 
 	*versionAtMost { |maj, min|
-		^if((maj==versionMajor) and:{min.notNil}){
-			versionMinor <= min
-		}{
-			versionMajor <= maj
-		};
+		^if((maj==versionMajor) and:{min.notNil}){ versionMinor <= min }{ versionMajor <= maj };
 	}
 
 	// & instance versions
@@ -319,8 +256,7 @@ LNX_Studio {
 		LNX_POP.studio_(this);                // for finding instBeat when gui pressing program
 		LNX_BufferProxy.studio_(this);        // for gui flashing
 		LNX_URLDownloadManager.studio_(this); // for "Downloading samples..." & "Finished." Dialog
-
-		//insts.addDependant(LNX_POP); // for updating gui positions
+		insts.addDependant(LNX_POP); 		  // for updating gui positions
 
 		#show1, showNone = (("show1 showNone").loadPref?[true,false]).collect(_.isTrue);
 
@@ -375,7 +311,6 @@ LNX_Studio {
 	initServerPostModels{
 		var blockSize = (2**(5..9))[models[\blockSize].value];
 		server.options.blockSize_(blockSize);
-
 	}
 
 	// boot the server and run postBootFuncs when done
@@ -394,15 +329,15 @@ LNX_Studio {
 				server.sendMsg("error",0);			// turn off error messaging
 				this.latency_(("latency".loadPref ? [latency])[0].asFloat); // set the latency
 
-				//fxBuses to use properly later
+				//fxBuses to be use properly later
 				((LNX_AudioDevices.numFXBusChannels/2).asInt.collect{ Bus.audio(server,2) });
 
 				LNX_BufferProxy.serverReboot;		// load bufers
-				this.initUGens;					// send studio SynthDefs (Limiter Out)
-				instTypes.do(_.initUGens(server));   // init all instrument uGens
+				this.initUGens;						// send studio SynthDefs (Limiter Out)
+				instTypes.do(_.initUGens(server));  // init all instrument uGens
 				insts.do(_.initUGens(server));		// used by SC Code FX
 				LNX_SampleBank.initUGens(server);	// sample bank for tuning
-				LNX_EQ.initUGens(server);            // and EQ
+				LNX_EQ.initUGens(server);           // and EQ
 				LNX_Voicer.update_(server);			// update voicer
 
 				{this.initGroups}.defer(0.1);		// start inst, code, fx & out groups
@@ -438,7 +373,7 @@ LNX_Studio {
 
 		var postFilterGroup;
 
-		lfoGroup        = Group();				          // lfo group
+		lfoGroup        = Group();				          	// lfo group
 		instGroup       = Group(lfoGroup,\addAfter);        // instruments group
 		gsrFilterGroup  = Group(instGroup,\addAfter);       // gsRythmn filter group
 		postFilterGroup = Group(gsrFilterGroup,\addAfter);  // gsRythmn post filter group
@@ -449,12 +384,12 @@ LNX_Studio {
 		channelOutGroup = Group.after(fxGroup);             // the channel outputs
 
 		groups = (
-			\lfo:		lfoGroup,
-			\inst: 		instGroup,
-			\gsrFilter:	gsrFilterGroup,
-			\postFilter:  postFilterGroup,
+			\lfo:			lfoGroup,
+			\inst: 			instGroup,
+			\gsrFilter:		gsrFilterGroup,
+			\postFilter: 	postFilterGroup,
 			\scCode: 	 	scCodeGroup,
-			\eq:          eqGroup,
+			\eq:     		eqGroup,
 			\instOut:		instOutGroup,
 			\fx:			fxGroup,
 			\channelOut:	channelOutGroup
@@ -508,7 +443,6 @@ LNX_Studio {
 	// start studio Synths
 
 	startDSP{
-		//"<#>".postln;
 		// add a limiter to each stereo out pair
 		channelOutSynths = (LNX_AudioDevices.numOutputBusChannels/2).asInt.collect{|i|
 			Synth.tail(channelOutGroup,"LNX_LimitOut",i*2);
@@ -520,9 +454,7 @@ LNX_Studio {
 	}
 
 	setPreAmp{
-		channelOutSynths.do{|synth|
-			synth.set(\preAmp, models[\preAmp].value)
-		};
+		channelOutSynths.do{|synth| synth.set(\preAmp, models[\preAmp].value) };
 	}
 
 	// the network responders for levels back from server and into the studio. + also lfo values
@@ -571,10 +503,6 @@ LNX_Studio {
 			insts.visualOrder.do(_.updateDSP);
 			insts.visualOrder.do(_.restartEQ);
 			{server.volume_(models[\volume].value)}.defer(0.1);
-
-//			Bus.new(\audio,0, 2, server).scope;
-//			FreqScope.new(400, 200, 0);
-
 		};
 	}
 
@@ -591,7 +519,6 @@ LNX_Studio {
 	// and this on close
 
 	onClose{
-		//this.stop;
 		this.saveWindowBounds;
 		network.disconnect;
 		this.free;
@@ -603,7 +530,7 @@ LNX_Studio {
 	// the total latency of this system. includes syncDelay. sync delay is -ive delay in
 	// AudioIn and MIDIOut
 
-	actualLatency{ ^latency + syncDelay } // s
+	actualLatency{ ^latency + syncDelay }
 
 	// set latency of studio
 	latency_{|argLatency|
@@ -613,7 +540,6 @@ LNX_Studio {
 		}{
 			latency=argLatency;
 		};
-
 
 		// replace with something like above
 		// this.updateSyncDelay; // update sync delay so intruments are updated too
@@ -636,7 +562,7 @@ LNX_Studio {
 	// start midi stuff
 
 	initMIDI{
-		var midiClockPrefs= "MIDI Clock".loadPref;	   // get midi clock in & out prefs
+		var midiClockPrefs= "MIDI Clock".loadPref;	     // get midi clock in & out prefs
 		var midiInternalPrefs= "MIDI Internal".loadPref; // get no internal midi ch prefs
 
 		midiSyncLatency = ("MIDI Sync Latency".loadPref ? [midiSyncLatency])[0].asFloat;
@@ -645,20 +571,19 @@ LNX_Studio {
 		midiClockPrefs= (midiClockPrefs ? [0,-1,0,0]).collect(_.asInt); // put none if absent
 		midiInternalPrefs= (midiInternalPrefs ? [noInternalBuses])[0].asInt;
 
-		if (LNX_MIDIPatch.initialized.not) { LNX_MIDIPatch.init }; // init LNX_MIDIPatch
-		this.noInternalBuses_(midiInternalPrefs);		// set no of buses
-		this.autoMapInit;							// init auto map
-		midiControl = LNX_MIDIControl.new(this);		// new controls for studio
-		midiClock   = LNX_MIDIPatch(0,-1,0,0);		// for midiClock in and out
-		midiClock.putLoadList(midiClockPrefs);		// put in the prefs
+		if (LNX_MIDIPatch.initialized.not) { LNX_MIDIPatch.init };	// init LNX_MIDIPatch
+		this.noInternalBuses_(midiInternalPrefs);					// set no of buses
+		this.autoMapInit;											// init auto map
+		midiControl = LNX_MIDIControl.new(this);					// new controls for studio
+		midiClock   = LNX_MIDIPatch(0,-1,0,0);						// for midiClock in and out
+		midiClock.putLoadList(midiClockPrefs);						// put in the prefs
 		midiClock.sysrtFunc={|src,chan,val| this.midiClockIn(chan,val)};
 		LNX_MIDIControl.studio_(this); // used to register this studio in midi control so
-									// midi control can update front window in studio
-									// so this will remain on top when networking
-
+									   // midi control can update front window in studio
+									   // so this will remain on top when networking
 		LNX_POP.initMIDI;
 
-		this.initPadMixerMIDI;           // temp for CARBON ************
+		this.initPadMixerMIDI; // temp for CARBON ************
 
 	}
 
@@ -744,7 +669,7 @@ LNX_Studio {
 		popFreeAt = insts.collect(_.presetsOfPresets).collect(_.presetsOfPresets)
 			.asList.flop.collect{|i| i.collect{|i| i==2}.includes(false).not }.indexOf(true);
 
-		includeFX = onOffList[0].isTrue;		// 1st item is includeFX?
+		includeFX = onOffList[0].isTrue;	// 1st item is includeFX?
 		onOffList = onOffList[1..].asInt;	// and the rest is onOffs
 		if (popFreeAt.isNil) { ^this };		// if still no free space then drop
 
@@ -1038,17 +963,17 @@ LNX_Studio {
 	addInst{|type,bounds,open=true,id,onOff=1, autoAdd=false, autoBeat, loadList|
 		var i,inst;
 
-		if (type.isNumber) { type=visibleTypes[type] };  // convert index to class
+		if (type.isNumber) { type=visibleTypes[type] }; // convert index to class
 		if (type.species==Symbol) { type=type.asClass };
 		i=insts.size;
-		if (i<1) {this.updateOSX};                       // update the studio window offset
-												  //work out bounds
+		if (i<1) {this.updateOSX};                      // update the studio window offset
+												  		//work out bounds
 		bounds=bounds ? Rect((i*25)+thisWidth+osx+3,i*23+50,type.thisWidth,type.thisHeight);
 
 		// this is the only place a new inst is created
 		inst=type.new(server, this, i, bounds, open,id, loadList); // make the instrument
 
-		this.refreshOnOffEnabled;					  // update solo gui enabled/not enabled
+		this.refreshOnOffEnabled;					    // update solo gui enabled/not enabled
 
 		this.addMixerPaddDependant(inst).updatePadMixer(inst); // temp for CARBON ************
 
@@ -1082,7 +1007,6 @@ LNX_Studio {
 			clipboard=insts.selectedInst.getSaveList.compress;
 
 			if (network.isConnected) {
-				//users=network.connectedUsers.select{|u| u.instID==id}; // which users are using
 
 				users=network.connectedUsers; // all users now
 
@@ -1148,7 +1072,6 @@ LNX_Studio {
 	}
 
 	// copy, paste & duplicate instrument
-
 	// called from menu item copy
 
 	guiCopy{
@@ -1318,10 +1241,7 @@ LNX_Studio {
 
 	clear{
 		insts.ids.do{|id|
-			//mixerGUI[id][\scrollView].remove;
-
 			mixerGUI[id].do(_.remove);
-
 			mixerGUI[id]=IdentityDictionary[];
 		}; // remove always on gui
 		insts.do(_.stopDSP);
@@ -1344,7 +1264,7 @@ LNX_Studio {
 
 		this.checkSyncDelay;
 
-		//{LNX_SampleBank.emptyTrash}.defer(1); // empty trash 10 seconds later
+		{LNX_SampleBank.emptyTrash}.defer(7.5); // empty trash 7.5 seconds later
 		// needs to be triggered when finished loading
 
 	}
@@ -1357,17 +1277,11 @@ LNX_Studio {
 
 	freeAllAutomation{
 		this.freeAutomation;
-
 		insts.do(_.freeAutomation);
-
 		MVC_Automation.updateDurationAndGUI; // temp
-
 	}
 
 	///////////////  info  /////////////////////////
-
-	//openHelp{ "LNX_Studio Help".help }
-
 
 	openHelp{
 		if ( (frontWindow.isKindOf(Window))
@@ -1406,23 +1320,7 @@ LNX_Studio {
 	///////////////////////////
 
 	// send a message to the messenger
-	talk{|msg,myName|
-
-		network.room.talk(msg,true,true)
-
-//		myName=myName ? (network.thisUser.shortName);
-//		api.sendGD(\netTalk,msg,myName);
-//		this.addTextToDialog(myName.asString++": "++(msg.asString),false,true);
-	}
-
-	// net version of talk
-	netTalk{|msg,myName|
-//		myName=myName ? (network.thisUser.shortName);
-//		this.addTextToDialog(myName.asString++": "++(msg.asString),true,true);
-//
-//		a.n.room.talk("a",true,true)
-
-	}
+	talk{|msg,myName| network.room.talk(msg,true,true) }
 
 	// the studio title which is changed when loading or save as...
 
@@ -1471,7 +1369,9 @@ LNX_Studio {
 				tasks[\saveInterval]=Task({|a,b,c|
 					loop {
 						if (this.isPlaying) {
-							this.save((path+i+(Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2))));
+							this.save((path+i+(
+								Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2)))
+							);
 							i=i+1;
 						};
 						60.wait;
@@ -2022,58 +1922,57 @@ LNX_Studio {
 		this.refreshOnOffEnabled;
 	}
 
-	quit {
-		var gui = (),
-		colors = (
-			background: 		Color(59/77,59/77,59/77),
-			border2: 			Color(6/11,42/83,29/65),
-			border1: 			Color(3/77,1/103,0,65/77),
-			menuBackground:	Color(1,1,0.9)
-		) ++ (colors?());
+	// mixer control for launch pad, temp until proper implementation ////////////////////////////////
 
-		gui[\window] = MVC_ModalWindow(mixerWindow.view, (250-60)@(150-18), colors);
-		gui[\scrollView] = gui[\window].scrollView;
+	// temp for CARBON ************
+	// LNX_POP changed
+	// LNX_Instruments:move changed
+	// LNX_Studio:stop
 
-		MVC_StaticText( gui[\scrollView], Rect(10,23-18,190,18))
-			.shadow_(false)
-			.color_(\string,Color.black)
-			.font_(Font("Helvetica-Bold", 13))
-			.string_("Quit LNX_Studio?");
+	initPadMixerMIDI{
 
-		MVC_StaticText( gui[\scrollView], Rect(10,30,190,18*2))
-			.shadow_(false)
-			.color_(\string,Color.black)
-			.font_(Font("Helvetica", 11))
-			.string_("Any unsaved information\n will be lost");
+		// note value of pads left to right, top to bottom
+		padNotes =  #[
+//			0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,
+//			32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
+			64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
+			96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119 ];
 
-		// Ok
-		MVC_OnOffView(gui[\scrollView],Rect(105, 78, 50, 20),"Ok")
-			.rounded_(true)
-			.color_(\on,Color(1,1,1,0.5))
-			.color_(\off,Color(1,1,1,0.5))
-			.action_{
-				gui[\window].close;
-				this.doQuit;
+		midi2 = LNX_POP.midi;
+
+		midi2.noteOnFunc_{|src, chan, note, vel ,latency|
+			var inst, index = padNotes.indexOf(note);
+			if (index.notNil) {
+				inst = insts.mixerInstruments[index];
+				if (inst.notNil) {
+					inst.onOffModel.lazyValueAction_(1 -(inst.onOffModel.value) );
+				};
+			};
+
 		};
 
-		// Cancel
-		MVC_OnOffView(gui[\scrollView],Rect(105-52, 78, 50, 20),"Cancel")
-			.rounded_(true)
-			.color_(\on,Color(1,1,1,0.5))
-			.color_(\off,Color(1,1,1,0.5))
-			.action_{	 gui[\window].close };
 	}
 
-	doQuit{
-		{
-			CmdPeriod.run;
-			0.25.wait;
-			this.free;
-			0.25.wait;
-			Server.quitAll;
-			0.exit;
-		}.fork(AppClock);
+	updatePadMixer{|inst|
+		var index = insts.mixerInstruments.indexOf(inst);
+		if (index.notNil and:{padNotes[index].notNil}) {
+			if (inst.onOffModel.isTrue) {
+				midi2.noteOn(padNotes[index],48, latency) ; // green
+			}{
+				midi2.noteOn(padNotes[index],0, latency) ; // off
+			}
+		};
+	}
 
+	updateAllPadMixer{ insts.mixerInstruments.do{|inst| this.updatePadMixer(inst) } }
+
+	addMixerPaddDependant{|inst|
+		var index = insts.mixerInstruments.indexOf(inst);
+		if (index.notNil) {
+			inst.onOffModel.addDependant{
+				this.updatePadMixer(inst)
+			}
+		};
 	}
 
 }

@@ -111,14 +111,11 @@
 		var sv, startX = 160, midSpace = 0, row2 = 33;
 
 		Platform.case(\osx, {}, {
-			//extra space for menus
-			if (showDev) { menuGap.x = 75 };
-			menuGap.y = 30;
 			startX = 235;
 			midSpace = 200;
 		});
 
-		startX = startX + menuGap.x;
+		startX = startX;
 
 		insts.addDependant{ this.updateMixerInfoText }; // to update infoText
 
@@ -127,29 +124,29 @@
 		mixerGUI = IdentityDictionary[];
 
 		// themes
-		mixerGUI[\buttonTheme2 ] = (\colors_ : (	\up    : Color(6/11,42/83,29/65)*0.8,
-										\down  : Color(6/11,42/83,29/65)/2,
-					 					\string: Color.black),
-							\rounded_ : true);
+		mixerGUI[\buttonTheme2 ] = (\colors_  : (	\up    : Color(6/11,42/83,29/65)*0.8,
+									\down     : Color(6/11,42/83,29/65)/2,
+					 				\string   : Color.black),
+									\rounded_ : true);
 
 		gui[\textTheme2] = (	\shadow_	: false,
-							\font_	: Font("Helvetica", 10),
-							\align	: \left,
-							\colors_	: (	\string:	Color(46/77,46/79,72/145) ) );
+								\font_		: Font("Helvetica", 10),
+								\align		: \left,
+								\colors_	: (	\string:	Color(46/77,46/79,72/145) ) );
 
 		gui[\onOffTheme] = (	\font_	: Font("Helvetica",12),
-							\colors_	: (	\on:		Color.red,
-										\off:	Color(46/77,46/79,72/145)/1.5,
-										\string:	Color.black ) );
+								\colors_: (	\on:		Color.red,
+											\off:	Color(46/77,46/79,72/145)/1.5,
+											\string:	Color.black ) );
 
-		gui[\syncTheme]=(	\orientation_  : \horiz,
-						\resoultion_	 : 8,
-						\visualRound_  : 0.1,
-						\rounded_      : true,
-						\font_		 : Font("Helvetica",10),
-						\labelFont_	 : Font("Helvetica",10),
-						\showNumberBox_: false,
-						\colors_       : (	\background : Color(0,0,0,0.15),
+		gui[\syncTheme]=(	\orientation_ 	: \horiz,
+							\resoultion_	: 8,
+							\visualRound_ 	: 0.1,
+							\rounded_		: true,
+							\font_			: Font("Helvetica",10),
+							\labelFont_		: Font("Helvetica",10),
+							\showNumberBox_	: false,
+							\colors_		: (	\background : Color(0,0,0,0.15),
 										\backgroundDown : Color(0.1,0.1,0.1,0.85),
 										\string : Color.black,
 										\focus : Color(0,0,0,0)));
@@ -261,7 +258,7 @@
 
 		// server on/off view
 		mixerGUI[\serverGUI]=MVC_FlatButton2(models[\serverRunning],mixerWindow,
-								Rect(571+menuGap.x+midSpace+66, 3, 26, 19))
+								Rect(571+midSpace+66, 3, 26, 19))
 			.resize_(3)
 			.font_(Font("Helvetica-Bold",11))
 			.color_(\off,Color.black)
@@ -269,7 +266,7 @@
 			.color_(\background,Color(46/77,46/79,72/145)/2) ;
 
 		// net on/off view
-		MVC_FlatButton2(models[\network],mixerWindow,Rect(601+menuGap.x+midSpace+66, 3, 26, 19))
+		MVC_FlatButton2(models[\network],mixerWindow,Rect(601+midSpace+66, 3, 26, 19))
 			.resize_(3)
 			.font_(Font("Helvetica-Bold",11))
 			.color_(\off,Color.black)
@@ -277,12 +274,12 @@
 			.color_(\background,Color(46/77,46/79,72/145)/2);
 
 		// server stats: cpu
-		MVC_StaticText(mixerWindow,Rect(635+66+menuGap.x+midSpace, 5, 24, 15),gui[\textTheme2])
+		MVC_StaticText(mixerWindow,Rect(635+66+midSpace, 5, 24, 15),gui[\textTheme2])
 			.resize_(3)
 			.string_("CPU:")
 			.excludeFromVerbose_(true);
 
-		mixerGUI[\cpu]=MVC_StaticText(mixerWindow,Rect(661+66+menuGap.x+midSpace, 5, 30, 15),gui[\textTheme2])
+		mixerGUI[\cpu]=MVC_StaticText(mixerWindow,Rect(661+66+midSpace, 5, 30, 15),gui[\textTheme2])
 			.resize_(3)
 			.string_("-")
 			.excludeFromVerbose_(true);
@@ -294,7 +291,7 @@
 				["F"   ,Color(0.5, 1,  0)/1.15,Color.black,Color.grey/4,Color.grey/2]]);
 
 
-		MVC_MultiOnOffView(models[\fadeSpeed], mixerWindow,Rect(704+66+menuGap.x+midSpace,3,19,19),gui[\multiTheme ])
+		MVC_MultiOnOffView(models[\fadeSpeed], mixerWindow,Rect(704+66+midSpace,3,19,19),gui[\multiTheme ])
 			.color_(\background,Color(46/77,46/79,72/145)/4)
 			.resize_(3);
 
@@ -344,71 +341,6 @@
 			mixerGUI[\popProgramsScrollView].visible_(false);
 		},{}]);
 
-
-
-		// v tab
-		mixerGUI[\v] = mixerGUI[\masterTabs].mvcTab(3);
-
-//
-//
-//~x=0; ~y=0;
-//~lx=0; ~ly=0;
-//~ld=0;
-//~rect=mixerGUI[\masterTabs].bounds.resizeBy(-20,0);
-//~w=~rect.bounds.width/2;
-//~h=~rect.bounds.height/2;
-//~v=MVC_UserView(mixerGUI[\v],Rect(0,0,~w*2,~h*2))
-//	.clearOnRefresh_(false)
-//	.drawFunc_{
-//		Pen.use{
-//
-//			Pen.smoothing_(true);
-//
-//			~b=[0,0,0,0,0,2,3,5,6,9,13].wrapAt((SystemClock.now).asInt.hash);
-//
-//			Pen.blendMode_(~b);
-//			Pen.width_(SystemClock.now.fold(0,10)/10*40+5);
-//			Pen.capStyle_(1);
-//
-//			Pen.fillColor = Color(0,0,0,0.05/2);
-//			Pen.fillRect(Rect(0,0,~w*2,~h*2));
-//
-//			Pen.strokeColor = Color(~x,SystemClock.now.fold(0,10)/10,~y);
-//
-//			if(~x>~y) { ~y=~y**2 } { ~x=~x**2 };
-//
-//			~x=~x**1.5*0.66; ~y=~y**1.5*0.66;
-//
-//			~lx=~lx; ~ly=~ly;
-//
-//			~d = sin(SystemClock.now/10)*pi*2;
-//
-//			Pen.moveTo( (~w@~h) + (((~lx*~w)@(~ly*~h)).rotate(~ld)) );
-//			Pen.lineTo( (~w@~h) + ((( ~x*~w)@( ~y*~h)).rotate(~d)) );
-//
-//			Pen.moveTo( (~w@~h) + (((~lx*~w).neg@(~ly*~h)).rotate(~ld)) );
-//			Pen.lineTo( (~w@~h) + ((( ~x*~w).neg@( ~y*~h)).rotate(~d)) );
-//
-//
-//			Pen.moveTo( (~w@~h) + (((~lx*~w)@(~ly*~h).neg).rotate(~ld)) );
-//			Pen.lineTo( (~w@~h) + ((( ~x*~w)@( ~y*~h).neg).rotate(~ld)) );
-//
-//			Pen.moveTo( (~w@~h) + (((~lx*~w).neg@(~ly*~h).neg).rotate(~ld)) );
-//			Pen.lineTo( (~w@~h) + ((( ~x*~w).neg@( ~y*~h).neg).rotate(~d)) );
-//
-//
-//			Pen.stroke;
-//
-//			~lx=~x;
-//			~ly=~y;
-//			~ld=~d;
-//
-//		}
-//	}.resize_(4);
-//
-//
-//
-
 		// mixer tab
 
 		mixerGUI[\instScrollView] = mixerGUI[\masterTabs].mvcTab(0)
@@ -425,7 +357,7 @@
 
 		// the fx scroll view
 		mixerGUI[\fxScrollView] = MVC_RoundedScrollView (mixerWindow,
-			Rect(732+71, 13+menuGap.y, 177 - ScrollBars.addIfNone(7), 285-menuGap.y))
+			Rect(732+71, 13, 177 - ScrollBars.addIfNone(7), 285))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -454,7 +386,7 @@
 
 		// the master levels scroll view
 		mixerGUI[\masterLevelsScrollView] = MVC_RoundedScrollView (mixerWindow,
-						Rect(927+71- ScrollBars.addIfNone(7), 13+menuGap.y, 73, 285-menuGap.y))
+						Rect(927+71- ScrollBars.addIfNone(7), 13, 73, 285))
 			.hasBorder_(false)
 			.resizeList_([3,3,3,3,3]) //  0:view 1:left 2:top 3:right 4:bottom
 			.autoScrolls_(true)
@@ -465,14 +397,14 @@
 		sv = mixerGUI[\masterLevelsScrollView];
 
 		// levels
-		MVC_FlatDisplay(models[\peakOutL],sv,Rect(3, 23, 7, 192-10-4-menuGap.y));
-		MVC_FlatDisplay(models[\peakOutR],sv,Rect(12, 23, 7, 192-10-4-menuGap.y));
-		MVC_Scale(sv,Rect(9+1, 23, 2, 192-10-7-menuGap.y));
+		MVC_FlatDisplay(models[\peakOutL],sv,Rect(3, 23, 7, 192-10-4));
+		MVC_FlatDisplay(models[\peakOutR],sv,Rect(12, 23, 7, 192-10-4));
+		MVC_Scale(sv,Rect(9+1, 23, 2, 192-10-7));
 
 		// peakLevel
-		MVC_PeakLevel(sv,models[\peakLevel],Rect(56, 27, 13, 184-10-4-menuGap.y));
+		MVC_PeakLevel(sv,models[\peakLevel],Rect(56, 27, 13, 184-10-4));
 		// volume
-		MVC_SmoothSlider(models[\volume],sv,Rect(22, 23, 33, 192-10-4-menuGap.y))
+		MVC_SmoothSlider(models[\volume],sv,Rect(22, 23, 33, 192-10-4))
 			.labelShadow_(false)
 			.thumbSizeAsRatio_(0.18,8)
 			.numberFunc_(\float2)
@@ -485,7 +417,7 @@
 			.color_(\numberDown,Color.white);
 
 		// mute
-		MVC_OnOffView(models[\mute],sv, Rect(21, 250-10-4-menuGap.y, 34, 20))
+		MVC_OnOffView(models[\mute],sv, Rect(21, 250-10-4, 34, 20))
 				.permanentStrings_(["Mute"])
 				.font_(Font("Helvetica-Bold",11))
 				.color_(\on,Color.red)
@@ -494,7 +426,7 @@
 				.canFocus_(false);
 
 
-		MVC_NumberBox(models[\preAmp], sv,Rect(12, 270-10-menuGap.y, 50, 19),  gui[\syncTheme])
+		MVC_NumberBox(models[\preAmp], sv,Rect(12, 270-10, 50, 19),  gui[\syncTheme])
 			.postfix_(" db")
 			.color_(\label,Color.white);
 
@@ -505,7 +437,7 @@
 			.action_{ this.fadeIn };
 
 		// fadeOut
-		MVC_FlatButton(sv,Rect(24+1, 206+1+22-10-4-menuGap.y, 27, 17), mixerGUI[\buttonTheme2 ] ,"down")
+		MVC_FlatButton(sv,Rect(24+1, 206+1+22-10-4, 27, 17), mixerGUI[\buttonTheme2 ] ,"down")
 			.mode_(\icon)
 			.action_{ this.fadeOut };
 
@@ -516,10 +448,6 @@
 
 		// add the preset widgets
 		LNX_POP.createWidgets( mixerGUI[\popProgramsScrollView], mixerGUI[\presetTab]);
-
-        // everthing text
-/*		mixerGUI[\everythingInfoText] = MVC_StaticText(mixerGUI[\presetTab], mixerGUI[\textTheme],
-			Rect(20, 190, 369, 43)).string_("Everything");*/
 
         // Everything logo
 		mixerGUI[\everythingInfoText] = MVC_ImageView(mixerGUI[\presetTab],Rect(155, 212, 148, 34))
@@ -606,33 +534,34 @@
 		// themes
 
 		mixerGUI[\knobTheme1]=(\colors_		: (\on : Color.orange,
-									   \numberUp:Color.black,
-									   \numberDown:Color.white,
-									   \disabled:Color.black),
-										\numberFont_  : Font("Helvetica",11));
+									   			\numberUp:Color.black,
+									  			\numberDown:Color.white,
+									   			\disabled:Color.black),
+												\numberFont_  : Font("Helvetica",11));
 
 		mixerGUI[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
-						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
+								\colors_    : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 
 		mixerGUI[\onOffTheme2]=( \font_		: Font("Helvetica", 12),
-						 \colors_     : (\on : Color(0.25,1,0.25),
-						 			  \off : Color(0.4,0.4,0.4)));
+						 		 \colors_   : (\on : Color(0.25,1,0.25),
+						 	     \off 		: Color(0.4,0.4,0.4)));
 
 		mixerGUI[\menuTheme2]=( \font_		: Font("Arial", 9),
 				\colors_      : (\background:Color(0.1,0.1,0.1,0.1),\string:Color.black,
 							   \focus:Color.clear));
 
-		gui[\syncTheme]=(	\orientation_  : \horiz,
-						\resoultion_	 : 7.5,
+		gui[\syncTheme]=(
+						\orientation_  : \horiz,
+						\resoultion_   : 7.5,
 						\visualRound_  : 0.001,
 						\rounded_      : true,
-						\font_		 : Font("Helvetica",10),
-						\labelFont_	 : Font("Helvetica",10),
+						\font_		   : Font("Helvetica",10),
+						\labelFont_	   : Font("Helvetica",10),
 						\showNumberBox_: false,
 						\colors_       : (	\background : Color(0,0,0,0.15),
-										\backgroundDown : Color(0.1,0.1,0.1,0.85),
-										\string : Color.black,
-										\focus : Color(0,0,0,0)));
+											\backgroundDown : Color(0.1,0.1,0.1,0.85),
+											\string : Color.black,
+											\focus : Color(0,0,0,0)));
 
 		//gui[\presetTab]; /////////////////// *************************************
 
@@ -840,7 +769,6 @@
 				.numberWidth_(-6)
 				.showNumberBox_(true);
 
-
 			if (insts.mixerInstruments.indexOf(inst).even) {
 
 				// eq button
@@ -907,13 +835,15 @@
 			};
 
 			// on/off
-			MVC_OnOffView(inst.onOffModel, sv, Rect(13, 378+ScrollBars.addIfNone(3), 20, 20),mixerGUI[\onOffTheme2])
+			MVC_OnOffView(inst.onOffModel, sv,
+					Rect(13, 378+ScrollBars.addIfNone(3), 20, 20),mixerGUI[\onOffTheme2])
 				//.permanentStrings_(["On"])
 				.rounded_(true)
 				.canFocus_(false);
 
 			// solo
-			MVC_OnOffView(inst.soloModel , sv, Rect(42, 378+ScrollBars.addIfNone(3), 20, 20),mixerGUI[\soloTheme])
+			MVC_OnOffView(inst.soloModel , sv,
+					Rect(42, 378+ScrollBars.addIfNone(3), 20, 20),mixerGUI[\soloTheme])
 				.rounded_(true)
 				.canFocus_(false);
 
@@ -925,7 +855,8 @@
 
 			// sync
 			if (inst.syncModel.notNil) {
-				MVC_NumberBox(inst.syncModel, sv,Rect(12, 422+ScrollBars.addIfNone(7), 50, 16),  gui[\syncTheme])
+				MVC_NumberBox(inst.syncModel, sv,
+						Rect(12, 422+ScrollBars.addIfNone(7), 50, 16),  gui[\syncTheme])
 					.postfix_(" s")
 					.color_(\label,Color.white);
 			};
@@ -1207,6 +1138,327 @@
 		};
 
 	}
+
+	///////// preferences //////////////////////////////////////////////////////////////////
+
+	preferences {
+
+		var window=this.mixerWindow.view;
+
+		var scrollView;
+
+		var gui=IdentityDictionary[];
+
+		gui[\textTheme] = (
+			\canEdit_ : false,
+			\shadow_  : false,
+			\align_   : 'left',
+			\font_    : Font("Helvetica", 12),
+			\colors_  : (\string: Color.black),
+		);
+
+		gui[\sliderTheme] = (
+			\orientation_ : \horizontal,
+			\colors_      : (
+				\background : Color.grey/2,
+				\knob       : Color.white,
+				\numberDown : Color.black,
+				\numberUp   : Color.black
+			)
+		);
+
+		gui[\buttonTheme] = (
+			orientation_:\horizontal,
+			rounded_:	true,
+			colors_: (up:Color(0.9,0.9,0.9), down:Color(0.9,0.9,0.9)/2)
+		);
+
+		gui[\labelTheme]=( \font_		:  Font("Helvetica-Bold", 14),
+						\align_		: \left,
+						\shadow_		: false,
+						\noShadows_	: 0,
+						\colors_		: (\string : Color.black));
+
+		if ( (midiWin.isNil) or: {midiWin.window.isClosed } ) {
+
+			midiWin = MVC_ModalWindow(
+				(mixerWindow.isVisible).if(mixerWindow.view,window.view),
+				(420)@(468));
+			scrollView = midiWin.scrollView.view;
+
+			MVC_StaticText(scrollView, Rect(10, 10, 170, 18),gui[\labelTheme])
+			.string_("LNX_Studio Preferences");
+
+			// MIDI Controller Keyboard In
+			midi.createInGUIA (scrollView, (170-25)@(272-2), false, false);
+			midi.createInGUIB (scrollView, (330-25)@(272-2), false, false);
+			midi.action_{|me| this.saveControllerKeyboardPrefs};
+			midi.portInGUI
+				.label_("MIDI Controller Keyboard In")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
+
+
+			// midi preset controller in
+			LNX_POP.midi.createInGUIA (scrollView, (170-25)@(222-2), false, false);
+			LNX_POP.midi.createInGUIB (scrollView, (330-25)@(222-2), false, false);
+			LNX_POP.midi.action_{|me| LNX_POP.saveMIDIPrefs };
+			LNX_POP.midi.portInGUI
+				.label_("Program Launchpad In")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
+
+			// midi preset controller OUT
+			LNX_POP.midi.createOutGUIA (scrollView, (170)@(242), false);
+			LNX_POP.midi.createOutGUIB (scrollView, (330)@(242), false);
+			LNX_POP.midi.portOutGUI
+				.label_("Out")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
+
+			// midi clock
+			midiClock.createInGUIA (scrollView, (170-25)@(168-2), false);
+			midiClock.createOutGUIA (scrollView, (170)@(188), false);
+			midiClock.action_{|me| this.saveMIDIprefs };
+			midiClock.portInGUI
+				.label_("MIDI Clock In")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
+			midiClock.portOutGUI
+				.label_("Out")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
+
+			// audio devices
+			LNX_AudioDevices.audioHardwareGUI(scrollView,(170-10)@(36-25))
+				.action_{|devices|
+					//LNX_AudioDevices.changeAudioDevices(server,devices,{this.postBootFuncs});
+					LNX_AudioDevices.changeAudioDevices(server,devices)
+				};
+
+			// latency
+			MVC_SmoothSlider(scrollView, Rect(170,117,150, 16), gui[\sliderTheme])
+				.label_("Latency (secs)")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.color_(\numberUp,Color.black)
+				.numberFunc_(\float3)
+				.controlSpec_([0.05,1,\linear,0.001])
+				.value_(latency)
+				.action_{|me| this.latency_(me.value) };
+
+			// blocksize
+			MVC_PopUpMenu3(models[\blockSize],scrollView,Rect(170,85,75,17),
+				( \font_		 : Font("Arial", 10),
+				  \labelShadow_: false,
+				  \orientation_: \horiz,
+				  \colors_     : (\background : Color.ndcMenuBG, \label : Color.black ))
+			);
+
+			// network networkCntKeyboard
+			MVC_OnOffView(models[\networkCntKeyboard],scrollView,Rect(170, 299, 70, 19),
+				"Network", ( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.label_("Controller Keyboard")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
+
+			// network master volume changes
+			MVC_OnOffView(models[\networkMaterVolume],scrollView,Rect(170, 328, 70, 19),
+				"Network", ( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.label_("Master Volume & Mute")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black);
+
+			// moog sub 37 is visible
+			MVC_OnOffView(scrollView,Rect(311, 299, 72, 19), "Sub 37",
+								( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.value_(LNX_MoogSub37.isVisiblePref.asInt)
+				.label_("Moog")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					LNX_MoogSub37.isVisiblePref_(me.value.isTrue).saveIsVisiblePref;
+					this.recreateLibraryGUI;
+				};
+
+			// korg volva is visible
+			MVC_OnOffView(scrollView,Rect(311, 328, 72, 19), "Volca",
+								( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.value_(LNX_VolcaBeats.isVisiblePref.asInt)
+				.label_("Korg")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					LNX_VolcaBeats.isVisiblePref_(me.value.isTrue).saveIsVisiblePref;
+					this.recreateLibraryGUI;
+				};
+
+			// roland is visible
+			MVC_OnOffView(scrollView,Rect(311, 357, 72, 19), "JP-08",
+								( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.value_(LNX_RolandJP08.isVisiblePref.asInt)
+				.label_("Roland")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					LNX_RolandJP08.isVisiblePref_(me.value.isTrue).saveIsVisiblePref;
+					this.recreateLibraryGUI;
+				};
+
+			// midi sync latency
+			MVC_SmoothSlider(scrollView, Rect(170, 139,150, 16),gui[\sliderTheme])
+				.numberFunc_(\float3Sign)
+				.controlSpec_([-0.1,0.1,\linear,0.001,0])
+				.value_(midiSyncLatency)
+				.label_("MIDI Sync Latency Adj (secs)")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					midiSyncLatency=me.value;
+					LNX_MIDIPatch.midiSyncLatency_(midiSyncLatency);
+					[midiSyncLatency].savePref("MIDI Sync Latency");
+				};
+
+			// doubleClickLearn
+			MVC_OnOffView(scrollView,Rect(170, 357, 70, 19), "On",
+								( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.value_(MVC_View.doubleClickLearn.asInt)
+				.label_("Double Click to MIDI Learn")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					MVC_View.doubleClickLearn_(me.value.isTrue);
+				};
+
+			// internal midi buses
+			noInternalBusesGUI=MVC_PopUpMenu3(scrollView,Rect(170, 386, 70, 17))
+				.items_(["None","1 Bus","2 Buses","3 Buses"
+						 ,"4 Buses","5 Buses","6 Buses","7 Buses","8 Buses"
+						 ,"9 Buses","10 Buses","11 Buses","12 Buses","13 Buses"
+						 ,"14 Buses","15 Buses","16 Buses"])
+				.color_(\background,Color.ndcMenuBG)
+				.label_("No. of Internal MIDI Buses")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					this.guiNoInternalBuses_(me.value);
+					this.saveMIDIprefs;
+				}
+				.value_(noInternalBuses)
+				.font_(Font("Arial", 10));
+
+			// MacOS MIDI Fix
+			MVC_OnOffView(scrollView,Rect(311, 386, 72, 19), "MIDI Fix",
+								( \font_		: Font("Helvetica", 11),
+								 \colors_     : (\on : Color.orange+0.25,
+						 					   \off : Color.grey/2)))
+				.value_(("midiBugFix".loadPref ? [false])[0].isTrue.asInt)
+				.label_("MacOS")
+				.orientation_(\horiz)
+				.labelShadow_(false)
+				.color_(\label,Color.black)
+				.action_{|me|
+					[me.value.isTrue].savePref("midiBugFix");
+				};
+
+			// scan for new midi equipment
+			MVC_FlatButton(scrollView,Rect(240 ,415, 70, 20),"Scan MIDI",gui[\buttonTheme])
+				.canFocus_(false)
+				.action_{ LNX_MIDIPatch.refreshPorts };
+
+
+			// Ok
+			MVC_FlatButton(scrollView,Rect(332, 415, 50, 20),"Ok",gui[\buttonTheme])
+				.canFocus_(true)
+				.color_(\up,Color.white)
+				.action_{	 midiWin.close };
+
+		}{
+			midiWin.front;
+		}
+	}
+
+	// gui window to quit LNX ///////////////////////////////////////////////////////////
+
+	quit{
+		var gui = (),
+		colors = (
+			background: 	Color(59/77,59/77,59/77),
+			border2: 		Color(6/11,42/83,29/65),
+			border1: 		Color(3/77,1/103,0,65/77),
+			menuBackground:	Color(1,1,0.9)
+		) ++ (colors?());
+
+		gui[\window] = MVC_ModalWindow(mixerWindow.view, (190)@(132), colors);
+		gui[\scrollView] = gui[\window].scrollView;
+
+		MVC_StaticText( gui[\scrollView], Rect(10,5,190,18))
+			.shadow_(false)
+			.color_(\string,Color.black)
+			.font_(Font("Helvetica-Bold", 13))
+			.string_("Quit LNX_Studio?");
+
+		MVC_StaticText( gui[\scrollView], Rect(10,30,190,18*2))
+			.shadow_(false)
+			.color_(\string,Color.black)
+			.font_(Font("Helvetica", 11))
+			.string_("Any unsaved information\n will be lost");
+
+		// Ok
+		MVC_OnOffView(gui[\scrollView],Rect(110, 78, 50, 20),"Ok")
+			.rounded_(true)
+			.color_(\on,Color(1,1,1,0.5))
+			.color_(\off,Color(1,1,1,0.5))
+			.action_{
+				gui[\window].close;
+				this.doQuit;
+		};
+
+		// Cancel
+		MVC_OnOffView(gui[\scrollView],Rect(53, 78, 50, 20),"Cancel")
+			.rounded_(true)
+			.color_(\on,Color(1,1,1,0.5))
+			.color_(\off,Color(1,1,1,0.5))
+			.action_{ gui[\window].close };
+	}
+
+	doQuit{
+		{
+			CmdPeriod.run;
+			0.25.wait;
+			this.free;
+			0.25.wait;
+			Server.quitAll;
+			0.exit;
+		}.fork(AppClock);
+	}
+
 
 }
 

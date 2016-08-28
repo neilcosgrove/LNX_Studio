@@ -11,7 +11,7 @@ MVC_ProgramChangeMain : MVC_View {
 		colors=colors++(
 			'background'	: Color(0,0,0,0.2),
 			'on'			: Color(0.8,0.8,1)/2,
-			'off'		: Color.black
+			'off'			: Color.black
 		);
 		canFocus=false;
 		font=Font("Helvetica",12);

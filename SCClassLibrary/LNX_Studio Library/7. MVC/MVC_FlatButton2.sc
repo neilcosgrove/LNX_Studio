@@ -54,7 +54,7 @@ MVC_FlatButton2 : MVC_View {
 		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ]
 		colors=colors++(
 			'background'	: Color(0.1,0.1,0.1),
-			'off'		: Color.red,
+			'off'			: Color.red,
 			'on'			: Color.green
 		);
 	}
@@ -113,7 +113,6 @@ MVC_FlatButton2 : MVC_View {
 
 						if (value==1) {Pen.fillColor_(colors[\on]*flashState)} {Pen.fillColor_(colors[\off]*flashState)};
 					};
-
 
 						if (down) {
 							Pen.font_(font.copy.size_(font.size-1));

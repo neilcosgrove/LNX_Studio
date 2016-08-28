@@ -20,7 +20,7 @@ MVC_PinSlider : MVC_FlatSlider {
 	initView{
 		colors=colors++(
 			'background'	: Color.black,
-			'disabled'	: Color(0.3,0.3,0.3,0.5),
+			'disabled'		: Color(0.3,0.3,0.3,0.5),
 			'on'			: Color.green,
 			'hilite'		: Color.green,
 			'hiliteTrue'	: Color.white
@@ -46,16 +46,12 @@ MVC_PinSlider : MVC_FlatSlider {
 						Pen.fillRect(Rect(0,0,w,h));
 					};
 
-
 					Pen.smoothing_(true);
-
 
 					Color(0,0,0,0.25).set;
 
-
 					x2=(w/2);
 					h2=h.clip(0,w);
-
 
 					if (left)  {
 						Pen.fillRect(Rect(0,6,x2,h-(h2/2)-5 ));
@@ -63,8 +59,6 @@ MVC_PinSlider : MVC_FlatSlider {
 					if (right) {
 						Pen.fillRect(Rect(w-x2,6,x2,h-(h2/2)-5 ));
 					};
-
-
 
 					if (midiLearn) {
 						colors[\midiLearn].set;
@@ -78,9 +72,6 @@ MVC_PinSlider : MVC_FlatSlider {
 
 					Pen.addWedge((w/2)@width,width/200,0,-2pi/2);
 					Pen.addWedge((w/2)@(h-width),width/200,0, 2pi/2);
-					Pen.stroke;
-
-
 					Pen.stroke;
 
 					if (midiLearn) {

@@ -27,15 +27,15 @@ MVC_SmoothSlider : MVC_View {
 
 	initView{
 		colors=colors++(
-			'knob'				: Color.orange,
+			'knob'					: Color.orange,
 			'backgroundDisabled'	: Color.grey/2,
-			'knobDisabled'		: Color.grey*1.2,
+			'knobDisabled'			: Color.grey*1.2,
 			'focus'  				: Color.red,
 			'background'			: Color(0,0,0,29/77),
 			'hilite'				: Color(0,0,0,0.3),
 			'border'				: Color.black,
 			'knobBorder'			: Color.black,
-			'numberUp'			: Color.white,
+			'numberUp'				: Color.white,
 			'numberDown'			: Color.white
 		);
 		canFocus=true;

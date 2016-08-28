@@ -1,5 +1,5 @@
 /*
-// the class organises the instances and directs the midiControlIn				
+// the class organises the instances and directs the midiControlIn
 LNX_MIDIControl.elements.postList;
 
 // the instance is for the whole instrument / midiControl
@@ -18,37 +18,37 @@ LNX_MIDIControl {
 			<activeModel,<elements,<window,p, controlView, elementsToEdit, readableList,
 			startValue, group, ids, idIndex, startId, headerGUI, displayParent, <version="v1.2",
 			<>studio;
-	
+
 	var		<>patchNo, <parent, <>modelIDs, <>models, <>names;
 
 	*initClass {
 		patches=[];
 		elements=[];
 	}
-	
+
 	*new {|parent|
 		^super.new.init(parent);
 	}
-	
+
 	init { arg argParent;
 		parent=argParent ? ();
 		this.initInstance;
 		this.initVars;
 		^this
 	}
-	
+
 	initInstance{
 		patches=patches.add(this);
 		patchNo=noPatches;
 		noPatches=noPatches+1;
 	}
-		
+
 	initVars{
 		models=[];
 		modelIDs=[];
 		names=[];
 	}
-	
+
 	// register a model with an id and name
 	register{|id,model,name|
 		name=name ? "unnamed";
@@ -60,16 +60,16 @@ LNX_MIDIControl {
 			models.put(modelIDs.indexOf(id),model); // this replaces previously registered models
 		};
 	}
-	
+
 	changeModelID{|oldID,newID|
-		// don't remove, could cause problems for other models 
+		// don't remove, could cause problems for other models
 		//		if (	oldID!=newID) {
 		//			this.removeModel(newID); // remove if it already exists
 		//		};
-		
+
 		// but on the other hand removeModel must be done before changeModelID
 		// else we may remove a changed modelID
-		
+
 		elements.do{|element,i|
 			if ((element[3]===this)and:{element[4]==oldID }) {
 				element[4]=newID;					// change the elements
@@ -77,7 +77,7 @@ LNX_MIDIControl {
 		};
 		modelIDs[modelIDs.indexOf(oldID)] = newID; // and the model ID
 	}
-	
+
 	// remove that model
 	removeModel{|id,send=true|
 		var index;
@@ -89,7 +89,7 @@ LNX_MIDIControl {
 		if (send) {
 			// update the parent of the MIDIControl (not the model!)
 			this.parent.newMidiControlAdded;
-		}; 
+		};
 		this.class.updateGUI;
 
 		// test here because MVC_Model:changeControlID	might ask to remove a non-existant control
@@ -100,17 +100,17 @@ LNX_MIDIControl {
 			names.removeAt(index);
 		};
 	}
-	
+
 	// used in MVC_Model:midiLearn_ to make control active to midi Learn
 	*makeElementActive{|e|
 		if (activeModel.notNil) { activeModel.deactivate };
 		activeModel=e;
 	}
-	
+
 	*makeElementGroupActive{|e|
 		activeModel=e;
 	}
-	
+
 	// all midi controls gets passed here by midiPatch
 	*controlIn { |src, chan, num, val, latency, send, ignore|
 		//[src, chan, num, val].postln;
@@ -127,7 +127,7 @@ LNX_MIDIControl {
 		};
 		^name
 	}
-	
+
 	// learn this control
 	*learnIn{ |src, chan, num, val|
 		var exists, name;
@@ -137,21 +137,21 @@ LNX_MIDIControl {
 				if (	     ( src==e[0])
 					and: {chan==e[1]}
 					and: { num==e[2]}
-					and: {activeModel.controlGroup===e[3]} 
-					and: {activeModel.controlID==e[4]} 
+					and: {activeModel.controlGroup===e[3]}
+					and: {activeModel.controlID==e[4]}
 					){
 						exists=true
 					};
 			});
 			if (exists.not) {
 				elements=elements.add([
-					src,                                  // e[0]
-					chan,                                 // e[1]
-					num,                                  // e[2]
+					src,                             // e[0]
+					chan,                            // e[1]
+					num,                             // e[2]
 					activeModel.controlGroup,        // e[3]
 					activeModel.controlID,           // e[4]
-					0,                                    // e[5]
-					127,                                  // e[6]
+					0,                               // e[5]
+					127,                             // e[6]
 					activeModel.defaultControlType   // e[7]
 				]);
 				{this.updateGUI}.defer;
@@ -159,30 +159,30 @@ LNX_MIDIControl {
 				//activeModel.controlGroup.parent.newMidiControlAdded;
 				name=activeModel.controlGroup.names[
 					activeModel.controlGroup.modelIDs.indexOf(activeModel.controlID)];
-				
-				
+
+
 			};
 			activeModel.deactivate;
 			activeModel=nil;
 		}
 		^name
 	}
-	
+
 	*networkAnyChanges{|element| element.controlGroup.parent.newMidiControlAdded }
-	
+
 	*clear{ patches.do(_.clear)	}
-	
+
 	post { "a LNX_MIDIControl :".postln; this.getElements.do(_.postln); }
-	
+
 	*post { "LNX_MIDIControl :".postln; elements.do(_.postln); }
-	
+
 	getElements{
 		var l;
 		l=[];
 		elements.do({|e,j| if (e[3]===this) { l=l.add(e++[j]) } });
 		^l
 	}
-	
+
 	getSaveElements{
 		var l,t;
 		l=[];
@@ -190,19 +190,19 @@ LNX_MIDIControl {
 		^l
 	}
 
-	// from elements with this 
+	// from elements with this
 	clear{
 		elements.removeAllSuchThat({|item| item[3]===this });
 	}
-	
+
 	// this frees the whole midiControl
 	free{
 		this.clear;
 		models=[]; // ??
 		modelIDs=[];
-		
+
 		// need to remove from patches=[];
-		
+
 		if ((patchNo+1)<noPatches) {
 				for (patchNo+1, noPatches - 1, {|i|
 					patches[i].patchNo=patches[i].patchNo - 1;
@@ -210,9 +210,9 @@ LNX_MIDIControl {
 			};
 		patches.removeAt(patchNo);
 		noPatches=patches.size;
-		
+
 	}
-	
+
 	getDetails{|id|
 		if (parent==studio) {
 			^["LNX_Studio", names[modelIDs.indexOf(id)]]
@@ -220,24 +220,24 @@ LNX_MIDIControl {
 			^[(parent.instNo+1)++". "++ (parent.name), names[modelIDs.indexOf(id)]]
 		}
 	}
-	
+
 	getDetails2{|id| ^[parent.id, id] }
-	
+
 	getModel{|id| ^models[modelIDs.indexOf(id)] }
 
-	
+
 	////////////
-		
+
 	getSaveList{
 		var l,saveList;
 		var modelDict;
-		
+
 		l=this.getSaveElements;
 		saveList=["*** MIDI Control Doc"+version,l.size];
 		l.do({|i| saveList=saveList++i});
-		
+
 		if (autoSave) {
-				
+
 			modelDict = IdentityDictionary[]; // this is how models should be stored anyways
 			models.do{|model,i| modelDict[modelIDs[i]] = model};
 			modelDict = modelDict.select{|auto| auto.automation.size>0 };
@@ -245,15 +245,15 @@ LNX_MIDIControl {
 			modelDict.pairsDo{|id,model|
 				saveList = saveList ++ [id] ++ (model.getSaveList)
 			};
-			
+
 		}{
-			saveList = saveList.add(0);	
+			saveList = saveList.add(0);
 		};
-		
+
 		saveList=saveList++["*** End MIDI Control Doc ***"];
 		^saveList
 	}
-	
+
 	getSaveListForLibrary{
 		var l,saveList;
 		l=[]; // no midi controls
@@ -262,16 +262,16 @@ LNX_MIDIControl {
 		saveList=saveList++["*** End MIDI Control Doc ***"];
 		^saveList
 	}
-	
+
 	putLoadList{|l,version|
 		var noE, element;
 		this.clear;
-		l=l.reverse; 
+		l=l.reverse;
 		noE=l.pop.asInt;
 		noE.do({
 			element=l.popNI(7); // this stops the use of symbols for ids
 			//element=(l.popNI(3))++(l.pop)++(l.popNI(3));  // this makes Char which is no good
-			element=element.insert(3,this);		
+			element=element.insert(3,this);
 			elements=elements.add(element); // fix saving and loading to include new params
 		});
 		// if there is automation data
@@ -280,47 +280,47 @@ LNX_MIDIControl {
 			noAutos.do{
 				var id = l.popI;
 				var size = l.popI;
-				var events = l.popNF(1+(size*2));	
+				var events = l.popNF(1+(size*2));
 				models[modelIDs.indexOf(id)].putLoadList(events);
-			}	
+			}
 		};
 	}
-	
+
 	/////////////
-	
+
 	*editControls{|argDisplayParent|
 		displayParent=argDisplayParent;
 		this.createGUI;
 		controlView.index_(nil);
 		controlView.resetViewIndex;
 	}
-	
+
 	*updateGUI{ if (((window.isNil)or:{window.isClosed}).not) {this.createGUI} }
-	
+
 	*networkElementChanges{|e| elements[e.asInt][3].parent.newMidiControlAdded }
-	
+
 	*front { window.front }
-	
+
 	*closeWindow{
 		if ((window.notNil)and:{window.isClosed.not}) { window.close };
-		window=nil;		
+		window=nil;
 	}
-	
+
 	*createGUI{|update=true|
 
 		var gui;
 
 		if (update) {
 			if (displayParent.isNil.not) { p=displayParent.controlPatches }; // all patches
-			p = p ? patches.copy;		
+			p = p ? patches.copy;
 			p=[p].flat;
 			elementsToEdit=[];
 			p.do({|p| elementsToEdit=elementsToEdit++(p.getElements) });
 		};
-	
+
 		readableList=[]; // [srcName, chan, num, parent, parent's name, id,
 					   //  midiControl, index, parameter name, min, max, type]
-		elementsToEdit.do({|e|	
+		elementsToEdit.do({|e|
 			var id, group, index;
 			group=e[3];
 			id=e[4];
@@ -340,12 +340,12 @@ LNX_MIDIControl {
 				e[7]
 			]);
 		});
-	
+
 		if (((window.isNil)or:{window.isClosed}).not) {
-		
+
 			headerGUI.string_("MIDI Controls: "++(displayParent.controlTitle));
 			controlView.items_(readableList).refresh;
-		
+
 		}{
 			if (displayParent.notNil) {
 					// this stops opening before 1st call. this could be done in a clearer way
@@ -356,52 +356,52 @@ LNX_MIDIControl {
 				window.view.background = Color(0,1/103,3/77,65/77);
 				window.toFrontAction_{studio.frontWindow_(window)};
 				window.front; //.alwaysOnTop_(true);
-				
+
 				gui=();
-							
+
 				MVC_RoundBounds(window, Rect(11,11,window.bounds.width-22,window.bounds.height-22-1))
 					.width_(6)
 					.color_(\background, Color(29/65,42/83,6/11));
-				
+
 				// the main view
 				gui[\scrollView]=CompositeView(window, Rect(11,11,window.bounds.width-22,window.bounds.height-22-1))
 					.background_(Color(50/77,56/77,59/77));
 					//.hasHorizontalScroller_(false)
 					//.hasVerticalScroller_(false);
-				
-				
-				
-				
+
+
+
+
 				headerGUI = StaticText.new(gui[\scrollView],Rect(16, 6, 480, 22))
 					.font_(Font("Helvetica-Bold",12))
 					.string_("MIDI Controls: "++(displayParent.controlTitle))
 					.stringColor_(Color.black)
 					.action_{|v| };
-			
+
 				StaticText.new(gui[\scrollView],Rect(16, 8+17, 480, 22))
 					.string_("       Path                        Parameter"++						"               MIDI Port                 Ch    Num  Min   Max  Type")
 					.stringColor_(Color.black)
 					.action_{|v| };
-				
+
 				// Ok
 				MVC_OnOffView(gui[\scrollView],Rect(470, 237-16, 50, 20),"Ok")
-					.rounded_(true)  
+					.rounded_(true)
 					.color_(\on,Color(1,1,1,0.5))
 					.color_(\off,Color(1,1,1,0.5))
 					.action_{	 window.close};
-						
+
 				MVC_OnOffView(gui[\scrollView],Rect(100, 237-16, 50, 20),"Delete")
-					.rounded_(true)  
+					.rounded_(true)
 					.color_(\on,Color(1,1,1,0.5))
 					.color_(\off,Color(1,1,1,0.5))
 					.action_{ controlView.deleteItem; controlView.focus };
-							
+
 				MVC_OnOffView(gui[\scrollView],Rect(15, 237-16, 70, 20),"Delete All")
-					.rounded_(true)  
+					.rounded_(true)
 					.color_(\on,Color(1,1,1,0.5))
 					.color_(\off,Color(1,1,1,0.5))
-					.action_{ 
-						var elementsToDelete, tempE; 
+					.action_{
+						var elementsToDelete, tempE;
 						if (p.isNil.not) {
 							elementsToDelete=[];
 							p.do({|p| elementsToDelete=elementsToDelete++(p.getElements) });
@@ -415,16 +415,16 @@ LNX_MIDIControl {
 							p.do{|p| p.parent.newMidiControlAdded}; // network all patches
 						};
 					};
-								
+
 				MVC_OnOffView(gui[\scrollView],Rect(165, 237-16, 40, 20),"Flip")
-					.rounded_(true)  
+					.rounded_(true)
 					.color_(\on,Color(1,1,1,0.5))
 					.color_(\off,Color(1,1,1,0.5))
 					.action_{ controlView.flip; controlView.focus };
-			
+
 				controlView=LNX_MIDIControlInterface(gui[\scrollView],Rect(15,30+15,502,180-16),this)
 				.items_(readableList)
-				// mouse down action 
+				// mouse down action
 				.action_{|me|
 					var i,sx,uid;
 					//me.index.postln;
@@ -436,24 +436,24 @@ LNX_MIDIControl {
 						startId=elements[i][4];
 						startValue=idIndex;
 					};
-					if (sx==1) { 
+					if (sx==1) {
 						group=elements[i][3];
 						ids=group.modelIDs;
 						idIndex=ids.indexOf(elements[i][4]);
 					};
-					if (sx==2) { 
+					if (sx==2) {
 						uid=elements[i][0];
 						startValue=LNX_MIDIPatch.midiSourceUIDs.indexOf(uid);
 						if (startValue.isNil) {
 							startValue=0;
 							this.createGUI;
-						};				
+						};
 					};
 					if (sx==3) { startValue=elements[i][1] };
 					if (sx==4) { startValue=elements[i][2] };
 					if (sx==5) { startValue=elements[i][5] };
 					if (sx==6) { startValue=elements[i][6] };
-					if (sx==7) { 
+					if (sx==7) {
 						elements[i][7]=(elements[i][7]+1).wrap(0,4);
 						startValue=elements[i][7];
 						this.createGUI;
@@ -466,9 +466,9 @@ LNX_MIDIControl {
 					//me.index.postln;
 					i=elementsToEdit[me.index][8];
 					sx=me.startX;
-					
+
 					// there is a bug in this
-					
+
 //					if (sx==0) {
 //						newVal=(startValue-((y/10).asInt)).clip(0,patches.size- 1);
 //						// warning for later. this will not be
@@ -526,7 +526,7 @@ LNX_MIDIControl {
 					//me.index.postln;
 					i=elementsToEdit[me.index][8];
 					sx=me.startX;
-					//if (sx==0) { 
+					//if (sx==0) {
 						if (me.index>=me.items.size) {me.index_(nil)};
 						this.createGUI;
 					//};
@@ -547,15 +547,15 @@ LNX_MIDIControl {
 					patch=elements[i][3]; // used later for network update
 					elements.removeAt(i);
 					me.indexNoRefresh_(nil);
-					this.createGUI;			
+					this.createGUI;
 					patch.parent.newMidiControlAdded; // network that shit
 				};
-			
+
 			};
-			
+
 		};
-	
+
 	}
-	
+
 }
 	

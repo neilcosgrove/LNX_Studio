@@ -15,8 +15,8 @@ MVC_PosView : MVC_View {
 			'background'			: Color.grey/3,
 			'backgroundDisabled'	: Color.grey/2,
 			'on'					: Color.orange,
-			'disabled'			: Color(0.4,0.4,0.4),
-			'highLight'			: Color.orange*1.2
+			'disabled'				: Color(0.4,0.4,0.4),
+			'highLight'				: Color.orange*1.2
 		);
 
 	}

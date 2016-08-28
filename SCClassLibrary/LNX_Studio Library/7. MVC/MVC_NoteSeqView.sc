@@ -11,7 +11,7 @@ MVC_NoteSeqView : MVC_View {
 			'slider'			: Color.orange,
 			'border'			: Color.grey,
 			'sliderDisabled'	: Color.grey*1.2,
-			'belowZero'		: Color.red
+			'belowZero'			: Color.red
 		);
 	}
 
