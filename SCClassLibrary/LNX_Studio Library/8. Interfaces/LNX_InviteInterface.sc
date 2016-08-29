@@ -179,7 +179,7 @@ LNX_InviteInterface {
 			}).canFocus_( false );
 		
 		stringView = StaticText(window, Rect(80,4, window.bounds.width - 84, 66 ) )
-			.string_( string ).font_( Font( "Helvetica-Bold", 12 ) )
+			.string_( string ).font_( Font( "Helvetica", 12, true) )
 			//.background_(Gradient(Color(0.3,0.3,0.3),Color(0.5,0.5,0.35)))
 			;
 			//.align_( \center );
@@ -188,7 +188,7 @@ LNX_InviteInterface {
 		
 		gui[\bottomString]=  StaticText(window, Rect(80,window.bounds.height - 34,
 												     window.bounds.width - 84,20 ) )
-			.string_("Waiting...").font_( Font( "Helvetica-Bold", 12 ) );
+			.string_("Waiting...").font_( Font( "Helvetica", 12, true) );
 		
 		gui[\userList]=UserView(window,Rect(80,75, window.bounds.width - 84, 
 											 window.bounds.height - 119 ))
@@ -199,7 +199,7 @@ LNX_InviteInterface {
 						
 							Pen.use{
 								Pen.smoothing_(true);
-								Pen.font_(Font( "Helvetica-Bold", 12 ));
+								Pen.font_(Font( "Helvetica", 12, true));
 								
 								gui[\allUsers]=[];
 								wishList.keysDo{|key|
@@ -222,11 +222,11 @@ LNX_InviteInterface {
 											(i%wishListSize)*14,50,14);
 								
 									Pen.fillColor_(Color.black);
-									Pen.font_(Font( "Helvetica-Bold", 12 ));
+									Pen.font_(Font( "Helvetica", 12, true));
 									
 									Pen.stringLeftJustIn(name,rect);
 									
-									Pen.font_(Font( "Helvetica-Bold", 13 ));
+									Pen.font_(Font( "Helvetica", 13, true));
 										
 									if (myInvite) {
 										if (invitedUsers.includesKey(id)) {

@@ -417,7 +417,7 @@ LNX_EQ {
 			.color_(\border, Color(6/11,42/83,29/65))
 			.resize_(5);
 
-		// this is the main user view / eq grap for the gui
+		// this is the main user view / eq graph for the gui
 		gui[\graph] = MVC_UserView( gui[\scrollView], Rect(10, 27, 285, 140))
 			.resize_(5)
 			.focusColor_(Color.clear)
@@ -625,8 +625,9 @@ LNX_EQ {
 			.labels_([ "low shelf", "peak 1", "peak 2", "peak 3", "high shelf" ])
 			.tabWidth_([59,54,54,54,60])
 			.tabHeight_(18)
-			.labelColors_({ |i| Color.hsv( i.linlin(0,5,0,1), 0.75, 0.5).alpha_( 0.25 ); }!5)
-			.backgrounds_({ |i| Color.hsv( i.linlin(0,5,0,1), 0.75, 0.5).alpha_( 0.25 ); }!5)
+			.labelColors_({ |i| Color.hsv( i.linlin(0,5,0,1), 0.75, 0.5).alpha_( 0.33 ); }!5)
+			.backgrounds_({ |i| Color.hsv( i.linlin(0,5,0,1), 0.75, 0.5).alpha_( 0.33 ); }!5)
+			.unfocusedColors_(Color(0,0,0,0.175)!5)
 			.font_( Font( Font.defaultSansFace, 12 ) )
 			.resize_( 8 )
 			.tabPosition_( \bottom )
@@ -655,7 +656,7 @@ LNX_EQ {
 				var rect = view.bounds.moveTo(0,0);
 				Color(0,0,0,0.2).set;
 				RoundedRect.fromRect(rect).fill;
-				Pen.font = Font( "Helvetica-Bold", 11);
+				Pen.font = Font( "Helvetica", 11,true);
 				Pen.fillColor_(Color(1,1,1,0.4));
 				Pen.stringCenteredIn("wslib EQ",rect);
 			};
@@ -683,7 +684,7 @@ LNX_EQ {
 
 		// 15.onOff
 		MVC_OnOffView(models[15], gui[\scrollView] , Rect(10, 4,25,19))
-			.font_(Font("Helvetica-Bold", 12))
+			.font_(Font("Helvetica", 12,true))
 			.resize_(7)
 			.color_(\on, Color(0.25,1,0.25) )
 			.color_(\off, Color(0.4,0.4,0.4) )

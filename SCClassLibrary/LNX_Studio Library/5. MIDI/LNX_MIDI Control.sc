@@ -373,7 +373,7 @@ LNX_MIDIControl {
 
 
 				headerGUI = StaticText.new(gui[\scrollView],Rect(16, 6, 480, 22))
-					.font_(Font("Helvetica-Bold",12))
+					.font_(Font("Helvetica",12,true))
 					.string_("MIDI Controls: "++(displayParent.controlTitle))
 					.stringColor_(Color.black)
 					.action_{|v| };

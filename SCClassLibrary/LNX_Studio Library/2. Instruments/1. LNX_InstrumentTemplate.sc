@@ -1444,7 +1444,7 @@ LNX_InstrumentTemplate {
 		MVC_StaticText( gui[\scrollView], Rect(10,23-18,110,18))
 			.shadow_(false)
 			.color_(\string,Color.black)
-			.font_(Font("Helvetica-Bold", 13))
+			.font_(Font("Helvetica", 13,true))
 			.string_("MIDI Input");
 
 		// midi in
@@ -1491,7 +1491,7 @@ LNX_InstrumentTemplate {
 		MVC_StaticText( gui[\scrollView], Rect(10,23-18,110,18))
 			.shadow_(false)
 			.color_(\string,Color.black)
-			.font_(Font("Helvetica-Bold", 13))
+			.font_(Font("Helvetica", 13,true))
 			.string_("MIDI Input");
 
 		// midi in
@@ -1527,7 +1527,7 @@ LNX_InstrumentTemplate {
 		MVC_StaticText( gui[\scrollView], Rect(2,5,110,18))
 			.shadow_(false)
 			.color_(\string,Color.black)
-			.font_(Font("Helvetica-Bold", 13))
+			.font_(Font("Helvetica", 13,true))
 			.string_("MIDI Output");
 
 		midi.createOutMVUA (gui[\scrollView], (85)@(5), false, background:colors[\menuBackground]);
@@ -1539,7 +1539,7 @@ LNX_InstrumentTemplate {
 		MVC_StaticText( gui[\scrollView], Rect(2,30,110,18))
 			.shadow_(false)
 			.color_(\string,Color.black)
-			.font_(Font("Helvetica-Bold", 13))
+			.font_(Font("Helvetica", 13,true))
 			.string_("MIDI Input");
 
 		midi.createInMVUA (gui[\scrollView], (85)@(30), false,colors[\menuBackground]);
@@ -1578,13 +1578,13 @@ LNX_InstrumentTemplate {
 //			MVC_StaticText( gui[\scrollView], Rect(2,55,110,18))
 //				.shadow_(false)
 //				.color_(\string,Color.black)
-//				.font_(Font("Helvetica-Bold", 13))
+//				.font_(Font("Helvetica", 13,true))
 //				.string_("System Out");
 
 			MVC_StaticText( gui[\scrollView], Rect(2,55,110,18))
 				.shadow_(false)
 				.color_(\string,Color.black)
-				.font_(Font("Helvetica-Bold", 13))
+				.font_(Font("Helvetica", 13,true))
 				.string_("System In");
 
 //			midi2.createOutMVUA (gui[\scrollView], (85)@(55),

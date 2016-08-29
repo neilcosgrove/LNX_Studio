@@ -9,7 +9,7 @@ MVC_NoteView : MVC_View {
 	initView{
 		canFocus=true;
 		showNumberBox=false;
-		font=Font("Helvetica-Bold",10);
+		font=Font("Helvetica",10,true);
 		colors=colors++(
 			'background'	: Color.grey/3,
 			'string'		: Color.white,

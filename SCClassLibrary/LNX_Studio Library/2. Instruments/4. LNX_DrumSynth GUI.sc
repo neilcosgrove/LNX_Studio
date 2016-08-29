@@ -39,16 +39,16 @@
 
 	// Themes
 
-		gui[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\soloTheme ]=( \font_		: Font("Helvetica", 12,true),
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 
 		gui[\onOffTheme1]=( \font_		: Font("Helvetica", 12),
 						 \colors_     : (\on : Color(0.25,1,0.25), \off : Color(0.4,0.4,0.4)));
 
-		gui[\onOffTheme2]=( \font_		: Font("Helvetica-Bold", 12),
-						 \colors_     : (\on : Color(0.25,1,0.25), \off : Color(0.4,0.4,0.4)));
+		gui[\onOffTheme2]=( \font_		: Font("Helvetica", 12,true),
+						\colors_	: (\on : Color(0.25,1,0.25), \off : Color(0.4,0.4,0.4)));
 
-		gui[\onOffTheme3]=( \font_		: Font("Helvetica-Bold", 10),
+		gui[\onOffTheme3]=( \font_		: Font("Helvetica", 10,true),
 						 \colors_     : (\on : Color.red, \off : Color.red/3));
 
 		gui[\sliderTheme]=(\thumbSize_	: 15,
@@ -71,7 +71,7 @@
 						\colors_      : (\label : Color(0.75,0.9,0.75),
 									   \background : Color(1,1,0.9)));
 
-		gui[\onOffTheme]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme]=( \font_		: Font("Helvetica", 12, true),
 						\colors_      : (\on : Color.green, \off : Color(0.4,0.4,0.4)));
 
 		gui[\knob2Theme0]=( \labelFont_	: Font("Helvetica",10),
@@ -100,7 +100,7 @@
 		gui[\knob2Theme0Note]=( \labelFont_	: Font("Helvetica",10),
 						     \colors_		: (\on : gui[\highlightColours][0]));
 
-		gui[\onOffTheme4]=( \font_		: Font("Helvetica-Bold", 11),
+		gui[\onOffTheme4]=( \font_		: Font("Helvetica", 11, true),
 						 \colors_		: (\off : Color(0.7,0.7,0.7)/3));
 
 		// The scroll views

@@ -56,7 +56,7 @@
 			.color_(\border, Color(6/11,42/83,29/65))
 			.resize_(5);
 		
-		gui[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\soloTheme ]=( \font_		: Font("Helvetica", 12, true),
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 
 		gui[\onOffTheme1]=( \font_		: Font("Helvetica", 12),
@@ -170,7 +170,7 @@
 		// 1.onOff				
 		gui[\on] = MVC_OnOffView(models[1],gui[\scrollView] ,
 			Rect(151, thisHeight-45, 22, 19),gui[\onOffTheme1])
-			.font_(Font("Helvetica-Bold", 12))
+			.font_(Font("Helvetica", 12, true))
 			.resize_(7)
 			.color_(\on, Color(0.25,1,0.25) )
 			.color_(\off, Color(0.4,0.4,0.4) )

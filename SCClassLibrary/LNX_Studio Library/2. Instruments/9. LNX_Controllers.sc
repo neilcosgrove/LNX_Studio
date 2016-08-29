@@ -112,7 +112,7 @@ LNX_Controllers : LNX_InstrumentTemplate {
 			.rounded_(true)
 			.color_(\on,Color(0.3,0.5,1)+0.3)
 			.color_(\off,Color(0.3,0.5,1)+0.3/3)
-			.font_(Font("Helvetica-Bold",11));
+			.font_(Font("Helvetica",11, true));
 
 		// MIDI Settings
  		MVC_FlatButton(gui[\compositeView],Rect(124, 9, 43, 19),"MIDI")

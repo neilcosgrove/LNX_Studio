@@ -109,7 +109,7 @@ MVC_View {
 		t=rect.bounds.top;
 		w=rect.bounds.width;
 		h=rect.bounds.height;
-		font=Font("Helvetica-Bold",12);
+		font=Font("Helvetica",12,true);
 		// standard colours for all views
 		colors=(
 			'background'	: Color.black.alpha_(0.5),

@@ -164,7 +164,7 @@ MVC_PresetMenuInterface{
 					writeAction.value(value)
 				}
 			}
-			.font_(Font("Helvetica-Bold",10))
+			.font_(Font("Helvetica",10,true))
 			.color_(\down,buttonColor/2)
 			.color_(\up,buttonColor);
 	}

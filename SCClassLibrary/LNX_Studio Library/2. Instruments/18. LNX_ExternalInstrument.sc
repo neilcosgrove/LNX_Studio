@@ -466,18 +466,18 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 										\string : Color.black,
 										\focus : Color(0,0,0,0)));
 
-		gui[\onOffTheme1]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme1]=( \font_		: Font("Helvetica", 12,true),
 						 \rounded_	: true,
 						 \colors_     : (\on : Color(20/77,1,20/77), \off: Color(0.4,0.4,0.4)));
 										
 		gui[\onOffTheme2]=( \font_		: Font("Helvetica", 12),
 						 \colors_     : (\on : Color.orange, \off: Color(0.4,0.4,0.4)));
 						 
-		gui[\onOffTheme3]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme3]=( \font_		: Font("Helvetica", 12,true),
 						 \rounded_	: true,
 						 \colors_     : (\on : Color.orange, \off: Color(0.4,0.4,0.4)));
 		
-		gui[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\soloTheme ]=( \font_		: Font("Helvetica", 12,true),
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 	
 		// widgets
@@ -583,7 +583,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	
 		// program
 		MVC_NumberBox(models[142],gui[\controlsTab],Rect(606, 220, 28, 19))
-				.labelFont_(Font("Helvetica-Bold",14))
+				.labelFont_(Font("Helvetica",14,true))
 				.orientation_(\horiz)
 				.label_("Prog")
 				.color_(\background,Color(0.25,0.25,0.25))

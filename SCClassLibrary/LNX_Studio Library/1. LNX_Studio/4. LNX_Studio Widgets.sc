@@ -154,23 +154,22 @@
 		// all or 1 window
 		MVC_BinaryCircleView(models[\show1],mixerWindow,Rect(startX+55, 2, 20, 20))
 			.strings_(["1","A"])
-			.font_(Font("Helvetica-Bold",14))
+			.font_(Font("Helvetica",14,true))
 			.colors_((\upOn:Color(0.9,0.7,0), \upOff:Color(0,0.6,0), \stringOn:Color.black,
 				\stringOff:Color.black, \downOn:Color(0.5,0.5,0), \downOff:Color(0,0.2,0)));
 
 		// close all inst
 		MVC_BinaryCircleView(models[\showNone],mixerWindow,Rect(startX+22+55, 2, 20, 20),"X")
-			.font_(Font("Helvetica-Bold",14))
+			.font_(Font("Helvetica",14,true))
 			.colors_((\upOn:Color(0.9,0.075,0.075),\upOff:Color(0.8,0.15,0.15),
 			\stringOn:Color.black, \stringOff:Color(0.6,0.15,0.15),
 			\downOn:Color(0.6,0.1,0.1), \downOff:Color(0.6,0.1,0.1)));
 
 		// internal or extrnal clock
-		MVC_OnOffView(models[\extClock],mixerWindow,Rect(startX+58+55, 3, 29, 19),gui[\onOffTheme])
-			.font_(Font("Helvetica-Bold", 12))
+		MVC_OnOffFlatView(models[\extClock],mixerWindow,Rect(startX+58+55, 4, 29, 19),gui[\onOffTheme])
+			.font_(Font("Helvetica", 12,true))
 			.color_(\on,Color(0.85,0.85,0.2))
 			.color_(\off,Color.black)
-			.color_(\string,Color.white)
 			.color_(\background,Color(46/77,46/79,72/145)/2);
 
 		// tempo (bpm)
@@ -184,25 +183,24 @@
 			.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 		// tap tempo
-		MVC_OnOffView(models[\tap],mixerWindow,Rect(startX+132+55,3,32,19),gui[\onOffTheme])
+		MVC_OnOffFlatView(models[\tap],mixerWindow,Rect(startX+132+55,4,32,19),gui[\onOffTheme])
 			.mouseMode_(\tap)
 			.darkerWhenPressed_(false)
-			.font_(Font("Helvetica-Bold", 12))
+			.font_(Font("Helvetica", 12,true))
 			.color_(\on,Color(0.85,0.85,0.2))
 			.color_(\off,Color.black)
-			.color_(\string,Color.white)
 			.color_(\background,Color(46/77,46/79,72/145)/2);
 
 		// record
 		MVC_OnOffFlatView(models[\record],mixerWindow,Rect(startX+179+55, 4, 35, 19),gui[\onOffTheme])
 			.strings_(["Rec"])
-			.font_(Font("Helvetica-Bold", 12))
+			.font_(Font("Helvetica", 12, true))
 			.color_(\on,Color(1,0,0))
 			.color_(\off,Color.black)
 			.color_(\background,Color(46/77,46/79,72/145)/2);
 
 		// play
-		MVC_OnOffFlatView(models[\play],mixerWindow,Rect(startX+293+55, 3, 19, 19))
+		MVC_OnOffFlatView(models[\play],mixerWindow,Rect(startX+293+55, 4, 19, 19))
 			.strings_(["play"])
 			.insetBy_(-1)
 			.color_(\on,Color.green)
@@ -211,7 +209,7 @@
 			.mode_(\play);
 
 		// stop
-		MVC_OnOffFlatView(models[\stop],mixerWindow,Rect(startX+315+55, 3, 19, 19))
+		MVC_OnOffFlatView(models[\stop],mixerWindow,Rect(startX+315+55, 4, 19, 19))
 			.strings_(["stop"])
 			.darkerWhenPressed_(false)
 			.insetBy_(0)
@@ -222,7 +220,7 @@
 			.mouseMode_(\button);
 
 		// forwards
-		MVC_OnOffFlatView(models[\fowards], mixerWindow, Rect(startX+338+55, 3, 19, 19))
+		MVC_OnOffFlatView(models[\fowards], mixerWindow, Rect(startX+338+55, 4, 19, 19))
 			.mode_(\icon)
 			.darkerWhenPressed_(false)
 			.mouseMode_(\button)
@@ -233,7 +231,7 @@
 			.strings_(["forward"]);
 
 		// rewind
-		MVC_OnOffFlatView(models[\rewind], mixerWindow,Rect(startX+271+55, 3, 19, 19))
+		MVC_OnOffFlatView(models[\rewind], mixerWindow,Rect(startX+271+55, 4, 19, 19))
 			.mode_(\icon)
 			.darkerWhenPressed_(false)
 			.mouseMode_(\button)
@@ -244,13 +242,13 @@
 			.strings_(["rewind"]);
 
 		// time / beat
-		mixerGUI[\time]=MVC_StaticText(mixerWindow,Rect(startX+358+55, 0, 52, 23),gui[\textTheme2])
+		mixerGUI[\time]=MVC_StaticText(mixerWindow,Rect(startX+358+55, 3, 52, 23),gui[\textTheme2])
 			.font_(Font("Helvetica",14))
 			.align_(\center)
 			.string_("0:00")
 			.excludeFromVerbose_(true);
 
-		mixerGUI[\beat]=MVC_StaticText(mixerWindow,Rect(startX+216+55, 0, 52, 23),gui[\textTheme2])
+		mixerGUI[\beat]=MVC_StaticText(mixerWindow,Rect(startX+216+55, 3, 52, 23),gui[\textTheme2])
 			.font_(Font("Helvetica",14))
 			.align_(\center)
 			.string_("1.1")
@@ -260,38 +258,38 @@
 		mixerGUI[\serverGUI]=MVC_FlatButton2(models[\serverRunning],mixerWindow,
 								Rect(571+midSpace+66, 3, 26, 19))
 			.resize_(3)
-			.font_(Font("Helvetica-Bold",11))
+			.font_(Font("Helvetica",11,true))
 			.color_(\off,Color.black)
 			.color_(\on,Color.green)
 			.color_(\background,Color(46/77,46/79,72/145)/2) ;
 
 		// net on/off view
-		MVC_FlatButton2(models[\network],mixerWindow,Rect(601+midSpace+66, 3, 26, 19))
+		MVC_FlatButton2(models[\network],mixerWindow,Rect(601+midSpace+66, 4, 26, 19))
 			.resize_(3)
-			.font_(Font("Helvetica-Bold",11))
+			.font_(Font("Helvetica",11,true))
 			.color_(\off,Color.black)
 			.color_(\on,Color.green)
 			.color_(\background,Color(46/77,46/79,72/145)/2);
 
 		// server stats: cpu
-		MVC_StaticText(mixerWindow,Rect(635+66+midSpace, 5, 24, 15),gui[\textTheme2])
+		MVC_StaticText(mixerWindow,Rect(635+66+midSpace, 7, 24, 15),gui[\textTheme2])
 			.resize_(3)
 			.string_("CPU:")
 			.excludeFromVerbose_(true);
 
-		mixerGUI[\cpu]=MVC_StaticText(mixerWindow,Rect(661+66+midSpace, 5, 30, 15),gui[\textTheme2])
+		mixerGUI[\cpu]=MVC_StaticText(mixerWindow,Rect(661+66+midSpace, 7, 30, 15),gui[\textTheme2])
 			.resize_(3)
 			.string_("-")
 			.excludeFromVerbose_(true);
 
-		gui[\multiTheme ]=(\font_:Font("Helvetica-Bold",12),
+		gui[\multiTheme ]=(\font_:Font("Helvetica",12,true),
 			\states_ : [
 				["S"   ,Color(1, 0,   0)/1.15   ,Color.black,Color.grey/3,Color.grey/2],
 				["M"    ,Color(1, 0.5, 0)/1.15,Color.black,Color.grey/2,Color.grey/3],
 				["F"   ,Color(0.5, 1,  0)/1.15,Color.black,Color.grey/4,Color.grey/2]]);
 
 
-		MVC_MultiOnOffView(models[\fadeSpeed], mixerWindow,Rect(704+66+midSpace,3,19,19),gui[\multiTheme ])
+		MVC_MultiOnOffView(models[\fadeSpeed], mixerWindow,Rect(704+66+midSpace,4,19,19),gui[\multiTheme ])
 			.color_(\background,Color(46/77,46/79,72/145)/4)
 			.resize_(3);
 
@@ -419,7 +417,7 @@
 		// mute
 		MVC_OnOffView(models[\mute],sv, Rect(21, 250-10-4, 34, 20))
 				.permanentStrings_(["Mute"])
-				.font_(Font("Helvetica-Bold",11))
+				.font_(Font("Helvetica",11,true))
 				.color_(\on,Color.red)
 				.color_(\off, Color(0.3686, 0.3373, 0.2412,0.5) )
 				.rounded_(true)
@@ -539,7 +537,7 @@
 									   			\disabled:Color.black),
 												\numberFont_  : Font("Helvetica",11));
 
-		mixerGUI[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
+		mixerGUI[\soloTheme ]=( \font_		: Font("Helvetica", 12, true),
 								\colors_    : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 
 		mixerGUI[\onOffTheme2]=( \font_		: Font("Helvetica", 12),
@@ -590,7 +588,7 @@
 			.color_(\string,Color.black)
 			.shadow_(false)
 			.align_(\center)
-			.font_(Font("Helvetica-Bold",14))
+			.font_(Font("Helvetica",14,true))
 			.mouseDownAction_{|me,x,y,modifiers|
 				hasMoved=false;
 				moveDict=IdentityDictionary[];
@@ -683,7 +681,7 @@
 				.color_(\string,Color.black)
 				.shadow_(false)
 				.align_(\center)
-				.font_(Font("Helvetica-Bold",14))
+				.font_(Font("Helvetica",14,true))
 				.mouseDownAction_{|me,x,y,modifiers|
 					hasMoved=false;
 					moveDict=IdentityDictionary[];
@@ -774,7 +772,7 @@
 				// eq button
 				mixerGUI[id][\eqButton] = MVC_FlatButton(sv, Rect(42, 356, 21, 17),"EQ")
 					.rounded_(true)
-					.font_(Font("Helvetica-Bold",10))
+					.font_(Font("Helvetica",10,true))
 					.resize_(7)
 					.canFocus_(false)
 					.color_(\up,Color(1,1,1))
@@ -793,7 +791,7 @@
 				// eq button
 				mixerGUI[id][\eqButton] = MVC_FlatButton(sv, Rect(42, 343, 21, 17),"EQ")
 					.rounded_(true)
-					.font_(Font("Helvetica-Bold",10))
+					.font_(Font("Helvetica",10,true))
 					.resize_(7)
 					.canFocus_(false)
 					.color_(\up,Color(1,1,1))
@@ -894,7 +892,7 @@
 				.color_(\string,Color.black)
 				.shadow_(false)
 				.align_(\center)
-				.font_(Font("Helvetica-Bold",14))
+				.font_(Font("Helvetica",14,true))
 				.mouseDownAction_{|me,x,y,modifiers|
 					hasMoved=false;
 					moveDict=IdentityDictionary[];
@@ -1033,7 +1031,7 @@
 				.color_(\string,Color.black)
 				.shadow_(false)
 				.align_(\center)
-				.font_(Font("Helvetica-Bold",14))
+				.font_(Font("Helvetica",14,true))
 				.mouseDownAction_{|me,x,y,modifiers|
 					hasMoved=false;
 					moveDict=IdentityDictionary[];
@@ -1088,7 +1086,7 @@
 					.canFocus_(false)
 					.color_(\on, Color(0.2,0.3,0.5))
 					.color_(\off,Color(0.2,0.3,0.5))
-					.font_(Font("Helvetica-Bold",11));
+					.font_(Font("Helvetica",11,true));
 
 			}{
 
@@ -1101,7 +1099,7 @@
 				// always on, hidden at start
 				if (inst.canAlwaysOn) {
 					mixerGUI[id][\alwaysOn]=MVC_OnOffView(1, sv, Rect(150,3,39,16),
-							( \font_		: Font("Helvetica-Bold", 12),
+							( \font_		: Font("Helvetica",true, 12),
 							 \colors_     : (\on : inst.onColor,
 							 			  \off : inst.onColor)))
 						.permanentStrings_(["On"])
@@ -1173,7 +1171,7 @@
 			colors_: (up:Color(0.9,0.9,0.9), down:Color(0.9,0.9,0.9)/2)
 		);
 
-		gui[\labelTheme]=( \font_		:  Font("Helvetica-Bold", 14),
+		gui[\labelTheme]=( \font_		:  Font("Helvetica", 14,true),
 						\align_		: \left,
 						\shadow_		: false,
 						\noShadows_	: 0,
@@ -1421,7 +1419,7 @@
 		MVC_StaticText( gui[\scrollView], Rect(10,5,190,18))
 			.shadow_(false)
 			.color_(\string,Color.black)
-			.font_(Font("Helvetica-Bold", 13))
+			.font_(Font("Helvetica", 13,true))
 			.string_("Quit LNX_Studio?");
 
 		MVC_StaticText( gui[\scrollView], Rect(10,30,190,18*2))

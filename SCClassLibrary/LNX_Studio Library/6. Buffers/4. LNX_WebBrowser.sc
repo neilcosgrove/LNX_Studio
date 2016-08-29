@@ -280,7 +280,7 @@ LNX_WebBrowser{
 		MVC_FlatButton(gui[\browserCompositeView],
 			Rect(gui[\browserCompositeView].bounds.width-130-47-25, 592-7, 40, 20),
 											gui[\buttonTheme2 ] ,"Find")
-			.font_(Font("Helvetica-Bold",12))
+			.font_(Font("Helvetica", 12, true))
 			.resize_(9)
 			.canFocus_(false)
 			.action_{

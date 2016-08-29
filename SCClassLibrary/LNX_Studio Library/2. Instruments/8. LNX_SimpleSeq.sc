@@ -210,13 +210,13 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 	// Themes
 
 
-		gui[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\soloTheme ]=( \font_		: Font("Helvetica", 12, true),
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 
 		gui[\onOffTheme1]=( \font_		: Font("Helvetica", 12),
 						 \colors_     : (\on : Color(0.25,1,0.25), \off : Color(0.4,0.4,0.4)));
 
-		gui[\onOffTheme2]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme2]=( \font_		: Font("Helvetica", 12, true),
 						 \colors_     : (\on : Color(0.25,1,0.25), \off : Color(0.4,0.4,0.4)));
 
 		gui[\numTheme]  =(	\orientation_  : \horizontal,
@@ -318,7 +318,7 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 					name=midi.learn(sP[y][2],64);
 					this.addTextToName(y,name);
 				}
-				.font_(Font("Helvetica-Bold",11))
+				.font_(Font("Helvetica",11, true))
 				.color_(\focus,Color.grey(alpha:0.05))
 				.color_(\string,Color.black)
 				.color_(\down,Color(0.5,0.5,1.0)/4)
@@ -344,9 +344,9 @@ LNX_SimpleSeq : LNX_InstrumentTemplate {
 			//  8. interpolation  (x1,x2,x3,x4,x6,x8,x12,x16)  index:(0-7)
 			MVC_PopUpMenu3(spModels[y][8],gui[\seqView],Rect(608,(yOffset)+osY-15,38,16))
 				.color_(\background,Color(0.7,0.7,1)/1.5)
-				.font_(Font("Helvetica-Bold",11))
+				.font_(Font("Helvetica",11, true))
 				.orientation_(\horizontal)
-				.font_(Font("Helvetica-Bold",11))
+				.font_(Font("Helvetica",11, true))
 				.labelFont_(Font("Helvetica",10))
 				.canFocus_(false);
 

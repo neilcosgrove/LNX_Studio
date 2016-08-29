@@ -409,16 +409,16 @@ LNX_Melody : LNX_InstrumentTemplate {
 		var background1 = Color(0.50602409638554, 0.44615384615385, 0.63636363636364);
 		var border      = Color(0, 0.0097087378640777, 0.11688311688312, 0.84415584415584);
 
-		gui[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\soloTheme ]=( \font_		: Font("Helvetica", 12, true),
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 
-		gui[\onOffTheme1]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme1]=( \font_		: Font("Helvetica", 12, true),
 						 \colors_     : (\on : Color(0.25,1,0.25),
 						 				\off : Color(0.4,0.4,0.4)),
 						 \rounded_		: true
 						 );
 
-		gui[\onOffTheme2]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme2]=( \font_		: Font("Helvetica", 12, true),
 						 \colors_     : (\on : Color(0.25,0.75,1),
 						 				\off : Color(0.4,0.4,0.4)),
 						 \rounded_		: true
@@ -448,12 +448,12 @@ LNX_Melody : LNX_InstrumentTemplate {
 						\labelFont_   : Font("Helvetica",12),
 						\numberFont_  : Font("Helvetica",11));
 
-		gui[\textTheme] = (\font_		: Font("Helvetica-Bold", 14),
+		gui[\textTheme] = (\font_		: Font("Helvetica", 14, true),
 						\align_		: 'center',
 						\colors_		: ( \string: Color.black),
 						\noShadows_	: 0 );
 
-		gui[\textThemeL] = (\font_		: Font("Helvetica-Bold", 14),
+		gui[\textThemeL] = (\font_		: Font("Helvetica", 14, true),
 						\align_		: 'left',
 						\colors_		: ( \string: Color.black),
 						\noShadows_	: 0 );

@@ -59,7 +59,7 @@ MVC_UserInstNoView : MVC_View {
 					if (selected) {
 						if (colors[\icon].notNil) {
 							Pen.fillColor_(Color.black);
-							Pen.font_(Font("Helvetica-Bold",15));
+							Pen.font_(Font("Helvetica",15,true));
 							Pen.stringCenteredIn(str,Rect(1,0,w,h));
 							Pen.stringCenteredIn(str,Rect(0,0,w,h));
 							Pen.fillColor_(colors[\stringOn]);
@@ -69,7 +69,7 @@ MVC_UserInstNoView : MVC_View {
 					}{
 						if (colors[\icon].notNil) {
 							Pen.fillColor_(Color.black);
-							Pen.font_(Font("Helvetica-Bold",15));
+							Pen.font_(Font("Helvetica",15,true));
 							Pen.stringCenteredIn(str,Rect(1,0,w,h));
 							Pen.stringCenteredIn(str,Rect(0,0,w,h));
 							Pen.fillColor_(colors[\stringOn]);

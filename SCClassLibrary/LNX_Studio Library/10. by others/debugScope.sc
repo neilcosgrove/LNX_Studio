@@ -35,7 +35,7 @@
 				.resize_(2)
 				.background_(Color.grey);
 			StaticText( comp, Rect( 20, 40, 350, 40 ))
-				.font_( Font("Helvetica-Bold", 34) )
+				.font_( Font("Helvetica", 34,true) )
 				.stringColor_( Color.grey(0.2) )
 				.string_( names.notNil.if({ names[i] }, { i + index }) );
 			ms[i] = SCMultiSliderView( comp, Rect( 0, 0, 400, 120).insetBy(margin,margin) )

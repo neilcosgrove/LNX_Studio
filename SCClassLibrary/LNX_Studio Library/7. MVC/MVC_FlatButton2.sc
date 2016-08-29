@@ -122,9 +122,9 @@ MVC_FlatButton2 : MVC_View {
 
 						Pen.smoothing_(true);
 						if (value==1) {
-							Pen.stringCenteredIn(strings@@1,Rect(0,0,w,h));
+							Pen.stringCenteredIn(strings@@1,Rect(0,1,w,h));
 						}{
-							Pen.stringCenteredIn(strings[0],Rect(0,0,w,h));
+							Pen.stringCenteredIn(strings[0],Rect(0,1,w,h));
 						};
 
 

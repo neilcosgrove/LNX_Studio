@@ -170,7 +170,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 										\numberUp	: Color.black,
 										\numberDown : Color.white));
 
-		gui[\onOffTheme]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme]=( \font_		: Font("Helvetica", 12, true),
 		 				\rounded_		: true,
 						\colors_      : (\on : Color.red, \off : Color(0.4,0.4,0.4)));
 

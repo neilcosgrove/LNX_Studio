@@ -60,7 +60,7 @@
 						\labelFont_	: Font("Helvetica",11)
 						);
 
-		gui[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\soloTheme ]=( \font_		: Font("Helvetica", 12, true),
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 
 		gui[\onOffTheme2]=( \font_		: Font("Helvetica", 12),

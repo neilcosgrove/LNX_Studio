@@ -598,7 +598,7 @@ LNX_Room{
 			
 		MVC_OnOffView(window,Rect(8,386+40,57,30),"Add all")
 			.rounded_(true) 
-			.font_(Font("Helvetica-Bold",12))
+			.font_(Font("Helvetica", 12, true))
 			.color_(\on,Color(0.9,0.9,0.9))
 			.color_(\off,Color(0.9,0.9,0.9))
 			.action_{
@@ -613,7 +613,7 @@ LNX_Room{
 			
 		gui[\add]=MVC_OnOffView(window,Rect(71,386+40,57,30),"Add -->")
 			.rounded_(true) 
-			.font_(Font("Helvetica-Bold",12))
+			.font_(Font("Helvetica", 12, true))
 			.color_(\on,Color(0.9,0.9,0.9))
 			.color_(\off,Color(0.9,0.9,0.9))
 			.action_{
@@ -630,7 +630,7 @@ LNX_Room{
 		// delete all
 		MVC_OnOffView(window,Rect(71,424+40,57,20).insetBy(8,-1),"Clear")
 			.rounded_(true) 
-			.font_(Font("Helvetica-Bold",10))
+			.font_(Font("Helvetica", 10, true))
 			.color_(\on,Color(0.9,0.9,0.9))
 			.color_(\off,Color(0.9,0.9,0.9))
 			.action_{
@@ -640,7 +640,7 @@ LNX_Room{
 		// nudge
 		MVC_OnOffView(window,Rect(8,424+40,57,20).insetBy(8,-1),"Nudge")
 			.rounded_(true) 
-			.font_(Font("Helvetica-Bold",10))
+			.font_(Font("Helvetica", 10, true))
 			.color_(\on,Color(0.9,0.9,0.9))
 			.color_(\off,Color(0.9,0.9,0.9))
 			.action_{

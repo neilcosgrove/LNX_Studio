@@ -561,18 +561,18 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		gui[\plainTheme]=( colors_: (\on	: Color(0,0,0),
 				 		\off	: Color(0,0,0)));
 
-		gui[\onOffTheme1]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme1]=( \font_		: Font("Helvetica", 12,true),
 						 \rounded_	: true,
 						 \colors_     : (\on : Color(20/77,1,20/77), \off: Color(0.4,0.4,0.4)));
 
 		gui[\onOffTheme2]=( \font_		: Font("Helvetica", 12),
 						 \colors_     : (\on : Color(50/77,61/77,1), \off: Color(0.4,0.4,0.4)));
 
-		gui[\onOffTheme3]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme3]=( \font_		: Font("Helvetica", 12,true),
 						 \rounded_	: true,
 						 \colors_     : (\on : Color.orange, \off: Color(0.4,0.4,0.4)));
 
-		gui[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\soloTheme ]=( \font_		: Font("Helvetica", 12,true),
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 
 
@@ -756,7 +756,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 					.onValue_(127)
 					.showNumberBox_(false)
 					.label_(nil)
-					.font_(Font("Helvetica-Bold", 10))
+					.font_(Font("Helvetica", 10,true))
 					.color_(\on,Color.orange)
 					.color_(\off,Color(0.4,0.4,0.4));
 			};

@@ -118,10 +118,10 @@ MVC_OnOffFlatView : MVC_OnOffView {
 
 							if (value==1) {
 								Pen.stringCenteredIn(strings@@1,
-									Rect(down.if(1,0),down.if(1,0),w,h));
+									Rect(down.if(1,0),down.if(2,1),w,h));
 							}{
 								Pen.stringCenteredIn(strings[0],
-									Rect(down.if(1,0),down.if(1,0),w,h));
+									Rect(down.if(1,0),down.if(2,1),w,h));
 							};
 						}{
 							Pen.smoothing_(true);
@@ -291,10 +291,10 @@ MVC_OnOffView : MVC_View {
 
 									)|@|(
 										value.round.asInt)).asString,
-									Rect(0,0,w,h));
+									Rect(0,1,w,h));
 							}{
 								Pen.stringCenteredIn((permanentStrings|@|(value.round.asInt))
-									.asString,Rect(0,0,w,h));
+									.asString,Rect(0,1,w,h));
 							};
 						}
 						{mode==='play'}{

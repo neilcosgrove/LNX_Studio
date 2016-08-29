@@ -235,7 +235,7 @@
 				.color_(\editBackground,Color(0,0,0,0.3))
 				.color_(\background,Color(0,0,0,0.3))
 				.color_(\focus,Color(0,0,0,0.1))
-				.font_(Font.new("Helvetica-Bold", 13))
+				.font_(Font.new("Helvetica", 13,true))
 				.stringAction_{|me,string|
 					filename=string.filenameSafe;
 					me.string_(filename);

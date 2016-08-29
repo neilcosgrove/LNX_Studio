@@ -22,7 +22,7 @@ MVC_ButtonLamp : MVC_View {
 			'off'			: Color.black,
 			'string'		: Color.black
 		);
-		font=Font("Helvetica-Bold",12);
+		font=Font("Helvetica",12,true);
 	}
 
 	// make the view

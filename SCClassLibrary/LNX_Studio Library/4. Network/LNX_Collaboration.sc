@@ -846,7 +846,7 @@ LNX_Collaboration{
 		// invite
 		gui[\invite] = MVC_OnOffView(window,Rect(460+x,432+y+40,55,20).insetBy(-1,-1),"Invite")
 			.rounded_(true)
-			.font_(Font("Helvetica-Bold",12))
+			.font_(Font("Helvetica",12, true))
 			.color_(\on,Color(0.2,1,0.2))
 			.color_(\off,Color(0.2,1,0.2))
 			.action_{ this.guiInviteWishList };
@@ -854,7 +854,7 @@ LNX_Collaboration{
 		// leave
 		gui[\invite] = MVC_OnOffView(window,Rect(400+x,432+y+40,55,20).insetBy(-1,-1),"Leave")
 			.rounded_(true)
-			.font_(Font("Helvetica-Bold",12))
+			.font_(Font("Helvetica",12, true))
 			.color_(\on,Color.gray*1.5)
 			.color_(\off,Color.gray*1.5)
 			.action_{ this.guiLeave };

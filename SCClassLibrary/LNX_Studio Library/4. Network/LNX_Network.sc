@@ -945,7 +945,7 @@ LNX_Network {
 
 			// Text Labels
 			StaticText(gui[\bg],Rect(65,4,450,17))
-				.font_(Font("Helvetica-Bold",12))
+				.font_(Font("Helvetica", 12, true))
 				.string_(s).align_(\left).stringColor_(Color.black);
 
 			// room menu

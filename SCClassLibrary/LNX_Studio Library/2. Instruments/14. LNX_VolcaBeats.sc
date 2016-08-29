@@ -548,18 +548,18 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 										\string : Color.black,
 										\focus : Color(0,0,0,0)));
 
-		gui[\onOffTheme1]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme1]=( \font_		: Font("Helvetica", 12,true),
 						 \rounded_	: true,
 						 \colors_     : (\on : Color(20/77,1,20/77), \off: Color(0.4,0.4,0.4)));
 
 		gui[\onOffTheme2]=( \font_		: Font("Helvetica", 12),
 						 \colors_     : (\on : Color.orange, \off: Color(0.4,0.4,0.4)));
 
-		gui[\onOffTheme3]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme3]=( \font_		: Font("Helvetica", 12,true),
 						 \rounded_	: true,
 						 \colors_     : (\on : Color.orange, \off: Color(0.4,0.4,0.4)));
 
-		gui[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\soloTheme ]=( \font_		: Font("Helvetica", 12,true),
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 
 

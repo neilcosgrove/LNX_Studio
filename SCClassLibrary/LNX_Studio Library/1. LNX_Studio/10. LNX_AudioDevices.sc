@@ -466,7 +466,7 @@ LNX_AudioDevices {
 			.hasVerticalScroller_(false);
 
 		MVC_StaticText(gui[\scrollView],Rect(16, 6, 480, 22))
-			.font_(Font("Helvetica-Bold",14))
+			.font_(Font("Helvetica",14,true))
 			.string_("WARNING:")
 			.color_(\string,Color.white);
 

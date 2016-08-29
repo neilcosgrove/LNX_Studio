@@ -105,7 +105,7 @@ MVC_FlatButton : MVC_View {
 							if (shadow) {
 								Pen.fillColor_(Color.black);
 								Pen.stringCenteredIn(strings[value.asInt.wrap(0,strings.size-1)],
-									Rect(1,1,w,h));
+									Rect(1,2,w,h));
 							};
 
 							if (down) {
@@ -114,7 +114,7 @@ MVC_FlatButton : MVC_View {
 								Pen.fillColor_(colors[\string]);
 							};
 							Pen.stringCenteredIn(strings[value.asInt.wrap(0,strings.size-1)],
-								Rect(0,0,w,h));
+								Rect(0,1,w,h));
 						}
 						{mode==='icon'}{
 							Pen.smoothing_(true);

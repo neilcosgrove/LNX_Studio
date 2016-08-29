@@ -24,7 +24,7 @@
 			.color_(\border, Color(6/11,42/83,29/65))
 			.resize_(5);
 
-		gui[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\soloTheme ]=( \font_		: Font("Helvetica", 12, true),
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 
 		gui[\onOffTheme1]=( \font_		: Font("Helvetica", 12),
@@ -300,7 +300,7 @@
 		userBank.speakerIcon_(gui[\speakerIcon]);
 
  		MVC_StaticText( gui[\sampleGUIScrollView], Rect(160,212, 315, 15),gui[\infoTheme])
- 			.font_(Font("Helvetica-Bold", 11))
+ 			.font_(Font("Helvetica", 11, true))
 			.string_(
 		" Sample                                                Amp              Pitch");
 

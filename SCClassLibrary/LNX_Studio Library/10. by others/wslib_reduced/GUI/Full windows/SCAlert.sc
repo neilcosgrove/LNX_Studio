@@ -136,7 +136,7 @@ SCAlert {
 		
 		stringView = StaticText(window, Rect(80,4, window.bounds.width - 84, 
 				window.bounds.height - 28 ) )
-			.string_( string ).font_( Font( "Helvetica-Bold", 12 ) );
+			.string_( string ).font_( Font( "Helvetica", 12,true ) );
 			//.align_( \center );
 		
 		buttonViews = { |i| 

@@ -185,7 +185,7 @@ MVC_TextView : MVC_View {
 				// summary might be nil if not a class or doesn't support .new .ar .kr .ir
 				if (summary.notNil) {
 					// the string bounds
-					sB = GUI.stringBounds(summary,Font("Helvetica-Bold",14));
+					sB = GUI.stringBounds(summary,Font("Helvetica",14,true));
 					// get rect for window
 					Platform.case(\osx,{
 						rect=Rect(
@@ -240,7 +240,7 @@ MVC_TextView : MVC_View {
 					textView=MVC_StaticText(helpWindow,Rect(20,0,sB.width+5, sB.height+1))
 						.shadow_(false)
 						.string_(summary)
-						.font_(Font("Helvetica-Bold",14))
+						.font_(Font("Helvetica",14,true))
 						.color_(\background,Color(0,0,0,0.05))
 						.color_(\string,Color.black)
 						.mouseOverAction_{|me, x, y|

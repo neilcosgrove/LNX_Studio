@@ -653,7 +653,7 @@
 			.shadow_(false)
 			.align_(\center)
 			.color_(\string,Color.black)
-			.font_(Font("Helvetica-Bold", 13));
+			.font_(Font("Helvetica", 13, true));
 
 		// path
 		gui[\path] = MVC_StaticText( gui[\scrollView], Rect(42,27,490+x,18))

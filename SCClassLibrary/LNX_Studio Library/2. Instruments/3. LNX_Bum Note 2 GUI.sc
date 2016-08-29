@@ -43,7 +43,7 @@
 						\colors_      : (\label : Color.white, \background : Color(0.2,0.2,0.2),
 										\string : Color.orange, \focus : Color(0,0,0,0)));
 
-		gui[\labelTheme]=( \font_		:  Font("Helvetica-Bold", 14),
+		gui[\labelTheme]=( \font_		:  Font("Helvetica", 14,true),
 						\align_		: \left,
 						\shadow_		: false,
 						\noShadows_	: 0,
@@ -51,7 +51,7 @@
 
 		gui[\sliderTheme]=(\thumbSize_	: 18,
 						\border_		: 4,
-						 \labelFont_	: Font("Helvetica-Bold", 14),
+						 \labelFont_	: Font("Helvetica", 14,true),
 						 \colors_		: (	\background : Color(0,0,0,0.3),
 						 				\border     : darkBorder,
 						 				\knob       : Color(0.25,0.75,1),
@@ -60,26 +60,26 @@
 									  	\numberDown :Color.white),
 						\labelShadow_	: false);
 
-		gui[\onOffTheme]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme]=( \font_		: Font("Helvetica", 12,true),
 		 				\rounded_		: true,
 						\colors_      : (\on : Color.orange, \off : Color(0.4,0.4,0.4)));
 
 
-		gui[\onOffTheme3]=( \font_		: Font("Helvetica-Bold", 10),
+		gui[\onOffTheme3]=( \font_		: Font("Helvetica", 10,true),
 						 \rounded_	: true,
 						 \colors_     : (\on : Color.red, \off : Color.red/3));
 
-		gui[\onOffTheme4]=( \font_		: Font("Helvetica-Bold", 11),
+		gui[\onOffTheme4]=( \font_		: Font("Helvetica", 11,true),
 						 \rounded_	: true,
 						 \colors_     : (\on : (Color.orange+Color.red)/2,
 						 			   \off : (Color.orange+Color.red)/4));
 
-		gui[\onOffTheme5]=( \font_		: Font("Helvetica-Bold", 11),
+		gui[\onOffTheme5]=( \font_		: Font("Helvetica", 11,true),
 						 \rounded_	: true,
 						 \colors_     : (\on : Color.orange,
 						 			   \off : Color.orange/2));
 
-		gui[\onOffTheme6]=( \font_		: Font("Helvetica-Bold", 11),
+		gui[\onOffTheme6]=( \font_		: Font("Helvetica", 11,true),
 						 \rounded_	: true,
 						 \colors_     : (\off : Color.orange,
 						 			   \on : Color.yellow));
@@ -92,22 +92,22 @@
 
 		// from mm
 
-		gui[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\soloTheme ]=( \font_		: Font("Helvetica", 12,true),
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 
-		gui[\onOffTheme1]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme1]=( \font_		: Font("Helvetica", 12,true),
 						 \colors_     : (\on : Color(0.25,0.75,1),
 						 				\off : Color(0.4,0.4,0.4)),
 						 \rounded_		: true
 						 );
 
-		gui[\onOffTheme2]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme2]=( \font_		: Font("Helvetica", 12,true),
 						 \colors_     : (\off : Color(0.25,0.75,1),
 						 				\on : Color(0.75,0.25,1)),
 						 \rounded_		: true
 						 );
 
-		gui[\onOffTheme3]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme3]=( \font_		: Font("Helvetica", 12,true),
 						 \colors_     : (\on : Color(0.25,0.75,1),
 						 				\off : Color(0.75,0.25,1)),
 						 \rounded_		: true
@@ -147,12 +147,12 @@
 						\labelFont_   : Font("Helvetica",12),
 						\numberFont_  : Font("Helvetica",11));
 
-		gui[\textTheme] = (\font_		: Font("Helvetica-Bold", 14),
+		gui[\textTheme] = (\font_		: Font("Helvetica", 14,true),
 						\align_		: 'center',
 						\colors_		: ( \string: Color.black),
 						\noShadows_	: 0 );
 
-		gui[\textThemeL] = (\font_		: Font("Helvetica-Bold", 14),
+		gui[\textThemeL] = (\font_		: Font("Helvetica", 14,true),
 						\align_		: 'left',
 						\colors_		: ( \string: Color.black),
 						\noShadows_	: 0 );
@@ -173,7 +173,7 @@
 
 		gui[\masterTabs]=MVC_TabbedView(gui[\scrollView], Rect(9, 6, 691, 430))
 			.labels_(["Controls","Step","Piano"])
-			.font_(Font("Helvetica-Bold", 14))
+			.font_(Font("Helvetica", 14,true))
 			.tabPosition_(\top)
 			.unfocusedColors_(Color(0.35, 0.35, 0.35,0.75) ! 3)
 			.labelColors_(  darkBorder!3)

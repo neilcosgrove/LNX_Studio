@@ -719,22 +719,22 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		gui[\plainTheme2]=( colors_: (\on : Color.orange, \off : Color.orange));
 
 		gui[\scaleTheme]=( colors_: (\background : Color.clear, \marks : Color.white), marks_:7);
-		gui[\onOffTheme1]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme1]=( \font_		: Font("Helvetica", 12,true),
 						 \rounded_	: true,
 						 \colors_     : (\on : Color(20/77,1,20/77), \off: Color(0.4,0.4,0.4)));
 
 		gui[\onOffTheme2]=( \font_		: Font("Helvetica", 12),
 						 \colors_     : (\on : Color(50/77,61/77,1), \off: Color(0.4,0.4,0.4)));
 
-		gui[\onOffTheme3]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme3]=( \font_		: Font("Helvetica", 12,true),
 						 \rounded_	: true,
 						 \colors_     : (\on : Color.orange*0.75, \off: Color(0.4,0.4,0.4)));
 
-		gui[\onOffTheme4]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\onOffTheme4]=( \font_		: Font("Helvetica", 12,true),
 						 \rounded_	: true,
 						 \colors_     : (\on : Color.orange, \off: Color(0.4,0.4,0.4)));
 
-		gui[\soloTheme ]=( \font_		: Font("Helvetica-Bold", 12),
+		gui[\soloTheme ]=( \font_		: Font("Helvetica", 12,true),
 						\colors_      : (\on : Color(1,0.2,0.2), \off : Color(0.4,0.4,0.4)));
 
 
@@ -870,13 +870,13 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 
 		gui[\textHeader]=MVC_StaticText(gui[\synthTab],Rect(14,0,thisWidth-10, 18 ))
 			.shadow_(false)
-			.font_(Font("Helvetica-Bold",12))
+			.font_(Font("Helvetica",12,true))
 			.color_(\string,Color.black)
 			.string_("                      LFO                         |                                  VCO mod                              |                             VCO-1                       |                                     VCO-2                            |    VCO 1 + 2")  ;
 
 		MVC_StaticText(gui[\synthTab],Rect(14,128,thisWidth-10, 18 ))
 			.shadow_(false)
-			.font_(Font("Helvetica-Bold",12))
+			.font_(Font("Helvetica",12,true))
 			.color_(\string,Color.black)
 			.string_("    HPF     |                                            VCF                                                |             VCA             |                               ENV-1                                 |                                  ENV-2")  ;
 
@@ -956,7 +956,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 
 		// program
 		MVC_NumberBox(models[12],gui[\scrollView],Rect(66, 278, 28, 19))
-				.labelFont_(Font("Helvetica-Bold",13))
+				.labelFont_(Font("Helvetica",13,true))
 				.orientation_(\horiz)
 				.label_("Program")
 				.color_(\background,Color(0.25,0.25,0.25))
@@ -966,7 +966,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 
 		// program name text
 		gui[\programName] = MVC_Text(gui[\scrollView],Rect(104, 273,132,26))
-			.font_(Font("Helvetica-Bold",13))
+			.font_(Font("Helvetica",13,true))
 			.align_(\left)
 			.shadow_(false)
 			.penShadow_(true)
