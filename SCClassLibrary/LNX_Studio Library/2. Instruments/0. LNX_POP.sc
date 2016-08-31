@@ -235,31 +235,31 @@ LNX_POP {
 
 		// the Edit menu
 		MVC_PopUpMenu3(  gui[\window], Rect(51+2,50, 18, 18))
-			.items_(["Copy","Paste", "-", "Insert","Clear","Remove"])
-			.showTick_(false)
-			.staticText_("")
-			.color_(\background,Color(1,1,1,0.7))
-			.color_(\string,Color.black)
-			.canFocus_(false)
-			.action_{|me|
-				switch (me.value.asInt)
-					{0}{ this.guiCopy   }
-					{1}{ this.guiPaste  }
-					{3}{ this.guiInsert }
-					{4}{ this.guiClear  }
-					{5}{ this.guiRemove }
-			};
+		.items_(["Copy","Paste", "-", "Insert","Clear","Remove"])
+		.showTick_(false)
+		.staticText_("")
+		.color_(\background,Color(1,1,1,0.7))
+		.color_(\string,Color.black)
+		.canFocus_(false)
+		.action_{|me|
+			switch (me.value.asInt)
+			{0}{ this.guiCopy   }
+			{1}{ this.guiPaste  }
+			{3}{ this.guiInsert }
+			{4}{ this.guiClear  }
+			{5}{ this.guiRemove }
+		};
 
 		// logo
 		MVC_ImageView(gui[\window],Rect(3, 9, 70, 21))
-			.image_("fontImages/Program.png");
+		.image_("fontImages/Program.png");
 
 		// 23.program number (to become)
 		gui[\program]=MVC_ProgramChangeMain(studioModels[\toBecome],gui[\window],
-			Rect(10,42+26+10,40,noPOP*21))
-			.ww_(40)
-			.hh_(21)
-			.noPOP_(noPOP);
+		Rect(10,42+26+10,40,noPOP*21))
+		.ww_(40)
+		.hh_(21)
+		.noPOP_(noPOP);
 
 		noPOP.do{|i| this.createResetWidget(i) };
 
@@ -272,44 +272,44 @@ LNX_POP {
 		.numberFunc_(\intPlus1);
 
 		// plainSquare to cover top of resets
- 		MVC_PlainSquare(gui[\window],Rect(50, 68+10, 22, 1))
- 			.color_(\on,Color.black)
- 			.color_(\off,Color.black);
+		MVC_PlainSquare(gui[\window],Rect(50, 68+10, 22, 1))
+		.color_(\on,Color.black)
+		.color_(\off,Color.black);
 
 		// More
- 		gui[\more]=MVC_FlatButton(gui[\window],Rect(47, (noPOP+3)*21+22, 19, 19),"+")
-			.rounded_(true)
-			.canFocus_(false)
-			.shadow_(true)
-			.color_(\up,Color(10665/19997,223/375,2/3) )
-			.color_(\down,Color(10665/19997,223/375,2/3) )
-			.color_(\string,Color.white)
-			.action_{ classAPI.groupCmdOD(\more) };
+		gui[\more]=MVC_FlatButton(gui[\window],Rect(47, (noPOP+3)*21+22, 19, 19),"+")
+		.rounded_(true)
+		.canFocus_(false)
+		.shadow_(true)
+		.color_(\up,Color(10665/19997,223/375,2/3) )
+		.color_(\down,Color(10665/19997,223/375,2/3) )
+		.color_(\string,Color.white)
+		.action_{ classAPI.groupCmdOD(\more) };
 
 		// Less
- 		gui[\less]=MVC_FlatButton(gui[\window],Rect(18, (noPOP+3)*21+22, 19, 19),"-")
-			.rounded_(true)
-			.canFocus_(false)
-			.shadow_(true)
-			.color_(\up,Color(10665/19997,223/375,2/3) )
-			.color_(\down,Color(10665/19997,223/375,2/3) )
-			.color_(\string,Color.white)
-			.action_{  classAPI.groupCmdOD(\less) };
+		gui[\less]=MVC_FlatButton(gui[\window],Rect(18, (noPOP+3)*21+22, 19, 19),"-")
+		.rounded_(true)
+		.canFocus_(false)
+		.shadow_(true)
+		.color_(\up,Color(10665/19997,223/375,2/3) )
+		.color_(\down,Color(10665/19997,223/375,2/3) )
+		.color_(\string,Color.white)
+		.action_{  classAPI.groupCmdOD(\less) };
 
 		// plainSquare to extend scroll
- 		gui[\plainSquare]=MVC_PlainSquare(gui[\window],Rect(0, (noPOP+4.5)*21+22, 1, 1))
- 			.color_(\on,Color.clear)
- 			.color_(\off,Color.clear);
+		gui[\plainSquare]=MVC_PlainSquare(gui[\window],Rect(0, (noPOP+4.5)*21+22, 1, 1))
+		.color_(\on,Color.clear)
+		.color_(\off,Color.clear);
 
- 		// plainSquare to extend scroll
- 		gui[\plainSquare3]=MVC_PlainSquare(gui[\window],Rect(0, 0, 1, 1))
- 			.color_(\on,Color.clear)
- 			.color_(\off,Color.clear);
+		// plainSquare to extend scroll
+		gui[\plainSquare3]=MVC_PlainSquare(gui[\window],Rect(0, 0, 1, 1))
+		.color_(\on,Color.clear)
+		.color_(\off,Color.clear);
 
- 		// plainSquare to extend scroll
- 		gui[\plainSquare2]=MVC_PlainSquare(gui[\window2],Rect(0, (noPOP+4.5)*21+18, 1, 1))
- 			.color_(\on,Color.clear)
- 			.color_(\off,Color.clear);
+		// plainSquare to extend scroll
+		gui[\plainSquare2]=MVC_PlainSquare(gui[\window2],Rect(0, (noPOP+4.5)*21+18, 1, 1))
+		.color_(\on,Color.clear)
+		.color_(\off,Color.clear);
 
 	}
 
