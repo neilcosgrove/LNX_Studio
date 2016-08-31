@@ -350,12 +350,17 @@ MVC_PopUpMenu3 : MVC_View {
 				if (buttonNumber==2) {
 					this.toggleMIDIactive
 				}{
-					if (modifiers.isXCmd.not) { this.openMenu };
+					if (modifiers.isXCmd.not) {
+						if ((menuWindow.notNil) and:{menuWindow.isOpen}) {
+							// do nothing, it will close on its own
+						}{
+							this.openMenu
+						}
+					};
 				};
 				down=true;
 				startTime = SystemClock.now;
 			};
-
 		}
 		.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
