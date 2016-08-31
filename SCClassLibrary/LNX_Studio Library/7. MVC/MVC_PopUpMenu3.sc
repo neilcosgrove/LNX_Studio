@@ -72,12 +72,12 @@ MVC_PopUpMenu3 : MVC_View {
 					if(style==0) {
 						Color(1,1,1,0.5).set;
 						Pen.moveTo(0@h);
-						Pen.lineTo(0@1);
-						Pen.lineTo(w@1);
+						Pen.lineTo(0@0);
+						Pen.lineTo(w@0);
 						Pen.stroke;
 						Color(0,0,0,0.5).set;
-						Pen.moveTo(0@h);
-						Pen.lineTo((w-1)@h);
+						Pen.moveTo(0@(h-1));
+						Pen.lineTo((w-1)@(h-1));
 						Pen.lineTo((w-1)@0);
 						Pen.stroke;
 					}{
@@ -174,6 +174,9 @@ MVC_PopUpMenu3 : MVC_View {
 
 			// the window
 			menuWindow=MVC_Window("", rect2, border:false, scroll:true);
+
+			menuWindow.color_(\background, Color(0.66,0.66,0.66));
+
 			// to help fix mouseOver bug
 			task=Task({{
 				if (menuWindow.isClosed.not) {
@@ -200,36 +203,16 @@ MVC_PopUpMenu3 : MVC_View {
 				};
 			}.loop},AppClock).start;
 
-			// the border
-			MVC_PlainSquare(menuWindow,Rect(0,0,w+3,1))
-				.color_(\on,Color(1,1,1))
-				.color_(\off,Color(1,1,1));
-			MVC_PlainSquare(menuWindow,Rect(0,0,1,rect.bounds.height))
-				.color_(\on,Color(1,1,1,0.77))
-				.color_(\off,Color(1,1,1,0.77));
-			MVC_PlainSquare(menuWindow,Rect(0,rect.bounds.height-1,w+3,1))
-				.color_(\on,Color(0,0,0,0.66))
-				.color_(\off,Color(0,0,0,0.66));
-			MVC_PlainSquare(menuWindow,Rect(w+3,0,1,rect.bounds.height))
-				.color_(\on,Color(0,0,0,0.66))
-				.color_(\off,Color(0,0,0,0.66));
-			MVC_PlainSquare(menuWindow,Rect(1,1,w+3-2,1))
-				.color_(\on,Color(1,1,1,0.5))
-				.color_(\off,Color(1,1,1,0.5));
-			MVC_PlainSquare(menuWindow,Rect(1,1,1,rect.bounds.height-2))
-				.color_(\on,Color(1,1,1,0.5))
-				.color_(\off,Color(1,1,1,0.5));
-			MVC_PlainSquare(menuWindow,Rect(1,rect.bounds.height-2,w+1,1))
-				.color_(\on,Color(0,0,0,0.33))
-				.color_(\off,Color(0,0,0,0.33));
-			MVC_PlainSquare(menuWindow,Rect(w+2,1,1,rect.bounds.height-2))
-				.color_(\on,Color(0,0,0,0.33))
-				.color_(\off,Color(0,0,0,0.33));
+
 
 			// the mouse over selection view
-			selectView=MVC_UserView(menuWindow,Rect(0,1,w+3,h*(items.size)))
+			selectView=MVC_UserView(menuWindow,Rect(0,1,w+2,h*(items.size)))
 				.drawFunc_{|me|
 					var bounds=me.bounds;
+
+					Color(0.8,0.8,0.8).set;
+					Pen.fillRect(Rect(0,0,w+2,h*(items.size)+1));
+
 
 					if ((selected.notNil)and:{items[selected]!="-"}){
 						Pen.use{
@@ -251,7 +234,8 @@ MVC_PopUpMenu3 : MVC_View {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.black);
 						Pen.font_(menuFont);
-						Pen.stringLeftJustIn(" *", Rect(2,indexValue*h+1,w+4,h));
+						//Pen.stringLeftJustIn(" *", Rect(2,indexValue*h-1,w+4,h));
+						DrawIcon.symbolArgs(\play,Rect(2,indexValue*h,h,h));
 					};
 
 					items.do{|t,i|
@@ -273,7 +257,7 @@ MVC_PopUpMenu3 : MVC_View {
 			// 	.color_(\background, Color.clear)
 
 			items.do {|s, i|
-				textView = MVC_StaticText(menuWindow, Rect(22,2+(h*i),w-20,h))
+				textView = MVC_StaticText(menuWindow, Rect(22,(h*i),w-20,h))
 					.shadow_(false)
 					.string_(
 						if (s[0]==$() { s=s.drop(1) };
@@ -283,10 +267,10 @@ MVC_PopUpMenu3 : MVC_View {
 					.color_(\string,Color.black)
 			};
 
-			MVC_StaticText(menuWindow,Rect(0,1,w+3,h*(items.size)))
+			MVC_StaticText(menuWindow,Rect(0,1,w+2,h*(items.size)))
 				.string_("")
 				.mouseOverAction_{|me, x, y|
-					var val = (y/h).asInt.clip(0,items.size-1);
+					var val = ((y-2)/h).asInt.clip(0,items.size-1);
 					if (selected!=val) {
 						selected=val;		 // set index
 						selectView.refresh; // refresh the view
@@ -296,7 +280,7 @@ MVC_PopUpMenu3 : MVC_View {
 					// is something currently selected?
 					if (selected.notNil) {
 						// get index
-						value=(y/h).asInt.clip(0,items.size-1);
+						value=((y-2)/h).asInt.clip(0,items.size-1);
 						// close the window
 						task.stop;
 						menuWindow.free;
@@ -314,8 +298,34 @@ MVC_PopUpMenu3 : MVC_View {
 					};
 				};
 
+			// the border
+			MVC_PlainSquare(menuWindow,Rect(0,0,w+2,1))
+				.color_(\on,Color(1,1,1))
+				.color_(\off,Color(1,1,1));
+			MVC_PlainSquare(menuWindow,Rect(0,0,1,rect.bounds.height-2))
+				.color_(\on,Color(1,1,1,0.77))
+				.color_(\off,Color(1,1,1,0.77));
+			MVC_PlainSquare(menuWindow,Rect(0,rect.bounds.height-3,w+2,1))
+				.color_(\on,Color(0,0,0,0.5))
+				.color_(\off,Color(0,0,0,0.5));
+			MVC_PlainSquare(menuWindow,Rect(w+1,0,1,rect.bounds.height-2))
+				.color_(\on,Color(0,0,0,0.5))
+				.color_(\off,Color(0,0,0,0.5));
+			MVC_PlainSquare(menuWindow,Rect(1,1,w,1))
+				.color_(\on,Color(1,1,1,0.5))
+				.color_(\off,Color(1,1,1,0.5));
+			MVC_PlainSquare(menuWindow,Rect(1,1,1,rect.bounds.height-4))
+				.color_(\on,Color(1,1,1,0.5))
+				.color_(\off,Color(1,1,1,0.5));
+			MVC_PlainSquare(menuWindow,Rect(1,rect.bounds.height-4,w,1))
+				.color_(\on,Color(0,0,0,0.25))
+				.color_(\off,Color(0,0,0,0.25));
+			MVC_PlainSquare(menuWindow,Rect(w+1-1,1,1,rect.bounds.height-4))
+				.color_(\on,Color(0,0,0,0.25))
+				.color_(\off,Color(0,0,0,0.25));
+
 			menuWindow.create;
-			menuWindow.view.alpha_(0.95);
+			menuWindow.view.alpha_(0.935);
 
 			// must be done here
 			menuWindow.view.endFrontAction_{
