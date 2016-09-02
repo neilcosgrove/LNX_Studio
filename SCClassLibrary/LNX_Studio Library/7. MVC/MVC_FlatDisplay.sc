@@ -59,7 +59,7 @@ MVC_FlatDisplay : MVC_View {
 
 			if (thisDrawValue != lastDrawValue) {
 				lastDrawValue = thisDrawValue;
-				this.refresh;
+				if (window.isClosed.not) { this.refresh };
 			};
 		};
 	}

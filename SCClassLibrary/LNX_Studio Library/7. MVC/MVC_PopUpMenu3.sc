@@ -107,13 +107,12 @@ MVC_PopUpMenu3 : MVC_View {
 							Pen.fillRect(r3.insetBy(10,4));
 						};
 						if (value==1) {
-
 							Pen.smoothing_(false);
 							Pen.width_(1);
-																			Color(1,1,1,0.5).set;
-							Pen.fillRect(r3.insetBy(15,3).resizeBy(0,1));
+							Color(1,1,1,0.5).set;
+							Pen.fillRect(r3.insetBy(15,3).resizeBy(0,1).moveBy(0,-1));
 							Color(1,1,1).set;
-							Pen.strokeRect(r3.insetBy(14,3).resizeBy(-1,1));
+							Pen.strokeRect(r3.insetBy(14,3).resizeBy(-1,1).moveBy(0,-1));
 
 						};
 					};
@@ -125,13 +124,13 @@ MVC_PopUpMenu3 : MVC_View {
 					Pen.clip;
 
 					Pen.font_(font);
-
 					Pen.smoothing_(true);
+					Pen.fillColor_(colors[\string]);
 
 					if (((staticText ? (items[indexValue]) ? "").bounds(font).width)>(w-h)) {
-						Pen.stringLeftJustIn (staticText ? (items[indexValue]) ? "", r3);
+						Pen.stringLeftJustIn (staticText ? (items[indexValue]) ? "", r3.moveBy(0,1));
 					}{
-						Pen.stringCenteredIn (staticText ? (items[indexValue]) ? "", r3);
+						Pen.stringCenteredIn (staticText ? (items[indexValue]) ? "", r3.moveBy(0,1));
 					};
 				};
 
@@ -338,19 +337,16 @@ MVC_PopUpMenu3 : MVC_View {
 	}
 
 	addControls{
-		view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
-			if (modifiers==524576) { buttonNumber=1 };
-			if (modifiers==262401) { buttonNumber=2 };
-			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
+		view.mouseDownAction_{|me,x, y, mod, buttonNumber, clickCount|
 			if (editMode) {
 				lw=lh=nil;
 				startX=x;
 				startY=y;
 			}{
-				if (buttonNumber==2) {
-					this.toggleMIDIactive
-				}{
-					if (modifiers.isXCmd.not) {
+				if ((mod.isCtrl)||(buttonNumber==2)) {
+					this.toggleMIDIactive;
+				} {
+					if (mod.isXCmd.not) {
 						if ((menuWindow.notNil) and:{menuWindow.isOpen}) {
 							// do nothing, it will close on its own
 						}{

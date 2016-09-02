@@ -91,25 +91,25 @@ MVC_SmoothSlider : MVC_View {
 			toggle = false;
 			w = me.view.bounds.width;
 
-			if (modifiers.asBinaryDigits[4]==0) {  // if apple not pressed because of drag
+			if (modifiers.isCmd.not) {  // if apple not pressed because of drag
 				mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 				if (editMode||viewEditMode) {
 					lw=lh=nil;
 					startX=x;
 					startY=y;
 					if (verbose) {view.bounds.postln};
-					if (modifiers==524576) { buttonNumber = 1  };
+					if (modifiers.isCmd) { buttonNumber = 1  };
 					buttonPressed=buttonNumber;
 				}{
 					if (hasMIDIcontrol) {
 						if ((clickCount>1)&&doubleClickLearn){ toggle = true };
-						if (modifiers==262401) { toggle = true  };
-						if (buttonNumber>=1  ) { toggle = true  };
+						if (modifiers.isCtrl) { toggle = true  };
+						if (buttonNumber==2  ) { toggle = true  };
 						if (toggle) { this.toggleMIDIactive };
 					};
 
 					if (toggle.not) {
-						if (modifiers==524576) { buttonNumber = 1  };
+						if (modifiers.isCmd) { buttonNumber = 1  };
 						buttonPressed=buttonNumber;
 						x=x+l;
 						y=y+t-1;
@@ -142,7 +142,7 @@ MVC_SmoothSlider : MVC_View {
 			w = me.view.bounds.width;
 
 			if (editMode||viewEditMode) {
-				this.moveBy(x-startX,y-startY,buttonPressed.postln)
+				this.moveBy(x-startX,y-startY,buttonPressed)
 			}{
 				if (toggle.not) {
 					x=x+l;

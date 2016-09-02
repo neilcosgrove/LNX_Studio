@@ -152,14 +152,14 @@
 										\focus : Color(0,0,0,0)));
 
 		// all or 1 window
-		MVC_BinaryCircleView(models[\show1],mixerWindow,Rect(startX+55, 2, 20, 20))
+		MVC_BinaryCircleView(models[\show1],mixerWindow,Rect(startX+55, 3, 20, 20))
 			.strings_(["1","A"])
 			.font_(Font("Helvetica",14,true))
 			.colors_((\upOn:Color(0.9,0.7,0), \upOff:Color(0,0.6,0), \stringOn:Color.black,
 				\stringOff:Color.black, \downOn:Color(0.5,0.5,0), \downOff:Color(0,0.2,0)));
 
 		// close all inst
-		MVC_BinaryCircleView(models[\showNone],mixerWindow,Rect(startX+22+55, 2, 20, 20),"X")
+		MVC_BinaryCircleView(models[\showNone],mixerWindow,Rect(startX+22+55, 3, 20, 20),"X")
 			.font_(Font("Helvetica",14,true))
 			.colors_((\upOn:Color(0.9,0.075,0.075),\upOff:Color(0.8,0.15,0.15),
 			\stringOn:Color.black, \stringOff:Color(0.6,0.15,0.15),
@@ -173,8 +173,8 @@
 			.color_(\background,Color(46/77,46/79,72/145)/2);
 
 		// tempo (bpm)
-		MVC_NumberBox(models[\tempo],mixerWindow, Rect(startX+90+55, 4, 38, 17))
-			.rounded_(false)
+		MVC_NumberBox(models[\tempo],mixerWindow, Rect(startX+90+55, 5, 38, 16))
+			.rounded_(true)
 			.visualRound_(0.1)
 			.font_(Font("Helvetica", 11))
 			.color_(\focus,Color.grey(alpha:0))
@@ -256,7 +256,7 @@
 
 		// server on/off view
 		mixerGUI[\serverGUI]=MVC_FlatButton2(models[\serverRunning],mixerWindow,
-								Rect(571+midSpace+66, 3, 26, 19))
+								Rect(571+midSpace+66, 4, 26, 19))
 			.resize_(3)
 			.font_(Font("Helvetica",11,true))
 			.color_(\off,Color.black)
@@ -284,9 +284,9 @@
 
 		gui[\multiTheme ]=(\font_:Font("Helvetica",12,true),
 			\states_ : [
-				["S"   ,Color(1, 0,   0)/1.15   ,Color.black,Color.grey/3,Color.grey/2],
-				["M"    ,Color(1, 0.5, 0)/1.15,Color.black,Color.grey/2,Color.grey/3],
-				["F"   ,Color(0.5, 1,  0)/1.15,Color.black,Color.grey/4,Color.grey/2]]);
+				["S"   ,Color(1, 0,   0)/1.15 ,Color.black,Color.grey/3,Color.grey/2],
+				["M"   ,Color(1, 0.5, 0)/1.15 ,Color.black,Color.grey/2,Color.grey/3],
+				["F"   ,Color(0.5, 1, 0)/1.15 ,Color.black,Color.grey/4,Color.grey/2]]);
 
 
 		MVC_MultiOnOffView(models[\fadeSpeed], mixerWindow,Rect(704+66+midSpace,4,19,19),gui[\multiTheme ])
@@ -569,7 +569,7 @@
 		y = (i*70);
 
 		mixerGUI[id][\scrollViewPOP] = MVC_CompositeView(mixerGUI[\presetTab],
-									Rect(y,0,70,21*20+30), hasBorder:false);
+									Rect(y,0,72,21*20+30), hasBorder:false);
 
 		sv=mixerGUI[id][\scrollViewPOP];
 
@@ -1081,7 +1081,7 @@
 
 				// MIDI icon
 				mixerGUI[id][\midi]=MVC_OnOffView(inst.onOffModel,sv,
-											Rect(151,3,83,16))
+											Rect(151,3,84,16))
 					.permanentStrings_(["MIDI"])
 					.canFocus_(false)
 					.color_(\on, Color(0.2,0.3,0.5))
@@ -1371,20 +1371,6 @@
 				.value_(noInternalBuses)
 				.font_(Font("Arial", 10));
 
-			// MacOS MIDI Fix
-			MVC_OnOffView(scrollView,Rect(311, 386, 72, 19), "MIDI Fix",
-								( \font_		: Font("Helvetica", 11),
-								 \colors_     : (\on : Color.orange+0.25,
-						 					   \off : Color.grey/2)))
-				.value_(("midiBugFix".loadPref ? [false])[0].isTrue.asInt)
-				.label_("MacOS")
-				.orientation_(\horiz)
-				.labelShadow_(false)
-				.color_(\label,Color.black)
-				.action_{|me|
-					[me.value.isTrue].savePref("midiBugFix");
-				};
-
 			// scan for new midi equipment
 			MVC_FlatButton(scrollView,Rect(240 ,415, 70, 20),"Scan MIDI",gui[\buttonTheme])
 				.canFocus_(false)
@@ -1429,20 +1415,32 @@
 			.string_("Any unsaved information\n will be lost");
 
 		// Ok
-		MVC_OnOffView(gui[\scrollView],Rect(110, 78, 50, 20),"Ok")
+		gui[\ok] = MVC_OnOffView(gui[\scrollView],Rect(110, 78, 50, 20),"Ok")
 			.rounded_(true)
-			.color_(\on,Color(1,1,1,0.5))
-			.color_(\off,Color(1,1,1,0.5))
+			.canFocus_(true)
+			.color_(\on,Color(0.88,0.88,0.88))
+			.color_(\off,Color(0.88,0.88,0.88))
 			.action_{
 				gui[\window].close;
 				this.doQuit;
-		};
+			};
+
+		{
+			//.focusColor_(Color(0.5,0.5,1))
+			gui[\ok].view.canFocus_(true).focus.keyUpAction_{|me,char,mod,uni,keycode,key|
+				[me,char,mod,uni,keycode,key].postln;
+				// return
+				if (key==16777220) { gui[\ok].down_(true); {this.doQuit}.defer(0.25) };
+				// escape
+				if (key==16777216) { gui[\cancel].down_(true); {gui[\window].close}.defer(0.25) };
+			};
+		}.defer(0.5);
 
 		// Cancel
-		MVC_OnOffView(gui[\scrollView],Rect(53, 78, 50, 20),"Cancel")
+		gui[\cancel] = MVC_OnOffView(gui[\scrollView],Rect(53, 78, 50, 20),"Cancel")
 			.rounded_(true)
-			.color_(\on,Color(1,1,1,0.5))
-			.color_(\off,Color(1,1,1,0.5))
+			.color_(\on,Color(0.88,0.88,0.88))
+			.color_(\off,Color(0.88,0.88,0.88))
 			.action_{ gui[\window].close };
 	}
 

@@ -225,14 +225,15 @@ MVC_OnOffView : MVC_View {
 						if (down) {
 							Pen.width_(1.5);
 							Pen.smoothing_(true);
-																			Color(0,0,0,0.4).set;
+							Color(0,0,0,0.4).set;
 							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
 							Pen.stroke;
 
 							Color(1,1,1,0.2).set;
 							Pen.roundedRect( Rect(1,1,w-3,h-3),5 );
 							Pen.stroke;
-						}{													Pen.width_(1.5);
+						}{
+							Pen.width_(1.5);
 							Pen.smoothing_(true);
 							Color(1,1,1,0.4).set;
 							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
@@ -265,7 +266,7 @@ MVC_OnOffView : MVC_View {
 							Pen.fillRect(Rect(0,0+hAdjust,w,h-hAdjust));
 
 							colors[\border].set;
-							Pen.strokeRect(Rect(0,1,w-1,h-1));
+							Pen.strokeRect(Rect(0,0,w-1,h-1));
 						}{
 
 							Pen.fillRect(Rect(1,1+hAdjust,w- 2,h- 2-hAdjust));

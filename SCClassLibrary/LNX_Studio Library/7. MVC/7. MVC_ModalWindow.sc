@@ -28,6 +28,7 @@ MVC_ModalWindow{
 
 		// the window   w = 195   h = 90
 		window = ModalSheet(parent, pointSize)
+			.alwaysOnTop_(true)
 			.onClose_{ onClose.value };
 		window.view.background_(colors[\border1]);
 
