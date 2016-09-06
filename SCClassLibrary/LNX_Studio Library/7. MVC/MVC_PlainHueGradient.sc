@@ -35,6 +35,4 @@ MVC_PlainHueGradient : MVC_View {
 			};
 	}
 
-
-
 }

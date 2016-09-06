@@ -564,9 +564,9 @@
 
 		if (modifiers==131330)  { buttonNumber=1 };
 		if (modifiers==8388864) { buttonNumber=1 };
-		if (modifiers==262401)  { buttonNumber=1 };
-		if (modifiers==524576)  { buttonNumber=1 };
-		//if (modifiers==524576) { buttonNumber=2  }; // i've changed alt to button 2 here
+		if (modifiers.isCtrl)  { buttonNumber=1 };
+		if (modifiers.isAlt)  { buttonNumber=1 };
+		//if (modifiers.isAlt) { buttonNumber=2  }; // i've changed alt to button 2 here
 
 		buttonPressed=buttonNumber;
 
@@ -901,8 +901,8 @@
 
 			var bounds,w,h,vox,xos, p;
 
-			if (modifiers==524576) { buttonNumber=1  };
-			if (modifiers==262401) { buttonNumber=2  };
+			if (modifiers.isAlt) { buttonNumber=1  };
+			if (modifiers.isCtrl) { buttonNumber=2  };
 			velButtonPressed=buttonNumber;
 
 			bounds = me.bounds;

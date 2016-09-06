@@ -700,7 +700,6 @@ MVC_StepSequencer {
 			.refreshZeros_(false)
 			.views_(seqViews);
 
-
 		// move <->
 		MVC_UserView(window,Rect(w+9,t+86-90,35,20))
 			.drawFunc_{|me|
@@ -743,129 +742,6 @@ MVC_StepSequencer {
 
 
 ////////////////
-
-// oct
-
-
-	// new pin style
-
-	createOctaveWidgets{|window, bounds, colors, controls=true|
-
-		var seqViews;
-		var l,t,w,h, sw, os, rh, ph; // slider width, offset (left), ruler height, position height
-
-		colors = colors ? ( \background:Color(0,0,0,0.8), \on:Color(61/128,47/95,43/75),
-							\border:Color(0.5,0.66,1,1), \string:Color.white,
-							\rulerOn: Color.white, \rulerBackground : Color (1,1,1,0.4),
-							\position : Color.white, \pinOn : Color.green  );
-
-		l=bounds.left;
-		t=bounds.top;
-		w=bounds.width;
-		h=bounds.height;
-		os=60;
-		rh=10;
-		sw=((w-80)-os/steps).asInt;
-
-		ph=4;
-
-		seqViews = nil ! steps;
-
-		gui[\theme2]=(	\orientation_  : \horizontal,
-						\resoultion_	 : 1,
-						\font_		 : Font("Helvetica",10),
-						\labelFont_	 : Font("Helvetica",10),
-						\showNumberBox_: false,
-						\colors_       : (	\label : Color.white,
-										\background : Color(0.1,0.1,0.1,0.67),
-										\backgroundDown : Color(0.1,0.1,0.1,0.85),
-										\string : colors[\string],
-										\focus : Color(0,0,0,0)));
-
-		nameWidget = MVC_StaticText(nameModel, window, Rect(l-2-5,t+(h/2)-15,os-8+8+5,20))
-			.font_(Font("Arial", 12))
-			.color_(\stringDown,Color.black)
-			.shadowDown_(false)
-			.action_{ nameClickAction.value(this) };
-
-		// step sliders
-		steps.do{|x|
-			var c,col,col2;
-			c=(x%(sP[4])).map(0,sP[4],1,0.5);
-			col=colors[\on];
-			col2=colors[\border];
-			seqViews[x]=MVC_OctSeqView(window, seqModels[x],Rect(l+os+(x*sw),t,sw,h))
-				.left_(x%4!=0)
-				.right_(x+1%4!=0)
-				.color_(\background,colors[\background])
-				.color_(\on,colors[\pinOn]??{Color.green})
-				.seqItems_(seqViews);
-		};
-
-
-		// this isn't very efficient
-
-		// pos adaptor for last value
-		gui[\buttonPosFuncAdaptor]=MVC_FuncAdaptor(spModels[4])
-			.func_{|me,val|
-				{
-					if (lastCCvalue.notNil) {
-						steps.do{|x|
-							seqViews[x].lastValue_(lastCCvalue);
-
-						};
-					};
-				}.defer;
-			};
-
-
-		// pos ColorAdaptor
-		gui[\posColorAdaptor]=MVC_ColorAdaptor(models[\pos])
-			.views_(seqViews)
-			.colorIndex_(\background)
-			.color_(\on,Color.white-0.2)
-			.valueDo_(models[\pos].value); // this shoud be in adaptor
-
-
-		// 4.ruler as a MVC_FuncAdaptor to format pins to model
-		gui[\buttonStepsFuncAdaptor]=MVC_FuncAdaptor(spModels[4])
-			.func_{|me,val|
-				{
-					steps.do{|x|
-	//					var c,col;
-	//
-	//					c=((x)%val).map(0,val,1,0.4);
-	//					col=Color.green;
-	//					seqViews[x]
-	//						.color_(\on,Color(col.red*c,col.green*c,col.blue*c));
-	//
-	//
-						seqViews[x].left_(x%val!=0).right_(x+1%val!=0);
-
-					};
-					seqViews.last.right_(false);
-					seqViews.do(_.refresh);
-				}.defer;
-			};
-
-
-		if (controls) {
-
-			// 4.ruler
-			MVC_NumberCircle(spModels[4], window,
-				Rect(l+os+(steps*sw)+6,t+(h/2)-15,18,18),gui[\theme2]);
-
-			//3.steps
-			MVC_NumberCircle(spModels[3], window,
-				Rect(l+os+(steps*sw)+6+20+20,t+(h/2)-15,18,18),gui[\theme2]);
-
-			// 6.speed
-			MVC_NumberCircle(spModels[6], window,
-				Rect(l+os+(steps*sw)+6+20,t+(h/2)-15,18,18),gui[\theme2]);
-
-		}
-
-	}
 
 	// round style
 
@@ -930,20 +806,10 @@ MVC_StepSequencer {
 				.seqItems_(seqViews);
 		};
 
-
-
 		// pos Hilite Adaptor
 		gui[\posHiliteAdaptor]=MVC_HiliteAdaptor(models[\pos])
 			.refreshZeros_(false)
 			.views_(seqViews);
-
-//		// pos
-//	  	MVC_PosView(models[\pos], window, Rect(l+os, t+h-ph-3, steps*sw, ph))
-//			.color_(\on,colors[\slider])
-//			.type_(\circle)
-//			.buttonWidth_(sw)
-//			.color_(\background,Color(0,0,0,0));
-
 
 		// 4.ruler as a MVC_FuncAdaptor to format slider colors to model
 		gui[\sliderRulerFuncAdaptor]=MVC_FuncAdaptor(spModels[4])
@@ -980,9 +846,7 @@ MVC_StepSequencer {
 
 		};
 
-
 	}
-
 
 	// used for notes in bumnote2
 

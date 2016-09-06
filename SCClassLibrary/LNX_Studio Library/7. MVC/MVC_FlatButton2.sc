@@ -17,7 +17,6 @@ MVC_FlatButton2 : MVC_View {
 	var flashState = 1, flashTask, lastFlashTime, <>flashTime = 0.33, <>flashDuration = inf;
 	var down=false, clickCount;
 
-
 	flash{
 		if (flashTask.isNil) {
 			flashState = 1;
@@ -47,7 +46,6 @@ MVC_FlatButton2 : MVC_View {
 		flashTask = nil;
 		{this.refresh}.defer;
 	}
-
 
 	// set your defaults
 	initView{
@@ -95,7 +93,9 @@ MVC_FlatButton2 : MVC_View {
 						Pen.lineTo(2@2);
 						Pen.fill;
 
-						if (value==1) {Pen.fillColor_(colors[\on]/1.5)}{Pen.fillColor_(colors[\off]/1.5)};
+						if (value==1) {
+							Pen.fillColor_(colors[\on]/1.5)}{Pen.fillColor_(colors[\off]/1.5)
+						};
 					}{
 						Color(1,1,1,0.2).set;
 						Pen.fillRect(Rect(1,1,w-3,1));
@@ -111,7 +111,11 @@ MVC_FlatButton2 : MVC_View {
 						Pen.lineTo(2@2);
 						Pen.fill;
 
-						if (value==1) {Pen.fillColor_(colors[\on]*flashState)} {Pen.fillColor_(colors[\off]*flashState)};
+						if (value==1) {
+							Pen.fillColor_(colors[\on]*flashState)
+						}{
+							Pen.fillColor_(colors[\off]*flashState)
+						};
 					};
 
 						if (down) {
@@ -126,7 +130,6 @@ MVC_FlatButton2 : MVC_View {
 						}{
 							Pen.stringCenteredIn(strings[0],Rect(0,1,w,h));
 						};
-
 
 				}; // end.pen
 
@@ -144,8 +147,8 @@ MVC_FlatButton2 : MVC_View {
 				}{
 					buttonPressed=buttonNumber;
 					evaluateAction=true;
-					if (modifiers==524576) { buttonPressed=1 };
-					if (modifiers==262401) {buttonNumber=2};
+					if (modifiers.isAlt)  { buttonPressed=1 };
+					if (modifiers.isCtrl) { buttonNumber =2 };
 					if (buttonNumber==2) {
 						this.toggleMIDIactive
 					}{

@@ -3,13 +3,12 @@
 
 MVC_ImageView : MVC_View {
 
-	classvar gs, lnx;
+	classvar lnx;
 
 	var <image="lnx.jpg", scimage;
 
 	*initClass{
 		lnx = Image.open(Platform.lnxResourceDir +/+ "lnx.png");
-		// gs = SCImage.open(String.scDir +/+ "GS Rhythm.jpg");
 	}
 
 	// set your defaults
@@ -38,15 +37,15 @@ MVC_ImageView : MVC_View {
 
 	imagePath_{|filename|
 		image=filename;
-		scimage=SCImage.new(image);
+		scimage=Image.open(image);
 		if (view.notClosed) {view.refresh}
 	}
 
 	// add the controls
 	addControls{
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
-			if (modifiers==524576) { buttonNumber=1 };
-			if (modifiers==262401) { buttonNumber=2 };
+			if (modifiers.isAlt)  { buttonNumber=1 };
+			if (modifiers.isCtrl) { buttonNumber=2 };
 			buttonPressed=buttonNumber;
 			if (modifiers.asBinaryDigits[4]==0) { // check apple not pressed because of drag
 				if (editMode) {

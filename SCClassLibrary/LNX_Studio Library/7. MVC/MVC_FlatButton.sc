@@ -40,7 +40,6 @@ MVC_FlatButton : MVC_View {
 						}{
 							col=colors[\disabled];
 						};
-
 					};
 
 					if (rounded) {
@@ -53,28 +52,24 @@ MVC_FlatButton : MVC_View {
 						if (down) {
 							Pen.width_(1.5);
 							Pen.smoothing_(true);
-																			Color(0,0,0,0.5).set;
+							Color(0,0,0,0.5).set;
 							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
 							Pen.stroke;
-
 							Color(1,1,1,0.3).set;
 							Pen.roundedRect( Rect(1,1,w-3,h-3),5 );
 							Pen.stroke;
-						}{													Pen.width_(1.5);
+						}{
+							Pen.width_(1.5);
 							Pen.smoothing_(true);
 							Color(1,1,1,0.5).set;
 							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
 							Pen.stroke;
-//							Pen.roundedRect( Rect(3,3,w-4,h-4),5 );
-//							Pen.stroke;
 						};
 						Pen.width_(1.5);
 						Pen.smoothing_(true);
 						colors[\background].set;
 						Pen.roundedRect( Rect(1,1,w-2,h-2),5 );
 						Pen.stroke;
-//						Pen.roundedRect( Rect(1,1,w-2,h-2),5 );
-//						Pen.stroke;
 					}{
 
 						colors[\background].set;
@@ -101,13 +96,11 @@ MVC_FlatButton : MVC_View {
 						{mode===nil}{
 							Pen.smoothing_(true);
 							Pen.font_(font);
-
 							if (shadow) {
 								Pen.fillColor_(Color.black);
 								Pen.stringCenteredIn(strings[value.asInt.wrap(0,strings.size-1)],
 									Rect(1,2,w,h));
 							};
-
 							if (down) {
 								Pen.fillColor_(colors[\string]*0.75);
 							}{
@@ -125,15 +118,12 @@ MVC_FlatButton : MVC_View {
 								colors[\string].set;
 							};
 							Pen.smoothing_(true);
-
 							if (value>=0.5) {
 								DrawIcon.symbolArgs(strings|@|1, Rect(0,0,w,h).insetBy(insetBy,insetBy));
 							}{
 								DrawIcon.symbolArgs(strings|@|0, Rect(0,0,w,h).insetBy(insetBy,insetBy));
 							};
-
 						}
-
 				}; // end.pen
 			};
 	}
@@ -144,8 +134,8 @@ MVC_FlatButton : MVC_View {
 		// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			MVC_LazyRefresh.mouseDown;
 
-			if (modifiers==524576) { buttonNumber=1 };
-			if (modifiers==262401) { buttonNumber=2 };
+			if (modifiers.isAlt ) { buttonNumber=1 };
+			if (modifiers.isCtrl) { buttonNumber=2 };
 			buttonPressed=buttonNumber;
 
 			clicks=clickCount;
@@ -154,12 +144,7 @@ MVC_FlatButton : MVC_View {
 				if (editMode) {
 					lw=lh=nil; startX=x; startY=y; view.bounds.postln; // for moving
 				}{
-					//buttonPressed=buttonNumber;
 					evaluateAction=true;
-					//if (modifiers==524576) { buttonPressed=1 };
-					//if (modifiers==262401) { buttonNumber=2 };
-					//buttonPressed=buttonNumber;
-
 					if (buttonNumber==2) {
 						this.toggleMIDIactive
 					}{

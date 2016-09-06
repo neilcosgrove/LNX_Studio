@@ -68,35 +68,37 @@ MVC_BinaryCircleView : MVC_View {
 				startX=x;
 				startY=y;
 				view.bounds.postln;
-			};
-
-			buttonPressed=buttonNumber;
-			evaluateAction=true;
-			if (modifiers==524576) { buttonPressed=1 };
-			if (modifiers==262401) {buttonNumber=2};
-			if (buttonNumber==2) {
-				this.toggleMIDIactive
 			}{
-				down=true;
-				me.refresh;
-			};
+				buttonPressed=buttonNumber;
+				evaluateAction=true;
+				if (modifiers.isAlt ) { buttonPressed = 1 };
+				if (modifiers.isCtrl) { buttonNumber  = 2 };
+				if (buttonNumber==2) {
+					this.toggleMIDIactive
+				}{
+					down=true;
+					me.refresh;
+				};
+			}
 		};
 
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
-			if (editMode) { this.moveBy(x-startX,y-startY) };
-			if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}and:{evaluateAction}) {
-				if (down.not) {
-					down=true;
-					me.refresh;
-				}
+			if (editMode) {
+				this.moveBy(x-startX,y-startY)
 			}{
-				if (down) {
-					down=false;
-					me.refresh;
-				}
-			};
-
+				if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}and:{evaluateAction}) {
+					if (down.not) {
+						down=true;
+						me.refresh;
+					}
+				}{
+					if (down) {
+						down=false;
+						me.refresh;
+					}
+				};
+			}
 		};
 
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|

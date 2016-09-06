@@ -1430,7 +1430,7 @@
 			gui[\ok].view.canFocus_(true).focus.keyUpAction_{|me,char,mod,uni,keycode,key|
 				[me,char,mod,uni,keycode,key].postln;
 				// return
-				if (key==16777220) { gui[\ok].down_(true); {this.doQuit}.defer(0.25) };
+				if (key==16777220) { gui[\ok].down_(true); this.doQuit };
 				// escape
 				if (key==16777216) { gui[\cancel].down_(true); {gui[\window].close}.defer(0.25) };
 			};

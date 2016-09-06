@@ -83,8 +83,8 @@ MVC_PipeLampView : MVC_View {
 			if (editMode) {lw=lh=nil; startX=x; startY=y; view.bounds.postln }; // for moving
 			buttonPressed=buttonNumber;
 			evaluateAction=true;
-			if (modifiers==524576) { buttonPressed=1 };
-			if (modifiers==262401) {buttonNumber=2};
+			if (modifiers.isAlt ) { buttonPressed=1 };
+			if (modifiers.isCtrl) { buttonNumber =2 };
 			if (buttonNumber==2) { this.toggleMIDIactive };
 			if ((buttonPressed==0)and:{editMode.not}) {
 				if (mouseWorks) {
@@ -94,14 +94,11 @@ MVC_PipeLampView : MVC_View {
 			};
 		};
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
-
 			var xx=x/w, yy=y/h;
-
 			if (editMode) {
 				this.moveBy(x-startX,y-startY)
 			}{
 				if (mouseWorks) {
-
 					if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}and:{evaluateAction}) {
 						if (down.not) {
 							down=true;

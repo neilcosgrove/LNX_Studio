@@ -11,7 +11,7 @@ MVC_DialogView : MVC_View {
 	initView{
 		colors=colors++(
 			'background'	: Color(0.05,0.05,0.1),
-			'string'     	: Color(0.5, 0.5, 1, 1)
+			'string'     	: Color(1,1,1)
 		);
 		canFocus=false;
 		if (string.isNil) {string=""};
@@ -22,7 +22,7 @@ MVC_DialogView : MVC_View {
 
 	// make the view
 	createView{
-		view=TextView.new(window,rect)
+		view=TextView(window,rect)
 			.string_(string)
 			.editable_(false)
 			.font_ (font)

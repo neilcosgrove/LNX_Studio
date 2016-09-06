@@ -54,14 +54,14 @@ MVC_ListView : MVC_View {
 	color_{|key,color|
 		if (colors.includesKey(key).not) {^this}; // drop out
 		colors[key]=color;
-		if (key=='focus'      ) { {if (view.notClosed) { view.focusColor_(color) } }.defer };		if (key=='hilite'     ) { {if (view.notClosed) { view.hiliteColor_ (color) } }.defer };
+		if (key=='focus') { {if (view.notClosed) { view.focusColor_(color) } }.defer };
+		if (key=='hilite'     ) { {if (view.notClosed) { view.hiliteColor_ (color) } }.defer };
 		if (key=='background' ) { {if (view.notClosed) { view.background_(color) } }.defer };
-		if (key=='string' ) { {if (view.notClosed) { view.stringColor_(color) } }.defer };		if (key=='selectedString' ) { {if (view.notClosed) {
-										view.selectedStringColor_(color) } }.defer };
-
+		if (key=='string' ) { {if (view.notClosed) { view.stringColor_(color) } }.defer };
+		if (key=='selectedString' ) {
+			{if (view.notClosed) {view.selectedStringColor_(color) } }.defer };
 		if (key=='label') { {labelGUI.do(_.refresh)}.defer };
 	}
-
 
 	autoSize{
 		if (view.notClosed) {
@@ -106,8 +106,8 @@ MVC_ListView : MVC_View {
 			this.showItem;
 		};
 		view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
-			if (modifiers==524576) { buttonNumber=1 };
-			if (modifiers==262401) { buttonNumber=2 };
+			if (modifiers.isAlt ) { buttonNumber=1 };
+			if (modifiers.isCtrl) { buttonNumber=2 };
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			if (editMode) {
 				lw=lh=nil;

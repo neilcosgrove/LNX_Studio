@@ -96,14 +96,18 @@ MVC_MultiOnOffView : MVC_View {
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			MVC_LazyRefresh.mouseDown;
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-			if (editMode) { lw=lh=nil; startX=x; startY=y; view.bounds.postln }; // for moving
-			buttonPressed=buttonNumber;
-			evaluateAction=true;
-			if (modifiers==524576) { buttonPressed=1 };
-			if (modifiers==262401) {buttonNumber=2};
-			if (buttonNumber==2) { this.toggleMIDIactive };
-			down=true;
-			this.refresh;
+			if (editMode) {
+				lw=lh=nil; startX=x; startY=y; view.bounds.postln; // for moving
+
+			}{
+				buttonPressed=buttonNumber;
+				evaluateAction=true;
+				if (modifiers.isAlt ) { buttonPressed=1 };
+				if (modifiers.isCtrl) { buttonNumber =2 };
+				if (buttonNumber==2) { this.toggleMIDIactive };
+				down=true;
+				this.refresh;
+			}
 		};
 
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|

@@ -16,6 +16,8 @@ w.create;
 // LNX_MyPopUpMenu
 // also supports mapping and unmapping for the MVC_AudioOutSpec control spec
 
+// I might try out the new menus at some point...
+
 MVC_PopUpMenu3 : MVC_View {
 
 	var indexValue=0, <>menuFont, <>style=0, <>staticText, <>showTick=true, <down=false,
@@ -211,7 +213,6 @@ MVC_PopUpMenu3 : MVC_View {
 
 					Color(0.8,0.8,0.8).set;
 					Pen.fillRect(Rect(0,0,w+2,h*(items.size)+1));
-
 
 					if ((selected.notNil)and:{items[selected]!="-"}){
 						Pen.use{

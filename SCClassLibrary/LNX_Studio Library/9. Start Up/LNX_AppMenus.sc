@@ -153,9 +153,9 @@ LNX_AppMenus {
 
 			//  windows menu
 			Menu(
-				Action("Minimise",					{ MVC_Window.frontWindow.minimize }).shortcut_("Ctrl+M"),
-				Action("Arrange",					{}),
-				Action("Close Window",				{ MVC_Window.frontWindow.guiClose }),
+				Action("Minimise",			{ MVC_Window.frontWindow.minimize }).shortcut_("Ctrl+M"),
+				Action("Arrange",			{}),
+				Action("Close Window",		{ MVC_Window.frontWindow.guiClose }),
 			).title_("Windows"),
 
 			//  help menu

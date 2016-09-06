@@ -1,12 +1,14 @@
 
-// LNX_MyPopUpMenu 
-// also supports mapping and unmapping for the MVC_AudioOutSpec control spec 
+// LNX_MyPopUpMenu
+// also supports mapping and unmapping for the MVC_AudioOutSpec control spec
+
+// only used in App Menus for xPlat support. To be removed with new standalone menu system.
 
 MVC_PopUpMenu2 : MVC_View {
 
 	var <revert=false;
 
-	revert_{|val| revert = val } 
+	revert_{|val| revert = val }
 
 	initView{
 		colors=colors++(
@@ -17,14 +19,14 @@ MVC_PopUpMenu2 : MVC_View {
 		canFocus=true;
 		items=items ? [""];
 	}
-	
+
 	items_{|array|
 		items=array.collect{|item| item.replace("(","") }
 		           .collect{|item| (item=="-").if("",item) };
 
 	}
-	
-		// create the gui's items that make this MVC_View
+
+	// create the gui's items that make this MVC_View
 	create{|argWindow, override=false|
 		if (override or: { view.isClosed }) {
 			if (argWindow.notNil) { window = argWindow };
@@ -32,7 +34,7 @@ MVC_PopUpMenu2 : MVC_View {
 			// DOES this happen any more? >> also makes sure the view overlaps number
 			if ((numberFunc.notNil) and:{showNumberBox}) { this.createNumberGUI };
 			this.createView;
-			
+
 			this.addControls;
 			this.createLabel;
 			this.dragControls;
@@ -41,25 +43,25 @@ MVC_PopUpMenu2 : MVC_View {
 			"View already exists.".warn;
 		}
 	}
-	
-	
+
+
 	createView{
-			
+
 		view = PopUpMenu(window,rect,true);
-		
+
 		view.items_(items)
 			.visible_(visible);
-			
+
 		// @TODO: needed? does not exist in Qt
 		// view.initAction("doAction:");
-	
+
 	}
 
 	addControls{
 		var val;
 		view.action_{|me|
 			val=items.indexOfString(me.item)-1;
-			
+
 			if (controlSpec.isKindOf(MVC_AudioOutSpec)) {
 				this.viewValueAction_(controlSpec.unmap2(val),nil,true,false);
 			}{
@@ -71,9 +73,9 @@ MVC_PopUpMenu2 : MVC_View {
 		};
 
 	}
-	
+
 	dragControls{}
-	
+
 	// make the view cyan / magenta for midiLearn active
 	midiLearn_{|bool|
 		midiLearn=bool;
@@ -83,7 +85,7 @@ MVC_PopUpMenu2 : MVC_View {
 //		};
 		labelGUI.do(_.refresh);
 	}
-	
+
 	// set the font
 	font_{|argFont|
 		font=argFont;
@@ -97,7 +99,7 @@ MVC_PopUpMenu2 : MVC_View {
 //		if (key=='focus'      ) { {if (view.notClosed) { view.focusColor_(color ) } }.defer };		if (key=='string'     ) { {if (view.notClosed) { view.stringColor_(color) } }.defer };
 //		if (key=='background' ) { {if (view.notClosed) { view.background_(color ) } }.defer };
 	}
-	
+
 
 	// deactivate midi learn from this item
 	deactivate{
@@ -107,8 +109,8 @@ MVC_PopUpMenu2 : MVC_View {
 		};
 		labelGUI.do(_.refresh);
 	}
-		
-	// item is enabled	
+
+	// item is enabled
 	enabled_{|bool|
 		if (enabled!=bool) {
 			enabled=bool;
@@ -121,7 +123,7 @@ MVC_PopUpMenu2 : MVC_View {
 			}.defer;
 		}
 	}
-	
+
 	// normally called from model
 	value_{|val|
 //		if (items.notNil) {
@@ -138,8 +140,8 @@ MVC_PopUpMenu2 : MVC_View {
 //			value=val;
 //			this.refreshValue;
 //		};
-	}	
-	
+	}
+
 	// fresh the menu value
 	refreshValue{
 //		if (view.notClosed) {
@@ -151,7 +153,7 @@ MVC_PopUpMenu2 : MVC_View {
 //			}
 //		}
 	}
-	
+
 	// unlike SCView there is no refresh needed
 	refresh{}
 

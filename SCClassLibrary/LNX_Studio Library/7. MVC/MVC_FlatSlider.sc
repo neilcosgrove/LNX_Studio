@@ -101,7 +101,7 @@ MVC_FlatSlider : MVC_View {
 			var val, toggle = false;
 			MVC_LazyRefresh.mouseDown;
 			if (locked.not) {
-				if (modifiers==524576) { buttonNumber=1  };
+				if (modifiers.isAlt) { buttonNumber=1  };
 
 				buttonPressed=buttonNumber;
 				mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
@@ -115,8 +115,8 @@ MVC_FlatSlider : MVC_View {
 						x=x+l;
 						y=y+t-1;
 						evaluateAction=true;
-						if (modifiers==524576) { buttonNumber=1  };
-						if (modifiers==262401) {buttonNumber=2};
+						if (modifiers.isAlt) { buttonNumber=1  };
+						if (modifiers.isCtrl) {buttonNumber=2};
 						buttonPressed=buttonNumber;
 						if (buttonPressed==1) {
 							seqItems.do({|i,j|
@@ -128,7 +128,7 @@ MVC_FlatSlider : MVC_View {
 
 						if (hasMIDIcontrol) {
 							if ((clickCount>1)&&doubleClickLearn){ toggle = true };
-							if (modifiers==262401) { toggle = true  };
+							if (modifiers.isCtrl) { toggle = true  };
 							if (buttonNumber>=1  ) { toggle = true  };
 						};
 

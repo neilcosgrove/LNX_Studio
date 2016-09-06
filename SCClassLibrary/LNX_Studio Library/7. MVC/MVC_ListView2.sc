@@ -167,43 +167,41 @@ MVC_ListView2 : MVC_View {
 		var val, val2, clickCounts;
 
 		view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
-
 			var updateValue=true;
 
 			clickCounts=clickCount;
+			if (modifiers.isAlt ) { buttonNumber=1 };
+			if (modifiers.isCtrl) { buttonNumber=2 };
 
-			if (modifiers==524576) { buttonNumber=1 };
-			if (modifiers==262401) { buttonNumber=2 };
-		// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			if (editMode) {
 				lw=lh=nil;
 				startX=x;
 				startY=y;
 				scrollView.bounds.postln;
 				updateValue=false;
-			};
+			}{
 
-			if (buttonNumber==2) { this.toggleMIDIactive; updateValue=false; };
+				if (buttonNumber==2) { this.toggleMIDIactive; updateValue=false; };
 
-			if (clickCount==2) {
-				this.valueActions(\doubleClickAction, this);
-				if (model.notNil) { model.valueActions(\doubleClickAction,this) };
-				updateValue=false;
-			};
+				if (clickCount==2) {
+					this.valueActions(\doubleClickAction, this);
+					if (model.notNil) { model.valueActions(\doubleClickAction,this) };
+					updateValue=false;
+				};
 
-			if (clickCount==3) {
-				this.valueActions(\tripleClickAction, this);
-				if (model.notNil) { model.valueActions(\tripleClickAction,this) };
-				updateValue=false;
-			};
+				if (clickCount==3) {
+					this.valueActions(\tripleClickAction, this);
+					if (model.notNil) { model.valueActions(\tripleClickAction,this) };
+					updateValue=false;
+				};
 
-			if (updateValue) {
-				this.valueAction_(y.div(fontHeight).clip(0,items.size-1));
-			};
+				if (updateValue) {
+					this.valueAction_(y.div(fontHeight).clip(0,items.size-1));
+				};
 
-			this.valueActions(\anyClickAction, this, clickCount);
-			if (model.notNil) { model.valueActions(\anyClickAction,this, clickCount) };
-
+				this.valueActions(\anyClickAction, this, clickCount);
+				if (model.notNil) { model.valueActions(\anyClickAction,this, clickCount) };
+			}
 		};
 		view.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			if (editMode) { this.moveBy(x-startX,y-startY) };
@@ -229,9 +227,10 @@ MVC_ListView2 : MVC_View {
 		};
 
 		// @TODO: new Qt "key" codes
+		// nothing lets this view has focus so no key actions used at the moment
 		view.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 			var index;
-			//[me, char, modifiers, unicode].postln;
+			[me, char, modifiers, unicode, keycode, key].postln;
 
 			// delete
 			if (unicode==127)  {
@@ -262,14 +261,17 @@ MVC_ListView2 : MVC_View {
 				this.specialActions(\enterKeyAction, this);
 				//if (model.notNil) { model.valueActions(\enterKeyAction, this) };
 			});
+			// up arrow
 			if (unicode == 16rF700, {
 				this.valueAction =  (this.value.asInt - 1).wrap(0,items.size-1)
 
 			});
+			// down arrow
 			if (unicode == 16rF703, {
 				this.valueAction =  (this.value.asInt + 1).wrap(0,items.size-1)
 
 			});
+			// ?
 			if (unicode == 16rF701, {
 				this.valueAction =  (this.value.asInt + 1).wrap(0,items.size-1)
 			});

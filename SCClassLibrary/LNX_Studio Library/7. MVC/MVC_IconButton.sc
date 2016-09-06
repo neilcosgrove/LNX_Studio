@@ -48,7 +48,6 @@ MVC_IconButton : MVC_View {
 							colors[\disabled].set;
 							Pen.fillRect(Rect(1,1,w- 2,h- 2));
 						};
-
 					};
 					if (enabled) {
 						if (down) {
@@ -75,8 +74,8 @@ MVC_IconButton : MVC_View {
 				}{
 					buttonPressed=buttonNumber;
 					evaluateAction=true;
-					if (modifiers==524576) { buttonPressed=1 };
-					if (modifiers==262401) {buttonNumber=2};
+					if (modifiers.isAlt)  { buttonPressed=1 };
+					if (modifiers.isCtrl) { buttonNumber =2 };
 					if (buttonNumber==2) {
 						this.toggleMIDIactive
 					}{

@@ -163,8 +163,8 @@ MVC_OnOffRoundedView : MVC_View {
 
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-			if (modifiers==524576) { buttonNumber=1 };
-			if (modifiers==262401) { buttonNumber=2 };
+			if (modifiers.isAlt ) { buttonNumber=1 };
+			if (modifiers.isCtrl) { buttonNumber=2 };
 			buttonPressed=buttonNumber;
 			mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 			if (modifiers.asBinaryDigits[4]==0) { // check apple not pressed because of drag

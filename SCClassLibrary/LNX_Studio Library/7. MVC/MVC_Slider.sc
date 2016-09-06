@@ -3,7 +3,7 @@
 
 MVC_Slider : MVC_View {
 
-	var	<thumbSize=12, preValue;
+	var	<thumbSize=16, preValue;
 
 	initView{
 		colors=colors++(
@@ -15,7 +15,7 @@ MVC_Slider : MVC_View {
 	}
 
 	createView{
-		view=Slider.new(window,rect)
+		view=Slider(window,rect)
 			.background_(colors[enabled.if(\background,\backgroundDisabled)])
 			.knobColor_(colors[midiLearn.if(\midiLearn,enabled.if(\knob,\knobDisabled))])
 			.thumbSize_(thumbSize);
@@ -52,8 +52,8 @@ MVC_Slider : MVC_View {
 		view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			MVC_LazyRefresh.mouseDown;
-			if (modifiers==524576) { buttonNumber=1  };
-			if (modifiers==262401) { clickCount=2  };
+			if (modifiers.isAlt ) { buttonNumber=1  };
+			if (modifiers.isCtrl) { clickCount  =2  };
 			buttonPressed=buttonNumber;
 			preValue=value;
 			mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
@@ -64,10 +64,9 @@ MVC_Slider : MVC_View {
 				if (verbose) {view.bounds.postln};
 			}{
 				var toggle = false;
-
 				if (hasMIDIcontrol) {
 					if ((clickCount>1)&&doubleClickLearn){ toggle = true };
-					if (modifiers==262401) { toggle = true  };
+					if (modifiers.isCtrl) { toggle = true  };
 					if (buttonNumber>=1  ) { toggle = true  };
 					if (toggle) { this.toggleMIDIactive };
 				};
@@ -76,7 +75,6 @@ MVC_Slider : MVC_View {
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			if (editMode||viewEditMode) { this.moveBy(x-startX,y-startY,buttonPressed) };
 		};
-
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			MVC_LazyRefresh.mouseUp;
 			if (editMode||viewEditMode) { {this.refreshValue}.defer(0.05) };

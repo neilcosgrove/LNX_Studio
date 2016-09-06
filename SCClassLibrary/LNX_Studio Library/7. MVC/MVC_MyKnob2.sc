@@ -204,6 +204,7 @@ MVC_MyKnob2 : MVC_View {
 
 		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
+
 			MVC_LazyRefresh.mouseDown;
 			toggle = false;
 			startX = x;
@@ -211,9 +212,15 @@ MVC_MyKnob2 : MVC_View {
 			if (editMode||viewEditMode) { lw=lh=nil; view.bounds.postln };
 			if (y>w) {buttonNumber=1}; // numbers
 
-			if (modifiers==524576) {buttonNumber=1};
-			if (modifiers==262401) {clickCount=2};
+			if (modifiers.isAlt ) {buttonNumber=1};
 			buttonPressed=buttonNumber;
+
+			if (hasMIDIcontrol) {
+				if ((clickCount>1)&&doubleClickLearn){ toggle = true };
+				if (modifiers.isCtrl) { toggle = true  };
+				if (buttonNumber>=1  ) { toggle = true  };
+				if (toggle) { this.toggleMIDIactive };
+			};
 
 			if (buttonPressed==1) {
 				if (controlSpec2.notNil)
@@ -221,15 +228,6 @@ MVC_MyKnob2 : MVC_View {
 					{ startVal=value2};
 			}{
 				if (controlSpec.notNil) { startVal=controlSpec.unmap(value) }{ startVal=value};
-
-
-				if (hasMIDIcontrol) {
-					if ((clickCount>1)&&doubleClickLearn){ toggle = true };
-					if (modifiers==262401) { toggle = true  };
-					if (buttonNumber>=1  ) { toggle = true  };
-					if (toggle) { this.toggleMIDIactive };
-				};
-
 			};
 
 		};
@@ -278,8 +276,8 @@ MVC_MyKnob2 : MVC_View {
 			startY=y;
 			if (editMode) { view.bounds.postln };
 			if (y>w) {buttonNumber=1}; // numbers
-			if (modifiers==524576) {buttonNumber=1};
-			if (modifiers==262401) {buttonNumber=2};
+			if (modifiers.isAlt) {buttonNumber=1};
+			if (modifiers.isCtrl) {buttonNumber=2};
 			buttonPressed=buttonNumber;
 			if (buttonPressed==1) {
 				if (controlSpec2.notNil)

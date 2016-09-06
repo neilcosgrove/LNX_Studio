@@ -733,6 +733,7 @@ LNX_Melody : LNX_InstrumentTemplate {
 
 		// storeChords List View
 		gui[\storeChordsListView] = MVC_ListView2 (gui[\rcv3], Rect(0, 55, 100, 166))
+			.color_(\background, Color.new255(64,57,81))
 			.canFocus_(false)
 			.items_([])
 			.font_(Font("Helvetica",10));
@@ -804,6 +805,7 @@ LNX_Melody : LNX_InstrumentTemplate {
 		MVC_MyKnob3(models[21], gui[\rcv5], Rect(59,40,28,28),gui[\knobTheme1]);
 
 		gui[\quantChordsListView] = MVC_ListView2(models[13],gui[\rcv5],Rect(0, 82, 100, 134))
+			.color_(\background, Color.new255(64,57,81))
 			.canFocus_(false)
 			.items_([])
 			.showNumberBox_(false)

@@ -134,17 +134,17 @@ MVC_MyKnob : MVC_View {
 			mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 			if (editMode||viewEditMode) {lw=lh=nil; if (verbose==verbose) {view.bounds.postln} };
 
-			if (modifiers==262401)	{clickCount = 2 };
-
-			if (modifiers==524576)	{
-				buttonNumber = 1.5
-			}{
-				if (hasMIDIcontrol) {
+			if (hasMIDIcontrol) {
 					if ((clickCount>1)&&doubleClickLearn){ toggle = true };
-					if (modifiers==262401) { toggle = true  };
+					if (modifiers.isCtrl)  { toggle = true  };
 					if (buttonNumber>=1  ) { toggle = true  };
 					if (toggle) { this.toggleMIDIactive };
 				};
+
+			if (modifiers.isAlt  )	{ buttonNumber = 1.5 };
+			if (modifiers.isShift)	{
+				buttonNumber = 2;
+				if (modifiers.isAlt  )	{ buttonNumber = 4 };
 			};
 
 			buttonPressed=buttonNumber; // store for move

@@ -86,8 +86,8 @@ MVC_PeakLevel : MVC_View {
 			var val;
 			MVC_LazyRefresh.mouseDown;
 			if (locked.not) {
-				if (modifiers==524576) { buttonNumber=1  };
-				if (modifiers==262401) { buttonNumber=2  };
+				if (modifiers.isAlt ) { buttonNumber=1 };
+				if (modifiers.isCtrl) { buttonNumber=2 };
 				buttonPressed=buttonNumber;
 				mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 				if (modifiers.asBinaryDigits[4]==0) {  // if apple not pressed because of drag
@@ -100,8 +100,8 @@ MVC_PeakLevel : MVC_View {
 						x=x+l;
 						y=y+t-1;
 						evaluateAction=true;
-						if (modifiers==524576) { buttonNumber=1  };
-						if (modifiers==262401) {buttonNumber=2};
+						if (modifiers.isAlt ) { buttonNumber=1 };
+						if (modifiers.isCtrl) { buttonNumber=2 };
 						buttonPressed=buttonNumber;
 						if (buttonPressed==1) {
 							seqItems.do({|i,j|

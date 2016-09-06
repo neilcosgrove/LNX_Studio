@@ -47,8 +47,8 @@ MVC_Icon : MVC_View {
 				}{
 					buttonPressed=buttonNumber;
 					evaluateAction=true;
-					if (modifiers==524576) { buttonPressed=1 };
-					if (modifiers==262401) {buttonNumber=2};
+					if (modifiers.isAlt ) { buttonPressed=1 };
+					if (modifiers.isCtrl) { buttonNumber =2 };
 					if (buttonNumber==2) {
 						this.toggleMIDIactive
 					}{

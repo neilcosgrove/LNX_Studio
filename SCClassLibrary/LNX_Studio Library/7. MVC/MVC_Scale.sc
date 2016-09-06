@@ -35,36 +35,24 @@ MVC_Scale : MVC_View {
 	}
 
 	createView{
-
-		view=UserView.new(window,rect)
+		view=UserView(window,rect)
 			.drawFunc={|me|
 				var val, r,c, h2;
 				MVC_LazyRefresh.incRefresh;
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
-
 				Pen.use{
 					Pen.smoothing_(false);
 					colors[\background].set;
-
 					Pen.fillRect(Rect(0,0,w,h));
-
 					Pen.strokeColor = colors[\marks];
-
 					h2=(h-1)/(marks);
-
 					(marks).do{|i|
-
 						Pen.line( 0@(h2*i+1), w@(h2*i+1));
 					};
 					Pen.fillStroke;
-
-
 				};
 			};
 	}
-
-
-
 
 	addControls{
 
@@ -80,8 +68,8 @@ MVC_Scale : MVC_View {
 			startY=y;
 		//	mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 			if (editMode||viewEditMode) {lw=lh=nil; if (verbose==verbose) {view.bounds.postln} };
-			if (modifiers==524576)	{buttonNumber = 1.5    };
-			if (modifiers==262401)	{buttonNumber = 2      };
+			if (modifiers.isAlt)	{buttonNumber = 1.5    };
+			if (modifiers.isCtrl)	{buttonNumber = 2      };
 			if (buttonNumber==2)	{this.toggleMIDIactive };
 			buttonPressed=buttonNumber; // store for move
 		};
@@ -95,6 +83,4 @@ MVC_Scale : MVC_View {
 
 	}
 
-
-
-	}
+}

@@ -127,7 +127,7 @@
 						if (hasMIDIcontrol && labelActivatesMIDI) {
 							var toggle = false;
 							if ((clickCount>1)&&doubleClickLearn){ toggle = true };
-							if (modifiers==262401) { toggle = true  };
+							if (modifiers.isCtrl) { toggle = true  };
 							if (buttonNumber>=1  ) { toggle = true  };
 							if (toggle) { this.toggleMIDIactive };
 						};
@@ -308,12 +308,12 @@
 			if (hasMIDIcontrol && labelActivatesMIDI) {
 				var toggle = false;
 				if ((clickCount>1)&&doubleClickLearn){ toggle = true };
-				if (modifiers==262401) { toggle = true  };
+				if (modifiers.isCtrl) { toggle = true  };
 				if (buttonNumber>=1  ) { toggle = true  };
 				if (toggle) { this.toggleMIDIactive };
 			};
 			if (y>w)				{buttonNumber = 1.5 }; // numbers
-			if (modifiers==524576)	{buttonNumber = 1.5 };
+			if (modifiers.isAlt)	{buttonNumber = 1.5 };
 			buttonPressed=buttonNumber;
 			numberHeld=true;
 			numberGUI.refresh;

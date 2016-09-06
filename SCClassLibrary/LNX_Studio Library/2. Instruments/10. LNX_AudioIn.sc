@@ -15,7 +15,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 	isMixerInstrument{^true}
 	mixerColor       {^Color(0.3,0.3,0.3,0.2)} // colour in mixer
 	hasLevelsOut     {^true}
-	
+
 	// mixer models
 	peakModel   {^models[6]}
 	volumeModel {^models[2]}
@@ -27,10 +27,10 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 	sendAmpModel{^models[8]}
 	syncModel   {^models[10]}
 
-	header{ 
+	header{
 		// define your document header details
 		instrumentHeaderType="SC Audio In Doc";
-		version="v1.0";		
+		version="v1.0";
 	}
 
 	// the models
@@ -47,26 +47,26 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 					this.soloAlt(me.value);
 					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 				 }],
-			
+
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
 				{|me,val,latency,send,toggle|
 					this.onOff(val,latency,send,toggle);
 					if (node.notNil) {server.sendBundle(latency,[\n_set, node, \on, this.isOn])};
 				},
-				\action2_ -> {|me|	
+				\action2_ -> {|me|
 					this.onOffAlt(me.value);
 					if (node.notNil) {server.sendBundle(nil,[\n_set, node, \on, this.isOn])};
 				}],
-					
+
 			// 2.master amp
 			[\db6,midiControl, 2, "Master volume",
 				(\label_:"Volume" , \numberFunc_:'db',mouseDownAction_:{hack[\fadeTask].stop}),
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(2,val,0,send);             // set p & network model via VP
 					this.setMixerSynth(\amp,val.dbamp,latency); // set mixer synth
-				}],	
-				
+				}],
+
 			// 3. in channels
 			[0,[0,LNX_AudioDevices.numInputBusChannels/2,\linear,1],
 				midiControl, 3, "In Channel",
@@ -75,8 +75,8 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 					var in  = LNX_AudioDevices.firstInputBus+(val*2);
 					this.setSynthArgVH(3,val,\inputChannels,in,latency,send);
 				}],
-				
-			// 4. out channels		
+
+			// 4. out channels
 			[0,\audioOut, midiControl, 4, "Output channels",
 				(\items_:LNX_AudioDevices.outputAndFXMenuList),
 				{|me,val,latency,send|
@@ -84,7 +84,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 					this.setPVPModel(4,val,0,send);     // set p & network model via VP
 					this.setMixerSynth(\outChannel,channel,latency); // set mixer synth
 				}], // test on network
-								
+
 			// 5.master pan
 			[\pan, midiControl, 5, "Pan",
 				(\numberFunc_:\pan, \zeroValue_:0),
@@ -92,11 +92,11 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 					this.setPVPModel(5,val,0,send);      // set p & network model via VP
 					this.setMixerSynth(\pan,val,latency); // set mixer synth
 				}],
-				
+
 			// 6. peak level
 			[0.7, \unipolar,  midiControl, 6, "Peak Level",
 				{|me,val,latency,send| this.setPVP(6,val,latency,send) }],
-											
+
 			// 7. send channel
 			[-1,\audioOut, midiControl, 7, "Send channel",
 				(\label_:"Send", \items_:LNX_AudioDevices.outputAndFXMenuList),
@@ -105,27 +105,27 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 					this.setPVPModel(7,val,0,send);             // set p & network model via VP
 					this.setMixerSynth(\sendChannel,channel,latency); // set mixer synth
 				}],
-			
+
 			// 8. sendAmp
 			[-inf,\db6,midiControl, 8, "Send amp", (label_:"Send"),
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(8,val,0,send);             // set p & network model via VP
 					this.setMixerSynth(\sendAmp,val.dbamp,latency); // set mixer synth
-				}], 		
-				
+				}],
+
 			// 9. channelSetup
 			[0,[0,3,\lin,1], midiControl, 9, "Channel Setup",
 				(\items_:["Left & Right","Left + Right","Left","Right"]),
 				{|me,val,latency,send|
 					this.setSynthArgVH(9,val,\channelSetup,val,latency,send);
 				}],
-				
+
 			// 10. syncDelay
 			[\syncTime, midiControl, 10, "Sync",
 				{|me,val,latency,send|
 					this.setSynthArgVP(10,val,\delay,val,latency,send);
 				}],
-		
+
 		].generateAllModels;
 
 		// list all parameters you want exluded from a preset change
@@ -134,7 +134,7 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 		autoExclusion=[];
 
 	}
-	
+
 	getMixerArgs{^[
 		[\amp,           p[ 2].dbamp       ],
 		[\outChannel,    LNX_AudioDevices.getOutChannelIndex(p[4])],
@@ -144,36 +144,36 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 	]}
 
 	// GUI
-	
+
 	*thisWidth  {^187}
 	*thisHeight {^78}
-	
+
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black,false) }
 
 	// create all the GUI widgets while attaching them to models
 	createWidgets{
-										
+
 		gui[\menuTheme ]=( \font_		: Font("Arial", 10),
 						\colors_      : (\background :Color.white));
-	
+
 		gui[\scrollTheme]=( \background	: Color(0.766, 0.766, 0.766),
 						 \border		: Color(0.545 , 0.562, 0.669));
-	
+
 		gui[\midiTheme]= ( \rounded_	: true,
 						\canFocus_	: false,
 						\shadow_		: true,
 						\colors_		: (	\up 		: Color(0.31,0.31,0.49),
 										\down	: Color(0.31,0.31,0.49),
 										\string	: Color.white));
-										
+
 		gui[\knobTheme]=( \labelShadow_	: false,
-						\numberWidth_	: (-20), 
+						\numberWidth_	: (-20),
 						\numberFont_	: Font("Helvetica",10),
 						\colors_		: (	\on		: Color(0.875, 0.852, 1),
 										\label	: Color.black,
 										\numberUp	: Color.black,
 										\numberDown : Color.white));
-						
+
 		gui[\theme2]=(	\orientation_  : \horiz,
 						\resoultion_	 : 3,
 						\visualRound_  : 0.001,
@@ -186,24 +186,24 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 										\backgroundDown : Color(0.1,0.1,0.1,0.85),
 										\string : Color.black,
 										\focus : Color(0,0,0,0)));
-		
+
 		// widgets
-		
+
 		gui[\scrollView] = MVC_RoundedComView(window,
 							Rect(11,11,thisWidth-22,thisHeight-22-1), gui[\scrollTheme]);
-						
-		// 3. in	
+
+		// 3. in
 		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(5,5,70,17), gui[\menuTheme ] );
-	
+
 		// 9. channelSetup
 		MVC_PopUpMenu3(models[9],gui[\scrollView],Rect(85,5,75,17), gui[\menuTheme ] );
-		
+
 		// 10. syncDelay
 		MVC_NumberBox(models[10], gui[\scrollView],Rect(59, 30, 40, 18),  gui[\theme2])
 			.labelShadow_(false)
 			.label_("Sync")
 			.color_(\label,Color.black);
-			
+
 		MVC_StaticText(Rect(100,30, 40, 18), gui[\scrollView],)
 			.string_("sec(s)")
 			.font_(Font("Helvetica",10))
@@ -211,17 +211,17 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			.color_(\string,Color.black);
 
 	}
-	
+
 	//////////////////////////
-		
+
 	*initUGens{|s|
-	
+
 		if (verbose) { "SynthDef loaded: Audio In".postln; };
-	
+
 		SynthDef("LNX_AudioIn+Delay", {
 			|outputChannels=0, inputChannels=2, delay=0, channelSetup=0, on=1|
 			var signal, signalL, signalR;
-			
+
 			signal  = In.ar(inputChannels, 2);
 			signal  = DelayN.ar(signal, \syncTime.asSpec.maxval, delay);
 			signal  = signal * Lag.kr(on);
@@ -229,42 +229,42 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 				signal[0], signal[0]+signal[1], signal[0], signal[1] ]);
 			signalR = Select.ar(channelSetup,[
 				signal[1], signal[0]+signal[1], signal[0], signal[1] ]);
-				
+
 			Out.ar(outputChannels,[signalL,signalR]);
-			
+
 		}).send(s);
-	
+
 		SynthDef("LNX_AudioIn", {
 			|outputChannels=0, inputChannels=2, channelSetup=0, on=1|
 			var signal, signalL, signalR;
-			
+
 			signal  = In.ar(inputChannels, 2);
 			signal  = signal * Lag.kr(on);
 			signalL = Select.ar(channelSetup,[
 				signal[0], signal[0]+signal[1], signal[0], signal[1], Silent.ar]);
 			signalR = Select.ar(channelSetup,[
 				signal[1], signal[0]+signal[1], signal[0], signal[1], Silent.ar]);
-				
+
 			Out.ar(outputChannels,[signalL,signalR]);
-		
+
 		}).send(s);
 
 	}
-		
+
 	startDSP{
 		synth = Synth.tail(instGroup,"LNX_AudioIn+Delay");
-		node  = synth.nodeID;	
+		node  = synth.nodeID;
 	}
-		
+
 	stopDSP{ synth.free }
-	
+
 	updateOnSolo{|latency|
-		if (node.notNil) {server.sendBundle(latency +! syncDelay, [\n_set, node, \on, this.isOn])} 
+		if (node.notNil) {server.sendBundle(latency +! syncDelay, [\n_set, node, \on, this.isOn])}
 	}
-	
+
 	updateDSP{|oldP,latency|
 		var in  = LNX_AudioDevices.firstInputBus+(p[3]*2);
-		
+
 		server.sendBundle(latency +! syncDelay,
 			[\n_set, node, \inputChannels,in],
 			[\n_set, node, \outputChannels,this.instGroupChannel],
@@ -272,12 +272,12 @@ LNX_AudioIn : LNX_InstrumentTemplate {
 			[\n_set, node, \channelSetup, p[9]],
 			[\n_set, node, \delay, p[10] ]
 		);
-		
+
 		if (instOutSynth.notNil) {
 			server.sendBundle(latency +! syncDelay,
 				*this.getMixerArgs.collect{|i| [\n_set, instOutSynth.nodeID]++i } );
 		};
-	
+
 	}
 
 } // end ////////////////////////////////////

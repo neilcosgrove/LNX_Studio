@@ -344,8 +344,8 @@ MVC_StaticText : MVC_View {
 			didAnything=false;
 			this.stopEditing;
 			mouseDownAction.value(me, x, y, modifiers, buttonNumber, clickCount);
-			if (modifiers==524576) { buttonNumber=1 };
-			if (modifiers==262401) { buttonNumber=2 };
+			if (modifiers.isAlt) { buttonNumber=1 };
+			if (modifiers.isCtrl) { buttonNumber=2 };
 			buttonPressed=buttonNumber;
 			clicks=clickCount;
 			if (modifiers.asBinaryDigits[4]==0) { // check apple not pressed because of drag
@@ -432,142 +432,145 @@ MVC_StaticText : MVC_View {
 				};
 			}{ noKeyPresses=1 };
 
-			if ((Platform.name == \osx).not or: { Platform.name == \osx and: {noKeyPresses.odd} }) { // stops double press bug
-				keyDownAction.value(me,char,mod,uni,keycode);
-				if (mod.isXCmd) { // apple cmd key
-					if (key.isAlphaKey(\C)) { // cmd copy
-						case {cursor.isNil} {
-							Platform.case(
-								\osx, {
-									("echo"+string+"| pbcopy").unixCmd
-								},
-								\linux, {
-									("echo"+string+"| xclip -i -sel c -f | xclip -i -sel p").unixCmd
-								}
-							);
-						} {cursor.isNumber} {
-							Platform.case(
-								\osx, {
-									("echo"+string+"| pbcopy").unixCmd
-								},
-								\linux, {
-									("echo"+string+"| xclip -i -sel c -f | xclip -i -sel p").unixCmd
-								}
-							);
-						} {cursor.isCollection} {
+			keyDownAction.value(me,char,mod,uni,keycode);
 
-						};
+			if (mod.isXCmd) { // apple cmd key
+				if (key.isAlphaKey(\C)) { // cmd copy
+					case {cursor.isNil} {
+						Platform.case(
+							\osx, {
+								("echo"+string+"| pbcopy").unixCmd
+							},
+							\linux, {
+								("echo"+string+"| xclip -i -sel c -f | xclip -i -sel p").unixCmd
+							}
+						);
+					} {cursor.isNumber} {
+						Platform.case(
+							\osx, {
+								("echo"+string+"| pbcopy").unixCmd
+							},
+							\linux, {
+								("echo"+string+"| xclip -i -sel c -f | xclip -i -sel p").unixCmd
+							}
+						);
+					} {cursor.isCollection} {
+
 					};
+				};
 
-					if (editing) {
-						case {key.isAlphaKey(\V)} { // cmd paste
-							var clipboard = Platform.case(
-								\osx, { "pbpaste".unixCmdGetStdOut },
-								\linux, { "xclip -selection clipboard -o".unixCmdGetStdOut }
-							);
-							clipboard = clipboard.select{|char|
-								(char.isAlphaNum)||(char.isPunct)||(char==($\ ))
-							};
+				if (editing) {
+					case {key.isAlphaKey(\V)} { // cmd paste
+						var clipboard = Platform.case(
+							\osx, { "pbpaste".unixCmdGetStdOut },
+							\linux, { "xclip -selection clipboard -o".unixCmdGetStdOut }
+						);
+						clipboard = clipboard.select{|char|
+							(char.isAlphaNum)||(char.isPunct)||(char==($\ ))
+						};
+						case {cursor.isNil} {
+							string=string++clipboard;
+						} {cursor.isNumber} {
+							string=string.insert(cursor,clipboard);
+							cursor = (cursor+(clipboard.size)).clip(0,string.size);
+						} {cursor.isCollection} {
+						};
+						this.clipStringToMaxSize;
+						this.calcCharSizes;
+						this.refresh;
+						this.valueActions(\stringAction,this);
+						if (model.notNil){ model.stringAction_(string,this) };
+					}{key.isDel} { // cmd delete
+						case {cursor.isNil} {
+							string="";
+						} {cursor.isNumber} {
+							string = string.drop(cursor);
+							cursor=0;
+						} {cursor.isCollection} {
+						};
+						this.calcCharSizes;
+						this.refresh;
+						this.valueActions(\stringAction,this);
+						if (model.notNil){ model.stringAction_(string,this) };
+						stringAction.value(this,string);
+					}
+				};
+			}{ // not cmd key
+				case {key.isUp} { // up
+					this.stopEditing;
+					this.refresh;
+					upKeyAction.value(this,string);
+				} {key.isDown} { // down
+					this.stopEditing;
+					this.refresh;
+					downKeyAction.value(this,string);
+				} {key.isLeft} { // left
+					case {cursor.isNil} {
+						cursor = string.size;
+					} {cursor.isNumber} {
+						cursor = (cursor-1).clip(0,string.size);
+					} {cursor.isCollection} {
+
+					};
+					this.refresh;
+				} {key.isRight} { // right
+					case {cursor.isNil} {
+						cursor = string.size;
+					} {cursor.isNumber} {
+						cursor = (cursor+1).clip(0,string.size);
+					} {cursor.isCollection} {
+
+					};
+					this.refresh;
+				};
+				if (editing) {
+					case {key.isDel or: {key.isBackspace}} { // delete
+						case {cursor.isNil} {
+							string=string.drop(-1);
+						} {cursor.isNumber} {
+							if (cursor>0) {
+								string = string.select{|i,index| index != (cursor-1) };
+								cursor= (cursor-1).clip(0,string.size);
+							}
+						} {cursor.isCollection} {
+						};
+						this.calcCharSizes;
+						this.refresh;
+						this.valueActions(\stringAction,this);
+						if (model.notNil){ model.stringAction_(string,this) };
+						stringAction.value(this,string);
+					}{key.isEnter} { // enter
+						cursor=nil;
+						if (enterStopsEditing) {this.stopEditing};
+						this.refresh;
+						enterKeyAction.value(this,string);
+					}{
+						// alphaNum etc..
+						if ((char.isAlphaNum)||(char.isPunct)||(char==($\ ))) {
 							case {cursor.isNil} {
-								string=string++clipboard;
-							} {cursor.isNumber} {									string=string.insert(cursor,clipboard);
-								cursor = (cursor+(clipboard.size)).clip(0,string.size);
+								string=string++char;
+							} {cursor.isNumber} {
+								string=string.insert(cursor,char);
+								this.clipStringToMaxSize;
 							} {cursor.isCollection} {
 							};
 							this.clipStringToMaxSize;
-							this.calcCharSizes;
-							this.refresh;
-							this.valueActions(\stringAction,this);
-							if (model.notNil){ model.stringAction_(string,this) };
-						}{key.isDel} { // cmd delete
-							case {cursor.isNil} {
-								string="";
-							} {cursor.isNumber} {									string = string.drop(cursor);
-								cursor=0;
-							} {cursor.isCollection} {
-							};
+							if (cursor.isNumber) {cursor=(cursor+1).clip(0,string.size)};
 							this.calcCharSizes;
 							this.refresh;
 							this.valueActions(\stringAction,this);
 							if (model.notNil){ model.stringAction_(string,this) };
 							stringAction.value(this,string);
-						}
-					};
-				}{ // not cmd key
-					case {key.isUp} { // up
-						this.stopEditing;
-						this.refresh;
-						upKeyAction.value(this,string);
-					} {key.isDown} { // down
-						this.stopEditing;
-						this.refresh;
-						downKeyAction.value(this,string);
-					} {key.isLeft} { // left
-						case {cursor.isNil} {
-							cursor = string.size;
-						} {cursor.isNumber} {
-							cursor = (cursor-1).clip(0,string.size);
-						} {cursor.isCollection} {
-
-						};
-						this.refresh;
-					} {key.isRight} { // right
-						case {cursor.isNil} {
-							cursor = string.size;
-						} {cursor.isNumber} {
-							cursor = (cursor+1).clip(0,string.size);
-						} {cursor.isCollection} {
-
-						};
-						this.refresh;
-					};
-					if (editing) {
-						case {key.isDel or: {key.isBackspace}} { // delete
-							case {cursor.isNil} {
-								string=string.drop(-1);
-							} {cursor.isNumber} {
-								if (cursor>0) {
-									string = string.select{|i,index| index != (cursor-1) };
-									cursor= (cursor-1).clip(0,string.size);
-								}
-							} {cursor.isCollection} {
-							};
-							this.calcCharSizes;
-							this.refresh;
-							this.valueActions(\stringAction,this);
-							if (model.notNil){ model.stringAction_(string,this) };
-							stringAction.value(this,string);
-						}{key.isEnter} { // enter
-							cursor=nil;
-							if (enterStopsEditing) {this.stopEditing};
-							this.refresh;
-							enterKeyAction.value(this,string);
-						}{
-							// alphaNum etc..
-							if ((char.isAlphaNum)||(char.isPunct)||(char==($\ ))) {
-								case {cursor.isNil} {
-									string=string++char;
-								} {cursor.isNumber} {									string=string.insert(cursor,char);
-									this.clipStringToMaxSize;
-								} {cursor.isCollection} {
-								};
-								this.clipStringToMaxSize;
-								if (cursor.isNumber) {cursor=(cursor+1).clip(0,string.size)};
-								this.calcCharSizes;
-								this.refresh;
-								this.valueActions(\stringAction,this);
-								if (model.notNil){ model.stringAction_(string,this) };
-								stringAction.value(this,string);
-							};
-						}
-					}{
-						if ((canEdit)&&(key.isEnter)) { // enter
-							this.startEditing;
-							this.refresh;
 						};
 					}
+				}{
+					if ((canEdit)&&(key.isEnter)) { // enter
+						this.startEditing;
+						this.refresh;
+					};
 				}
 			}
+
 		};
 
 		view.keyUpAction_{ noKeyPresses=0 }

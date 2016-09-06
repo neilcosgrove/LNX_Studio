@@ -39,8 +39,8 @@ MVC_PlainSquare : MVC_View {
 			startY=y;
 			mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 			if (editMode||viewEditMode) {lw=lh=nil; if (verbose==verbose) {view.bounds.postln} };
-			if (modifiers==524576)	{buttonNumber = 1.5    };
-			if (modifiers==262401)	{buttonNumber = 2      };
+			if (modifiers.isAlt)	{buttonNumber = 1.5    };
+			if (modifiers.isCtrl)	{buttonNumber = 2      };
 			if (buttonNumber==2)	{this.toggleMIDIactive };
 			buttonPressed=buttonNumber; // store for move
 		};

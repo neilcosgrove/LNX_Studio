@@ -102,8 +102,8 @@ MVC_UserInstNoView : MVC_View {
 			startX=x;
 			startY=y;
 			if (editMode) { lw=lh=nil; view.bounds.postln };
-			if (modifiers==524576) {buttonNumber=1};
-			if (modifiers==262401) {buttonNumber=2};
+			if (modifiers.isAlt ) {buttonNumber=1};
+			if (modifiers.isCtrl) {buttonNumber=2};
 			buttonPressed=buttonNumber;
 			if (buttonNumber==2) {
 				this.toggleMIDIactive
@@ -121,9 +121,7 @@ MVC_UserInstNoView : MVC_View {
 				this.moveBy(x-startX,y-startY)
 			}{
 				if (buttonPressed!=2) {
-
 					this.valueActions(\mouseMove,this, x, y, modifiers);
-
 				}
 			};
 		};
@@ -156,9 +154,5 @@ MVC_UserInstNoView : MVC_View {
 
 		}
 	}
-
-
-
-
 
 }

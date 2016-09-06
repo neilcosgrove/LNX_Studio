@@ -1,6 +1,7 @@
 
 // LNX_MyPopUpMenu
 // also supports mapping and unmapping for the MVC_AudioOutSpec control spec
+// used in MVC_PianoRoll once in full-screen mode
 
 MVC_PopUpMenu : MVC_View {
 
@@ -49,8 +50,8 @@ MVC_PopUpMenu : MVC_View {
 			}
 		};
 		view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
-			if (modifiers==524576) { buttonNumber=1 };
-			if (modifiers==262401) { buttonNumber=2 };
+			if (modifiers.isAlt ) { buttonNumber=1 };
+			if (modifiers.isCtrl) { buttonNumber=2 };
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			if (editMode) {
 				lw=lh=nil;

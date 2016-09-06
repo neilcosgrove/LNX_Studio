@@ -1159,7 +1159,8 @@ MVC_Automation {
 							}{
 								// 1st time drawing so set start (moveTo)
 								Pen.moveTo( lastX @((1-lastValue)*h+1));
-								if ((thisX-lastX)>=2) {									Pen.lineTo(thisX@((1-lastValue)*h+2));
+								if ((thisX-lastX)>=2) {
+									Pen.lineTo(thisX@((1-lastValue)*h+2));
 								};
 								Pen.lineTo(thisX@((1-thisValue)*h+2));
 								draw=true; // set so we carry on drawing
@@ -1275,68 +1276,5 @@ MVC_Automation {
 
 // this silences .autoIn_ bug. bad neil you should find what is going on!
 + Nil { autoIn_{} } // why does nil get called with autoIn_ ?
-
-/*
-
-ERROR: Message 'autoIn_' not understood.
-RECEIVER:
-   nil
-ARGS:
-   nil
-CALL STACK:
-	DoesNotUnderstandError:reportError   0x13368e5e8
-		arg this = <instance of DoesNotUnderstandError>
-		var s = "ERROR: Message 'autoIn_' not..."
-	< closed FunctionDef >   0x133692c58
-		arg error = <instance of DoesNotUnderstandError>
-	Integer:forBy   0x179487e98
-		arg this = 0
-		arg endval = 52
-		arg stepval = 2
-		arg function = <instance of Function>
-		var i = 42
-		var j = 21
-	SequenceableCollection:pairsDo   0x18381a2d8
-		arg this = [*54]
-		arg function = <instance of Function>
-	Scheduler:seconds_   0x1a158b338
-		arg this = <instance of Scheduler>
-		arg newSeconds = 373.544973445
-	Meta_AppClock:tick   0x14fb81888
-		arg this = <instance of Meta_AppClock>
-		var saveClock = <instance of Meta_SystemClock>
-	Process:tick   0x180649508
-		arg this = <instance of Main>
-ERROR: Message 'autoIn_' not understood.
-RECEIVER:
-   nil
-ARGS:
-   nil
-CALL STACK:
-	DoesNotUnderstandError:reportError   0x1336d9e88
-		arg this = <instance of DoesNotUnderstandError>
-		var s = "ERROR: Message 'autoIn_' not..."
-	< closed FunctionDef >   0x1336d7bd8
-		arg error = <instance of DoesNotUnderstandError>
-	Integer:forBy   0x179487e98
-		arg this = 0
-		arg endval = 52
-		arg stepval = 2
-		arg function = <instance of Function>
-		var i = 44
-		var j = 22
-	SequenceableCollection:pairsDo   0x18381a2d8
-		arg this = [*54]
-		arg function = <instance of Function>
-	Scheduler:seconds_   0x1a158b338
-		arg this = <instance of Scheduler>
-		arg newSeconds = 373.544973445
-	Meta_AppClock:tick   0x14fb81888
-		arg this = <instance of Meta_AppClock>
-		var saveClock = <instance of Meta_SystemClock>
-	Process:tick   0x180649508
-		arg this = <instance of Main>
-
-*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

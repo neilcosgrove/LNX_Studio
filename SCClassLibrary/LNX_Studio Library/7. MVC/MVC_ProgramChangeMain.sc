@@ -87,8 +87,8 @@ MVC_ProgramChangeMain : MVC_View {
 			y=y-3;
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			if (modifiers.asBinaryDigits[4]==0) {  // if apple not pressed because of drag
-				if (modifiers==524576) { buttonNumber=1 };
-				if (modifiers==262401) { buttonNumber=2 };
+				if (modifiers.isAlt) { buttonNumber=1 };
+				if (modifiers.isCtrl) { buttonNumber=2 };
 				if (editMode) {
 					lw=lh=nil;
 					startX=x;

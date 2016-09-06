@@ -155,8 +155,8 @@ MVC_PinSlider : MVC_FlatSlider {
 					x=x+l;
 					y=y+t-1;
 					evaluateAction=true;
-					if (modifiers==524576) { buttonNumber=1  };
-					if (modifiers==262401) {buttonNumber=2};
+					if (modifiers.isAlt ) { buttonNumber=1 };
+					if (modifiers.isCtrl) { buttonNumber=2 };
 					buttonPressed=buttonNumber;
 					if (buttonPressed==1) {
 						seqItems.do({|i,j|

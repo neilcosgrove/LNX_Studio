@@ -36,8 +36,8 @@ MVC_Example : MVC_View {
 			if (editMode) { lw=lh=nil; startX=x; startY=y; view.bounds.postln }; // for moving
 			buttonPressed=buttonNumber;
 			evaluateAction=true;
-			if (modifiers==524576) { buttonPressed=1 };
-			if (modifiers==262401) {buttonNumber=2};
+			if (modifiers.isAlt) { buttonPressed=1 };
+			if (modifiers.isCtrl) {buttonNumber=2};
 			if (buttonNumber==2) { this.toggleMIDIactive };
 		};
 		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
