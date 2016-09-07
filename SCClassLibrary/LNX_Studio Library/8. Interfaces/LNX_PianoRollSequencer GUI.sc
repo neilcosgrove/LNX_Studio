@@ -71,11 +71,10 @@
 
 	// gui call to enter fullscreen mode
 	guiFullScreen{
-
 		var bounds, colors, vo, sx, sy, lw, lh;
 
 		colors = gui[\colors];
-		bounds = Rect(5,10,gui[\bounds].width,gui[\bounds].height);
+		bounds = Window.availableBounds.moveTo(0,9);
 		gui2   = gui.copy;
 		gui    = IdentityDictionary[];
 
@@ -83,28 +82,23 @@
 			bounds.width+10,bounds.height+20).color_(\background,
 			Color(59/77,59/77,59/77))
 			.userCanClose_(true)
-			.onClose_{
-				this.exitFullScreenResize;
-				//this.refresh;
-			}
+			.onClose_{ this.exitFullScreenResize }
 			.create.fullScreen;
 
 		this.createWidgets(gui[\window2],bounds,colors, menuOld:true);
 		this.refresh;
 
 		// set grid size & orgin so it matches
-		{
-			sx = (gui[\window2].bounds.width)/(gui2[\window].bounds.width);  // scaleX by
-			sy = (gui[\window2].bounds.height)/(gui2[\window].bounds.height); // scaleY by
-			vo = gui2[\scrollView].visibleOrigin;      // get the visible Origin
-			lw = models[\gridW].value;                 // store last width
-			lh = models[\gridH].value;                 // store last height
-			models[\gridW].multipyValueAction_(sx);    // now scale the grid width
-			models[\gridH].multipyValueAction_(sy);    // and scale the grid height
-			sx = models[\gridW].value / lw;            // new scaleX incase grid width constrained
-			sy = models[\gridH].value / lh;            // new scaleX incase grid width constrained
-			gui[\scrollView].visibleOrigin_( (vo.x * sx) @ (vo.y * sy) ); // now set new origin
-		}.defer(0.1); // defer because gui[\window2].fullScreen doesn't update bounds immediately
+		sx = (gui[\window2].bounds.width)/(gui2[\window].bounds.width);  // scaleX by
+		sy = (gui[\window2].bounds.height)/(gui2[\window].bounds.height); // scaleY by
+		vo = gui2[\scrollView].visibleOrigin;      // get the visible Origin
+		lw = models[\gridW].value;                 // store last width
+		lh = models[\gridH].value;                 // store last height
+		models[\gridW].multipyValueAction_(sx);    // now scale the grid width
+		models[\gridH].multipyValueAction_(sy);    // and scale the grid height
+		sx = models[\gridW].value / lw;            // new scaleX incase grid width constrained
+		sy = models[\gridH].value / lh;            // new scaleX incase grid width constrained
+		gui[\scrollView].visibleOrigin_( (vo.x * sx) @ (vo.y * sy) ); // now set new origin
 
 	}
 
@@ -118,14 +112,14 @@
 
 		sx = (gui[\window].bounds.width)/(gui2[\window2].bounds.width);  // scaleX by
 		sy = (gui[\window].bounds.height)/(gui2[\window2].bounds.height); // scaleY by
-		vo = gui2[\scrollView].visibleOrigin;      // get the visible Origin
+		vo = lastVisibleOrigin;                    // get the visible Origin
 		lw = models[\gridW].value;                 // store last width
 		lh = models[\gridH].value;                 // store last height
 		models[\gridW].multipyValueAction_(sx);    // now scale the grid width
 		models[\gridH].multipyValueAction_(sy);    // and scale the grid height
 		sx = models[\gridW].value / lw;            // new scaleX incase grid width constrained
 		sy = models[\gridH].value / lh;            // new scaleX incase grid width constrained
-		gui[\scrollView].visibleOrigin_( (vo.x * sx) @ (vo.y * sy) ); // now set new origin
+		gui[\scrollView].visibleOrigin_( ((vo.x * sx) @ (vo.y * sy)) ); // now set new origin
 
 		gui2 = nil;
 
@@ -372,6 +366,8 @@
 
 		svb=gui[\scrollView].bounds.resizeBy(sb.neg);
 		visibleOrigin=gui[\scrollView].visibleOrigin;
+		lastVisibleOrigin = visibleOrigin;
+
 		voL = visibleOrigin.x;
 		voR = voL+svb.width+sb;
 		voT = visibleOrigin.y;

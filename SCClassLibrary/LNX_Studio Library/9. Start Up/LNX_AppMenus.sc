@@ -156,6 +156,7 @@ LNX_AppMenus {
 				Action("Minimise",			{ MVC_Window.frontWindow.minimize }).shortcut_("Ctrl+M"),
 				Action("Arrange",			{}),
 				Action("Close Window",		{ MVC_Window.frontWindow.guiClose }),
+				Action("Close All Window",	{}),
 			).title_("Windows"),
 
 			//  help menu

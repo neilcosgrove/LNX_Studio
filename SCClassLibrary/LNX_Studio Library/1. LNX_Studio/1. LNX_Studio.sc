@@ -154,7 +154,6 @@ LNX_Studio {
 
 		LNX_SplashScreen.init(this); // start splash screen
 		CmdPeriod.add(this);		 // add this object to CmdPeriod
-
 		this.startClockOff;          // and start off_clock for client side lfos
 
 		MVC_LazyRefresh.startRefreshWatchingTask; // start the lazy refresh task

@@ -437,7 +437,7 @@ LNX_PianoRollSequencer{
 	var <>pipeOutAction;
 	var <>recordFocusAction;
 	var <>notesOff;
-	var <pos=0, lastPos, drawPos=false, lastVisibleRect, mouseMode;
+	var <pos=0, lastPos, drawPos=false, lastVisibleRect, mouseMode, lastVisibleOrigin;
 	var <models;
 	var <isRecording=false, <recordNotes, <>isPlaying=false, <absTime=1;
 	var <lastBeat=0, <lastTime=0, <lastLatency=0;
