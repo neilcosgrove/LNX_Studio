@@ -1030,12 +1030,12 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 				.color_(\editBackground, Color(0,0,0,0.7))
 				.font_(Font.new("Helvetica", 14))
 				.canReceiveDragHandler_{
-					(SCView.currentDrag.isArray)and:{SCView.currentDrag[0].isString}
+					(View.currentDrag.isArray)and:{View.currentDrag[0].isString}
 				}
 				.receiveDragHandler_{
 				// is the 1st item a string?
-					if ((SCView.currentDrag.isArray)and:{SCView.currentDrag[0].isString}) {
-						this.dropFile(i+1,SCView.currentDrag[0]);
+					if ((View.currentDrag.isArray)and:{View.currentDrag[0].isString}) {
+						this.dropFile(i+1,View.currentDrag[0]);
 					};
 				};
 

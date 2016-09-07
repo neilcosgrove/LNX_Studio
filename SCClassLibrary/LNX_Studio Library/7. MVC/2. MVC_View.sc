@@ -222,7 +222,7 @@ MVC_View {
 		if (canReceiveDragHandler.notNil) {
 			view.canReceiveDragHandler_(canReceiveDragHandler);
 		}{
-			view.canReceiveDragHandler_{ SCView.currentDrag.isNumber };
+			view.canReceiveDragHandler_{ View.currentDrag.isNumber };
 		};
 
 		// what i get passed
@@ -230,7 +230,7 @@ MVC_View {
 			view.receiveDragHandler_(receiveDragHandler);
 		}{
 			view.receiveDragHandler_{
-				this.valueAction_(SCView.currentDrag, send:true);
+				this.valueAction_(View.currentDrag, send:true);
 				this.refreshValue;
 			};
 		};
@@ -483,7 +483,7 @@ MVC_View {
 
 	removeModel{ if (model.notNil) { model.removeView(this) } }
 
-	// color & colors may reqire some work for non SCView widgets
+	// color & colors may reqire some work for non View widgets
 
 	// set the colour in the Dictionary
 	color_{|key,color,forceAdd=false|
@@ -621,7 +621,7 @@ MVC_View {
 		}
 	}
 
-	// override this refreh for any non SCView that needs a value update
+	// override this refreh for any non View that needs a value update
 	refreshValue{}
 
 	// move gui, label and number also quant to grid
