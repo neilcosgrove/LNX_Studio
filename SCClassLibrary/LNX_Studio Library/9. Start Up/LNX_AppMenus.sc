@@ -54,17 +54,6 @@ LNX_AppMenus {
 					}
 				}),
 				Action("Clear All Sequencers",			{ studio.insts.do(_.clearSequencer) }),
-				Action("Clear Instrument Automation",	{
-/*					if (studio.insts.selectedInst.notNil) {
-						studio.insts.selectedInst.freeAutomation
-					}*/
-				}),
-				Action("Clear Studio Automation",		{
-					//studio.freeAutomation
-				}),
-				Action("Clear All Automation",			{
-					//studio.freeAllAutomation
-				}),
 				Action.separator,
 				Action("All MIDI Controls",		{ studio.editMIDIControl }).shortcut_("Ctrl+Shift+M"),
 
