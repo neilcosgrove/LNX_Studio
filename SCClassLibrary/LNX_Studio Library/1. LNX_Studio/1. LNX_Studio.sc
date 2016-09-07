@@ -7,12 +7,10 @@
 //        & andrew lambert
 //   for Mac & Linux
 //
-// Linux port (andrew lambert)
-//
 // (nc) no copyright. use and abuse. :)
 // refer to a gpl or something similar
 //
-// Features:
+// Over of Features:
 // Instruments, FX's, MIDI Instruments, Save, Load, Instrument Presets
 // MIDI In/Out patching, MIDI control of all GUI, Internal MIDI Ports, Internal/Ext MIDI Clock
 // Networking - Syncing over a network all of the Studio features
@@ -23,7 +21,7 @@
 // =======================
 // Bum Note 2   - Mono/poly acidic bass line synth with sequencers
 // Drum Synth   - Drum synth with step seq
-// GS Rhythm	  - A sample & grain based drum machine
+// GS Rhythm	- A sample & grain based drum machine
 // SC Code      - A programmable instrument using sc code
 // SC Code FX   - A programmable effect using sc code
 // Step Seq     - A 32x8 Step Sequencer
@@ -40,9 +38,7 @@
 //
 // LNX_Studio is a large project and i'm going to break it down into smaller parts
 // at the moment the LXN_Studio object itself is spilt over 3 files
-// this is the main section, there is also "LNX_Studio GUI" & "LNX_Studio transport"
-// in the future i might break the NTS & transport methods off into their own objects
-// and think of better ideas to organise this project
+// this is the main file, there is also "LNX_Studio GUI" & "LNX_Studio transport"
 //
 // You can only have 1 instance of LNX_Studio.
 //
@@ -59,6 +55,7 @@
 // and nonprivate : sound advice.
 //
 // also thanks to Southern, Themes Link and Gatwick Express for the time
+// I now revoke my thanks to Southern, what a joke.
 //
 // enjoy, love neil x (lnx)
 //

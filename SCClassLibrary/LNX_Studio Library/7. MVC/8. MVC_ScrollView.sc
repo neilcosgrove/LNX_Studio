@@ -356,6 +356,7 @@ MVC_ScrollView {
 	// override this
 	createView{
 		view = ScrollView.new(window,rect)
+			.canFocus_(false)
 			.hasBorder_(hasBorder)
 			// .autoScrolls_(autoScrolls)
 			.hasHorizontalScroller_(hasHorizontalScroller)

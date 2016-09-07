@@ -153,9 +153,16 @@
 					this.keyboardNoteOff(lastKeyboardNote);
 				};
 				lastKeyboardNote=note;
+			}
+			.focusLostAction_{
+				//"i'm loosing it here now".postln;
 			};
 
-		toFrontAction = { gui[\keyboardView].focus };
+		toFrontAction = {
+			//"something happened here".postln;
+			gui[\keyboardView].focus
+
+		};
 
 		// master
 

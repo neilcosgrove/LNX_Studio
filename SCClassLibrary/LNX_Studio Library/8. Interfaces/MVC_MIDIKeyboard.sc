@@ -6,7 +6,7 @@ MVC_MIDIKeyboard {
 	var <>keys;
 	var trackKey, chosenkey, <view;
 	var window, bounds, octaves, startnote;
-	var downAction, upAction, trackAction, spaceBarAction;
+	var downAction, upAction, trackAction, spaceBarAction, <>focusLostAction;
 	var keyCodeMap, keyCodesPressed, keyUpTasks;
 	var <transpose=0, <>miscKeyAction;
 	var <>keyboardColor, <resize=1;
@@ -113,10 +113,6 @@ MVC_MIDIKeyboard {
 			};
 		};
 
-
-
-
-
 	}
 
 	resize_{|int| resize=int; if (view.notClosed) {view.resize_(int)} }
@@ -139,6 +135,8 @@ MVC_MIDIKeyboard {
  		bounds = view.bounds;
 
         lazyRefresh.refreshFunc_{ if (view.notClosed) { view.refresh } };
+
+		view.focusLostAction_{ focusLostAction.value(view) };
 
 		view.canFocus_(true)
 			.focusColor_(Color.clear)
@@ -277,7 +275,6 @@ MVC_MIDIKeyboard {
 				})
 			})
 			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
-
 				var kcm = keyCodeMap.indexOf(key);
 
 				if (modifiers.isXCmd.not) {  // no apple modifier
