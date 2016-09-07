@@ -162,7 +162,7 @@
 				.action_{
 					var temp;
 					temp = userBanks[i].openMetadataEditor(
-						window.view,p[108+i], true, webBrowsers[i],
+						window,p[108+i], true, webBrowsers[i],
 						(
 							border2: 	Color(59/108,65/103,505/692),
 							border1: 	Color(0,1/103,9/77),

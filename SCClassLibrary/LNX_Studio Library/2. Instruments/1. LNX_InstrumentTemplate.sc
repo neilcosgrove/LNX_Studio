@@ -1438,7 +1438,7 @@ LNX_InstrumentTemplate {
 			menuBackground:	Color(1,1,0.9)
 		) ++ (colors?());
 
-		gui[\window] = MVC_ModalWindow(window.view, (250-60)@(150-18), colors);
+		gui[\window] = MVC_ModalWindow(window, (250-60)@(150-18), colors);
 		gui[\scrollView] = gui[\window].scrollView;
 
 		MVC_StaticText( gui[\scrollView], Rect(10,23-18,110,18))
@@ -1485,7 +1485,7 @@ LNX_InstrumentTemplate {
 			menuBackground:	Color(1,1,0.9)
 		) ++ (colors?());
 
-		gui[\window] = MVC_ModalWindow(window.view, (250-60)@(150-18-25), colors);
+		gui[\window] = MVC_ModalWindow(window, (250-60)@(150-18-25), colors);
 		gui[\scrollView] = gui[\window].scrollView;
 
 		MVC_StaticText( gui[\scrollView], Rect(10,23-18,110,18))
@@ -1519,7 +1519,7 @@ LNX_InstrumentTemplate {
 			menuBackground:	Color(1,1,0.9)
 		) ++ (colors?());
 
-		gui[\window] = MVC_ModalWindow(window.view, (315)@(120-18+midi2Offset), colors);
+		gui[\window] = MVC_ModalWindow(window, (315)@(120-18+midi2Offset), colors);
 		gui[\scrollView] = gui[\window].scrollView;
 
 		// midi out

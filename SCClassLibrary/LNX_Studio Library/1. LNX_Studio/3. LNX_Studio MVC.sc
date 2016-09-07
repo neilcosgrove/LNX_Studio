@@ -392,7 +392,7 @@
 			filename   = title.copy;
 		};
 
-		window = MVC_ModalWindow(mixerWindow.view, 195@90);
+		window = MVC_ModalWindow(mixerWindow, 195@90);
 		scrollView = window.scrollView;
 
 		// text field for the instrument / filename

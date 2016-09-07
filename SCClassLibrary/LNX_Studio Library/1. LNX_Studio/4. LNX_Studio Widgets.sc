@@ -1180,7 +1180,7 @@
 		if ( (midiWin.isNil) or: {midiWin.window.isClosed } ) {
 
 			midiWin = MVC_ModalWindow(
-				(mixerWindow.isVisible).if(mixerWindow.view,window.view),
+				(mixerWindow.isVisible).if(mixerWindow,window),
 				(420)@(468));
 			scrollView = midiWin.scrollView.view;
 
@@ -1399,7 +1399,7 @@
 			menuBackground:	Color(1,1,0.9)
 		) ++ (colors?());
 
-		gui[\window] = MVC_ModalWindow(mixerWindow.view, (190)@(132), colors);
+		gui[\window] = MVC_ModalWindow(mixerWindow, (190)@(132), colors);
 		gui[\scrollView] = gui[\window].scrollView;
 
 		MVC_StaticText( gui[\scrollView], Rect(10,5,190,18))

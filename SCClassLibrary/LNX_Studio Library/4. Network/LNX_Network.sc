@@ -901,7 +901,7 @@ LNX_Network {
 
 
 //			window = MVC_ModalWindow(
-//				(studio.mixerWindow.isVisible).if(studio.mixerWindow.view,studio.window.view),
+//				(studio.mixerWindow.isVisible).if(studio.mixerWindow,studio.window),
 //
 //				(525)@(523));
 

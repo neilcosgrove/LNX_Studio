@@ -11,14 +11,20 @@
 
 MVC_ModalWindow{
 
-	var <parent, <window, <pointSize, <scrollView, <>onClose, <parentViews;
+	var <parent, <mvc_parentWindow, <window, <pointSize, <scrollView, <>onClose, <parentViews;
 
 
 	*new{|parent,pointSize,colors| ^super.new.init(parent,pointSize,colors) }
 	init{|argParent,argPointSize,colors|
 		// var bounds;
 		parentViews = [this];
-		parent=argParent;
+		if (argParent.isKindOf(MVC_Window)) {
+			parent = argParent.view;
+			mvc_parentWindow = argParent;
+		}{
+			parent = argParent;
+			mvc_parentWindow = nil;
+		};
 		pointSize=argPointSize;
 		colors = (
 			background:		Color(59/77,59/77,59/77),
@@ -45,6 +51,17 @@ MVC_ModalWindow{
 			.color_(\background,colors[\border2]);
 
 		this.front;
+
+		mvc_parentWindow.addDependant(this); // when parent window is closed this will be updated
+
+	}
+
+	// update comes from closing MVC_Window (s)
+	update{|theChanged, theChanger|
+		if (theChanger==\windowClosed) {
+
+			this.close;
+		};
 	}
 
 	isClosed{ ^window.isClosed }
@@ -52,7 +69,10 @@ MVC_ModalWindow{
 
 	front { window.front }
 
-	close{ window.close }
+	close{
+		mvc_parentWindow.removeDependant(this);
+		window.close
+	}
 
 }
 

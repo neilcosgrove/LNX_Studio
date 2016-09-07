@@ -119,6 +119,7 @@ MVC_Window {
 				view.drawFunc_(nil);
 				view.toFrontAction_(nil);
 				view.view.keyDownAction_(nil);
+				this.changed(\windowClosed,this);
 			}
 		;
 		if (colors[\background].notNil) {

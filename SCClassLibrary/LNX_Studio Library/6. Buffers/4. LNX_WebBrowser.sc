@@ -736,7 +736,7 @@ LNX_WebBrowser{
 	*freeSoundAPIKey{|me,parentGUI,browser|
 		var gui=();
 
-		gui[\window] = MVC_ModalWindow(parentGUI[\window].view,300@110,(
+		gui[\window] = MVC_ModalWindow(parentGUI[\window],300@110,(
 			background:	Color(59/77,59/77,59/77),
 			border2:		Color(42/83,29/65,6/11),
 			border1:		Color(0,1/103,3/77,65/77)
@@ -826,7 +826,7 @@ LNX_WebBrowser{
 			);
 		};
 
-		gui[\window] = MVC_ModalWindow(parentGUI[\window].view,400@400,(
+		gui[\window] = MVC_ModalWindow(parentGUI[\window],400@400,(
 			background:	Color(59/77,59/77,59/77),
 			border2:		Color(42/83,29/65,6/11),
 			border1:		Color(0,1/103,3/77,65/77)

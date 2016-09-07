@@ -146,7 +146,7 @@
 	// open the metadata editor for this sample
 	openSelectedMeta{|window|
 		if (this.size>0) {
-			this.openMetadataEditor(window.view, selectedSampleNo);
+			this.openMetadataEditor(window, selectedSampleNo);
 		}
 	}
 
@@ -197,7 +197,7 @@
 			.mouseDownAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 				//[i,me, x, y, modifiers, buttonNumber, clickCount].postln;
 				if (clickCount==2) {
-					this.openMetadataEditor(window.parent.view, gui[\i]);
+					this.openMetadataEditor(window.parent, gui[\i]);
 					moved=true;
 				}{
 					this.selectSample(gui[\i]); // for gui
@@ -491,7 +491,7 @@
 
 		var buffer, models, otherModel, size, numChannels,  gui, colors, width, zoom, offset,
 			setVarsFunc, setModelsFunc, selectSampleFunc, lastPlayValue=false,
-			pos=(-1), pos2=(-1), scrollTask, moveIDX=0, status=(-5);
+			pos=(-1), pos2=(-1), scrollTask, moveIDX=0, status=(-5), mvcWindow;
 
 		// used after a buffer has loaded to update gui
 		var updateFunc={|buf|
@@ -501,6 +501,10 @@
 				gui[\sampleView].refresh;
 			};
 		};
+
+		mvcWindow = window;
+		if (window.isKindOf(MVC_Window)) { window=window.view };
+
 		updateFuncs = updateFuncs.add(updateFunc);
 
 		i=i.asInt.clip(0,this.size-1);
@@ -640,7 +644,7 @@
 			gui[\scrollView] = window;
 		}{
 			// the window and its scrollview
-			gui[\window] = MVC_ModalWindow(window, (600+x)@(280), colors)
+			gui[\window] = MVC_ModalWindow(mvcWindow, (600+x)@(280), colors)
 				.onClose_{
 					updateFuncs.remove(updateFunc);
 				};
