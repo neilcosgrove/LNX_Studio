@@ -211,15 +211,15 @@ LNX_SynthDefControl : ControlName {
 		codeModel =
 "// A simple SynthDef template
 
-SynthDef(\"MySaw\", {|out, gate, midi, vel, filtFreq=2000, q=0.5, dur=0.5|
+SynthDef(\"MySaw\",{|out, gate, midi, vel, filtFreq=2000, q=0.5, dur=0.5|
 
-    var signal;
+	var signal;
 
-    signal = Saw.ar(midi.midicps, 0.33);
-    signal = DFM1.ar(signal, filtFreq * vel, q);
-    signal = signal * EnvGen.ar(Env.adsr(0,0,1,1), gate, vel, 0, dur, 2);
+	signal = Saw.ar(midi.midicps, 0.33);
+	signal = DFM1.ar(signal, filtFreq * vel, q);
+	signal = signal * EnvGen.ar(Env.adsr(0,0,1,1), gate, vel, 0, dur,2);
 
-    LNX_InstOut(signal, out);
+	LNX_InstOut(signal, out);
 
 }, metadata: ( specs: ( filtFreq: \\freq ) ) )
 "
@@ -249,38 +249,38 @@ SynthDef(\"MySaw\", {|out, gate, midi, vel, filtFreq=2000, q=0.5, dur=0.5|
 	warnNotSynthDef{|def|
 		if (def.isNil) {
 			if (LNX_Studio.isStandalone.not) {
-				"� ERROR: Parse error in code.".error
+				"ERROR: Parse error in code.".error
 			};
-			this.warnFromError("� ERROR: Parse error in code.");
+			this.warnFromError("ERROR: Parse error in code.");
 		}{
 			if (LNX_Studio.isStandalone.not) {
-				"� ERROR: Recieved: "++(def.asString)++", is not a SynthDef.".error;
+				"ERROR: Recieved: "++(def.asString)++", is not a SynthDef.".error;
 			};
 			this.warnFromError(
-				"� ERROR: Recieved: "++(def.asString)++", is not a SynthDef."
+				"ERROR: Recieved: "++(def.asString)++", is not a SynthDef."
 			);
 		}
 	}
 
 	warnMissingArgs{|missingArgs|
-		("� ERROR: The following compulsory arguments are missing: "++(missingArgs.asString)).error;
+		("ERROR: The following compulsory arguments are missing: "++(missingArgs.asString)).error;
 		this.warnFromError(
-			"� ERROR: The following compulsory arguments are missing: "++(missingArgs.asString));
+			"ERROR: The following compulsory arguments are missing: "++(missingArgs.asString));
 	}
 
 	warnSpec{|spec|
 		("The spec: "++(spec.asString)++" is not defined.").error;
-		this.warnFromError("� The spec: "++(spec.asString)++" is not defined.");
+		this.warnFromError("The spec: "++(spec.asString)++" is not defined.");
 	}
 
 	warnNoRelease{
 		("ERROR: This synth cannot be released.").error;
-		this.warnFromError("� ERROR: This synth cannot be released.");
+		this.warnFromError("ERROR: This synth cannot be released.");
 	}
 
 	warnKeyword{|word|
 		("ERROR: Cannot use the keyword: "++word).error;
-		this.warnFromError("� ERROR: Cannot use the keyword: "++word);
+		this.warnFromError("ERROR: Cannot use the keyword: "++word);
 	}
 
 	postPoll{|string|

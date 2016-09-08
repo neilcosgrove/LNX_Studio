@@ -24,7 +24,8 @@ MVC_TextView : MVC_View {
 	createView{
 		view=MVC_SCTextView.new(window,rect)
 			.string_(string)
-			.font_ (font)
+			.font_(font)
+			.tabWidth_((font.size?12)*2)
 			.background_(colors[\background])
 			.stringColor_(colors[\string])
 			.usesTabToFocusNextView_(false)
@@ -57,7 +58,9 @@ MVC_TextView : MVC_View {
 	// set the font
 	font_{|argFont|
 		font=argFont;
-		if (view.notClosed) { view.font_(font) };
+		if (view.notClosed) {
+			view.font_(font).tabWidth_((font.size?12)*2)
+		};
 	}
 
 	// set the string

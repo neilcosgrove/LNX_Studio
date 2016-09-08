@@ -6,21 +6,17 @@
 	initCode{
 
 		codeModel =
-"
-// A simple FX template
+"// A simple FX template
 
 SynthDef(\"LNX_CodeFX\", {|on, out, amp, in, inAmp, sendOut, sendAmp, poll, filtFreq=1800, q=0.5|
 
-    var signal, signalIn = In.ar(in, 2) * inAmp;
+	var signal, signalIn = In.ar(in, 2) * inAmp;
 
-    signal = DFM1.ar(signalIn, filtFreq, q);
+	signal = DFM1.ar(signalIn, filtFreq, q);
 
-    LNX_FXOut(signal,signalIn,on,out,amp,0,sendOut,sendAmp);
+	LNX_FXOut(signal,signalIn,on,out,amp,0,sendOut,sendAmp);
 
 }, metadata: ( specs: ( filtFreq: \\freq, q: \\unipolar )))
-
-// signal.poll(poll);               // use for debugging
-
 "
 		.asModel;
 
@@ -48,9 +44,9 @@ SynthDef(\"LNX_CodeFX\", {|on, out, amp, in, inAmp, sendOut, sendAmp, poll, filt
 	warnNotSynthDef{|def|
 		if (def.isNil) {
 			if (LNX_Studio.isStandalone.not) {
-				"� ERROR: Parse error in code.".error
+				"ERROR: Parse error in code.".error
 			};
-			this.warnFromError("� ERROR: Parse error in code.");
+			this.warnFromError("ERROR: Parse error in code.");
 		}{
 			if (LNX_Studio.isStandalone.not) {
 				"ERROR: Recieved: "++(def.asString)++", is not a SynthDef.".error;
