@@ -84,11 +84,17 @@ MVC_StaticText : MVC_View {
 	}
 
 	// calculate the size of all characters and intergate
+	// in future it might be better to split string in 2 at cursor and have 2 widths instead
 	calcCharSizes{
 		if (clipChars||canEdit) {
 			charSizes=[];
 			string.do{|c|
-				charSizes=charSizes.add(c.asString.bounds(font).width);
+				if (c.isSpace) {
+					// temp fix to help make space more accurate
+					charSizes=charSizes.add(".".asString.bounds(font).width*1.2);
+				}{
+					charSizes=charSizes.add(c.asString.bounds(font).width);
+				}
 			};
 			charSizesIntegral = charSizes.integrate;
 		};
