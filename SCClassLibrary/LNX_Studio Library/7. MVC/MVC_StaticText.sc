@@ -569,11 +569,11 @@ MVC_StaticText : MVC_View {
 						this.refresh;
 					};
 				}
-			}
-
+			};
+			true
 		};
 
-		view.keyUpAction_{ noKeyPresses=0 }
+		view.keyUpAction_{ noKeyPresses=0; true }
 
 	}
 
