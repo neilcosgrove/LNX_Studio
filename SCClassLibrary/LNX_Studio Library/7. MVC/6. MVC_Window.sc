@@ -95,54 +95,10 @@ MVC_Window {
 			.drawFunc_(drawHook)
 			.acceptsMouseOver_(acceptsMouseOver)
 			.acceptsClickThrough_(acceptsClickThrough)
-			.toFrontAction_{
-				frontWindow = this;
-				isFront = true;
-				bounds = view.bounds.convert;
-				if (missFirstToFront) {
-					missFirstToFront=false;
-				}{
-					if(this.isOpenAndHidden) {this.show};
-					toFrontAction.value(this);
-				};
-
-				windows.do{|window|
-					if (window!=this) {window.looseFront}
-
-
-				}
-			}
-//			.endFrontAction_{endFrontAction.value(this)}  // this is the apple Y bug, can't fix
-			.onClose_{
-				resizeview.remove;
-				onClose.value(this);
-				view.drawFunc_(nil);
-				view.toFrontAction_(nil);
-				view.view.keyDownAction_(nil);
-				this.changed(\windowClosed,this);
-			}
-		;
-		if (colors[\background].notNil) {
-			//[name, colors[\background]].postln;
-			view.view.background_(colors[\background])
-		};
-
-		if (addFlowLayout) { view.addFlowLayout(margin, gap) };
-
-		gui.do(_.create(view)); // now make all views inside this view
-
-		if (toFront) {view.front}; // why the delay between the 2 windows ?
-
-		view.view.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
-			keyDownAction.value(me, char, modifiers, unicode, keycode, key)
-		};
-
-		// used for resize functions. will not work if Rect(0,0,1,1) is off view.
-		// So window scrollers will stop this working.
-		resizeview = UserView(view,Rect(0,0,1,1))
-			.canFocus_(false)
-			.drawFunc={
+			.drawFunc_{
 				var oldRect,oldW,oldH,w,h;
+
+				// used for resize functions
 				// rect when we start
 				oldRect=this.bounds;
 
@@ -182,7 +138,44 @@ MVC_Window {
 						};
 					};
 				};
-			};
+			}
+			.toFrontAction_{
+				frontWindow = this;
+				isFront = true;
+				bounds = view.bounds.convert;
+				if (missFirstToFront) {
+					missFirstToFront=false;
+				}{
+					if(this.isOpenAndHidden) {this.show};
+					toFrontAction.value(this);
+				};
+				windows.do{|window| if (window!=this) {window.looseFront} };
+				// replaces endFrontAction_ but this might work now.
+			}
+//			.endFrontAction_{endFrontAction.value(this)}  // this is the apple Y bug, can't fix
+			.onClose_{
+				onClose.value(this);
+				view.drawFunc_(nil);
+				view.toFrontAction_(nil);
+				view.view.keyDownAction_(nil);
+				this.changed(\windowClosed,this);
+			}
+		;
+		if (colors[\background].notNil) {
+			//[name, colors[\background]].postln;
+			view.view.background_(colors[\background])
+		};
+
+		if (addFlowLayout) { view.addFlowLayout(margin, gap) };
+
+		gui.do(_.create(view)); // now make all views inside this view
+
+		if (toFront) {view.front}; // why the delay between the 2 windows ?
+
+		view.view.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
+			keyDownAction.value(me, char, modifiers, unicode, keycode, key)
+		};
+
 	}
 
 	// autorize window (used in createView method)

@@ -458,10 +458,11 @@ MVC_View {
 	// delete this object
 	free{
 		this.remove;
+		this.viewFree;
 		model=parent=window=onClose=action=actions=string=strings=items=
 		colors=labelGUI=font=controlSpec=label=labelFont=resizeAction=
 		numberFunc=numberString=numberFont=boundsAction=nil;
-		this.viewFree;
+
 	}
 
 	viewFree{} // override this (used in adaptors)
