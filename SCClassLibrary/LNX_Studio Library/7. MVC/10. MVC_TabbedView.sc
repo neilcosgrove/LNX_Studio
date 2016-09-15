@@ -273,6 +273,8 @@ MVC_TabView {
 
 	var <>hasHorizontalScroller, <>hasVerticalScroller;
 
+	var <>action;
+
 	*new {|tabbedView,tabIndex| ^super.new.init(tabbedView,tabIndex) }
 
 	init {|argtabbedView,argTabIndex|
@@ -323,6 +325,8 @@ MVC_TabView {
 		if (hasVerticalScroller.notNil) {
 			this.view.hasVerticalScroller_(hasVerticalScroller)
 		};
+
+		view.action_{|me| action.value(me) }; // used as a screen resize update
 
 		gui.do{|item| item.do(_.create(view)) }; // now make all views inside the views
 	}

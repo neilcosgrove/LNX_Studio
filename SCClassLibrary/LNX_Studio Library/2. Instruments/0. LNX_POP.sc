@@ -213,8 +213,9 @@ LNX_POP {
 
 		gui = IdentityDictionary[];
 
-		gui[\window] = window;
-		gui[\window2] = window2;
+		gui[\window] = window;		// left scroll view for global controls
+		gui[\window2] = window2;	// right view for insts
+		gui[\window2].action_{ LNX_POP.alignFromPOP };
 
 		gui[\theme2]=(	\orientation_  : \horiz,
 				\resoultion_	 : 3,
@@ -298,11 +299,6 @@ LNX_POP {
 
 		// plainSquare to extend scroll
 		gui[\plainSquare]=MVC_PlainSquare(gui[\window],Rect(0, (noPOP+4.5)*21+22, 1, 1))
-		.color_(\on,Color.clear)
-		.color_(\off,Color.clear);
-
-		// plainSquare to extend scroll
-		gui[\plainSquare3]=MVC_PlainSquare(gui[\window],Rect(0, 0, 1, 1))
 		.color_(\on,Color.clear)
 		.color_(\off,Color.clear);
 
@@ -401,24 +397,14 @@ LNX_POP {
 			.action_{|me|
 				// this uses the instrument api to talk to its instance of LNX_POP
 				api.groupCmdOD(\netSetPOP,i,me.value);
-			}
-			.updateFunc_{
-				LNX_POP.alignFromPOP;
-//				if (studioModels[\toBecome]<0) {
-//					LNX_POP.alignFromPOP
-//				};
-
 			};
 	}
 
 	// keep both container views aligned
 	*alignFromPOP{
-		var pos = gui[\window2].view.visibleOrigin.clip(0,inf);
-
-		gui[\plainSquare3].bounds_(Rect(0,pos.y,1,1));
-
-		if ( gui[\window].visibleOrigin.y!=pos.y ) {
-			gui[\window].visibleOrigin_(pos);
+		var y = gui[\window2].view.visibleOrigin.y.clip(0,inf);
+		if ( gui[\window].visibleOrigin.y!=y ) {
+			gui[\window].visibleOrigin_(0@y);
 		};
 	}
 
