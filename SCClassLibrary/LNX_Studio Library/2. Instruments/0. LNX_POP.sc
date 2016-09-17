@@ -63,8 +63,15 @@ LNX_POP {
 				studioModels[\toBecome].lazyValueAction_(prog);
 			};
 
+			// temp for CARBON ************
+			studio.padMixerNoteOnFunc(src, chan, note, vel ,latency); // carbon pad mixer
+
 		};
-		midi.programFunc = {|src, chan, prog, latency| "program in pop: ".post; prog.postln };
+		midi.programFunc = {|src, chan, prog, latency|
+			if (prog.notNil and: {prog<noPOP}) {
+				studioModels[\toBecome].lazyValueAction_(prog);
+			}
+		};
 	}
 
 	*saveMIDIPrefs{ midi.getSaveList.savePref("POP Controller") }

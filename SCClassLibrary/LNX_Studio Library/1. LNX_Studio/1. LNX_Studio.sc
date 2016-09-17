@@ -1936,18 +1936,18 @@ LNX_Studio {
 
 		midi2 = LNX_POP.midi;
 
-		midi2.noteOnFunc_{|src, chan, note, vel ,latency|
-			var inst, index = padNotes.indexOf(note);
-			if (index.notNil) {
-				inst = insts.mixerInstruments[index];
-				if (inst.notNil) {
-					inst.onOffModel.lazyValueAction_(1 -(inst.onOffModel.value) );
-				};
-			};
-
-		};
-
 	}
+
+	padMixerNoteOnFunc{|src, chan, note, vel ,latency|
+		var inst, index = padNotes.indexOf(note);
+		if (index.notNil) {
+			inst = insts.mixerInstruments[index];
+			if (inst.notNil) {
+				inst.onOffModel.lazyValueAction_(1 -(inst.onOffModel.value) );
+			};
+		};
+	}
+
 
 	updatePadMixer{|inst|
 		var index = insts.mixerInstruments.indexOf(inst);
