@@ -431,7 +431,7 @@ LNX_Studio {
 			SendPeakRMS.kr(out[1], 20, 1.5, "/instPeakOutR", id); // right meter
 			Out.ar(outChannel,out);                               // now send out
 			out = out*sendAmp;                                    // apply send amp
-			Out.ar(sendChannel,out.dup);                          // and send to fxs
+			Out.ar(sendChannel,out);                          	  // and send to fxs
 		}).send(server);
 
 	}

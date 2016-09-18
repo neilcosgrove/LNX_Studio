@@ -9,7 +9,7 @@
 	//////////////////////////////////////////////////////////////////////////////////
 
 	// called by gui "play" widget
-	guiPlay{|val| api.hostCmdGD(\hostPlay,val) } // host it
+	guiPlay{|val| api.hostCmdGD(\hostPlay,val); } // host it
 
 	hostPlay{|userID,val|
 		if (extClock) {

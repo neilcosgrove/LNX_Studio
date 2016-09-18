@@ -16,6 +16,60 @@ Protect{
 // & effect send with pan pos
 // options in protect, mix down multichannel and scale multichannel volume
 
+// old way for fx's
+LNX_OldOut{
+	*new{|signal,out,amp,pan=0,sendOut,sendAmp,protect=true,mix=true,scaleVolume=true,leak=false|
+		var sigOut = signal;
+		var size = signal.size;
+		var leftPan, rightPan;
+
+		// mix it
+		if (mix) {
+			sigOut = sigOut.oddEvenMix; // mixes to a stereo pair
+			// and scale volume
+			if((scaleVolume)&&(size>2)) {
+				if (amp.isNumber) {
+					amp=amp/(size/2);	// if amp is number adjust amp
+				}{
+					sigOut=sigOut/(size/2); // else scale now
+				};
+			};
+		};
+		// reduce to an OutputProxy or [ an OutputProxy, an OutputProxy ]
+		case {sigOut.size==1} {
+			sigOut=sigOut[0];
+		}
+		{sigOut.size>2} {
+			sigOut=sigOut[0..1];
+		};
+		// apply amp
+		if (amp.notNil) { sigOut = sigOut * amp };
+		// do protect
+		if (protect) { sigOut = Protect(sigOut) }; // filters bad numbers
+		// do leak
+		if (leak) { sigOut = LeakDC.ar(sigOut) }; // leak any dc offset
+		// if mono
+		case {sigOut.size==0} {
+			sigOut=Pan2.ar(sigOut, pan); // pan it
+			OffsetOut.ar(out,sigOut);	 // output
+			if ((sendOut.notNil) && (sendAmp.notNil)) {
+				OffsetOut.ar(sendOut, sigOut * sendAmp );   // effect send
+			};
+		}{ // else stereo
+			leftPan= (pan*2-1).clip(-1,1);   // left pos
+			rightPan= (pan*2+1).clip(-1,1);  // right pos
+			sigOut=LinPan2.ar(sigOut[0], leftPan) + LinPan2.ar(sigOut[1], rightPan); // pair
+			OffsetOut.ar(out,sigOut);	 // output
+			if ((sendOut.notNil) && (sendAmp.notNil)) {
+				OffsetOut.ar(sendOut, sigOut * sendAmp );   // effect send
+			};
+		};
+		^signal;	// return the signal, unchanged
+
+	}
+}
+
+// old out for insts forcus no amp, pan or send
 LNX_Out{
 	*new{|signal,out,amp,pan=0,sendOut,sendAmp,protect=true,mix=true,scaleVolume=true,leak=false|
 		var sigOut = signal;
@@ -61,7 +115,6 @@ LNX_Out{
 		^signal;	// return the signal, unchanged
 	}
 }
-
 
 LNX_InstOut{
 	*new{|signal,out,protect=true,mix=true,scaleVolume=true,leak=false|

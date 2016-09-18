@@ -452,9 +452,10 @@ LNX_CodeFX : LNX_InstrumentTemplate {
 	iPutLoadList{|l,noPre,loadVersion|
 		var chars, asciiArray, systemListSize, userListSize, userPresetSizes, presetDict;
 
-		chars=l.popI; 							// number of chars in code
+		chars=l.popI; 								// number of chars in code
 		asciiArray=l.popNI(chars); 					// the code as ascii list
-		codeModel.string_(asciiArray.asciiToString);	// put into the code model
+		// put into the code model (bug fix for old out vs new eq
+		codeModel.string_(asciiArray.asciiToString.replace("LNX_Out","LNX_OldOut"));
 		systemListSize=l.popI;						// the number of system widgets
 		userListSize=l.popI;						// the number of user widgets
 
