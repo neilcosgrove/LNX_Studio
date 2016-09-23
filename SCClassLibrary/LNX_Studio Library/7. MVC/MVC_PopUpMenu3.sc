@@ -44,9 +44,9 @@ MVC_PopUpMenu3 : MVC_View {
 
 		// @TODO: standardise how we get fonts
 		if (Font.availableFonts.find("HelveticaNeuew").notNil) {
-			menuFont = Font("HelveticaNeue",15);
+			menuFont = Font("HelveticaNeue",16);
 		}{
-			menuFont = Font.sansSerif(15);
+			menuFont = Font.sansSerif(16);
 		};
 	}
 
@@ -163,7 +163,7 @@ MVC_PopUpMenu3 : MVC_View {
 
 			menuRect=rect=Rect(
 				mousePos.left,
-				mousePos.top,
+				mousePos.top-(h*(items.size-1)),
 				w+4, h*(items.size)+4
 			).convert;
 
@@ -174,9 +174,9 @@ MVC_PopUpMenu3 : MVC_View {
 			// rect2 = rect2.moveBy(0,moveY);
 
 			// the window
-			menuWindow=MVC_Window("", rect2, border:false, scroll:true);
-
-			menuWindow.color_(\background, Color(0.66,0.66,0.66));
+			menuWindow=MVC_Window("", rect2, border:false, scroll:true)
+				.color_(\background, Color(0,0,0))
+				.alwaysOnTop_(true);
 
 			// to help fix mouseOver bug
 			task=Task({{
@@ -343,6 +343,7 @@ MVC_PopUpMenu3 : MVC_View {
 				lw=lh=nil;
 				startX=x;
 				startY=y;
+				if (verbose) {view.bounds.postln};
 			}{
 				if ((mod.isCtrl)||(buttonNumber==2)) {
 					this.toggleMIDIactive;

@@ -10,9 +10,9 @@
 
 LNX_LANGroup {
 
-	classvar <>verbose=false;
-
 	classvar lanAddrs, otherLanAddrs, <myAddrs, port, <>uid, otherAddrs;
+
+	var <>verbose=false;
 
 	var serveraddress, username, password, groupname, grouppassword, serverport, localtoremoteport,
 		localtxport, localrxport, <responders, <pid, <netAddr;

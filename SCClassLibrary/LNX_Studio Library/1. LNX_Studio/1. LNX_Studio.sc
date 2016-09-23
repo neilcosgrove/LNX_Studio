@@ -67,7 +67,7 @@ LNX_Studio {
 	classvar	<>versionMajor=2,	<>versionMinor=0,	<version,
 				<internetVersion,	<fileLoadVersion=3;
 
-	classvar	studios,			<instTypes,
+	classvar	studios,			<instTypes,			<>yos=0,
 				<thisWidth=212, 	<thisHeight,		<defaultHeight=374,
 				<>osx=0,			<visibleTypes,		<instLibraryFileNames,
 				<libraryFolder;

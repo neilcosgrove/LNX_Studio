@@ -7,6 +7,208 @@ LNX_AppMenus {
 
 	*initClass { Class.initClassTree(Menu) }
 
+	*addWindowMenus{|window|
+
+		var menuTheme = ( \showTick_:false, canFocus_:false, font_: Font("Helvetica", 13, true),
+			\colors_  : ( \background : Color(1,1,1,0.7), \string : Color.black ));
+
+		// Main menu
+		MVC_PopUpMenu3(window, Rect(5, 4, 100, 18), menuTheme)
+				.staticText_("LNX_Studio")
+				.items_([
+					"About LNX_Studio",
+					"-",
+					"Preferences",
+					"-",
+					"Hide LNX_Studio",
+					"-",
+					"Quit"
+				])
+				.action_{|me|
+					switch (me.value.asInt)
+					 {0}{ //LNX_SplashScreen.init(studio,true)
+					}{2}{ studio.preferences
+					}{4}{ Platform.case(\osx,{
+"osascript -e 'tell application \"Finder\"' -e 'set visible of process \"LNX_Studio\" to false' -e 'end tell'".unixCmd})
+					}{6}{ studio.quit
+					};
+				};
+
+		// File menu
+		MVC_PopUpMenu3(window, Rect(105, 4, 62, 18), menuTheme)
+				.staticText_("File")
+				.items_([
+					"Open",
+					"Open Last Song",
+					"Open Demo Song",
+					"-",
+					"Save",
+					"Save As...",
+					"-",
+					"Close Song"
+				])
+				.action_{|me|
+					switch (me.value.asInt)
+					 {0}{ studio.loadDialog
+					}{1}{ studio.quickLoad
+					}{2}{ studio.loadDemoSong
+					}{4}{ studio.saveDialog
+					}{5}{ studio.saveAsDialog
+					}{7}{ studio.guiCloseStudio
+					}
+				};
+
+
+		// edit menu
+		MVC_PopUpMenu3(window, Rect(167, 4, 58, 18), menuTheme)
+				.staticText_("Edit")
+				.items_([
+					"Stop Audio",
+					"-",
+					"Copy Instrument",
+					"Paste Instrument",
+					"Duplicate Instrument",
+					"-",
+					"Delete Instrument",
+					"-",
+					"Clear Instrument Sequencer",
+					"Clear All Sequencers",
+					"-",
+					"All MIDI Controls"
+				])
+				.action_{|me|
+					switch (me.value.asInt)
+					 {0}{ CmdPeriod.run
+					}{2}{ studio.guiCopy
+					}{3}{ studio.guiPaste
+					}{4}{ studio.guiDuplicate
+					}{6}{ studio.guiDeleteInst
+					}{8}{ if (studio.insts.selectedInst.notNil) { studio.insts.selectedInst.clearSequencer }
+					}{9}{ studio.insts.do(_.clearSequencer)
+					}{11}{  studio.editMIDIControl
+					}
+				};
+
+			// Library menu
+			MVC_PopUpMenu3(window, Rect(225, 4, 75, 18), menuTheme)
+				.staticText_("Library")
+				.items_([
+					 "Add Instrument to Library",
+					"-",
+					"Backup Library to Desktop",
+					"Restore Library Defaults",
+					"Check For Library Updates",
+					"Open Library Folder"
+				])
+				.action_{|me|
+					switch (me.value.asInt)
+					 {0}{ studio.guiSaveInstToLibrary
+					}{2}{ studio.backupLibrary
+					}{3}{ studio.restoreLibraryDefaults
+					}{4}{ studio.checkForLibraryUpdates
+					}{5}{ studio.openLibraryFolderInOS
+					}
+				};
+
+			// network menu
+			MVC_PopUpMenu3(window, Rect(300, 4, 75, 18), menuTheme)
+				.staticText_("Network")
+				.items_([
+					"Open Network",
+					"-",
+					"Leave Colaboration",
+					"Close Network",
+					"-",
+					"Network Prefereces",
+				])
+				.action_{|me|
+					switch (me.value.asInt)
+					 {0}{ studio.network.guiConnect
+					}{2}{ studio.network.collaboration.guiLeave
+					}{3}{ studio.network.disconnect
+					}{5}{ studio.network.preferences
+					}
+				};
+
+			// dev
+			MVC_PopUpMenu3(window, Rect(375, 4, 53, 18), menuTheme)
+				.staticText_("Dev")
+				.items_([
+					"Code Window",
+					"Recompile Class Libray",
+					"-",
+					"Save interval / Stop",
+					"Start Batch Recording",
+					"Stop Batch Recording",
+					"Reset Batch",
+					"-",
+					"My Hack",
+					"Index all help files",
+					"Render all help files",
+					"Open Browser",
+					"-",
+					"Quarks",
+					"-",
+					"MVC Verbose",
+					"MVC Show Background",
+					"MVC Edit / Resize",
+					"ColorPicker",
+					"-",
+					"Server Window",
+					"Network Verbose",
+				])
+				.action_{|me|
+					switch (me.value.asInt)
+					 {0}{ TextView().enterInterpretsSelection_(true).front
+					}{1}{ thisProcess.platform.recompile
+					}{3}{ studio.saveInterval
+					}{4}{ studio.hackOn_(true).batchOn_(true).batch_(1).batchFolder_(studio.batchFolder+1)
+					}{5}{ studio.batchOn_(false).hackOn_(false)
+					}{6}{ studio.batchFolder_(0)
+					}{8}{ studio.hackOn_(true).myHack[\window].create.front
+					}{9}{ SCDoc.indexAllDocuments
+					}{10}{ SCDoc.renderAll
+					}{11}{ ~b=LNX_WebBrowser().open
+					}{13}{ Quarks.gui
+					}{15}{ MVC_View.verbose_(MVC_View.verbose.not)
+					}{16}{ MVC_View.showLabelBackground_(MVC_View.showLabelBackground.not)
+					}{17}{
+						if (MVC_View.editMode==false) {
+							MVC_View.editResize=false;
+							MVC_View.editMode_(true);
+							"Edit mode: On".postln;
+							"MVC_View.grid_(1)".postln;
+						}{
+							if (MVC_View.editResize==false) {
+								MVC_View.editResize=true;
+								"Edit mode: Resize".postln;
+							}{
+								MVC_View.editMode_(false);
+								"Edit mode: Off".postln;
+							};
+						};
+					}{18}{ ColorPicker()
+					}{20}{ studio.server.makeWindow
+					}{21}{ studio.network.socket.verbose_(studio.network.socket.verbose.not)
+					}
+				};
+
+		// help
+		MVC_PopUpMenu3(window, Rect(428, 4, 60, 18), menuTheme)
+				.staticText_("Help")
+				.items_([
+					"Help with LNX_Studio",
+					"Help with Supercollider",
+				])
+				.action_{|me|
+					switch (me.value.asInt)
+					 {0}{ studio.openHelp
+					}{1}{ Help.help
+					}
+				};
+
+	}
+
 	// new sc1.8 style menus //////////////////////////////////////////////////////////
 
 	*menus{
@@ -81,30 +283,17 @@ LNX_AppMenus {
 
 			//  dev menu
 			Menu(
-				Action("Code Window",{
-					TextView().enterInterpretsSelection_(true).front;
-				}).shortcut_("Ctrl+1"),
-
+				Action("Code Window",{TextView().enterInterpretsSelection_(true).front }).shortcut_("Ctrl+1"),
 				Action("Recompile Class Libray",{thisProcess.platform.recompile}).shortcut_("Ctrl+K"),
-
 				Action.separator,
 				Action("Save interval / Stop",{ studio.saveInterval }),
 				Action("Start Batch Recording",{
-					studio.hackOn_(true);
-					studio.batchOn_(true);
-					studio.batch_(1);
-					studio.batchFolder_(studio.batchFolder+1)
+					studio.hackOn_(true).batchOn_(true).batch_(1).batchFolder_(studio.batchFolder+1)
 				}),
-				Action("Stop Batch Recording",{
-					studio.batchOn_(false);
-					studio.hackOn_(false);
-				}),
+				Action("Stop Batch Recording",{ studio.batchOn_(false).hackOn_(false) }),
 				Action("Reset Batch",{ studio.batchFolder_(0) }),
 				Action.separator,
-				Action("My Hack",{
-					studio.hackOn_(true);
-					studio.myHack[\window].create.front;
-				}),
+				Action("My Hack",{ studio.hackOn_(true).myHack[\window].create.front }),
 				Action("Index all help files",{  SCDoc.indexAllDocuments }),
 				Action("Render all help files",{ SCDoc.renderAll }),
 				Action("Open Browser",{ ~b=LNX_WebBrowser().open }).shortcut_("Ctrl+0"),
@@ -158,162 +347,7 @@ LNX_AppMenus {
 		];
 	}
 
-/*
-
-			//  menu
-			Menu(
-				Action("",				{}).shortcut_("Ctrl+"),
-				Action("",				{}),
-				Action.separator,
-			).title_("Name"),
-*/
-
-
-	///////////////////////////////////////////////////////////////////////////////////////
-
-	// application menus for the standalone release
-
-	*addReleaseMenus {|studio|
-
-		// @TODO: OSX to get xplat menus?
-		Platform.case(
-			\osx, { LNX_AppMenus.addReleaseMenusOSX(studio) },
-			{LNX_AppMenus.addReleaseMenusXPlat(studio)}
-		);
-	}
-
-	*addReleaseMenusXPlat {|studio|
-
-		var mw, i, mWidth, mHeight;
-
-		mw = studio.mixerWindow;
-
-		// width: 74, height: 22
-		mWidth = 74;
-		mHeight = 19;
-
-		// tools menu
-		i = 2;
-		MVC_PopUpMenu2(mw, Rect(7 + (i * (mWidth+1)), 3, mWidth, mHeight))
-			.items_(["  Tools","Add preset to all instruments", " - ",
-				"Clear Instrument Sequencer", "Clear All Sequencers",
-				"Clear Instrument Automation", "Clear Studio Automation",
-				"Clear All Automation", " - ",
-				"Master EQ", " - ",
-				"Backup Library to Desktop", "Restore Library Defaults",
-				"Check For Library Updates", "Open Library Folder"])
-			.action_({|me,val|
-				switch (me.value.asInt)
-				 {0}  { studio.guiAllInstsAddPreset }
-				 // -
-				 {2}  {
-				 	if (studio.insts.selectedInst.notNil) {
-						studio.insts.selectedInst.clearSequencer
-					}
-				 }
-				 {3}  { studio.insts.do(_.clearSequencer) }
-				 // -
-				 {4}  {
-				 	if (studio.insts.selectedInst.notNil) {
-						studio.insts.selectedInst.freeAutomation
-					}
-				 }
-				 {5}  { studio.freeAutomation }
-				 {6}  { studio.freeAllAutomation }
-				 // -
-				 {8}  { MasterEQ.new }
-				 // -
-				 {10}  { studio.backupLibrary }
-				 {11}  { studio.restoreLibraryDefaults }
-				 {12}  { studio.checkForLibraryUpdates }
-				 {13}  { (LNX_File.prefDir+/+"Library").openOS }
-				;
-			})
-			.revert_(true)
-			.create(mw.view, true);
-
-	}
-
-	*addReleaseMenusOSX {|studio|
-
-		var tools  = SCMenuGroup.new(nil, "Tools",9);
-
-		// add LNX Help menu
-		SCMenuItem('Help',"LNX_Studio Help", 0).setShortCut("d").action_{studio.openHelp};
-
-		SCMenuItem.new(tools,  "Save").setShortCut("s").action_({ studio.saveDialog });
-		SCMenuItem.new(tools,  "Open...").setShortCut("o").action_({ studio.loadDialog });
-		SCMenuItem.new(tools,  "Network").setShortCut("n").action_({ studio.network.guiConnect });
-
-		SCMenuSeparator.new(tools);
-
-		SCMenuItem.new(tools,  "Add preset to all instruments")
-			.action_{studio.guiAllInstsAddPreset};
-
-		SCMenuItem.new(tools,  "Add all to POP")
-			.action_{studio.guiAllToPOP};
-
-		SCMenuItem.new(tools,  "Add all to POP (no FX)")
-			.setShortCut("p")
-			.action_{studio.guiAllToPOP(false)};
-
-		SCMenuSeparator.new(tools);
-
-		SCMenuItem.new(tools,  "Clear Instrument Sequencer").action_({
-			if (studio.insts.selectedInst.notNil) {
-				studio.insts.selectedInst.clearSequencer
-			}
-		});
-
-		SCMenuItem.new(tools,  "Clear All Sequencers").action_({
-			studio.insts.do(_.clearSequencer);
-		});
-
-
-		SCMenuItem.new(tools,  "Clear Instrument Automation").action_({
-			if (studio.insts.selectedInst.notNil) {
-				studio.insts.selectedInst.freeAutomation
-			}
-		});
-
-		SCMenuItem.new(tools,  "Clear Studio Automation").action_({
-			studio.freeAutomation;
-		});
-
-		SCMenuItem.new(tools,  "Clear All Automation").action_({
-			studio.freeAllAutomation;
-		});
-//
-//		SCMenuSeparator.new(tools);
-//		SCMenuItem.new(tools,  "Master EQ").action_({MasterEQ.new});
-//
-		SCMenuSeparator.new(tools);
-		SCMenuItem.new(tools,  "Backup Library to Desktop").action_{studio.backupLibrary};
-		SCMenuItem.new(tools,  "Restore Library Defaults").action_{studio.restoreLibraryDefaults};
-		SCMenuItem.new(tools,  "Check For Library Updates").action_{studio.checkForLibraryUpdates};
-		SCMenuItem.new(tools,  "Open Library in Finder").action_{
-			("open" + (LNX_Studio.libraryFolder).quote ).systemCmd};
-
-//		SCMenuSeparator.new(tools);
-//		SCMenuItem.new(tools, "Quit LNX_Studio").setShortCut("q").action_{
-//			studio.server.quit;
-//			MIDIClient.disposeClient;
-//			{0.exit}.defer(0.5);
-//		};
-	}
-
-	// application menus for the developer mode
-
-	*addDeveloperMenus {|studio|
-
-		this.initMyHack(studio);
-
-		// @TODO: OSX to get xplat menus?
-		Platform.case(
-			\osx, { LNX_AppMenus.addDeveloperMenusOSX(studio) },
-			{LNX_AppMenus.addDeveloperMenusXPlat(studio)}
-		);
-	}
+	// my hack stuff
 
 	*initMyHack {|studio|
 		// *** HACK *** //
@@ -426,528 +460,5 @@ if (studio.batchOn) {
 			.colorizeOnOpen_(true)
 			.autoColorize_(true);
 	}
-
-	*addDeveloperMenusXPlat {|studio|
-
-		var myHack=studio.myHack;
-		var mw, i, mWidth, mHeight;
-
-		mw = studio.mixerWindow;
-
-		// width: 74, height: 22
-		mWidth = 74;
-		mHeight = 19;
-
-		// dev menu
-		i = 3;
-		MVC_PopUpMenu2(mw, Rect(7 + (i * (mWidth+1)), 3, mWidth, mHeight))
-			.items_(["  Dev","Save interval / Stop",
-				"Start Batch Recording", "Stop Batch Recording", "Reset Batch", " - ",
-				"My Hack", "Index all help files", "Open Browser", " - ",
-				"Quarks", " - ", "MVC Verbose", "MVC Show Background",
-				"MVC Edit / Resize", "ColorPicker", " - ",
-				"1 FPS", "12 FPS", "24 FPS", "50 FPS", " - ",
-				"Server Window", "Graph: Latency & Delta", "Network Verbose"])
-			.action_({|me,val|
-				switch (me.value.asInt)
-				 {0}  { studio.saveInterval }
-				 {1}  {
-				 	studio.hackOn_(true);
-					studio.batchOn_(true);
-					studio.batch_(1);
-					studio.batchFolder_(studio.batchFolder+1)
-				 }
-				 {2}  {
-				 	studio.batchOn_(false);
-					studio.hackOn_(false);
-				 }
-				 {3}  { studio.batchFolder_(0) }
-				 // -
-				 {5} {
-				 	studio.hackOn_(true);
-					myHack[\window].create.front;
-				 }
-				 {6} { SCDoc.indexAllDocuments }
-				 {7} { ~b=LNX_WebBrowser().open }
-				 // -
-				 {9} { Quarks.gui }
-				 // -
-				 {11} { MVC_View.verbose_(MVC_View.verbose.not) }
-				 {12} { MVC_View.showLabelBackground_(MVC_View.showLabelBackground.not) }
-				 {13} {
-					if (MVC_View.editMode==false) {
-						MVC_View.editResize=false;
-						MVC_View.editMode_(true);
-						"Edit mode: On".postln;
-						"MVC_View.grid_(1)".postln;
-					}{
-						if (MVC_View.editResize==false) {
-							MVC_View.editResize=true;
-							"Edit mode: Resize".postln;
-						}{
-							MVC_View.editMode_(false);
-							"Edit mode: Off".postln;
-						};
-					};
-				 }
-				 {14} { ColorPicker() }
-				 // -
-				 {16} { MVC_LazyRefresh.globalFPS_(1) }
-				 {17} { MVC_LazyRefresh.globalFPS_(12) }
-				 {18} { MVC_LazyRefresh.globalFPS_(24) }
-				 {19} { MVC_LazyRefresh.globalFPS_(50) }
-				 // -
-				 {21} { studio.server.makeWindow }
-				 {22} {
-					studio.network.otherUsers.do{|user|
-						var g=user.commonTimePings.flop.reverse;
-						if (g[0].size>0) {
-							g.plot2("Latency & Delta ("++(user.name)++")").specs_(
-								[[0,g[0].last,\lin,0,0,"s"].asSpec,
-								[g[1].copy.sort.first,g[1].copy.sort.last,\lin,0,0,"s"].asSpec]
-							).plotMode_(\points)
-						}{
-							"No data".postln;
-						}
-				 	}
-				 }
-				 {23} {
-					studio.network.socket.verbose_(studio.network.socket.verbose.not);
-				 }
-				;
-			})
-			.revert_(true)
-			.create(mw.view, true);
-
-		this.addDebugMenusXPlat(studio);
-
-	}
-
-	*addDeveloperMenusOSX {|studio|
-
-		var sub;
-		var tools  = SCMenuGroup.new(nil, "Dev",9),midi, audio, files;
-		var myHack=studio.myHack;
-
-		// add LNX Help menu
-		SCMenuItem('Help',"LNX_Studio Help", 0).setShortCut("d").action_{studio.openHelp};
-//
-//
-//		SCMenuItem.new(tools,  "Close Post Window")
-//			.setShortCut("4")
-//			.action_{
-//				{Document.listener.close}.try;
-//				{thisProcess.recompile}.defer(0.1);
-//			};
-//
-//		if (Document.listener.isClosed) {
-//			Document.new(" post ","",makeListener:true);
-//			Document.listener.bounds=Rect(0,35,600,290);
-//		};
-//
-
-		// post window
-		SCMenuItem(tools,  "Save interval / Stop")
-			.action_({studio.saveInterval});
-
-		SCMenuItem(tools,  "Start Batch Recording")
-			.action_({
-				studio.hackOn_(true);
-				studio.batchOn_(true);
-				studio.batch_(1);
-				studio.batchFolder_(studio.batchFolder+1)
-			});
-
-		SCMenuItem(tools,  "Stop Batch Recording")
-			.action_({
-				studio.batchOn_(false);
-				studio.hackOn_(false);
-			});
-
-		SCMenuItem(tools,  "Reset Batch")
-			.action_({
-				studio.batchFolder_(0);
-			});
-
-		SCMenuSeparator.new(tools);
-
-		SCMenuItem.new(tools,  "Post Window").setShortCut("1")
-			.action_({
-				{if (Document.listener.notNil) {Document.listener.close};}.try;
-				Document.new(" post ","",makeListener:true);
-				Document.listener.bounds=Rect(studio.class.osx,35,600,290);
-			});
-
-		SCMenuItem.new(tools,  "Close Post Window").setShortCut("2")
-			.action_({
-				Document.listener.close	;
-			});
-
-		SCMenuItem.new(tools,  "My Hack").action_({
-
-				studio.hackOn_(true);
-				myHack[\window].create.front;
-
-
-			})
-			.setShortCut("3");// *** HACK *** //
-
-		SCMenuItem.new(tools,  "Index all help files")
-			.action_({
-				SCDoc.indexAllDocuments(true)
-			});
-
-		SCMenuItem.new(tools,  "Interpret & Replace").setShortCut("9")
-			.action_({
-					Document.current.selectedString =
-					Document.current.selectedString.interpret.asCompileString
-			});
-
-		SCMenuItem.new(tools,  "Open Browser").setShortCut("0").action_({
-			~b=LNX_WebBrowser().open;
-		});
-
-		SCMenuSeparator.new(tools);
-
-		// eq
-		SCMenuItem.new(tools,  "EQ").action_({MasterEQ.new});
-
-		SCMenuSeparator.new(tools);
-		//lang
-		SCMenuItem.new(tools,  "Auto Syntax Colorizing").setShortCut("b").action_({
-		// @TODO: new Qt "key" codes
-		Document.current.keyDownAction_{|doc, char, mod, unicode, keycode, key|
-	  		  if(unicode==13 or:(unicode==32) or: (unicode==3)){
-	     		   Document.current.syntaxColorize
-	   		 }
-			};
-
-		});
-		SCMenuItem.new(tools,  "Quarks").action_({ Quarks.gui});
-
-		SCMenuSeparator.new(tools);
-
-		SCMenuItem.new(tools,  "MVC verbose").action_({MVC_View.verbose_(MVC_View.verbose.not)});
-		SCMenuItem.new(tools,  "MVC show background").action_({
-		MVC_View.showLabelBackground_(MVC_View.showLabelBackground.not)});
-
-		sub=SCMenuGroup( tools, "MVC fps" );
-
-		SCMenuItem(sub, "1 fps" ).action_{ MVC_LazyRefresh.globalFPS_(1) };
-		SCMenuItem(sub, "12 fps" ).action_{ MVC_LazyRefresh.globalFPS_(12) };
-		SCMenuItem(sub, "25 fps" ).action_{ MVC_LazyRefresh.globalFPS_(25) };
-		SCMenuItem(sub, "50 fps" ).action_{ MVC_LazyRefresh.globalFPS_(50) };
-
-		SCMenuItem(tools, "MVC Edit / Resize" )
-			.setShortCut( "r" )
-			.action_{
-				//if (studio.isStandalone.not) {
-					if (MVC_View.editMode==false) {
-						MVC_View.editResize=false;
-						MVC_View.editMode_(true);
-						"Edit mode: On".postln;
-						"MVC_View.grid_(1)".postln;
-					}{
-						if (MVC_View.editResize==false) {
-							MVC_View.editResize=true;
-							"Edit mode: Resize".postln;
-						}{
-							MVC_View.editMode_(false);
-							"Edit mode: Off".postln;
-						};
-					};
-				//}
-			};
-
-		SCMenuItem.new(tools,  "ColorPicker").action_({ColorPicker()});
-
-		SCMenuSeparator.new(tools);
-		SCMenuItem.new(tools,  "Server Window").action_({
-			studio.server.makeWindow
-		});
-
-		this.addDebugMenusOSX(studio,tools);
-
-//		SCMenuSeparator.new(tools);
-//		SCMenuItem.new(tools,  "Open Library in Finder").action_{
-//			("open" + (LNX_File.prefDir++"Library").quote ).systemCmd};
-//		SCMenuItem.new(tools,  "Backup Library to Desktop").action_{studio.backupLibrary};
-//		SCMenuItem.new(tools,  "Restore Library").action_{studio.restoreLibraryDefaults};
-//		SCMenuItem.new(tools,  "Check For Updates").action_{studio.checkForLibraryUpdates};
-//
-		SCMenuSeparator.new(tools);
-
-		SCMenuItem.new(tools,  "Graph: Latency & Delta").action_({
-			studio.network.otherUsers.do{|user|
-				var g=user.commonTimePings.flop.reverse;
-				if (g[0].size>0) {
-					g.plot("Latency & Delta ("++(user.name)++")").specs_(
-						[[0,g[0].last,\lin,0,0,"s"].asSpec,
-						[g[1].copy.sort.first,g[1].copy.sort.last,\lin,0,0,"s"].asSpec]
-					).plotMode_(\points)
-				}{
-					"No data".postln;
-				}
-			}
-		});
-
-	}
-
-
-	*addDebugMenusOSX{|studio,menu|
-
-		var lnx=();
-
-		SCMenuItem.new(menu,  "Query All Nodes").action_({
-
-			lnx[\doc]=Document("Query All Nodes","",true).alwaysOnTop_(true);
-
-			lnx[\doc].bounds_(lnx[\doc].bounds.resizeBy(-375,0));
-
-
-			lnx[\refreshRate]=0.25;
-			lnx[\task]=AppClock.sched(0,{
-				if (lnx[\refreshRate].notNil) {
-					Document.listener.string_("Query all nodes\n~~~~~~~~~~~~~~~\n\n");
-					studio.server.queryAllNodes;
-				};
-				//lnx[\doc].bounds.resizeTo(80,60).moveBy(-80,lnx[\doc].bounds.height-80);
-				lnx[\refreshRate]
-			});
-			lnx[\win]=Window("Close Query",
-				lnx[\doc].bounds.resizeTo(80,60).moveBy(-80,lnx[\doc].bounds.height-80))
-				.front
-				.alwaysOnTop_(true)
-				.userCanClose_(false);
-
-			Button(lnx[\win],Rect(10,10,60,40)).states_([["Close", Color.black, Color.red]])
-				.action_{
-					lnx[\refreshRate]=nil;
-					lnx[\doc].close;
-					lnx[\win].close;
-					[Document.allDocuments.detect{|n| n.name==" post "}].do{|doc|
-						Document.new(" post ","",true).alwaysOnTop_(false)
-							.bounds_(doc.bounds)
-							.string_(doc.string);
-							//.selectLine(inf);
-						doc.close;
-					};
-				};
-
-		});
-
-		SCMenuItem.new(menu,  "Network verbose").action_({
-			studio.network.socket.verbose_(studio.network.socket.verbose.not);
-		});
-
-		SCMenuSeparator.new(menu);
-
-		SCMenuItem.new(menu,  "Inspect: Studio").action_({
-			var w,t,text,string,tSize;
-			w = Window.new("Inspect Studio").alwaysOnTop_(true).front;
-			t = TextView(w.asView,Rect(10,10, 380,360))
-				.hasHorizontalScroller_(true)
-				.hasVerticalScroller_(true)
-				.autohidesScrollers_(true)
-				.resize_(5);
-			t.focus;
-			AppClock.sched(0,{
-				if (w.isClosed.not) {
-					text="";
-					studio.getSlots.do({|a,i|
-						string=a.asString;
-						text=text++string;
-						tSize=23-(string.size.clip(0,22));
-						if (i.odd) {text=text++"\n"} {tSize.do({text=text++" "})}
-					});
-					t.string_(text);
-					0.25
-				}{
-				   nil
-				}
-			});
-		});
-
-		SCMenuItem.new(menu,  "Inspect: Instruments").action_({
-			var w,t,text,string,tSize,skipNext=false;
-			w = Window.new("Inspect LNX_Instruments",Rect(128,64,900,240))
-							.alwaysOnTop_(true).front;
-			t = TextView(w.asView,Rect(10,10, 880,220))
-				.hasHorizontalScroller_(true)
-				.hasVerticalScroller_(true)
-				.autohidesScrollers_(true)
-				.resize_(5);
-			t.focus;
-			AppClock.sched(0,{
-				if (w.isClosed.not) {
-					text=studio.insts.asString;
-					text=text++"\n";
-					studio.insts.getSlots.do({|a,i|
-						if (a!=\array) {
-							if (skipNext) {
-								skipNext=false
-							}{
-								string=a.asString;
-								text=text++string;
-								tSize=23-(string.size.clip(0,22));
-								if (i.odd) {text=text++"\n"} {tSize.do({text=text++" "})}
-							}
-						}{
-							skipNext=true;
-						};
-					});
-					t.string_(text);
-					0.25
-				}{
-				   nil
-				}
-			});
-		});
-
-		SCMenuItem.new(menu,  "Inspect: Insts[0]").action_({
-			var w,t,text,string,tSize;
-			w = Window.new("Inspect Insts[0]").alwaysOnTop_(true).front;
-			t = TextView(w.asView,Rect(10,10, 380,360))
-				.hasHorizontalScroller_(true)
-				.hasVerticalScroller_(true)
-				.autohidesScrollers_(true)
-				.resize_(5);
-			t.focus;
-			AppClock.sched(0,{
-				if (w.isClosed.not) {
-					text="";
-					studio.insts.visualAt(0).getSlots.do({|a,i|
-						string=a.asString;
-						text=text++string;
-						tSize=23-(string.size.clip(0,22));
-						if (i.odd) {text=text++"\n"} {tSize.do({text=text++" "})}
-					});
-					t.string_(text);
-					0.25
-				}{
-				   nil
-				}
-			});
-		});
-
-		SCMenuItem.new(menu,  "Inspect: Network").action_({
-			var w,t,text,string,tSize;
-			w = Window.new("Inspect Network").alwaysOnTop_(true).front;
-			t = TextView(w.asView,Rect(10,10, 380,360))
-				.hasHorizontalScroller_(true)
-				.hasVerticalScroller_(true)
-				.autohidesScrollers_(true)
-				.resize_(5);
-			t.focus;
-			AppClock.sched(0,{
-				if (w.isClosed.not) {
-					text="";
-					studio.network.getSlots.do({|a,i|
-						string=a.asString;
-						text=text++string;
-						tSize=23-(string.size.clip(0,22));
-						if (i.odd) {text=text++"\n"} {tSize.do({text=text++" "})}
-					});
-					t.string_(text);
-					0.25
-				}{
-				   nil
-				}
-			});
-		});
-
-		SCMenuItem.new(menu,  "Inspect: Collaboration").action_({
-			var w,t,text,string,tSize;
-			w = Window.new("Inspect Collaboration").alwaysOnTop_(true).front;
-			t = TextView(w.asView,Rect(10,10, 380,360))
-				.hasHorizontalScroller_(true)
-				.hasVerticalScroller_(true)
-				.autohidesScrollers_(true)
-				.resize_(5);
-			t.focus;
-			AppClock.sched(0,{
-				if (w.isClosed.not) {
-					text="";
-					studio.network.collaboration.getSlots.do({|a,i|
-						string=a.asString;
-						text=text++string;
-						tSize=23-(string.size.clip(0,22));
-						if (i.odd) {text=text++"\n"} {tSize.do({text=text++" "})}
-					});
-					t.string_(text);
-					0.25
-				}{
-				   nil
-				}
-			});
-		});
-
-		SCMenuItem.new(menu,  "Inspect: Protocols").action_({
-			var w,t,text,string,tSize;
-			w = Window.new("Inspect Comms",Rect(128,64,500,160)).alwaysOnTop_(true).front;
-			t = TextView(w.asView,Rect(10,10, 480,130))
-				.hasHorizontalScroller_(true)
-				.hasVerticalScroller_(true)
-				.autohidesScrollers_(true)
-				.resize_(5);
-			t.focus;
-			AppClock.sched(0,{
-				if (w.isClosed.not) {
-					text="";
-					["network           ",LNX_Protocols.network,
-					 "\nobjects           ",LNX_Protocols.objects,
-					 "\npermanentObjects  ",LNX_Protocols.permanentObjects,
-					 "\nmessages         ",LNX_Protocols.messages,
-					 "\ntasks             ",LNX_Protocols.tasks,
-					 "\nvariableParameters",LNX_Protocols.variableParameters
-
-					].do{|i| text=text++(i.asString)};
-
-					t.string_(text);
-					0.25
-				}{
-				   nil
-				}
-			});
-		});
-
-		SCMenuItem.new(menu,  "Inspect: OnSoloGroup").action_({
-			var w,t,text,string,tSize,oSG;
-			w = Window.new("Inspect OnSoloGroup",Rect(928,264,200,460))
-				.alwaysOnTop_(true).front;
-			t = TextView(w.asView,Rect(10,10, 180,430))
-				.hasHorizontalScroller_(true)
-				.hasVerticalScroller_(true)
-				.autohidesScrollers_(true)
-				.resize_(5);
-			t.focus;
-			AppClock.sched(0,{
-				if (w.isClosed.not) {
-					text="Actual OnSolo\n";
-
-					oSG=studio.onSoloGroup;
-
-					oSG.onSolos.keys.asList.sort.collect{|i|
-						[oSG.onSolos[i].on,oSG.onSolos[i].solo]
-					}.do{|i,j|
-						text=text+j+":"+(i.asString)+"\n";
-					};
-
-					[
-					"\n",
-					oSG.usersOnSoloList.asString
-					].do{|i| text=text++(i.asString)};
-					t.string_(text);
-					0.25
-				}{
-				   nil
-				}
-			});
-		});
-
-	}
-
-
-	*addDebugMenusXPlat{|studio,menu|}
 
 }

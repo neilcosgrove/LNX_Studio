@@ -464,7 +464,7 @@
 		w=thisWidth-12;
 
 		// scroll view for network dialog
-		gui[\netScrollView] = MVC_RoundedScrollView(mixerWindow, Rect(11,349+25,w-10,h-25))
+		gui[\netScrollView] = MVC_RoundedScrollView(mixerWindow, Rect(11,374+yos,w-10,h-25))
 			.resizeList_([1,1,1,1,1]) //  0:view 1:left 2:top 3:right 4:bottom
 			.color_(\background,Color(59/77,59/77,59/77))
 			.color_(\border,Color(6/11,42/83,29/65))
@@ -527,8 +527,8 @@
 	autoSizeGUI{
 		var h;
 		h=network.collaboration.autoSizeGUI(0);
-		mixerGUI[\libraryScrollView].bounds_(Rect(11, 13, 190, 269+15-h+8+30+21));
-		gui[\netScrollView].bounds_(Rect(11,319+30+15-h+8,190,105));
+		mixerGUI[\libraryScrollView].bounds_(Rect(11, 13+yos, 190, 343+yos-h));
+		gui[\netScrollView].bounds_(Rect(11,372+yos-h,190,105));
 	}
 
 

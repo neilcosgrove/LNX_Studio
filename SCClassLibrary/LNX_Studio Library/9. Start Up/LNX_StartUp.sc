@@ -9,7 +9,7 @@
 
 LNX_StartUp {
 
-	classvar >studio;
+	classvar >studio, <hasWindowMenus=false;
 
 	*initClass{
 		Class.initClassTree(LNX_File);
@@ -61,47 +61,34 @@ LNX_StartUp {
 	*xPlatStartUp{
 		studio = LNX_Studio(Server.local); 	// start the studio, use local server
 //		studio = LNX_Studio(Server.internal); // start the studio, use internal server
-
-		// add appropriate menus
-		if (studio.showDev) {
-			LNX_AppMenus.addDeveloperMenus(studio);
-		};
-		if (studio.isStandalone) {
-			LNX_AppMenus.addReleaseMenus(studio);
-		};
-
+		LNX_AppMenus.studio_(studio);
 		thisProcess.platform.recordingsDir = (Platform.userHomeDir +/+ "Desktop").standardizePath;
 	}
 
 	// TODO: any windows specific startup here
 	*windowsStartUp{
+		hasWindowMenus = true;
 		this.xPlatStartUp;
 		this.postStartUp;
 	}
 
 	// TODO: any linux specific startup here
 	*linuxStartUp{
+		hasWindowMenus = true;
 		this.xPlatStartUp;
 		this.postStartUp;
 	}
 
 	*osxStartUp{
-
+		hasWindowMenus = false;
 		Server.quitAll;
-
 		studio = LNX_Studio(Server.local); 	// start the studio, use local server
 //		studio = LNX_Studio(Server.internal); // start the studio, use internal server
-
-		// so menus can access studio
-		LNX_AppMenus.studio_(studio);
-
+		LNX_AppMenus.studio_(studio); // so menus can access studio
 		// set the recording directory
 		thisProcess.platform.recordingsDir = "~/Desktop".standardizePath;
-
 		//SCDoc.renderAll;
-
 		SCDoc.indexAllDocuments;
-
 		this.postStartUp;
 	}
 

@@ -383,7 +383,7 @@ MVC_OnOffView : MVC_View {
 					lw=lh=nil;
 					startX=x;
 					startY=y;
-					if (verbose==verbose) {view.bounds.postln};
+					if (verbose) {view.bounds.postln};
 				}{
 					evaluateAction=true;
 					if (buttonNumber==2) {
