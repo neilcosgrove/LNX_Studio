@@ -21,7 +21,7 @@ w.create;
 MVC_PopUpMenu3 : MVC_View {
 
 	var indexValue=0, <>menuFont, <>style=0, <>staticText, <>showTick=true, <down=false,
-		<startTime, <textView, <menuRect, <menuWindow, <>updateFunc;
+		<startTime, <textView, <menuRect, <menuWindow, <>updateFunc, <>menuOpen=false;
 	var <highlight = 1;
 
 	var <>isPOPcanTurnOnOff = false;
@@ -67,7 +67,11 @@ MVC_PopUpMenu3 : MVC_View {
 					if (midiLearn) {
 						colors[\midiLearn].set;
 					}{
-						(colors[\background]*(highlight)).set;
+						if (menuOpen) {
+							(colors[\background]*(highlight)*0.5).set;
+						}{
+							(colors[\background]*(highlight)).set;
+						}
 					};
 					Pen.fillRect(r1);
 
@@ -141,7 +145,7 @@ MVC_PopUpMenu3 : MVC_View {
 			}
 	}
 
-	openMenu{
+	openMenu{|xos=0,yos=0|
 		var summary, summaryList;
 		var selectView, selected, class, sB, rect;
 		var menuList, pop, task, used;
@@ -162,16 +166,16 @@ MVC_PopUpMenu3 : MVC_View {
 			mousePos = Rect(GUI.cursorPosition.x, GUI.cursorPosition.y, 0, 0).convert;
 
 			menuRect=rect=Rect(
-				mousePos.left,
-				mousePos.top-(h*(items.size-1)),
+				mousePos.left+xos,
+				mousePos.top-(h*(items.size-1))+yos,
 				w+4, h*(items.size)+4
 			).convert;
 
 			// resize and adjust position for size of screen
 			rect2 = rect.copy;
-			// rect2 = rect2.height_(rect2.height.clip(0,Window.screenBounds.height-60)) ;
-			// moveY = (Window.screenBounds.height - rect2.top - rect2.height-80).clip(-inf,0);
-			// rect2 = rect2.moveBy(0,moveY);
+			rect2 = rect2.height_(rect2.height.clip(0,Window.screenBounds.height-60)) ;
+			moveY = (Window.screenBounds.height - rect2.top - rect2.height-80).clip(-inf,0);
+			rect2 = rect2.moveBy(0,moveY);
 
 			// the window
 			menuWindow=MVC_Window("", rect2, border:false, scroll:true)
@@ -327,10 +331,15 @@ MVC_PopUpMenu3 : MVC_View {
 			menuWindow.create;
 			menuWindow.view.alpha_(0.935);
 
+			menuOpen = true;
+			this.refresh;
+
 			// must be done here
 			menuWindow.view.endFrontAction_{
 				task.stop;
 				menuWindow.free;
+				menuOpen = false;
+				this.refresh;
 			};
 
 		};
@@ -352,7 +361,7 @@ MVC_PopUpMenu3 : MVC_View {
 						if ((menuWindow.notNil) and:{menuWindow.isOpen}) {
 							// do nothing, it will close on its own
 						}{
-							this.openMenu
+							this.openMenu(x.neg,y-(me.bounds.height)-3)
 						}
 					};
 				};
