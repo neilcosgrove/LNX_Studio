@@ -149,7 +149,7 @@ MVC_PopUpMenu3 : MVC_View {
 		var summary, summaryList;
 		var selectView, selected, class, sB, rect;
 		var menuList, pop, task, used;
-		var w,h;
+		var w,h, lastMousePos;
 
 		if (menuWindow.notNil) { menuWindow.close };
 
@@ -180,35 +180,36 @@ MVC_PopUpMenu3 : MVC_View {
 			// the window
 			menuWindow=MVC_Window("", rect2, border:false, scroll:true)
 				.color_(\background, Color(0,0,0))
+				.acceptsMouseOver_(true)
 				.alwaysOnTop_(true);
+
+			lastMousePos = GUI.cursorPosition;
 
 			// to help fix mouseOver bug
 			task=Task({{
-				if (menuWindow.isClosed.not) {
-					menuWindow.acceptsMouseOver_(false);
-					menuWindow.acceptsMouseOver_(true);
-					menuWindow.front;
-					// and also front window after menu item not selected
-				};
-				if (menuWindow.view.view.absoluteBounds.contains(GUI.cursorPosition).not) {
-					// not in bounds
-					if (selected.notNil){
-						selected=nil;
-						selectView.refresh;
-					};
+				var currentPos = GUI.cursorPosition;
+				if (lastMousePos==currentPos) {
 					0.1.wait;
 				}{
-					if (down) {
-						var cord = GUI.cursorPosition.convert-(menuWindow.bounds.leftTop);
-						textView.mouseOverAction.value(textView, cord.x, cord.y);
-						0.05.wait;
-					}{
+					if (menuWindow.view.view.absoluteBounds.contains(currentPos).not) {
+						// not in bounds
+						if (selected.notNil){
+							selected=nil;
+							selectView.refresh;
+						};
 						0.1.wait;
+					}{
+						if (down) {
+							var cord = currentPos.convert-(menuWindow.bounds.leftTop);
+							textView.mouseOverAction.value(textView, cord.x, cord.y);
+							0.05.wait;
+						}{
+							0.1.wait;
+						};
 					};
-				};
+					lastMousePos = currentPos;
+				}
 			}.loop},AppClock).start;
-
-
 
 			// the mouse over selection view
 			selectView=MVC_UserView(menuWindow,Rect(0,1,w+2,h*(items.size)))

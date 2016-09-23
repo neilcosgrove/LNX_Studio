@@ -96,10 +96,10 @@ MVC_OnOffRoundedView : MVC_View {
 
 									)|@|(
 										value.round.asInt)).asString,
-									Rect(0,0,w,h));
+									Rect(0,1,w,h));
 							}{
 								Pen.stringCenteredIn((permanentStrings|@|(value.round.asInt))
-									.asString,Rect(0,0,w,h));
+									.asString,Rect(0,1,w,h));
 							};
 						}
 						{mode==='play'}{
