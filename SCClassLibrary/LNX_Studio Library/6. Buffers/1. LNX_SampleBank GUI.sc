@@ -22,18 +22,18 @@
 		// + update gui
 		guiList.do{|gui,j|
 			if (i==j) {
-				gui[\compositeView].color_(\background, Color(0.8,0.8,0.8));
+				gui[\compositeView].color_(\background, Color.new255(232,232,232));
 
 				if (gui[\compositeView2].notNil) {
-					gui[\compositeView2].color_(\background, Color(0.8,0.8,0.8));
+					gui[\compositeView2].color_(\background, Color.new255(232,232,232));
 				};
 
 				if (focus) {gui[\mouseActions].focus};
 			}{
-				gui[\compositeView].color_(\background, Color(0.4,0.4,0.4));
+				gui[\compositeView].color_(\background, Color.new255(173,173,173));
 
 				if (gui[\compositeView2].notNil) {
-					gui[\compositeView2].color_(\background, Color(0.7,0.7,0.7));
+					gui[\compositeView2].color_(\background, Color.new255(173,173,173));
 				};
 
 			};

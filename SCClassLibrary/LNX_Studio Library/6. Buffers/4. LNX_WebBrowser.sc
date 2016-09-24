@@ -119,6 +119,7 @@ LNX_WebBrowser{
 	isOpen{ if (window.isNil) {^false} {^ window.isClosed.not } }
 	isClosed{^this.isOpen.not}
 
+	// open me if not already created
 	open{
 		if (window.isClosed) {
 			window.create;
@@ -128,6 +129,7 @@ LNX_WebBrowser{
 		}
 	}
 
+	// now close me
 	close{ if (window.notNil) {window.close} }
 
 	// create the gui
@@ -175,19 +177,39 @@ LNX_WebBrowser{
 
 		gui[\window]=window;
 
-		gui[\masterCom] = MVC_RoundedComView(window, 				Rect(9,9,bounds.width-18,bounds.height-17),
-				( \background:Color(0.80,0.80,0.80),
+		gui[\masterCom] = MVC_RoundedComView(window, Rect(9,9,bounds.width-18,bounds.height-17),
+				( \background:Color(0.40,0.40,0.40),
 					\border: Color(42/83,29/65,6/11),
 					\border2: Color(0,1/103,3/77) )
 			);
 
-		gui[\browserCompositeView] = MVC_CompositeView(gui[\masterCom], 									Rect(122-9,0,bounds.width-131,bounds.height-20))
+		// the Web / Dialog tab view
+		gui[\tabView] =MVC_TabbedView(gui[\masterCom],Rect(115,2,bounds.width-133,bounds.height-22))
+			.action_{|me|}
+			.labels_(["Web","Dialog"])
+			.resize_(2)
+			.font_(Font("Helvetica", 14))
+			.tabPosition_(\top)
+			.unfocusedColors_( Color(0.6,0.6,0.6)!2)
+			.labelColors_(   Color(0.8,0.8,0.8)!2 )
+			.backgrounds_(  Color(0.8,0.8,0.8)!2 )
+			.tabCurve_(5)
+			.tabHeight_(18)
+			.followEdges_(true)
+			.value_(0)
+			.resizeAction_{};
+
+		gui[\webTab] = gui[\tabView].mvcTab(0);
+
+		gui[\browserCompositeView] = MVC_CompositeView(gui[\webTab],Rect(0,2,bounds.width-131,bounds.height-40))
 			.resize_(5)
 			.hasBorder_(false); // but this shows a different story
 
+		this.createDialogWidgets(gui[\tabView].mvcTab(1),bounds);
+
 		// the main web view (***!!!! this must be before ANY ScrollView else it hangs!!!***)
 		gui[\webView] = MVC_WebView(gui[\browserCompositeView],
-			gui[\browserCompositeView].bounds.size.asRect.resizeBy(0,-60).moveBy(0,29))
+			gui[\browserCompositeView].bounds.size.asRect.resizeBy(-5,-60).moveBy(0,29))
 			.resize_(5)
 			.url_(url)
 			.onLinkActivated_{|view,url|
@@ -224,8 +246,8 @@ LNX_WebBrowser{
 			};
 
 		// the sampleBank (***!!!! this must be after ANY WebView else it hangs!!!***)
-		gui[\sampleBankCompositeView] = MVC_ScrollView(window,Rect(9,9,112,bounds.height-18-32))
-			.color_(\background, Color(0.3,0.3,0.3))
+		gui[\sampleBankCompositeView] = MVC_ScrollView(window,Rect(9,9,112,bounds.height-50))
+			.color_(\background, Color.new255(142,142,142))
 			.autoScrolls_(true)
 			.hasVerticalScroller_(true)
 			.hasHorizontalScroller_(false)
@@ -235,8 +257,8 @@ LNX_WebBrowser{
 		sampleBank.window_(gui[\sampleBankCompositeView]);
 
 		// the address text field
-		gui[\addressView] = MVC_Text(gui[\browserCompositeView],gui[\textTheme],Rect(85, 14-4-7,
-									gui[\browserCompositeView].bounds.width-89-30, 20))
+		gui[\addressView] = MVC_Text(gui[\browserCompositeView],gui[\textTheme],Rect(85, 3,
+									gui[\browserCompositeView].bounds.width-119, 20))
 			.string_(url)
 			.resize_(2)
 			.enterKeyAction_{|me,string|
@@ -248,8 +270,8 @@ LNX_WebBrowser{
 			};
 
 		// the download url text field
-		gui[\urlView] = MVC_Text(gui[\browserCompositeView],gui[\textTheme],Rect(78, 585,
-							 gui[\browserCompositeView].bounds.width-265-25, 20))
+		gui[\urlView] = MVC_Text(gui[\browserCompositeView],gui[\textTheme],Rect(54, 565,
+							 gui[\browserCompositeView].bounds.width-266, 20))
 			.string_("")
 			.resize_(8)
 			.canEdit_(true)
@@ -265,7 +287,7 @@ LNX_WebBrowser{
 
 		// find text
 		gui[\findTextView] = MVC_Text(gui[\browserCompositeView],gui[\textTheme],
-						Rect(gui[\browserCompositeView].bounds.width-130-25,585,120, 20))
+						Rect(gui[\browserCompositeView].bounds.width-155,565,120, 20))
 			.string_("")
 			.resize_(9)
 			.enterStopsEditing_(false)
@@ -278,7 +300,7 @@ LNX_WebBrowser{
 
 		// find button
 		MVC_FlatButton(gui[\browserCompositeView],
-			Rect(gui[\browserCompositeView].bounds.width-130-47-25, 592-7, 40, 20),
+			Rect(gui[\browserCompositeView].bounds.width-202, 565, 40, 20),
 											gui[\buttonTheme2 ] ,"Find")
 			.font_(Font("Helvetica", 12, true))
 			.resize_(9)
@@ -293,7 +315,7 @@ LNX_WebBrowser{
 
 		// filter
 		MVC_FlatButton(gui[\browserCompositeView] , "search", gui[\buttonTheme2 ],
-					Rect(gui[\browserCompositeView].bounds.width-28, 592-7, 20, 20))
+					Rect(gui[\browserCompositeView].bounds.width-28, 565, 20, 20))
 			.rounded_(true)
 			.mode_(\icon)
 			.resize_(9)
@@ -322,13 +344,13 @@ LNX_WebBrowser{
 			};
 
 		// forward
-		MVC_FlatButton(gui[\browserCompositeView],Rect(44-14, 10-7, 20, 20),
+		MVC_FlatButton(gui[\browserCompositeView],Rect(30, 3, 20, 20),
 											gui[\buttonTheme2] ,"play")
 			.mode_(\icon)
 			.action_{gui[\webView].forward};
 
 		// download selected url
-		MVC_FlatButton(gui[\browserCompositeView],Rect(32, 592-7, 20, 20),
+		MVC_FlatButton(gui[\browserCompositeView],Rect(8, 565, 20, 20),
 											gui[\buttonTheme2 ] ,"down")
 			.mode_(\icon)
 			.resize_(7)
@@ -344,7 +366,7 @@ LNX_WebBrowser{
 			};
 
 		// file icon
-		MVC_Icon(gui[\browserCompositeView],Rect(44+24-2-14, 592-5-7, 30, 30))
+		MVC_Icon(gui[\browserCompositeView],Rect(28, 560, 30, 30))
 			.icon_("file")
 			.color_(\iconDown,Color.white)
 			.resize_(7)
@@ -355,7 +377,7 @@ LNX_WebBrowser{
 			};
 
 		// favourites menu
-		gui[\favMenu] = MVC_PopUpMenu3( gui[\browserCompositeView], Rect(59+1, 4+1, 17, 17))
+		gui[\favMenu] = MVC_PopUpMenu3( gui[\browserCompositeView], Rect(60, 5, 17, 17))
 			.color_(\background,Color(6/11,42/83,29/65))
 			.staticText_("")
 			.showTick_(false)
@@ -367,7 +389,7 @@ LNX_WebBrowser{
 
 		// History menu
 		gui[\historyMenu] = MVC_PopUpMenu3( gui[\browserCompositeView],
-					 Rect(gui[\browserCompositeView].bounds.width-28+1, 4+1, 17, 17))
+					 Rect(gui[\browserCompositeView].bounds.width-27, 5, 17, 17))
 			.color_(\background,Color(6/11,42/83,29/65))
 			.staticText_("")
 			.showTick_(false)
@@ -378,11 +400,7 @@ LNX_WebBrowser{
 				me.value_(0);
 			};
 
-		// preview
-		MVC_OnOffView(gui[\browserCompositeView], Rect(20-14,592-7,20,20),
-						classModels[\preview], gui[\onOffTheme ], "speaker")
-			.resize_(7)
-			.mode_(\icon);
+
 
 		MVC_PlainSquare(window, Rect(9, 589, 111, 32) )
 			.color_(\on,Color(0.23,0.23,0.23))
@@ -390,7 +408,7 @@ LNX_WebBrowser{
 			.resize_(7);
 
 		// sample List menu
-		MVC_PopUpMenu3(window, Rect(18+2,596,17,17))
+		MVC_PopUpMenu3(window, Rect(15,596,17,17))
 			.color_(\background,Color(6/11,42/83,29/65))
 			.resize_(7)
 			.staticText_("")
@@ -406,13 +424,13 @@ LNX_WebBrowser{
 			};
 
 		// delete
-		MVC_FlatButton(window, Rect(49+1,595,22,20), "delete", gui[\buttonTheme2])
+		MVC_FlatButton(window, Rect(38,595,22,20), "delete", gui[\buttonTheme2])
 			.mode_(\icon)
 			.resize_(7)
 			.action_{sampleBank.deleteSelectedSample};
 
 		// edit meta
-		MVC_FlatButton(window, Rect(86,595,22,20), "sine")
+		MVC_FlatButton(window, Rect(65,595,22,20), "sine")
 			.color_(\up,Color(35/48,35/48,40/48)/3 )
 			.color_(\down,Color(35/48,35/48,40/48)/3 )
 			.color_(\string,Color.white)
@@ -420,6 +438,12 @@ LNX_WebBrowser{
 			.mode_(\icon)
 			.resize_(7)
 			.action_{ sampleBank.openSelectedMeta(window)};
+
+		// previewp
+		MVC_OnOffView(window, Rect(92,595,22,20), classModels[\preview], gui[\onOffTheme ], "speaker")
+			.resize_(7)
+			.mode_(\icon);
+
 
 		MVC_PlainSquare(window, Rect(120, 589, 1, 32) )
 			.color_(\on,Color.black)
@@ -437,6 +461,96 @@ LNX_WebBrowser{
 			.resize_(7);
 
 		guis=guis.add(gui);
+
+	}
+
+	// make the widgets for the dialog browser
+	createDialogWidgets{|window,bounds|
+		var basepath = (LNX_BufferProxy.cashePath)++"/"; // base folder for cashe files
+		var fileBase = basepath ++ "file/";				 // user folder
+		var path = fileBase;                             // current path
+		var history = [ path ];                          // history of navigation
+		var contents, folders, files, items, itemNames, listView, textView;
+		// function that creates lists based on contents of path and sets gui
+		var pathContents = {
+			contents  = path.folderContents(0);			 // everything in path
+			folders   = contents.select{|i| i.isFolder };// just the folders
+			// and these are the sound files (selected by LNX_WebBrowser.formats)
+			files     = contents.select{|i| (LNX_WebBrowser.formats.includes(i.extension.toLower.asSymbol)) };
+			items     = folders ++ files;				 // all files & folders
+			itemNames = folders.collect{|i| "./" ++ i.basename} ++ files.collect(_.basename); // friendly names
+			listView.items_(itemNames);
+			listView.value_(0);
+			textView.string_("."++path.dropFolder(4));
+		};
+
+		// list view of path items
+		listView=MVC_ListView2(window,Rect(3,30,bounds.width-141,bounds.height-74))
+			.color_(\background, Color.black)
+			.items_([])
+			.font_(Font("Helvetica",14,true))
+			.actions_(\upDoubleClickAction,{|me|
+				var index=me.value.asInt;
+				if (items[index].isFolder) {       // if its a folder
+					path=items[index];             // make the path this
+					history = history.add(path);   // add to history
+					pathContents.();               // update to this new path
+				    listView.zeroOrigin;           // scoll to top
+				};
+			})
+			.actions_(\anyClickAction,{|me|
+				var index=me.value.asInt;
+				if (items[index].isFolder.not) {					// if not folder is sound file
+					var file = items[index][basepath.size..];		// remove basepath from filename
+					var firstDir = PathName(file).diskName;			// what is the 1st folder called
+					file = firstDir++":/"++file[firstDir.size..];	// now use this to add prefix file://
+					sampleBank.guiAddURL(file);						// add the sample to the bank
+				};
+			});
+
+		// text view of current path
+		textView = MVC_Text(window, Rect(120,5,600,25))
+			.color_(\string,Color.black)
+			.string_("")
+			.shadow_(false)
+			.mouseDownAction_{ textView.color_(\string,Color.white) }
+			.mouseUpAction_{
+				textView.color_(\string,Color.black);
+				(items[listView.value.asInt]).revealInFinder;
+			};
+
+		pathContents.();
+
+		// back
+		MVC_FlatButton(window,Rect(5,5,20,20),gui[\buttonTheme2],"back")
+			.mode_(\icon)
+			.action_{
+				if (history.size>1) {
+					history = history.drop(-1);
+					path = history.last;
+				};
+				pathContents.();
+				listView.zeroOrigin;
+			};
+
+
+		// all button
+		MVC_FlatButton(window, Rect (30,5,30,20),gui[\buttonTheme2],"All")
+			.font_(Font("Helvetica", 12, true))
+			.action_{
+				path=basepath;
+				pathContents.();
+				listView.zeroOrigin;
+			};
+
+		// local button
+		MVC_FlatButton(window, Rect (66,5,46,20), gui[\buttonTheme2], "Local")
+			.font_(Font("Helvetica", 12, true))
+			.action_{
+				path=fileBase;
+				pathContents.();
+				listView.zeroOrigin;
+			};
 
 	}
 

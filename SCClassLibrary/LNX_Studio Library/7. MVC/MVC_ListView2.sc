@@ -73,7 +73,7 @@ MVC_ListView2 : MVC_View {
 			MVC_LazyRefresh.incRefresh;
 			if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 			Pen.use{
-				w=scrollView.bounds.width;
+				w=me.bounds.width;
 
 				if (me.bounds.width!= w) { {me.bounds_(me.bounds.width_(w)) }.defer  };
 
@@ -99,18 +99,19 @@ MVC_ListView2 : MVC_View {
 						}{
 							Pen.fillColor_(colors[\selectedString]);
 						};
-						Pen.stringLeftJustIn(item,Rect(0,n*fontHeight,w,fontHeight));
+						Pen.stringLeftJustIn(item,Rect(1,n*fontHeight,w,fontHeight));
 					}{
 						if (hilite[n].isKindOf(Color)) {
 							Pen.fillColor_(hilite[n]);
 						}{
 							Pen.fillColor_(colors[\string]);
 						};
-						Pen.stringLeftJustIn(item,Rect(0,n*fontHeight,w,fontHeight));
+						Pen.stringLeftJustIn(item,Rect(1,n*fontHeight,w,fontHeight));
 
 					};
 
 				};
+
 			};
 
 		};
@@ -133,7 +134,8 @@ MVC_ListView2 : MVC_View {
 	}
 
 	internalHeight{
-		^(items.size*fontHeight).clip(h-1,h+(items.size*fontHeight));
+		var h = scrollView.bounds.height;
+		^(items.size*fontHeight).clip(h,h.max(items.size*fontHeight));
 	}
 
 	minSize{
@@ -150,6 +152,8 @@ MVC_ListView2 : MVC_View {
 			}
 		};
 	}
+
+	zeroOrigin{scrollView.visibleOrigin_(0@0)}
 
 	canSee{
 		if (view.notClosed) {
