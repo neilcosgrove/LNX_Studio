@@ -369,9 +369,6 @@ LNX_MIDIControl {
 					//.hasHorizontalScroller_(false)
 					//.hasVerticalScroller_(false);
 
-
-
-
 				headerGUI = StaticText.new(gui[\scrollView],Rect(16, 6, 480, 22))
 					.font_(Font("Helvetica",12,true))
 					.string_("MIDI Controls: "++(displayParent.controlTitle))
@@ -379,7 +376,8 @@ LNX_MIDIControl {
 					.action_{|v| };
 
 				StaticText.new(gui[\scrollView],Rect(16, 8+17, 480, 22))
-					.string_("       Path                        Parameter"++						"               MIDI Port                 Ch    Num  Min   Max  Type")
+					.string_("       Path                    Parameter"++
+					"          MIDI Port            Ch   Num  Min  Max  Type")
 					.stringColor_(Color.black)
 					.action_{|v| };
 
