@@ -1,10 +1,10 @@
 /*
-(
+
 w=MVC_Window().setInnerExtent(170,320).color_(\background, Color.grey(0.2)).create;
 v=MVC_ListView2(w,Rect(10,10,150,300))
 	.items_(["a","b","c"])
 	.actions_(\upDoubleClickAction,{|val| val.postln; w.close})
-)
+
 
 v.hilite_(0,Color.red);
 v.hilite_(1,Color.green);
@@ -16,9 +16,9 @@ v.hilite_(0,nil);
 
 MVC_ListView2 : MVC_View {
 
-	var <scrollView, <>fontHeight=18, lastEnterTime=0;
+	var <scrollView, <>fontHeight=18;
 
-	var <hilite;
+	var <hilite, <intHeight, <>folderDialog=false;
 
 	initView{
 		colors=colors++(
@@ -64,7 +64,7 @@ MVC_ListView2 : MVC_View {
 			.autohidesScrollers_(false)
 			.resize_(5);
 
-		view=UserView(scrollView,Rect(0,0,w,this.internalHeight));
+		view=UserView(scrollView,Rect(0,0,w-2,this.internalHeight));
 
 		view.resize_(5);
 
@@ -73,20 +73,15 @@ MVC_ListView2 : MVC_View {
 			MVC_LazyRefresh.incRefresh;
 			if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 			Pen.use{
-				w=me.bounds.width;
-
-				if (me.bounds.width!= w) { {me.bounds_(me.bounds.width_(w)) }.defer  };
-
-				h=me.bounds.height;
 
 				if (showLabelBackground) {
 					Color.black.alpha_(0.2).set;
-					Pen.fillRect(Rect(0,0,w,h));
+					Pen.fillRect(Rect(0,0,w,intHeight));
 				};
 
 				Pen.smoothing_(false);
 				colors[enabled.if(\background,\backgroundDisabled)].set;
-				Pen.fillRect(Rect(0,0,w,h));
+				Pen.fillRect(Rect(0,0,w,intHeight));
 				Pen.font_(font);
 				Pen.smoothing_(true);
 
@@ -95,19 +90,29 @@ MVC_ListView2 : MVC_View {
 						colors[\hilite].set;
 						Pen.fillRect(Rect(0,n*fontHeight,w,fontHeight));
 						if (hilite[n].isKindOf(Color)) {
-							Pen.fillColor_(hilite[n]);
+							Pen.fillColor_(hilite[n].set);
 						}{
-							Pen.fillColor_(colors[\selectedString]);
+							Pen.fillColor_(colors[\selectedString].set);
 						};
-						Pen.stringLeftJustIn(item,Rect(1,n*fontHeight,w,fontHeight));
+						if ((folderDialog)and:{item[0..1]=="./"}) {
+							Pen.stringLeftJustIn(item.drop(2),Rect(fontHeight+4,n*fontHeight,w,fontHeight));
+							DrawIcon.symbolArgs(\folder,Rect(0,n*fontHeight-2,fontHeight+4,fontHeight+2));
+						}{
+							Pen.stringLeftJustIn(item,Rect(3,n*fontHeight,w,fontHeight));
+						};
 					}{
 						if (hilite[n].isKindOf(Color)) {
-							Pen.fillColor_(hilite[n]);
+							Pen.fillColor_(hilite[n].set);
 						}{
-							Pen.fillColor_(colors[\string]);
+							Pen.fillColor_(colors[\string].set);
 						};
-						Pen.stringLeftJustIn(item,Rect(1,n*fontHeight,w,fontHeight));
 
+						if ((folderDialog)and:{item[0..1]=="./"}) {
+							Pen.stringLeftJustIn(item.drop(2),Rect(fontHeight+4,n*fontHeight,w,fontHeight));
+							DrawIcon.symbolArgs(\folder,Rect(-1,n*fontHeight-3,fontHeight+6,fontHeight+4));
+						}{
+							Pen.stringLeftJustIn(item,Rect(3,n*fontHeight,w,fontHeight));
+						};
 					};
 
 				};
@@ -127,19 +132,34 @@ MVC_ListView2 : MVC_View {
 		this.refresh;
 	}
 
+		// set the bounds
+	bounds_{|argRect|
+		rect=argRect;
+		l=rect.bounds.left;
+		t=rect.bounds.top;
+		w=rect.bounds.width;
+		h=rect.bounds.height;
+		if (view.notClosed) {
+			scrollView.bounds_(rect);
+			view.bounds_(Rect(0,0,w-2,this.internalHeight));
+		}
+	}
+
 	autoSize{
 		if (view.notClosed) {
-			view.bounds_(Rect(0,0,w,this.internalHeight+1));
+			w = scrollView.bounds.width;
+			h = scrollView.bounds.height;
+			view.bounds_(Rect(0,0,w-2,this.internalHeight));
 		};
 	}
 
 	internalHeight{
 		var h = scrollView.bounds.height;
-		^(items.size*fontHeight).clip(h,h.max(items.size*fontHeight));
+		^ intHeight = (items.size*fontHeight).clip(h,h.max(items.size*fontHeight));
 	}
 
 	minSize{
-		view.bounds_(Rect(0,0,w+2,h)); // what is this??
+		view.bounds_(Rect(0,0,w-2,h)); // what is this??
 	}
 
 	showItem{
@@ -234,50 +254,38 @@ MVC_ListView2 : MVC_View {
 		// nothing lets this view has focus so no key actions used at the moment
 		view.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 			var index;
-			[me, char, modifiers, unicode, keycode, key].postln;
 
 			// delete
-			if (unicode==127)  {
+			if ((key.isBackspace) || (key.isDel))  {
 				this.specialActions(\deleteKeyAction, this);
-				//if (model.notNil) { model.valueActions(\deleteKeyAction, this) };
 			};
 
-			// space & return
-			if ((char == $ )||(char == $\n)||(char == $\r)) {
-				if ((SystemClock.now-lastEnterTime)<0.5) {
-					this.specialActions(\tripleClickAction, this);
-					//if (model.notNil) { model.valueActions(\tripleClickAction, this) };
-				}{
-					this.specialActions(\enterKeyAction, this);
-					//if (model.notNil) { model.valueActions(\enterKeyAction, this) };
-				};
-				lastEnterTime=SystemClock.now;
-			};
-			// right arrow
-			if (char == 3.asAscii, {
-				//this.valueAction = (this.value + 1).wrap(0,items.size-1);
+			// return
+			if (key.isEnter) {
+				this.valueAction = (this.value.asInt + 1).wrap(0,items.size-1);
 				this.specialActions(\enterKeyAction, this);
-				//if (model.notNil) { model.valueActions(\enterKeyAction, this) };
+			};
+
+			// space
+			if (key.isSpace) {
+				this.specialActions(\enterKeyAction, this);
+			};
+
+			// right arrow
+			if (key.isRight, {
+				this.valueAction = (this.value.asInt + 1).wrap(0,items.size-1);
 			});
 			// left arrow
-			if (unicode == 16rF702, {
+			if (key.isLeft, {
 				this.valueAction = (this.value.asInt - 1).wrap(0,items.size-1);
-				this.specialActions(\enterKeyAction, this);
-				//if (model.notNil) { model.valueActions(\enterKeyAction, this) };
 			});
 			// up arrow
-			if (unicode == 16rF700, {
-				this.valueAction =  (this.value.asInt - 1).wrap(0,items.size-1)
-
+			if (key.isUp, {
+				this.valueAction = (this.value.asInt - 1).wrap(0,items.size-1)
 			});
 			// down arrow
-			if (unicode == 16rF703, {
-				this.valueAction =  (this.value.asInt + 1).wrap(0,items.size-1)
-
-			});
-			// ?
-			if (unicode == 16rF701, {
-				this.valueAction =  (this.value.asInt + 1).wrap(0,items.size-1)
+			if (key.isDown, {
+				this.valueAction = (this.value.asInt + 1).wrap(0,items.size-1)
 			});
 
 			if (char.isAlpha, {
@@ -287,6 +295,8 @@ MVC_ListView2 : MVC_View {
 					this.valueAction = index
 				});
 			});
+
+			true
 
 		}
 	}
@@ -319,20 +329,6 @@ MVC_ListView2 : MVC_View {
 		this.adjustLabels;
 	}
 
-
-	// set the bounds
-	bounds_{|argRect|
-		rect=argRect;
-		l=rect.bounds.left;
-		t=rect.bounds.top;
-		w=rect.bounds.width;
-		h=rect.bounds.height;
-		if (view.notClosed) {
-			scrollView.bounds_(rect);
-			view.bounds_(Rect(0,0,w,this.internalHeight));
-		}
-	}
-
 	// resize action called by parents
 	doResizeAction{
 		if (this.notClosed) {
@@ -340,7 +336,6 @@ MVC_ListView2 : MVC_View {
 			//rect=scrollView.bounds; // needed to change this for scrollView
 
 			// i've deactivated the above becasue i can't work it out
-
 			l=rect.bounds.left;
 			t=rect.bounds.top;
 			w=rect.bounds.width;

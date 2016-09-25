@@ -13,7 +13,7 @@ LNX_WebBrowser{
 	classvar <formats, <homePage, <favourites, <history, <historyMenuItems, <historyFunc,
 			<classModels, <userFilesText, <guiMenuItems, <guiMenuFuncs, <guis;
 
-	var <server, <gui, <window, <url, <downloads, <sampleBank, failedURL, lastURL;
+	var <server, <gui, <window, <url, <downloads, <sampleBank, failedURL, lastURL, listView;
 
 	// init the class
 	*initClass {
@@ -181,13 +181,17 @@ LNX_WebBrowser{
 				( \background:Color(0.40,0.40,0.40),
 					\border: Color(42/83,29/65,6/11),
 					\border2: Color(0,1/103,3/77) )
-			);
+		).resizeAction_{
+			listView.bounds_(Rect(3,30,window.bounds.width-141, window.bounds.height-74));
+		};
 
 		// the Web / Dialog tab view
 		gui[\tabView] =MVC_TabbedView(gui[\masterCom],Rect(115,2,bounds.width-133,bounds.height-22))
-			.action_{|me|}
+			.action_{|me|
+			{listView.bounds_(Rect(3,30,window.bounds.width-141, window.bounds.height-74))}.defer(0.1);
+			}
 			.labels_(["Web","Dialog"])
-			.resize_(2)
+			.resize_(5)
 			.font_(Font("Helvetica", 14))
 			.tabPosition_(\top)
 			.unfocusedColors_( Color(0.6,0.6,0.6)!2)
@@ -196,7 +200,7 @@ LNX_WebBrowser{
 			.tabCurve_(5)
 			.tabHeight_(18)
 			.followEdges_(true)
-			.value_(0)
+			.value_(1)
 			.resizeAction_{};
 
 		gui[\webTab] = gui[\tabView].mvcTab(0);
@@ -466,18 +470,22 @@ LNX_WebBrowser{
 
 	// make the widgets for the dialog browser
 	createDialogWidgets{|window,bounds|
-		var basepath = (LNX_BufferProxy.cashePath)++"/"; // base folder for cashe files
-		var fileBase = basepath ++ "file/";				 // user folder
-		var path = fileBase;                             // current path
-		var history = [ path ];                          // history of navigation
-		var contents, folders, files, items, itemNames, listView, textView;
+		var basepath = (LNX_BufferProxy.cashePath)++"/"; 	// base folder for cashe files
+		var fileBase = basepath ++ "file/";				 	// user folder
+		var path = fileBase;                             	// current path
+		var history = [ path ];                          	// history of navigation
+		var contents, folders, files, items, itemNames, textView;
 		// function that creates lists based on contents of path and sets gui
 		var pathContents = {
-			contents  = path.folderContents(0);			 // everything in path
-			folders   = contents.select{|i| i.isFolder };// just the folders
+			contents  = path.folderContents(0);			 	// everything in path
+			contents  = contents.sort{|a,b| (a.toLower) < (b.toLower)};	// case insentive sory
+			folders   = contents.select{|i| i.isFolder };	// just the folders
+			if (path==basepath) {
+				folders.removeAt(folders.indexOfString(fileBase)); // leave file out of basefolder
+			};
 			// and these are the sound files (selected by LNX_WebBrowser.formats)
 			files     = contents.select{|i| (LNX_WebBrowser.formats.includes(i.extension.toLower.asSymbol)) };
-			items     = folders ++ files;				 // all files & folders
+			items     = folders ++ files;				 	// all files & folders
 			itemNames = folders.collect{|i| "./" ++ i.basename} ++ files.collect(_.basename); // friendly names
 			listView.items_(itemNames);
 			listView.value_(0);
@@ -487,18 +495,28 @@ LNX_WebBrowser{
 		// list view of path items
 		listView=MVC_ListView2(window,Rect(3,30,bounds.width-141,bounds.height-74))
 			.color_(\background, Color.black)
+			.folderDialog_(true)
 			.items_([])
 			.font_(Font("Helvetica",14,true))
 			.actions_(\upDoubleClickAction,{|me|
 				var index=me.value.asInt;
-				if (items[index].isFolder) {       // if its a folder
-					path=items[index];             // make the path this
-					history = history.add(path);   // add to history
-					pathContents.();               // update to this new path
-				    listView.zeroOrigin;           // scoll to top
+				if (items[index].isFolder) {       					// if its a folder
+					path=items[index];           					// make the path this
+					history = history.add(path);   					// add to history
+					pathContents.();               					// update to this new path
+				    listView.zeroOrigin;           					// scoll to top
 				};
 			})
 			.actions_(\anyClickAction,{|me|
+				var index=me.value.asInt;
+				if (items[index].isFolder.not) {					// if not folder is sound file
+					var file = items[index][basepath.size..];		// remove basepath from filename
+					var firstDir = PathName(file).diskName;			// what is the 1st folder called
+					file = firstDir++":/"++file[firstDir.size..];	// now use this to add prefix file://
+					sampleBank.guiAddURL(file);						// add the sample to the bank
+				};
+			})
+			.actions_(\enterKeyAction,{|me|
 				var index=me.value.asInt;
 				if (items[index].isFolder.not) {					// if not folder is sound file
 					var file = items[index][basepath.size..];		// remove basepath from filename
@@ -516,40 +534,41 @@ LNX_WebBrowser{
 			.mouseDownAction_{ textView.color_(\string,Color.white) }
 			.mouseUpAction_{
 				textView.color_(\string,Color.black);
-				(items[listView.value.asInt]).revealInFinder;
+				(items[listView.value.asInt]).revealInFinder;		// open in os
 			};
 
-		pathContents.();
+		pathContents.(); // create lists for 1st creation
 
 		// back
 		MVC_FlatButton(window,Rect(5,5,20,20),gui[\buttonTheme2],"back")
 			.mode_(\icon)
 			.action_{
-				if (history.size>1) {
-					history = history.drop(-1);
-					path = history.last;
+				if (history.size>1) {			// only go back if size>1
+					history = history.drop(-1);	// remove the lastest item
+					path = history.last;		// and goto previous item
 				};
-				pathContents.();
-				listView.zeroOrigin;
+				pathContents.();				// update to this new path
+				listView.zeroOrigin;			// zero the list origin
 			};
 
-
 		// all button
-		MVC_FlatButton(window, Rect (30,5,30,20),gui[\buttonTheme2],"All")
+		MVC_FlatButton(window, Rect (30,5,33,20),gui[\buttonTheme2],"Web")
 			.font_(Font("Helvetica", 12, true))
 			.action_{
-				path=basepath;
-				pathContents.();
-				listView.zeroOrigin;
+				path=basepath;					// basepath has access to web cashe
+				pathContents.();				// update to this new path
+				listView.zeroOrigin;			// zero the list origin
+				history = history.add(path);	// add to history
 			};
 
 		// local button
-		MVC_FlatButton(window, Rect (66,5,46,20), gui[\buttonTheme2], "Local")
+		MVC_FlatButton(window, Rect (68,5,46,20), gui[\buttonTheme2], "Local")
 			.font_(Font("Helvetica", 12, true))
 			.action_{
-				path=fileBase;
-				pathContents.();
-				listView.zeroOrigin;
+				path=fileBase;					// filebase is local content
+				pathContents.();				// update to this new path
+				listView.zeroOrigin;			// zero the list origin
+				history = history.add(path);	// add to history
 			};
 
 	}
