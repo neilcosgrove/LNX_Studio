@@ -123,7 +123,9 @@ LNX_SplashScreen{
 	*close{
 		if ((window.notNil) and: {window.isClosed.not}) {
 			window.close;
-			gui[\dummyWindow].close;
+			if (gui[\dummyWindow].notNil) {
+				gui[\dummyWindow].close;
+			};
 			window=nil;
 		}
 	}

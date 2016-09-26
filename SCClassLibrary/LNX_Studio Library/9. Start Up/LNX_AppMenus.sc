@@ -5,7 +5,7 @@ LNX_AppMenus {
 
 	classvar >studio;
 
-	*initClass { Class.initClassTree(Menu) }
+	*initClass { Platform.case(\osx, {Class.initClassTree(Menu)}); }
 
 	*addWindowMenus{|window|
 
