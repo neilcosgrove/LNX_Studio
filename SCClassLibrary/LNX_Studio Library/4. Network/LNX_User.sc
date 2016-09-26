@@ -67,7 +67,7 @@ LNX_User {
 		password=String.rand(8,4);
 		ip=Pipe.findValuesForKey("ifconfig", "inet")[1];
 		if (ip.isNil) { ip=NetAddr.localAddr.ip };
-		ip = ip.replace("addr:", "");
+		ip = ip.replace("addr:", "").replace("adr:", "");
 		netAddr=NetAddr.new(ip,NetAddr.localAddr.port);
 
 		commonTimePings=[];

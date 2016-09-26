@@ -90,7 +90,7 @@ LNX_LANGroup {
 		// get all my ip's
 		myAddrs = Pipe.findValuesForKey("ifconfig", "inet")
 			.reverse
-			.collect{|ip| NetAddr(ip.replace("addr:", ""),port) }
+			.collect{|ip| NetAddr(ip.replace("addr:", "").replace("adr:", ""),port) }
 			.reject {|addr| addr.digit(0)==127 or: { addr.digit(4)==0 }} // remove 127. so not selected by mistake
 			.reverse // this put 192 at the top of the list for me
 			;

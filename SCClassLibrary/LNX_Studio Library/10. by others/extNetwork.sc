@@ -9,7 +9,7 @@
 
 		if ( res.notNil, {
 			// fix for Linux output: (nescivi, April 2008)
-			res.do{ |it,i| res[i] = it.replace("addr:",""); };
+			res.do{ |it,i| res[i] = it.replace("addr:","").replace("adr:", ""); };
 		});
 
 		if(bc.notNil) {
