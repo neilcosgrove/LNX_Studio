@@ -93,6 +93,11 @@
 		var j, k, indices, res, keySize;
 		key = key ++ delimiter;
 		keySize = key.size;
+		Platform.case(\linux, {
+			if (commandLine == "ifconfig") {
+				commandLine = "/sbin/ifconfig"
+			}
+		});
 		Pipe.do(commandLine, { |l|
 			indices = l.findAll(key);
 			indices !? {
