@@ -104,7 +104,7 @@
 			.labelColors_(c)
 			.backgrounds_(c)
 			.font_(GUI.font.new("Helvetica",12))
-			.tabHeight_(\auto)
+			.tabHeight_(15)
 			.value_(8)
 			.action_{|me| gui[\tabView2].value_(me.value) }; //p[3]=me.value};
 

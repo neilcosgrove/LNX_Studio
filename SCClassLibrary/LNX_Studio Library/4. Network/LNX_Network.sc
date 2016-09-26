@@ -1005,9 +1005,8 @@ LNX_Network {
 			};
 
 			// server address
-			gui[\serverAddress]=TextField.new(gui[\bg],
-					isLAN.if(Rect(0,0,0,0), Rect(215-35,15+6,190,16))
-				)
+			gui[\serverAddress]=TextField.new(gui[\bg], Rect(215-35,15+6,190,16))
+				.visible_(isLAN.not)
 				.action_{|me|
 					me.value_(me.value.addressSafe);
 					//this.gotoUserTextRoom
@@ -1020,9 +1019,8 @@ LNX_Network {
 				.font_(Font("Helvetica",11));
 
 			// password text
-			gui[\passwordText]=TextField.new(gui[\bg],
-					isLAN.if(Rect(0,0,0,0), Rect(390-15,21,85,16))
-				)
+			gui[\passwordText]=TextField.new(gui[\bg], Rect(390-15,21,85,16) )
+				.visible_(isLAN.not)
 				.action_{|me|	this.gotoUserTextRoom}
 				.action_{|me|
 					me.value_(me.value.addressSafe);

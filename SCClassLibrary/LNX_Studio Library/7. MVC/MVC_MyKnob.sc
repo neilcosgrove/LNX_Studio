@@ -132,7 +132,7 @@ MVC_MyKnob : MVC_View {
 			startX=x;
 			startY=y;
 			mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
-			if (editMode||viewEditMode) {lw=lh=nil; if (verbose==verbose) {view.bounds.postln} };
+			if (editMode||viewEditMode) {lw=lh=nil; if (verbose) {view.bounds.postln} };
 
 			if (hasMIDIcontrol) {
 					if ((clickCount>1)&&doubleClickLearn){ toggle = true };

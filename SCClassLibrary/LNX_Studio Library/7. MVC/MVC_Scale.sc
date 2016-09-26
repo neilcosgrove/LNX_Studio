@@ -67,7 +67,7 @@ MVC_Scale : MVC_View {
 			startX=x;
 			startY=y;
 		//	mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
-			if (editMode||viewEditMode) {lw=lh=nil; if (verbose==verbose) {view.bounds.postln} };
+			if (editMode||viewEditMode) {lw=lh=nil; if (verbose) {view.bounds.postln} };
 			if (modifiers.isAlt)	{buttonNumber = 1.5    };
 			if (modifiers.isCtrl)	{buttonNumber = 2      };
 			if (buttonNumber==2)	{this.toggleMIDIactive };

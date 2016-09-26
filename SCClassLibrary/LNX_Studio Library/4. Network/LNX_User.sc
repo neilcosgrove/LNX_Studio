@@ -176,14 +176,14 @@ LNX_User {
 	displayString{
 		var string="";
 		[
-			"Name        : ", 	name, 		"\n",
-			"Short Name  : ", 	shortName, 	"\n",
-			"Description : ",	description, 	"\n",
-			"Location    : ",	location,		"\n",
-			"Genres      : ",	genres,		"\n",
-			"Email       : ",	email,		"\n",
-			"Skype Name  : ",	skypeName,	"\n",
-			"Web Page    : ",	webPage
+			"Name       : ", 	name, 		"\n",
+			"Short Name : ", 	shortName, 	"\n",
+			"Description: ",	description, 	"\n",
+			"Location   : ",	location,		"\n",
+			"Genres     : ",	genres,		"\n",
+			"Email      : ",	email,		"\n",
+			"Skype Name : ",	skypeName,	"\n",
+			"Web Page   : ",	webPage
 			//"User ID     : ",	permanentID,	"\n",
 		//	"IP Address  : ", 	(netAddr.ip=="0.0.0.0").if(
 		//				"Public",netAddr.ip.asString++" / "++netAddr.port),"\n"
@@ -192,14 +192,14 @@ LNX_User {
 	}
 
 	fieldsString{
-			^("Name        :\n"++
-			  "Short Name  :\n"++
-			  "Description :\n"++
-			  "Location    :\n"++
-			  "Genres      :\n"++
-			  "Email       :\n"++
-			  "Skype Name  :\n"++
-			  "Web Page    : "
+			^("Name       :\n"++
+			  "Short Name :\n"++
+			  "Description:\n"++
+			  "Location   :\n"++
+			  "Genres     :\n"++
+			  "Email      :\n"++
+			  "Skype Name :\n"++
+			  "Web Page   : "
 			)
 	}
 
