@@ -512,7 +512,7 @@ LNX_InstrumentTemplate {
 	realBounds{ ^window.bounds } // this is redundant: MVC always returns real bounds
 
 	// close that window its in my way (but really we're hiding it)
-	closeWindow{ window.hide }
+	closeWindow{ window.hide; this.closeEQ }
 
 	// this is closing really
 	freeWindow{ window.free }

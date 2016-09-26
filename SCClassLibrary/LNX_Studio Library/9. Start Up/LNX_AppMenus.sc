@@ -40,7 +40,6 @@ LNX_AppMenus {
 				.items_([
 					"Open",
 					"Open Last Song",
-					"Open Demo Song",
 					"-",
 					"Save",
 					"Save As...",
@@ -51,10 +50,9 @@ LNX_AppMenus {
 					switch (me.value.asInt)
 					 {0}{ studio.loadDialog
 					}{1}{ studio.quickLoad
-					}{2}{ studio.loadDemoSong
-					}{4}{ studio.saveDialog
-					}{5}{ studio.saveAsDialog
-					}{7}{ studio.guiCloseStudio
+					}{3}{ studio.saveDialog
+					}{4}{ studio.saveAsDialog
+					}{6}{ studio.guiCloseStudio
 					}
 				};
 
@@ -193,17 +191,38 @@ LNX_AppMenus {
 					}
 				};
 
+		// windows
+		MVC_PopUpMenu3(window, Rect(428, 4, 83, 18), menuTheme)
+				.staticText_("Windows")
+				.items_([
+					"Minimise",
+					"Arrange",
+					"Close Window",
+					"Close All Window",
+				])
+				.action_{|me|
+					switch (me.value.asInt)
+					 {0}{ studio.insts.selectedInst.window.minimize
+					}{1}{
+					}{2}{ studio.insts.selectedInst.closeWindow
+					}{3}{ studio.insts.do(_.closeWindow)
+					}
+				};
+
 		// help
-		MVC_PopUpMenu3(window, Rect(428, 4, 60, 18), menuTheme)
+		MVC_PopUpMenu3(window, Rect(511, 4, 60, 18), menuTheme)
 				.staticText_("Help")
 				.items_([
 					"Help with LNX_Studio",
 					"Help with Supercollider",
+					"-",
+					"Open Demo Song",
 				])
 				.action_{|me|
 					switch (me.value.asInt)
 					 {0}{ studio.openHelp
 					}{1}{ Help.help
+					}{3}{ studio.loadDemoSong
 					}
 				};
 
@@ -232,7 +251,6 @@ LNX_AppMenus {
 			Menu(
 				Action("Open",				{ studio.loadDialog }).shortcut_("Ctrl+O"),
 				Action("Open Last Song",	{ studio.quickLoad }).shortcut_("Ctrl+Shift+O"),
-				Action("Open Demo Song",	{ studio.loadDemoSong }),
 				Action.separator,
 				Action("Save",				{ studio.saveDialog }).shortcut_("Ctrl+S"),
 				Action("Save As...",		{ studio.saveAsDialog }).shortcut_("Ctrl+Shift+S"),
@@ -334,7 +352,7 @@ LNX_AppMenus {
 				Action("Minimise",			{ MVC_Window.frontWindow.minimize }).shortcut_("Ctrl+M"),
 				Action("Arrange",			{}),
 				Action("Close Window",		{ MVC_Window.frontWindow.guiClose }),
-				Action("Close All Window",	{}),
+				Action("Close All Window",	{ studio.insts.do(_.closeWindow) }),
 			).title_("Windows"),
 
 			//  help menu
@@ -342,6 +360,7 @@ LNX_AppMenus {
 				Action("Help with LNX_Studio",		{studio.openHelp}).shortcut_("Ctrl+D"),
 				Action("Help with Supercollider",	{Help.help}),
 				Action.separator,
+				Action("Open Demo Song",	{ studio.loadDemoSong }),
 			).title_("Help"),
 
 		];
