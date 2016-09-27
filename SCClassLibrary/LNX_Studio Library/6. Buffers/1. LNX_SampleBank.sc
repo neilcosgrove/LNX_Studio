@@ -495,7 +495,7 @@ LNX_SampleBank{
 				selectMeFunc.value(samples.size-1); // select in...
 			};
 
-			this.addSampleWidgets(samples.size-1,select); // add the widgets
+			if (window.notNil) { this.addSampleWidgets(samples.size-1,select)} ; // add the widgets
 
 		};
 
@@ -656,11 +656,12 @@ LNX_SampleBank{
 	netRemove{|i|
 		if(i<(this.size)) {
 
-			guiList[i].do(_.free);
-			guiList.removeAt(i);
-			guiList.do{|gui,i| gui[\i]=i }; // aline gui index numbers
-
-			this.adjustViews;
+			if (guiList.notEmpty) {
+				guiList[i].do(_.free);
+				guiList.removeAt(i);
+				guiList.do{|gui,i| gui[\i]=i }; // aline gui index numbers
+				this.adjustViews;
+			};
 
 			samples[i].freeNow;
 			samples.removeAt(i);

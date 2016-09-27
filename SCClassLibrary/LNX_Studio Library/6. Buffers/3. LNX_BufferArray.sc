@@ -77,7 +77,7 @@ LNX_BufferArray {
 	bufnum {|i=0| if (buffers[i].notNil) {^buffers[i].bufnum }{^nil} }
 
 	free{
-		buffers.do(_.free);
+		buffers.asSet.do(_.free);
 		sampleData = nil;
 	}
 

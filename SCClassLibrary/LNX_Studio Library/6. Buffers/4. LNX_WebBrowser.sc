@@ -11,7 +11,7 @@ LNX_WebBrowser(s).open; // magic!
 LNX_WebBrowser{
 
 	classvar <formats, <homePage, <favourites, <history, <historyMenuItems, <historyFunc,
-			<classModels, <userFilesText, <guiMenuItems, <guiMenuFuncs, <guis;
+			<classModels, <userFilesText, <guiMenuItems, <guiMenuFuncs, <guis, <previewBank;
 
 	var <server, <gui, <window, <url, <downloads, <sampleBank, failedURL, lastURL, listView;
 
@@ -51,10 +51,13 @@ LNX_WebBrowser{
 
 	// init stuff
 	init{|argServer,argSampleBank|
-		server     = argServer;
-		url        = homePage;
-		downloads  = [];
-		sampleBank = argSampleBank ?? {LNX_SampleBank(server, apiID:String.rand)}; // 1 user only
+		server      = argServer;
+		url         = homePage;
+		downloads   = [];
+		sampleBank  = argSampleBank ?? {LNX_SampleBank(server, apiID:String.rand)}; // 1 user only
+		if (previewBank.isNil) { // so we only have a singleton and can use server
+			previewBank = LNX_SampleBank(server, apiID:"__preview"++String.rand); // for preview
+		};
 		this.createWidgets;
 	}
 
@@ -523,6 +526,16 @@ LNX_WebBrowser{
 					var firstDir = PathName(file).diskName;			// what is the 1st folder called
 					file = firstDir++":/"++file[firstDir.size..];	// now use this to add prefix file://
 					sampleBank.guiAddURL(file);						// add the sample to the bank
+				};
+			})
+			.actions_(\spaceKeyAction,{|me|
+				var index=me.value.asInt;
+				if (items[index].isFolder.not) {					// if not folder is sound file
+					var file = items[index][basepath.size..];		// remove basepath from filename
+					var firstDir = PathName(file).diskName;			// what is the 1st folder called
+					file = firstDir++":/"++file[firstDir.size..];	// now use this to add prefix file://
+					previewBank.guiAddURL(file,select:false);		// add the sample to the bank
+				if (previewBank.size>1) {previewBank.netRemove(0)}; // remove 1st item so preview doesn't grow
 				};
 			});
 

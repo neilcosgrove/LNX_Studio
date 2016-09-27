@@ -262,13 +262,13 @@ MVC_ListView2 : MVC_View {
 
 			// return
 			if (key.isEnter) {
-				this.valueAction = (this.value.asInt + 1).wrap(0,items.size-1);
 				this.specialActions(\enterKeyAction, this);
+				this.valueAction = (this.value.asInt + 1).wrap(0,items.size-1);
 			};
 
 			// space
 			if (key.isSpace) {
-				this.specialActions(\enterKeyAction, this);
+				this.specialActions(\spaceKeyAction, this);
 			};
 
 			// right arrow
