@@ -252,6 +252,22 @@ LNX_SampleBank{
 		iModel = [1,[1,24,\lin,1,1]].asModel;       // not sure what this is
 	}
 
+	// bank for preview, will only hold 1 sample
+	// newP uses a permanent API because the temp API is deleted on song close.
+	*newP {arg server=Server.default, path, apiID; ^super.new.initP(server, path, apiID) }
+
+	initP{|argServer,path,apiID|
+		id          = UniqueID.next; // each sampleBank has a UniqueID
+		server      = argServer;
+		api         = LNX_API.newPermanent(this, apiID, //uses a permanent API
+						#[\netAddURL, \netRemove, \netSwap, \netSetModelVP] );
+		sampleBanks = sampleBanks.add(this);        // add this to the list of all banks
+		this.initVars;                              // init the lists / arrays
+		if (path.isString) { this.loadFile(path) }; // load
+		follow = \switch.asModel;                   // the follow waveform model
+		iModel = [1,[1,24,\lin,1,1]].asModel;       // not sure what this is
+	}
+
 	// init the lists / arrays
 	initVars{
 		samples     = [];

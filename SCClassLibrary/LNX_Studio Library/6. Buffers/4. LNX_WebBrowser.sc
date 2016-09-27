@@ -56,7 +56,7 @@ LNX_WebBrowser{
 		downloads   = [];
 		sampleBank  = argSampleBank ?? {LNX_SampleBank(server, apiID:String.rand)}; // 1 user only
 		if (previewBank.isNil) { // so we only have a singleton and can use server
-			previewBank = LNX_SampleBank(server, apiID:"__preview"++String.rand); // for preview
+			previewBank = LNX_SampleBank.newP(server, apiID:"__preview"++String.rand); // for preview
 		};
 		this.createWidgets;
 	}
