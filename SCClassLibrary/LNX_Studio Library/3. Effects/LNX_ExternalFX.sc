@@ -126,6 +126,18 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 					this.setSynthArgVP(12,val,\sendAmp,val.dbamp,latency,send);
 				}],
 
+			// 13.low pass
+			[20000,\freq,midiControl, 13, "Low pass", (label_:"Low Pass", \numberFunc_:\freq),
+				{|me,val,latency,send,toggle|
+					this.setSynthArgVP(13,val,\lowFreq,val,latency,send);
+				}],
+
+			// 14.high pass
+			[20,\freq,midiControl, 14, "High pass", (label_:"High Pass", \numberFunc_:\freq),
+				{|me,val,latency,send,toggle|
+					this.setSynthArgVP(14,val,\highFreq,val,latency,send);
+				}],
+
 		];
 
 		#models,defaults=template.generateAllModels;
@@ -141,7 +153,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 	volumeModel{^models[13] }
 
 	*thisWidth  {^261}
-	*thisHeight {^203}
+	*thisHeight {^263}
 
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
 
@@ -177,39 +189,39 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		// widgets
 
 		gui[\scrollView] = MVC_RoundedComView(window,
-								Rect(11,11,thisWidth-22,thisHeight-22-1),gui[\scrollTheme]);
+								Rect(11,11,thisWidth-22,thisHeight-23),gui[\scrollTheme]);
 
 		// midi control button
-		MVC_FlatButton(gui[\scrollView],Rect(97, 131, 43, 19),"Cntrl", gui[\midiTheme])
+		MVC_FlatButton(gui[\scrollView],Rect(97,191,43,19),"Cntrl", gui[\midiTheme])
 			.action_{ LNX_MIDIControl.editControls(this).front };
 
 		// 1.onOff
-		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(108, 108, 22, 19),gui[\onOffTheme1])
+		MVC_OnOffView(models[1],gui[\scrollView] ,Rect(108,168,22,19),gui[\onOffTheme1])
 			.color_(\on, Color(0.25,1,0.25) )
 			.color_(\off, Color(0.4,0.4,0.4) )
 			.rounded_(true);
 
 		// 2.in
-		MVC_PopUpMenu3(models[2],gui[\scrollView],Rect(  7,7,70,17),gui[\menuTheme]);
+		MVC_PopUpMenu3(models[2],gui[\scrollView],Rect(7,7,70,17),gui[\menuTheme]);
 
 
 		// 11. sendChannels
 		MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(85,7,70,17),gui[\menuTheme]);
 
 		// 3.out
-		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(138+25,7,70,17),gui[\menuTheme]);
+		MVC_PopUpMenu3(models[3],gui[\scrollView],Rect(163,7,70,17),gui[\menuTheme]);
 
 		// 6. external out channel
-		MVC_PopUpMenu3(models[6],gui[\scrollView],Rect(7,110,70,17), gui[\menuTheme ] );
+		MVC_PopUpMenu3(models[6],gui[\scrollView],Rect(7,170,70,17), gui[\menuTheme ] );
 
 		// 7. external in channels
-		MVC_PopUpMenu3(models[7],gui[\scrollView],Rect(138+25,110,70,17), gui[\menuTheme ] );
+		MVC_PopUpMenu3(models[7],gui[\scrollView],Rect(163,170,70,17), gui[\menuTheme ] );
 
 		// 8.to external channelSetup
-		MVC_PopUpMenu3(models[8],gui[\scrollView],Rect(7,130,70,17), gui[\menuTheme ] );
+		MVC_PopUpMenu3(models[8],gui[\scrollView],Rect(7,190,70,17), gui[\menuTheme ] );
 
 		// 9. from external xChannelSetup
-		MVC_PopUpMenu3(models[9],gui[\scrollView],Rect(138+25,130,70,17), gui[\menuTheme ] );
+		MVC_PopUpMenu3(models[9],gui[\scrollView],Rect(163,190,70,17), gui[\menuTheme ] );
 
 		// 4. inAmp
 		MVC_MyKnob3(models[4],gui[\scrollView],Rect(28,48,30,30),gui[\knobTheme]);
@@ -220,11 +232,16 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		// 5. outAmp
 		MVC_MyKnob3(models[5],gui[\scrollView],Rect(183,48,30,30),gui[\knobTheme]);
 
+		// 13.low pass
+		MVC_MyKnob3(models[13],gui[\scrollView],Rect(143,108,30,30),gui[\knobTheme]);
 
+		// 14.high pass
+		MVC_MyKnob3(models[14],gui[\scrollView],Rect(68,108,30,30),gui[\knobTheme])
+			.zeroValue_(20000); // cause its hi pass
 
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],
-									17@(gui[\scrollView].bounds.height-23),80+25,
+									17@(gui[\scrollView].bounds.height-23),105,
 			Color(0.74, 0.74, 0.88)*0.6,
 			Color.black,
 			Color(0.74, 0.74, 0.88),
@@ -240,35 +257,26 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 
 		if (verbose) { "SynthDef loaded: External FX".postln; };
 
-		SynthDef("External FX", {
-			|outputChannels=0, inputChannels=4, pan=0, inAmp=1, outAmp=1,
+		SynthDef("External FX", {|outputChannels=0, inputChannels=4, pan=0, inAmp=1, outAmp=1,
 			xOutputChannels=0, xInputChannels=0, channelSetup=0, xChannelSetup=0,
-			sendChannels=4, sendAmp=0, on=1|
-
+			sendChannels=4, sendAmp=0, on=1, lowFreq=20000, highFreq=20|
 			var in2Out, out2In, silent, mono;
 
 			var in = In.ar(inputChannels, 2)*(inAmp.dbamp);
-
 			in2Out = SelectX.ar(on.lag,[Silent.ar,in]);
-
 			silent = Silent.ar;
-
-			mono = in2Out[0]+in2Out[1];
-
+			mono   = in2Out[0]+in2Out[1];
 			in2Out = Select.ar(channelSetup,[
 				[in2Out[0],in2Out[1]],mono.dup, [mono,silent], [silent,mono]]);
-
+			in2Out = LPF.ar(in2Out,lowFreq.clip(20,20000).lag(0.2));
+			in2Out = HPF.ar(in2Out,highFreq.clip(20,20000).lag(0.2));
 			Out.ar(xOutputChannels,in2Out);
 
 			out2In = In.ar(xInputChannels, 2);
-
 			out2In = Select.ar(xChannelSetup,[
 				[out2In[0],out2In[1]],(out2In[0]+out2In[1]).dup, out2In[0].dup, out2In[1].dup]);
-
 			out2In = SelectX.ar(on.lag,[in,out2In]) ;
-
 			Out.ar(outputChannels, out2In * (outAmp.dbamp) ); // out
-
 			Out.ar(sendChannels, out2In * sendAmp); // and send
 
 		}).send(s);
@@ -308,7 +316,9 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			[\n_set, node, \xInputChannels,xin],
 			[\n_set, node, \channelSetup, p[8]],
 			[\n_set, node, \xChannelSetup, p[9]],
-			[\n_set, node, \on, p[1]]
+			[\n_set, node, \on, p[1]],
+			[\n_set, node, \lowFreq ,p[13]],
+			[\n_set, node, \highFreq,p[14]],
 		);
 
 	}
