@@ -309,14 +309,13 @@ LNX_InviteInterface {
 			});
 		
 		window.refresh;
-		window.onClose_(
-			{if (doOnClose) {
-				buttonViews[onCloseIndex] !? 
-				{ buttonViews[onCloseIndex].action.value( buttonViews[onCloseIndex], this ) };
-				
-			};}
+		// window.onClose_(
+		// 	{if (doOnClose) {
+		// 		buttonViews[onCloseIndex] !? 
+		// 		{ buttonViews[onCloseIndex].action.value( buttonViews[onCloseIndex], this ) };
+		// 	};}
 		
-		);
+		// );
 		//^super.newCopyArgs( window, string, buttonViews, actions, color, iconName, iconV, strV );
 	}
 }
