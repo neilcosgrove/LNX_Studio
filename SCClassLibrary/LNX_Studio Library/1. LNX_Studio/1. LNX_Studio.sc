@@ -481,6 +481,10 @@ LNX_Studio {
 			if (insts[msg[2]].notNil) { insts[msg[2]].filter_(msg[3],msg[5],msg[7]) }
 		}, '/filter');
 
+		OSCFunc({|msg|
+			if (insts[msg[2]].notNil) { insts[msg[2]].a2m_in_(msg[3],msg[5],msg[7],msg[9]) }
+		}, '/A2M');
+
 	}
 
 	// reset all dsp (stop all audio, boot server if needed and restart all audio)

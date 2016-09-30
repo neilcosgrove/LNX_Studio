@@ -1207,7 +1207,6 @@ LNX_MIDIPatch {
 		window=argWindow;
 		menuItems=[];
 		midiDestinationNames.do({|n,j|
-			[n, j].postln;
 			menuItems=menuItems.add( (outPortsActive[j]==true).if(n,"("++n) );
 		});
 
