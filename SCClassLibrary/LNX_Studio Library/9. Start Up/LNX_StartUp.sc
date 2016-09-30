@@ -32,8 +32,8 @@ LNX_StartUp {
 		if (lrd.pathExists(false).not) {
 			lrd.makeDir;
 		};
-		if ((lrd +/+ "lnx.jpg").pathExists(false).not) {
-			File.copy(cwd +/+ "lnx.jpg", lrd +/+ "lnx.jpg");
+		if ((lrd +/+ "lnx.png").pathExists(false).not) {
+			File.copy(cwd +/+ "lnx.png", lrd +/+ "lnx.png");
 		};
 		if ((lrd +/+ "screen shot 1.3.png").pathExists(false).not) {
 			File.copy(cwd +/+ "screen shot 1.3.png", lrd +/+ "screen shot 1.3.png");

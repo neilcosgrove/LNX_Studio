@@ -5,7 +5,7 @@ MVC_ImageView : MVC_View {
 
 	classvar lnx;
 
-	var <image="lnx.jpg", scimage;
+	var <image="lnx.png", scimage;
 
 	*initClass{
 		lnx = Image.open(Platform.lnxResourceDir +/+ "lnx.png");
@@ -13,7 +13,7 @@ MVC_ImageView : MVC_View {
 
 	// set your defaults
 	initView{
-		if (image=="lnx.jpg") {
+		if (image=="lnx.png") {
 			scimage = lnx
 		} {
 			scimage = Image.open(Platform.lnxResourceDir +/+ image)
