@@ -91,40 +91,43 @@
 		models[\record]=[\switch, midiControl, 2, "Record", (strings_:["Rec","Stop"]),
 			{|me,val|
 
-		if (server.serverRunning) {
-			if (me.value == 1) {
-				if (batchOn.not) {
-					path = server.prepareForRecord(
-						"~/Desktop".standardizePath +/+
-						(this.name) +
-						(Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2)) ++
-						"." ++ (server.recHeaderFormat)
-					);
-					{server.record}.defer(0.1);
+				if (server.serverRunning) {
+					if (me.value == 1) {
+
+						server.recChannels_(2); // this can be change but fixed for now
+
+						if (batchOn.not) {
+							path = server.prepareForRecord(
+								"~/Desktop".standardizePath +/+
+								(this.name) +
+								(Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2)) ++
+								"." ++ (server.recHeaderFormat)
+							);
+							{server.record}.defer(0.1);
+						}{
+							var dir = LNX_BufferProxy.userPath +/+ "BATCH" +/+
+							(this.name) ++"_bin" + batchFolder;
+
+							lastBatchFolder = dir;
+
+							if (dir.pathExists(false).not) { dir.makeDir };
+							path = server.prepareForRecord(
+								dir +/+
+								(this.name) + (("00"++batch).keep(-3)) ++
+								"." ++ (server.recHeaderFormat)
+							);
+							batch = batch +1;
+							{server.record}.defer(0.15);
+						};
+
+
+					}{
+						server.stopRecording;
+					};
 				}{
-					var dir = LNX_BufferProxy.userPath +/+ "BATCH" +/+
-								(this.name) ++"_bin" + batchFolder;
-
-					lastBatchFolder = dir;
-
-					if (dir.pathExists(false).not) { dir.makeDir };
-					path = server.prepareForRecord(
-						dir +/+
-						(this.name) + (("00"++batch).keep(-3)) ++
-						"." ++ (server.recHeaderFormat)
-					);
-					batch = batch +1;
-					{server.record}.defer(0.15);
+					"The server must be booted to record it".postln;
+					me.value_(0);
 				};
-
-
-			}{
-				server.stopRecording;
-			};
-		}{
-			"The server must be booted to record it".postln;
-			me.value_(0);
-		};
 
 
 			}].asModel
