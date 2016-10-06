@@ -12,24 +12,20 @@ LNX_A2M : LNX_InstrumentTemplate {
 	}
 
 	// an immutable list of methods available to the network
-	interface{^#[ \netChangeName ]}
-
-	// type/info
-	*studioName      {^"Side Chain CC"}
-	*sortOrder       {^2.88}
-	isInstrument     {^true}
-	isMIDI       	 {^true}
-	canBeSequenced   {^false}
-	mixerColor       {^Color(0.3,0.3,0.3,0.2)} // colour in mixer
-	onColor     	 {^Color(0.5,0.7,1)}
-	alwaysOnModel	 {^models[4]}
-	alwaysOn		 {^models[4].isTrue} // am i? used by melody maker to change onOff widgets
-	canAlwaysOn		 {^true} // can i?
-	onNow			 { ^(this.isOn)||(this.alwaysOn) }
-
-	// mixer models
-	soloModel   {^models[0]}
-	onOffModel  {^models[1]}
+	interface		{^#[ \netChangeName ]}		// network interface
+	*studioName		{^"Side Chain CC"}			// type/info
+	*sortOrder		{^2.88}						// sort order in library
+	isInstrument	{^true}						// does this need to be true?
+	isMIDI			{^true}						// has midi out
+	canBeSequenced	{^false}					// doesn't have a sequencer
+	mixerColor		{^Color(0.3,0.3,0.3,0.2)}	// colour in mixer
+	onColor			{^Color(0.5,0.7,1)}			// Mixer on button colour
+	alwaysOnModel	{^models[4]}				// always on model
+	alwaysOn		{^models[4].isTrue}			// am i? used by melody maker to change onOff widgets
+	canAlwaysOn		{^true}						// can i?
+	soloModel       {^models[0]} 				// mixer solo model
+	onOffModel      {^models[1]} 				// mixer on model
+	onNow			{ ^(this.isOn)||(this.alwaysOn) } // is this on now. include onSolo & alwaysOn
 
 	header{
 		// define your document header details
@@ -52,21 +48,13 @@ LNX_A2M : LNX_InstrumentTemplate {
 		modelTemplate = [
 			// 0.solo
 			[0, \switch, (\strings_:"S"), midiControl, 0, "Solo",
-				{|me,val,latency,send,toggle|
-					this.solo(val,latency,send,toggle);
-				},
-				\action2_ -> {|me|
-					this.soloAlt(me.value);
-				 }],
+				{|me,val,latency,send,toggle| this.solo(val,latency,send,toggle) },
+				\action2_ -> {|me| this.soloAlt(me.value) }],
 
 			// 1.onOff
 			[1, \switch, (\strings_:((this.instNo+1).asString)), midiControl, 1, "On/Off",
-				{|me,val,latency,send,toggle|
-					this.onOff(val,latency,send,toggle);
-				},
-				\action2_ -> {|me|
-					this.onOffAlt(me.value);
-				}],
+				{|me,val,latency,send,toggle| this.onOff(val,latency,send,toggle) },
+				\action2_ -> {|me| this.onOffAlt(me.value) }],
 
 			/////////////
 
@@ -92,9 +80,10 @@ LNX_A2M : LNX_InstrumentTemplate {
 
 		// each channel has set-up, in channel, on, amp, min, max, & curve cc
 		noChannels.do{|i|
-			var j = i*8;  // model offset index
+			var j = i*11;  // model offset index
 			var k = i+1;  // for strings or symbols
 			// 5 - 12 ( 8 models each channel)
+			// 5 - 15 ( 11 models each channel)
 
 			modelTemplate = modelTemplate ++ [
 				// 5. channelSetup1
@@ -116,7 +105,7 @@ LNX_A2M : LNX_InstrumentTemplate {
 					this.setSynthArgVH(7+j,val,(\on++k).asSymbol,val,latency,send) }],
 
 				// 8. amp
-				[\db6, midiControl, 8+j, "Amp"+k, {|me,val,latency,send|
+				[\db8, midiControl, 8+j, "Amp"+k, {|me,val,latency,send|
 					this.setSynthArgVP(8+j,val,(\amp++k).asSymbol,val.dbamp,latency,send) }],
 
 				// 9. min
@@ -132,8 +121,20 @@ LNX_A2M : LNX_InstrumentTemplate {
 					this.setPVP(11+j,val,latency,true)}],
 
 				// 12. cc
-				[64+i, \midi, midiControl, 12+j, "CC"+k, {|me,val,latency,send|
+				[64+i, \MIDIcc, midiControl, 12+j, "CC"+k, {|me,val,latency,send|
 					this.setPVP(12+j,val,latency,true)}],
+
+				// 13. peak / rms
+				[0,\switch,  midiControl, 13+j, "Peak/RMS"+k, (\strings_:["Peak","RMS"]), {|me,val,latency,send|
+					this.setPVP(13+j,val,latency,true)}],
+
+				// 14. attack (0-1) > (0-0.99)
+				[0,\unipolar, midiControl, 14+j, "Attack"+k, (label_:"Attack"), {|me,val,latency,send|
+					this.setPVP(14+j,val,latency,true)}],
+
+				// 15. decay (0-1) > (0-0.99)
+				[0,\unipolar, midiControl, 15+j, "Decay"+k, (label_:"Decay"), {|me,val,latency,send|
+					this.setPVP(15+j,val,latency,true)}],
 
 			];
 
@@ -163,7 +164,7 @@ LNX_A2M : LNX_InstrumentTemplate {
 	netChangeName{|i,text| nameModels[i.asInt].string_(text.asString) }
 
 	*thisWidth {^420}
-	*thisHeight{^585}
+	*thisHeight{^605}
 
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black,false) }
 
@@ -252,57 +253,62 @@ LNX_A2M : LNX_InstrumentTemplate {
 		gui[\scrollView] = MVC_RoundedComView(window,
 							Rect(11,11,thisWidth-22,thisHeight-23), gui[\scrollTheme]);
 
-		MVC_PlainSquare(gui[\scrollView],Rect(0, 0, 403, 70),gui[\plainTheme] );
+		MVC_PlainSquare(gui[\scrollView],Rect(0, 0, 403, 60),gui[\plainTheme] );
 
 		// logo
-		MVC_StaticText(gui[\scrollView], Rect(11, 1, 140, 35),gui[\labelTheme])
+		MVC_StaticText(gui[\scrollView], Rect(10, 0, 118, 25),gui[\labelTheme])
 			.string_("Side Chain CC");
 
 		// 1.on/off
-		MVC_OnOffView(models[1],gui[\scrollView] ,Rect( 8, 36,22,18),gui[\onOffTheme])
+		MVC_OnOffView(models[1],gui[\scrollView] ,Rect( 6, 33,26,18),gui[\onOffTheme])
 			.rounded_(true)
 			.permanentStrings_(["On"]);
 
 		// 0.solo
-		MVC_OnOffView(models[0],gui[\scrollView] ,Rect( 38, 36,20,18),gui[\soloTheme])
+		MVC_OnOffView(models[0],gui[\scrollView] ,Rect( 38, 33,20,18),gui[\soloTheme])
 			.rounded_(true);
 
 		// 4.always
-		MVC_OnOffView(models[4],gui[\scrollView] ,Rect( 68, 36,55,18),gui[\onOffTheme])
+		MVC_OnOffView(models[4],gui[\scrollView] ,Rect( 68, 33,55,18),gui[\onOffTheme])
 			.rounded_(true)
 			.permanentStrings_(["Always"]);
 
 		// rate
-		MVC_MyKnob3(models[2], gui[\scrollView], Rect(144,18,30,30), gui[\knobTheme]);
+		MVC_MyKnob3(models[2], gui[\scrollView], Rect(144,15,30,30), gui[\knobTheme]);
 
 		// peak lag
-		MVC_MyKnob3(models[3], gui[\scrollView], Rect(223,18,30,30), gui[\knobTheme]);
+		MVC_MyKnob3(models[3], gui[\scrollView], Rect(223,15,30,30), gui[\knobTheme]);
 
 		// MIDI Settings
- 		MVC_FlatButton(gui[\scrollView],Rect(312, 6, 43, 19),"MIDI",gui[\button])
+ 		MVC_FlatButton(gui[\scrollView],Rect(312, 3, 43, 19),"MIDI",gui[\button])
 			.action_{ this.createMIDIInOutModelWindow(window,2,3,
 				colors:(border1:Color(0.545 , 0.562, 0.669), border2:Color(0.766, 0.766, 0.766))
 			)};
 
 		// midi control button
-		MVC_FlatButton(gui[\scrollView],Rect(288, 35, 43, 19),"Cntrl",gui[\button])
+		MVC_FlatButton(gui[\scrollView],Rect(288, 32, 43, 19),"Cntrl",gui[\button])
 			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
 
-		MVC_FlatButton(gui[\scrollView],Rect(341 , 35, 43, 19),"All",gui[\button])
+		MVC_FlatButton(gui[\scrollView],Rect(341 , 32, 43, 19),"All",gui[\button])
 			.action_{ LNX_MIDIControl.editControls(studio); LNX_MIDIControl.window.front };
 
 		/////////////////////////////
 
-		MVC_PlainSquare(gui[\scrollView],Rect(0, 485, 428, 82),gui[\plainTheme]);
+		MVC_PlainSquare(gui[\scrollView],Rect(0, 485, 408, 102),gui[\plainTheme]);
 
 		noChannels.do{|i|
-			var j = i*8;
+			var j = i*11;
 			var osx = (i*100)-10;
 
-			if (i>0) { MVC_PlainSquare(gui[\scrollView],Rect(6+osx,70,5,415),gui[\plainTheme])};
+			if (i>0) { MVC_PlainSquare(gui[\scrollView],Rect(6+osx,60,5,425),gui[\plainTheme])};
+
+			// 13. peak/rms
+			MVC_OnOffView(gui[\scrollView], models[13+j], Rect(38+osx, 66, 43, 18) ,gui[\learnTheme])
+				.color_(\on,Color(50/77,61/77,1))
+				.color_(\off,Color(1,0.4,1));
 
 			// learn button
-			MVC_FlatButton(gui[\scrollView], Rect(38+osx, 79, 43, 18),"Learn",gui[\learnTheme])
+			MVC_FlatButton(gui[\scrollView], Rect(15+osx, 90, 43, 18),"Learn",gui[\learnTheme])
 				.action_{
 					var name;
 					name=midi.learn(p[12+j],64); // send & get midi learn
@@ -310,15 +316,15 @@ LNX_A2M : LNX_InstrumentTemplate {
 				};
 
 			// 12. cc
-			MVC_NumberBox(gui[\scrollView], models[12+j],Rect(39+osx, 103, 41, 16),  gui[\ccBoxTheme]);
+			MVC_NumberBox(gui[\scrollView], models[12+j],Rect(61+osx, 91, 41, 16),  gui[\ccBoxTheme]);
 
 			// in levels
-			MVC_FlatDisplay(gui[\scrollView], valueInModels[i], Rect(32+osx, 126, 7, 200));
-			MVC_Scale(gui[\scrollView], Rect(30+osx, 126, 2, 200));
-			MVC_Scale(gui[\scrollView], Rect(39+osx, 126, 2, 200));
+			MVC_FlatDisplay(gui[\scrollView], valueInModels[i], Rect(32+osx, 116, 7, 200-10));
+			MVC_Scale(gui[\scrollView], Rect(30+osx, 116, 2, 190));
+			MVC_Scale(gui[\scrollView], Rect(39+osx, 116, 2, 190));
 
 			// 8.amp
-			MVC_SmoothSlider(gui[\scrollView], models[8+j],Rect(44+osx, 126, 31, 200))
+			MVC_SmoothSlider(gui[\scrollView], models[8+j],Rect(44+osx, 116, 31,190))
 				.label_(nil)
 				.thumbSizeAsRatio_(0.18,8)
 				.numberFunc_(\float2)
@@ -329,35 +335,40 @@ LNX_A2M : LNX_InstrumentTemplate {
 				.color_(\numberUp,Color.black)
 				.color_(\numberDown,Color.white);
 
+			// out levels
+			MVC_FlatDisplay(gui[\scrollView], valueOutModels[i], Rect(80+osx, 116, 7, 190));
+			MVC_Scale(gui[\scrollView], Rect(78+osx, 116, 2, 190));
+			MVC_Scale(gui[\scrollView], Rect(87+osx, 116, 2, 190));
+
+			// 9. min
+			MVC_PeakLevel(gui[\scrollView], models[9+j] ,Rect(16+osx, 116, 13, 190)).icon_(\play);
+
+			// 10. max
+			MVC_PeakLevel(gui[\scrollView], models[10+j] ,Rect(89+osx, 116, 13, 190));
+
 			// 7. on1
-			MVC_OnOffView(gui[\scrollView], models[7+j], Rect(46+osx,341, 27, 21), gui[\onOffTheme])
-				.label_((i+1).asString)
+			MVC_OnOffView(gui[\scrollView], models[7+j], Rect(24+osx,339, 27, 21), gui[\onOffTheme])
 				.labelShadow_(false)
 				.orientation_(\horiz)
 				.color_(\label,Color.black);
 
-			// out levels
-			MVC_FlatDisplay(gui[\scrollView], valueOutModels[i], Rect(80+osx, 126, 7, 200));
-			MVC_Scale(gui[\scrollView], Rect(78+osx, 126, 2, 200));
-			MVC_Scale(gui[\scrollView], Rect(87+osx, 126, 2, 200));
-
-			// 9. min
-			MVC_PeakLevel(gui[\scrollView], models[9+j] ,Rect(16+osx, 126, 13, 200)).icon_(\play);
-
-			// 10. max
-			MVC_PeakLevel(gui[\scrollView], models[10+j] ,Rect(89+osx, 126, 13, 200));
-
 			// 11. curve
-			MVC_MyKnob3(models[11+j], gui[\scrollView], Rect(44+osx, 384, 30, 30), gui[\knobTheme]);
+			MVC_MyKnob3(models[11+j], gui[\scrollView], Rect(61+osx, 335, 30, 30), gui[\knobTheme]);
+
+			// 14. attack (0-1) > (0-0.99)
+			MVC_MyKnob3(models[14+j], gui[\scrollView], Rect(44-27+3+osx, 396, 30, 30), gui[\knobTheme]);
+
+			// 15. decay (0-1) > (0-0.99)
+			MVC_MyKnob3(models[15+j], gui[\scrollView], Rect(44-27+54-3+osx, 396, 30, 30), gui[\knobTheme]);
 
 			// 5. channelSetup1
-			MVC_PopUpMenu3(models[5+j],gui[\scrollView],Rect(22+osx, 436, 75,17), gui[\menuTheme ] );
+			MVC_PopUpMenu3(models[5+j],gui[\scrollView],Rect(22+osx, 441, 75,17), gui[\menuTheme ] );
 
 			// 6. in channel
-			MVC_PopUpMenu3(models[6+j],gui[\scrollView],Rect(22+osx,456,75,17), gui[\menuTheme ] );
+			MVC_PopUpMenu3(models[6+j],gui[\scrollView],Rect(22+osx,461,75,17), gui[\menuTheme ] );
 
 			//  name ( look at nameSafe we use : alot in control names )
-			MVC_Text(gui[\scrollView],Rect(15,495+(i*17)-4,383-5,16),nameModels[i])
+			MVC_Text(gui[\scrollView],Rect(15,491+(i*17),378,16),nameModels[i])
 				.label_((i+1).asString)
 				.labelShadow_(false)
 				.orientation_(\horiz)
@@ -369,7 +380,17 @@ LNX_A2M : LNX_InstrumentTemplate {
 				.color_(\string,Color.black)
 				.color_(\cursor,Color.white)
 				.font_(Font("Helvetica",12));
-		}
+		};
+
+		// the preset interface
+		presetView=MVC_PresetMenuInterface(gui[\scrollView],15@563,285,
+				Color(0.8,0.8,1)/1.6,
+				Color(0.7,0.7,1)/3,
+				Color(0.7,0.7,1)/1.5,
+				Color(35/48,122/157,5/6),
+				Color.black
+			);
+		this.attachActionsToPresetGUI;
 	}
 
 	///////////////////////////
@@ -418,26 +439,36 @@ LNX_A2M : LNX_InstrumentTemplate {
 	}
 
 	// method in from osc responders (where the magic happens)
-	a2m_in_{|...value|
+	a2m_in_{|value|
+		var coefAdj = p[2].lincurve(1,40,0.25,1,-6);	// scale the coefficients to account for replyRate
 		noChannels.do{|i|
-			var j = i*8;   												 // j is offset for moel index
-			if (((value[i].abs) - (lastValue[i]).abs).abs>0.001) {       // only do if diff is >0.001
-				lastValue[i] = value[i];								 // store value for last value
-				value[i] = value[i].clip(0,1);							 // clip the input
-				valueInModels[i].lazyValueAction_(value[i],nil,false);	 // update input levels
-				value[i] = value[i].lincurve(0,1,p[9+j],p[10+j],p[11+j]);// map input on to min,max & curve
-				valueOutModels[i].lazyValueAction_(value[i],nil,false);  // update output levels
-				midi.control(p[12+j], value[i]*127, nil, false, true);   // send midi data
-			};
-		};
+			var j       = i*11;   									// j is offset for model index
+			var in      = value[(i*2)+p[13+j]].clip(0,1);			// current value in, clipped
+			var z1      = lastValue[i];								// 1 unit delay (previous value)
+			var upLag   = p[14+j].lincurve(0,1,0,0.99,-4)*coefAdj;	// from 0 - 0.999999
+			var downLag = p[15+j].lincurve(0,1,0,0.99,-4)*coefAdj;	// from 0 - 0.999999
+
+			if (in>z1) { in=(in*(1-upLag))+(z1*upLag) }{ in=(in*(1-downLag))+(z1*downLag) }; // apply a 1 pole lag
+
+			if (((in.abs) - (z1.abs)).abs>0.001) {					// only do if diff is >0.001
+				lastValue[i] = in;									// store for z1 value (last value)
+				valueInModels[i].lazyValueAction_(in, nil, false);	// update input levels
+				in = in.lincurve(0, 1, p[9+j], p[10+j], p[11+j]);	// map input on to min,max & curve
+				valueOutModels[i].lazyValueAction_(in, nil, false);	// update output levels
+				midi.control(p[12+j], in*127, nil, false, true);	// send midi data
+			}
+		}
 	}
 
 	startDSP{
-		synth = Synth.tail(fxGroup,"LNX_A2M"); // make me a new 1
+		synth = Synth.tail(groups[\sideGroup],"LNX_A2M"); // make me a new 1
 		node  = synth.nodeID;
 	}
 
-	stopDSP{ synth.free }
+	stopDSP{
+		if (node.notNil) { server.sendBundle(nil, [11, node]) }; // node could be different than synth
+		synth.free;
+	}
 
 	updateOnSolo{|latency|
 		server.sendBundle(latency +! syncDelay, [\n_set, node, \allOn, 	this.onNow.if(1,0)] )
@@ -455,20 +486,20 @@ LNX_A2M : LNX_InstrumentTemplate {
 			[\n_set, node, \on1, 			p[7]],
 			[\n_set, node, \amp1, 			p[8].dbamp],
 
-			[\n_set, node, \channelSetup2,	p[5+8]],
-			[\n_set, node, \inputChannels2,	LNX_AudioDevices.firstFXBus+(p[6+8]*2) ],
-			[\n_set, node, \on2, 			p[7+8]],
-			[\n_set, node, \amp2, 			p[8+8].dbamp],
+			[\n_set, node, \channelSetup2,	p[5+11]],
+			[\n_set, node, \inputChannels2,	LNX_AudioDevices.firstFXBus+(p[6+11]*2) ],
+			[\n_set, node, \on2, 			p[7+11]],
+			[\n_set, node, \amp2, 			p[8+11].dbamp],
 
-			[\n_set, node, \channelSetup3,	p[5+16]],
-			[\n_set, node, \inputChannels3,	LNX_AudioDevices.firstFXBus+(p[6+16]*2) ],
-			[\n_set, node, \on3, 			p[7+16]],
-			[\n_set, node, \amp3, 			p[8+16].dbamp],
+			[\n_set, node, \channelSetup3,	p[5+22]],
+			[\n_set, node, \inputChannels3,	LNX_AudioDevices.firstFXBus+(p[6+22]*2) ],
+			[\n_set, node, \on3, 			p[7+22]],
+			[\n_set, node, \amp3, 			p[8+22].dbamp],
 
-			[\n_set, node, \channelSetup4,	p[5+24]],
-			[\n_set, node, \inputChannels4,	LNX_AudioDevices.firstFXBus+(p[6+24]*2) ],
-			[\n_set, node, \on4, 			p[7+24]],
-			[\n_set, node, \amp4, 			p[8+24].dbamp],
+			[\n_set, node, \channelSetup4,	p[5+33]],
+			[\n_set, node, \inputChannels4,	LNX_AudioDevices.firstFXBus+(p[6+33]*2) ],
+			[\n_set, node, \on4, 			p[7+33]],
+			[\n_set, node, \amp4, 			p[8+33].dbamp],
 		);
 	}
 
@@ -476,7 +507,7 @@ LNX_A2M : LNX_InstrumentTemplate {
 		var previousNode;
 
 		previousNode = node;
-		node = server.nextNodeID;
+		node = server.nextNodeID; // i could update synth with new node
 
 		// send the new synth to the server
 		server.sendBundle(latency, ([\s_new, "LNX_A2M", node, 4,  previousNode] ++ [
@@ -490,20 +521,20 @@ LNX_A2M : LNX_InstrumentTemplate {
 			\on1,				p[7],
 			\amp1,				p[8].dbamp,
 
-			\channelSetup2,		p[5+8],
-			\inputChannels2,	LNX_AudioDevices.firstFXBus+(p[6+8]*2),
-			\on2,				p[7+8],
-			\amp2,				p[8+8].dbamp,
+			\channelSetup2,		p[5+11],
+			\inputChannels2,	LNX_AudioDevices.firstFXBus+(p[6+11]*2),
+			\on2,				p[7+11],
+			\amp2,				p[8+11].dbamp,
 
-			\channelSetup3,		p[5+16],
-			\inputChannels3,	LNX_AudioDevices.firstFXBus+(p[6+16]*2),
-			\on3,				p[7+16],
-			\amp3,				p[8+16].dbamp,
+			\channelSetup3,		p[5+22],
+			\inputChannels3,	LNX_AudioDevices.firstFXBus+(p[6+22]*2),
+			\on3,				p[7+22],
+			\amp3,				p[8+22].dbamp,
 
-			\channelSetup4,		p[5+24],
-			\inputChannels4,	LNX_AudioDevices.firstFXBus+(p[6+24]*2),
-			\on4,				p[7+24],
-			\amp4,				p[8+24].dbamp,
+			\channelSetup4,		p[5+33],
+			\inputChannels4,	LNX_AudioDevices.firstFXBus+(p[6+33]*2),
+			\on4,				p[7+33],
+			\amp4,				p[8+33].dbamp,
 		]));
 
 	}

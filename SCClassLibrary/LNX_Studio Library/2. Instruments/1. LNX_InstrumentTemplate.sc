@@ -1602,6 +1602,7 @@ LNX_InstrumentTemplate {
 
 	lfo_{} // quick bug fix for loading new songs with new bumnote
 	filter_{} // quick bug fix for loading new songs with new bumnote
+	a2m_in_{} // quick bug fix for loading new songs with new side chain CC
 
 // my Hack tOOLs ! :D fub-2013 /////////////////////////////////////////////////////////////////
 // now used as part of mixer.
