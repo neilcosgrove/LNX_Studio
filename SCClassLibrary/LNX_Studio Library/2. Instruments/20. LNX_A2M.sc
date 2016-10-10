@@ -247,6 +247,12 @@ LNX_A2M : LNX_InstrumentTemplate {
 							\noShadows_	: 2,
 							\colors_	: (\string : Color.white));
 
+		gui[\labelTheme2]=( \font_		: Font("Helvetica", 14,true),
+							\align_		: \left,
+							\shadow_	: false,
+							\noShadows_	: 0,
+							\colors_	: (\string : Color.black));
+
 		gui[\plainTheme] = (\colors_ : (\off: Color(0.545, 0.562, 0.669)));
 
 		// widgets
@@ -302,6 +308,10 @@ LNX_A2M : LNX_InstrumentTemplate {
 
 			if (i>0) { MVC_PlainSquare(gui[\scrollView],Rect(6+osx,60,5,425),gui[\plainTheme])};
 
+			// number label
+			MVC_StaticText(gui[\scrollView], Rect(20+osx, 65, 20, 20),gui[\labelTheme2])
+				.string_((i+1).asString);
+
 			// 13. peak/rms
 			MVC_OnOffView(gui[\scrollView], models[13+j], Rect(38+osx, 66, 43, 18) ,gui[\learnTheme])
 				.color_(\on,Color(50/77,61/77,1))
@@ -356,10 +366,10 @@ LNX_A2M : LNX_InstrumentTemplate {
 			MVC_MyKnob3(models[11+j], gui[\scrollView], Rect(61+osx, 335, 30, 30), gui[\knobTheme]);
 
 			// 14. attack (0-1) > (0-0.99)
-			MVC_MyKnob3(models[14+j], gui[\scrollView], Rect(44-27+3+osx, 396, 30, 30), gui[\knobTheme]);
+			MVC_MyKnob3(models[14+j], gui[\scrollView], Rect(20+osx, 396, 30, 30), gui[\knobTheme]);
 
 			// 15. decay (0-1) > (0-0.99)
-			MVC_MyKnob3(models[15+j], gui[\scrollView], Rect(44-27+54-3+osx, 396, 30, 30), gui[\knobTheme]);
+			MVC_MyKnob3(models[15+j], gui[\scrollView], Rect(68+osx, 396, 30, 30), gui[\knobTheme]);
 
 			// 5. channelSetup1
 			MVC_PopUpMenu3(models[5+j],gui[\scrollView],Rect(22+osx, 441, 75,17), gui[\menuTheme ] );
@@ -411,31 +421,22 @@ LNX_A2M : LNX_InstrumentTemplate {
 
 	*initUGens{|s|
 		if (verbose) { "SynthDef loaded: A2M".postln; };
-
 		SynthDef("LNX_A2M", {|id=0, rate=40, lag=0, allOn=1,
 			inputChannels1=2, channelSetup1=0, on1=1, amp1=1
 			inputChannels2=4, channelSetup2=0, on2=1, amp2=1
 			inputChannels3=6, channelSetup3=0, on3=1, amp3=1
-			inputChannels4=8, channelSetup4=0, on4=1, amp4=1
-			|
+			inputChannels4=8, channelSetup4=0, on4=1, amp4=1|
 			var signal1, signal2, signal3, signal4;
-
 			signal1 = In.ar(inputChannels1, 2) * Lag.kr(on1 * allOn * amp1);
 			signal1 = Select.ar(channelSetup1,[ (signal1[0]+signal1[1])*0.5, signal1[0], signal1[1] ]);
-
 			signal2 = In.ar(inputChannels2, 2) * Lag.kr(on2 * allOn * amp2);
 			signal2 = Select.ar(channelSetup2,[ (signal2[0]+signal2[1])*0.5, signal2[0], signal2[1] ]);
-
 			signal3 = In.ar(inputChannels3, 2) * Lag.kr(on3 * allOn * amp3);
 			signal3 = Select.ar(channelSetup3,[ (signal3[0]+signal3[1])*0.5, signal3[0], signal3[1] ]);
-
 			signal4 = In.ar(inputChannels4, 2) * Lag.kr(on4 * allOn * amp4);
 			signal4 = Select.ar(channelSetup4,[ (signal4[0]+signal4[1])*0.5, signal4[0], signal4[1] ]);
-
 			SendPeakRMS.kr([signal1,signal2,signal3,signal4] , rate, lag, "/A2M", id);
-
 		}).send(s);
-
 	}
 
 	// method in from osc responders (where the magic happens)
@@ -445,15 +446,13 @@ LNX_A2M : LNX_InstrumentTemplate {
 			var j       = i*11;   									// j is offset for model index
 			var in      = value[(i*2)+p[13+j]].clip(0,1);			// current value in, clipped
 			var z1      = lastValue[i];								// 1 unit delay (previous value)
-			var upLag   = p[14+j].lincurve(0,1,0,0.99,-4)*coefAdj;	// from 0 - 0.999999
-			var downLag = p[15+j].lincurve(0,1,0,0.99,-4)*coefAdj;	// from 0 - 0.999999
-
+			var upLag   = p[14+j].lincurve(0,1,0,0.99,-4)*coefAdj;	// from 0 - 0.99
+			var downLag = p[15+j].lincurve(0,1,0,0.99,-4)*coefAdj;	// from 0 - 0.99
 			if (in>z1) { in=(in*(1-upLag))+(z1*upLag) }{ in=(in*(1-downLag))+(z1*downLag) }; // apply a 1 pole lag
-
 			if (((in.abs) - (z1.abs)).abs>0.001) {					// only do if diff is >0.001
 				lastValue[i] = in;									// store for z1 value (last value)
 				valueInModels[i].lazyValueAction_(in, nil, false);	// update input levels
-				in = in.lincurve(0, 1, p[9+j], p[10+j], p[11+j]);	// map input on to min,max & curve
+				in = in.lincurve(0, 1, p[9+j], p[10+j], p[11+j]);	// map input onto min,max & curve
 				valueOutModels[i].lazyValueAction_(in, nil, false);	// update output levels
 				midi.control(p[12+j], in*127, nil, false, true);	// send midi data
 			}
@@ -471,7 +470,7 @@ LNX_A2M : LNX_InstrumentTemplate {
 	}
 
 	updateOnSolo{|latency|
-		server.sendBundle(latency +! syncDelay, [\n_set, node, \allOn, 	this.onNow.if(1,0)] )
+		server.sendBundle(latency +! syncDelay, [\n_set, node, \allOn, this.onNow.if(1,0)] )
 	}
 
 	updateDSP{|oldP,latency|
@@ -480,33 +479,27 @@ LNX_A2M : LNX_InstrumentTemplate {
 			[\n_set, node, \rate, 			p[2]],
 			[\n_set, node, \lag, 			p[3]],
 			[\n_set, node, \allOn, 			this.onNow.if(1,0)],
-
 			[\n_set, node, \channelSetup1,	p[5]],
 			[\n_set, node, \inputChannels1,	LNX_AudioDevices.firstFXBus+(p[6]*2) ],
 			[\n_set, node, \on1, 			p[7]],
 			[\n_set, node, \amp1, 			p[8].dbamp],
-
-			[\n_set, node, \channelSetup2,	p[5+11]],
-			[\n_set, node, \inputChannels2,	LNX_AudioDevices.firstFXBus+(p[6+11]*2) ],
-			[\n_set, node, \on2, 			p[7+11]],
-			[\n_set, node, \amp2, 			p[8+11].dbamp],
-
-			[\n_set, node, \channelSetup3,	p[5+22]],
-			[\n_set, node, \inputChannels3,	LNX_AudioDevices.firstFXBus+(p[6+22]*2) ],
-			[\n_set, node, \on3, 			p[7+22]],
-			[\n_set, node, \amp3, 			p[8+22].dbamp],
-
-			[\n_set, node, \channelSetup4,	p[5+33]],
-			[\n_set, node, \inputChannels4,	LNX_AudioDevices.firstFXBus+(p[6+33]*2) ],
-			[\n_set, node, \on4, 			p[7+33]],
-			[\n_set, node, \amp4, 			p[8+33].dbamp],
+			[\n_set, node, \channelSetup2,	p[16]],
+			[\n_set, node, \inputChannels2,	LNX_AudioDevices.firstFXBus+(p[17]*2) ],
+			[\n_set, node, \on2, 			p[18]],
+			[\n_set, node, \amp2, 			p[19].dbamp],
+			[\n_set, node, \channelSetup3,	p[27]],
+			[\n_set, node, \inputChannels3,	LNX_AudioDevices.firstFXBus+(p[28]*2) ],
+			[\n_set, node, \on3, 			p[29]],
+			[\n_set, node, \amp3, 			p[30].dbamp],
+			[\n_set, node, \channelSetup4,	p[38]],
+			[\n_set, node, \inputChannels4,	LNX_AudioDevices.firstFXBus+(p[39]*2) ],
+			[\n_set, node, \on4, 			p[40]],
+			[\n_set, node, \amp4, 			p[41].dbamp],
 		);
 	}
 
 	replaceDSP{|latency|
-		var previousNode;
-
-		previousNode = node;
+		var previousNode = node;
 		node = server.nextNodeID; // i could update synth with new node
 
 		// send the new synth to the server
@@ -515,26 +508,22 @@ LNX_A2M : LNX_InstrumentTemplate {
 			\rate,				p[2],  // rate and lag are both i rate hence a new synth to replace last one
 			\lag,				p[3],
 			\allOn, 			this.onNow.if(1,0),
-
 			\channelSetup1,		p[5],
 			\inputChannels1,	LNX_AudioDevices.firstFXBus+(p[6]*2),
 			\on1,				p[7],
 			\amp1,				p[8].dbamp,
-
-			\channelSetup2,		p[5+11],
-			\inputChannels2,	LNX_AudioDevices.firstFXBus+(p[6+11]*2),
-			\on2,				p[7+11],
-			\amp2,				p[8+11].dbamp,
-
-			\channelSetup3,		p[5+22],
-			\inputChannels3,	LNX_AudioDevices.firstFXBus+(p[6+22]*2),
-			\on3,				p[7+22],
-			\amp3,				p[8+22].dbamp,
-
-			\channelSetup4,		p[5+33],
-			\inputChannels4,	LNX_AudioDevices.firstFXBus+(p[6+33]*2),
-			\on4,				p[7+33],
-			\amp4,				p[8+33].dbamp,
+			\channelSetup2,		p[16],
+			\inputChannels2,	LNX_AudioDevices.firstFXBus+(p[17]*2),
+			\on2,				p[18],
+			\amp2,				p[19].dbamp,
+			\channelSetup3,		p[27],
+			\inputChannels3,	LNX_AudioDevices.firstFXBus+(p[28]*2),
+			\on3,				p[29],
+			\amp3,				p[30].dbamp,
+			\channelSetup4,		p[38],
+			\inputChannels4,	LNX_AudioDevices.firstFXBus+(p[39]*2),
+			\on4,				p[40],
+			\amp4,				p[41].dbamp,
 		]));
 
 	}
