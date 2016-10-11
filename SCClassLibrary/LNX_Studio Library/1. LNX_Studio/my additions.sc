@@ -970,7 +970,7 @@ gives min, max, averages and total
 
 	isAlphaKey {|char| ^this == char.ascii[0]}
 	isEnter { ^(this == 0x01000004 or: {(this == 0x01000005) or: {this == 65293}}) }
-	isDel { ^(this == 0x01000007 or: {this == 65535}) }
+	isDel { ^(this == 0x01000007 or: {this == 65535} or:{this==16777219}) }
 	isBackspace { ^this == 0x01000003 }
 	isLeft { ^(this == 0x01000012 or: {this == 65361}) }
 	isUp { ^(this == 0x01000013 or: {this == 65362}) }

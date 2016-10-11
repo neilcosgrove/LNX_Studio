@@ -760,22 +760,18 @@
 		// [char, modifiers, unicode, keycode, key].postln;
 		// kc 51=delete, 36=return, 126,125,123,124=up,down,left,right
 		// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-
 		// bCount=bCount+1;
-
 		if (modifiers.isXCmd) {
 			if (key.isAlphaKey(\C)) {this.guiCopy }; // copy
 			if (key.isAlphaKey(\V)) {this.guiPaste}; //paste
 			if (key.isAlphaKey(\A)) {this.guiSelectAll};
 		};
-
 		if (key.isDel) { this.guiDelete};
-
-		keyDownAction.value(this, char, modifiers, unicode, keycode, key);
-
+		keyDownAction.value(this, char, modifiers, unicode, keycode, key); // to keyboard gui
 	}
+
 	.keyUpAction_{|me, char, modifiers, unicode, keycode, key|
-		keyUpAction.value(this, char, modifiers, unicode, keycode);
+		keyUpAction.value(this, char, modifiers, unicode, keycode, key); // to keyboard gui
 	}
 
 	// drag and drop midi files /////////////////////////////////////////////////////////////////

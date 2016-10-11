@@ -14,7 +14,7 @@ MVC_PeakLevel : MVC_View {
 
 	var <>seqItems, lastItem, <>zeroValue;
 
-	var <>direction=\vertical;
+	var <>direction=\vertical, <>icon=\back;
 
 	initView{
 		colors=colors++(
@@ -71,7 +71,7 @@ MVC_PeakLevel : MVC_View {
 					Pen.smoothing_(true);
 
 					Pen.fillColor_(c);
-					DrawIcon.symbolArgs(\back,r.insetBy(-5,-5).moveBy(1,0));
+					DrawIcon.symbolArgs(icon,r.insetBy(-5,-5).moveBy(1,0));
 
 				};
 			};

@@ -366,7 +366,7 @@ LNX_Studio {
 	// start groups
 
 	initGroups{
-
+		var sideGroup;
 		var postFilterGroup;
 
 		lfoGroup        = Group();				          	// lfo group
@@ -377,7 +377,8 @@ LNX_Studio {
 		eqGroup         = Group(scCodeGroup,\addAfter);     // eq group before inst out
 		instOutGroup    = Group(eqGroup,\addAfter);         // the inst out group for levels & outs
 		fxGroup         = Group(instOutGroup,\addAfter);    // the effects
-		channelOutGroup = Group.after(fxGroup);             // the channel outputs
+		sideGroup       = Group(fxGroup,\addAfter);			// the effects
+		channelOutGroup = Group.after(sideGroup);             // the channel outputs
 
 		groups = (
 			\lfo:			lfoGroup,
@@ -388,6 +389,7 @@ LNX_Studio {
 			\eq:     		eqGroup,
 			\instOut:		instOutGroup,
 			\fx:			fxGroup,
+			\sideGroup:		sideGroup,
 			\channelOut:	channelOutGroup
 		);
 
@@ -480,6 +482,10 @@ LNX_Studio {
 		OSCFunc({|msg|
 			if (insts[msg[2]].notNil) { insts[msg[2]].filter_(msg[3],msg[5],msg[7]) }
 		}, '/filter');
+
+		OSCFunc({|msg|
+			if (insts[msg[2]].notNil) { insts[msg[2]].a2m_in_(msg[3..10]) }
+		}, '/A2M');
 
 	}
 

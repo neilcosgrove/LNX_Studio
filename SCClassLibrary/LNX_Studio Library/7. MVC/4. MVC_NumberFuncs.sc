@@ -26,6 +26,7 @@ MVC_NumberFunc{
 		Spec.add(\0-1,          ControlSpec(0, 1) );
 		Spec.add(\normal,       ControlSpec(0, 1) );
 		Spec.add(\MIDInote,     ControlSpec(0, 127, step:1, default: 60) );
+		Spec.add(\MIDIcc,       ControlSpec(0, 127, step:1, default: 60) );
 		Spec.add(\MIDIvelocity, ControlSpec(0, 127, step:0, default: 0 ) );
 		Spec.add(\transpose,    ControlSpec(-24, 24, step:1, default: 0) );
 		Spec.add(\pitchAdj,     ControlSpec(-24, 24, step:1, default: 0) );
@@ -37,6 +38,7 @@ MVC_NumberFunc{
 		Spec.add(\LNX_audiobusM,ControlSpec(0,LNX_AudioDevices.outputChannelList.size,step:1));
 		Spec.add(\db2,          ControlSpec(0.ampdb, 2, \db, units: " dB"));
 		Spec.add(\db4,          ControlSpec(-inf, 4, \db, 0, 0, " dB"));
+		Spec.add(\db8,          ControlSpec(-inf, 8, \db, 0, 0, " dB"));
 		Spec.add(\db6,          ControlSpec(-inf, 6, \db, 0, 0, " dB"));
 		Spec.add(\db12,         ControlSpec(-inf, 12, \db, 0, 0, " dB"));
 		Spec.add(\db24,         ControlSpec(-inf, 24, \db, 0, 0, " dB"));
