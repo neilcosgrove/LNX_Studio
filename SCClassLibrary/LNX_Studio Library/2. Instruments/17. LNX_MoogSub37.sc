@@ -326,7 +326,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		noControl.do{|i|
 			template= template.add([0, [0,127,\linear,1], midiControl, i+14, Sub37.nameAt(i),
 				( label_:(Sub37.nameAt(i)),numberFunc_:\int),
-				{|me,val,latency| this.midiControlVP(i,val,latency) }]);
+				{|me,val,latency,send| this.midiControlVP(i,val,latency,send) }]);
 		};
 
 		// 88. midi clock out
@@ -523,11 +523,13 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	}
 
 	// set control
-	midiControlVP{|item,value,latency|
+	midiControlVP{|item,value,latency,send=true|
 		p[item+14]=value;
 		midi.control(Sub37.keyAt(item),value,latency +! syncDelay,false,true); // midi control out
-		api.sendVP((id++"_ccvp_"++item).asSymbol,
+		if (send) {
+			api.sendVP((id++"_ccvp_"++item).asSymbol,
 					'netMidiControlVP',item,value,midi.uidOut,midi.midiOutChannel);
+		};
 	}
 
 	// net version of above
