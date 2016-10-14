@@ -223,7 +223,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 			template= template.add(
 				[spec.asSpec.default ? 0, spec, midiControl, i+17, RolandJP08.nameAt(i),
 				(label_:(RolandJP08.labelAt(i)),numberFunc_:(RolandJP08.numberFuncAt(i))),
-				{|me,val,latency| this.midiControlVP(i,val,latency) }]);
+				{|me,val,latency,send| this.midiControlVP(i,val,latency,send) }]);
 		};
 
 		// 60. oct VCO2
@@ -236,7 +236,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		#models,defaults=template.generateAllModels;
 
 		// adjust VCO2 so it quants to the Oct if model[60] is on
-		models[29].action_{|me,val,latency|
+		models[29].action_{|me,val,latency,send|
 			var newVal = val;
 			if (p[60].isTrue) { newVal = val.nearestInList([1, 32, 92, 166, 224, 255]) };
 			if (thisThread.clock==SystemClock) {
@@ -244,7 +244,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 			}{
 				{if (newVal!=val) { me.value_(newVal) }}.defer;
 			};
-			this.midiControlVP(12,newVal,latency);
+			this.midiControlVP(12,newVal,latency,send);
 		};
 
 		// list all parameters you want exluded from a preset change
@@ -684,11 +684,13 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	}
 
 	// set control
-	midiControlVP{|item,value,latency|
+	midiControlVP{|item,value,latency,send=true|
 		p[item+17]=value;
 		this.midiControlOut(item,value,latency);
-		api.sendVP((id++"_ccvp_"++item).asSymbol,
-					'netMidiControlVP',item,value,midi.uidOut,midi.midiOutChannel);
+		if (send) {
+			api.sendVP((id++"_ccvp_"++item).asSymbol,
+			'netMidiControlVP',item,value,midi.uidOut,midi.midiOutChannel);
+		}
 	}
 
 	// net version of above
