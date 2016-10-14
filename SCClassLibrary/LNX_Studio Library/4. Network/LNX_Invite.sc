@@ -138,7 +138,7 @@ LNX_Invite{
 				}],
 				[true,false],
 				color:Color(29/65,1,42/83)*1.5,
-				background:Gradient(Color(0.4,0.4,0.4),Color(0.4,0.45,0.4)),
+				background:Color(0.4,0.4,0.4),
 				w:100,
 				h:30,
 				name:"An Invite.",

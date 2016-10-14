@@ -1,5 +1,6 @@
-
 // a collaboration of users //////////////////////////////////
+// starting & maintaining a collaboration
+// a portion of the code here is managing how we use room is oscGroups
 
 LNX_Collaboration{
 
@@ -35,27 +36,30 @@ LNX_Collaboration{
 		]);
 		room = argRoom;
 		id   = String.rand(8,8.rand).asSymbol;
-		wishList          = IdentityDictionary[];
-		users             = IdentityDictionary[];
-		disconnectedUsers = IdentityDictionary[];
-		invites           = IdentityDictionary[];
-		tasks             = IdentityDictionary[];
-		gui               = IdentityDictionary[];
-		cancelList        = Set[];
-		ignoreList        = Set[];
-		maxLatency        = 0;
-		LNX_Protocols.latency_(maxLatency);
-		//ctPings=(LNX_Studio.isStandalone).if(ctPings,5); // set to 5 if testing
-		if (room.name=="home") {inviteLocation=0} {inviteLocation=0}; // set invite location
+		wishList          = IdentityDictionary[];	// who we want to be in the collaboration
+		users             = IdentityDictionary[];	// who is in the collaboration
+		disconnectedUsers = IdentityDictionary[];	// who has left the collaboration
+		invites           = IdentityDictionary[];	// invites to collaborations
+		tasks             = IdentityDictionary[];	// used when moving rooms
+		gui               = IdentityDictionary[];	// the gui widgets etc..
+		cancelList        = Set[]; 				 	// i said no to these invites
+		ignoreList        = Set[];					// i don't think this is used
+		maxLatency        = 0;						// the max latency in the collaboration
+		LNX_Protocols.latency_(maxLatency);			// set the max latency used in the protocols
+		//ctPings=(LNX_Studio.isStandalone).if(ctPings,5); // set to 5 if testing, makes syncing quicker
+		if (room.name=="home") {inviteLocation=0} {inviteLocation=0}; // set invite location, could be diff room
 	}
 
-	// active users in a connected collaboration
+	// active users in a connected collaboration including me
 	connectedUsers{ ^users.select{|user| disconnectedUsers.includesKey(user.id).not }}
 
+	// other users not including me
 	otherUsers{ ^this.connectedUsers.select{|user| user.id!=(network.thisUser.id) } }
 
+	// is this user currently active in the collaboration
 	isUserConnected{|id| ^((users.includesKey(id)) and: {disconnectedUsers.includesKey(id).not}) }
 
+	// are we in the process of connecting
 	isConnecting{^(isStarting||isInviting)}
 
 	// start things
@@ -64,13 +68,10 @@ LNX_Collaboration{
 		this.timeOutInvites;
 	}
 
+	// set the room
 	room_{|argRoom|
 		room=argRoom;
-		if (room.name=="home") {
-			inviteLocation=0;
-		}{
-			inviteLocation=0;
-		};
+		if (room.name=="home") { inviteLocation=0 }{ inviteLocation=0 }; // set invite location, could be diff room
 		if (window.isClosed.not) { gui[\location].value_(inviteLocation); };
 	}
 
@@ -118,10 +119,7 @@ LNX_Collaboration{
 		;
 
 		if (network.isLAN) { inviteRoom=network.room };
-
-		if (wishList.size==0){
-			network.room.addViaInvite; // untidy but works
-		};
+		if (wishList.size==0){ network.room.addViaInvite }; // add all users in room if none in invite
 		if (isConnected){
 			// adding new users to a current collaboration will take alittle working out
 			"Invite others to this collaboration... TO DO.".postln;
@@ -140,8 +138,7 @@ LNX_Collaboration{
 							{true}          {t=t++"," };
 						};
 					t=t+((alreadyInCollab.size>1).if("are","is"));
-					network.room.addText("-"++t+
-						"already in a collobration and will not see your invite.");
+					network.room.addText("-"++t+"already in a collobration and will not see your invite.");
 				};
 				// if everyone is in a collab there is no point in starting an invite
 				if (alreadyInCollab.size!=wishList.size){
@@ -149,10 +146,7 @@ LNX_Collaboration{
 					isInviting=true;
 					newWishList=wishList.copy;
 					alreadyInCollab.keysDo{|id| newWishList[id]=nil};
-
-					if (verbose) {
-						"2. LNX_Collaboration:guiInviteWishList (startInvite)".postln };
-
+					if (verbose) { "2. LNX_Collaboration:guiInviteWishList (startInvite)".postln };
 					// start a new invite process
 					myInvite=LNX_MyInvite(inviteRoom,newWishList)
 						.action_{|me| this.hostJoin(me) }
@@ -207,8 +201,7 @@ LNX_Collaboration{
 				if (invite.includes(network.thisUser)) {
 					// update for 1st object is still the invite
 
-					if (verbose) {
-						"5. LNX_Collaboration:netRecieveInvite (user in invite)".postln };
+					if (verbose) { "5. LNX_Collaboration:netRecieveInvite (user in invite)".postln };
 
 					if (invites[invite.id].isNil) {
 						invite.cancelAction_{|me|
@@ -226,9 +219,7 @@ LNX_Collaboration{
 			};
 			this.testUsersRespond(invite);
 		}{
-
 			if (verbose) { "6. LNX_Collaboration:netRecieveInvite (warn bad version)".postln };
-
 			network.socket.sendBundle(nil,['decline_invite',invite.id, network.thisUser.id,
 										LNX_Studio.versionMajor,LNX_Studio.versionMinor]);
 			this.warnVersion(invite);
@@ -301,9 +292,7 @@ LNX_Collaboration{
 				// else check for host status (checking if it's me just in case)
 				if ((userID==host)and:{(userID==network.thisUser.id).not}) {
 					hostOrder.reverse.do{|id|
-						if (disconnectedUsers.includesKey(id).not) {
-							nextHost=id;
-						};
+						if (disconnectedUsers.includesKey(id).not) { nextHost=id };
 					};
 					if (nextHost==network.thisUser.id) {
 						this.makeMeHost;
@@ -407,9 +396,7 @@ LNX_Collaboration{
 					wishList=IdentityDictionary[];
 					this.refresh;
 
-					if (verbose) {
-						"Compair: ".post; [invite.roomList, network.room.getTXList].postln;
-					};
+					if (verbose) { "Compair: ".post; [invite.roomList, network.room.getTXList].postln };
 
 					// do we need to change rooms
 					if (((invite.roomList)==(network.room.getTXList))||(network.isLAN)){
@@ -547,9 +534,7 @@ LNX_Collaboration{
 			// make a list of all users in room and in the invite
 			users=IdentityDictionary[];
 			invite.invitedUsers.do{|person|
-				if (room.includes(person)) {
-					users[person.id]=room.occupants[person.id];
-				};
+				if (room.includes(person)) { users[person.id]=room.occupants[person.id] };
 			};
 
 			// i am the host
@@ -575,9 +560,7 @@ LNX_Collaboration{
 			}.fork(AppClock);
 
 			gui[\inviteGUI]=invite.gui[\myInvite];
-
 			network.room.tasks[\timeOutUsers].stop; // stop time out temp
-
 			network.studio.stopNow; // stop the clock
 
 			LNX_Protocols.initResponders; // start communications
@@ -895,7 +878,6 @@ LNX_Collaboration{
 	}
 
 	// autosize window and gui items to no of users /////////////
-
 	autoSizeGUI{|top=0|
 		var noLines, h, y = 0;
 		noLines=((users.size/2).ceil);
@@ -905,26 +887,15 @@ LNX_Collaboration{
 			gui[\userScrollView].hasHorizontalScroller_(false)
 		};
 
-		if (noLines==0) {
-			h = -6;
-			y = 100;
-			// gui[\userScrollView].parent.removeView(gui[\userScrollView]);
-		} {
-			h = (noLines*16+8).clip(1,4*16+5);
-		};
-
-	//	gui[\userScrollView].bounds_(gui[\userScrollView].bounds.height_(h));
+		if (noLines==0) { h = -6; y = 100 }{ h = (noLines*16+8).clip(1,4*16+5) };
 
 		gui[\userScrollView].bounds_( Rect(5,488-h+y+top,202,h) );
-
-
 		gui[\userView].bounds_(gui[\userView].bounds.height_(noLines*16+5));
 
 		^h;
 	}
 
 	// warn about version //
-
 	warnVersion{|invite|
 
 		network.room.addText("");
@@ -942,7 +913,7 @@ LNX_Collaboration{
 		network.room.addText("");
 		network.room.addText(
 			"You can download the latest version of this software at"+
-			"www.lnx_studio@sourceforge.net"
+			"http://lnxstudio.sourceforge.net"
 		);
 		network.room.addText("");
 
@@ -951,13 +922,11 @@ LNX_Collaboration{
 	// studio window users /////////////
 
 	createStudioGUI{|window|
-
 		var y,h,t,l,w,swb;
 
 		h=130;
 		swb=window.bounds;
 
-	//	y=swb.height+115+1+12-4;
 		y=393;
 
 		w=190;
@@ -966,7 +935,9 @@ LNX_Collaboration{
 
 		// scroll view for user
 		gui[\userScrollView] =MVC_ScrollView(window, Rect(5, 435, 202, 8))
-			.hasBorder_(true)
+			.hasBorder_(true
+
+		)
 			.color_(\background,Color(59/77,59/77,59/77)/6)
 			.hasVerticalScroller_(true); // to remove
 
@@ -988,13 +959,13 @@ LNX_Collaboration{
 							Pen.fillColor_(Color.black);
 
 							Pen.stringInRect(user.shortName.asString[0..7],
-											Rect(x1+15+15+2,y1+1,(w/2)-15,h1));
+											Rect(x1+15+15+2,y1+4,(w/2)-15,h1));
 							Pen.fillColor_(Color.white);
 						}{
 							Pen.fillColor_(Color.white);
 						};
 						Pen.stringInRect(user.shortName.asString[0..7],
-											Rect(x1+15+15,y1,(w/2)-15,h1));
+											Rect(x1+15+15,y1+3,(w/2)-15,h1));
 						Pen.fillColor_(Color.black);
 						DrawIcon( \user, Rect(x1+13-1,y1+1,h1+3,h1+2).insetBy(-1,-1) );
 						DrawIcon( \user, Rect(x1+13+1,y1+1,h1+3,h1+2).insetBy(-1,-1) );
@@ -1023,13 +994,7 @@ LNX_Collaboration{
 
 	}
 
-	refreshUserView{
-		{
-			if (gui[\userView].notNil) {
-				gui[\userView].refresh;
-			};
-		}.defer
-	}
+	refreshUserView{ { if (gui[\userView].notNil) { gui[\userView].refresh } }.defer }
 
 }
 

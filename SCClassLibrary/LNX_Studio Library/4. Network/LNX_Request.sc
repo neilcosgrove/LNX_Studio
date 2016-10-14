@@ -233,7 +233,7 @@ LNX_Request{
 				actions,
 				doClose!(buttons.size),
 				color:        Color.orange,
-				background:   Gradient(Color(0.4,0.4,0.4),Color(0.6,0.6,0.4)),
+				background:   Color(0.4,0.4,0.4),
 				w:            100,
 				h:            30,
 				iconName:     myIcon,
