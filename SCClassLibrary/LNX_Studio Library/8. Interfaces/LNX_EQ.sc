@@ -308,6 +308,7 @@ LNX_EQ {
 		api.free;
 		gui.do(_.free);
 		models.do(_.free);
+		lazyRefresh.free;
 		{
 			window = bounds = p = server = gui = group = synth = models = api = midiControl = nil;
 		}.defer(1)

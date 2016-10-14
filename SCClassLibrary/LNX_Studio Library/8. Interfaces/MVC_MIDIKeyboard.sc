@@ -48,6 +48,7 @@ MVC_MIDIKeyboard {
 		view = window = bounds = downAction = upAction =
 		trackAction = keyCodeMap = keyCodesPressed = transpose = miscKeyAction =
 		keyboardColor = nil;
+		lazyRefresh.free;
 	}
 
 	init { arg argwindow, argbounds, argoctaves=3, argstartnote;
