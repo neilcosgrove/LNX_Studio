@@ -87,31 +87,32 @@
 				labelGUI[j] = UserView(window, labelBounds[j])
 				.drawFunc_({|me|
 					if (verbose) { [this.class.asString, 'labelFunc' , label].postln };
-					if (showLabelBackground) {
-						Color.black.alpha_(0.2).set;
-						Pen.fillRect(Rect(0,0,labelBounds[j].width,labelBounds[j].height));
-					};
-					Pen.font_(labelFont);
-					if (labelShadow) {
-						Pen.fillColor_(Color.black);
-						Pen.stringCenteredIn(label[j],
-							Rect(1,1,labelBounds[j].width,labelBounds[j].height));
-						Pen.stringCenteredIn(label[j],
-							Rect(1.5,1.5,labelBounds[j].width,labelBounds[j].height));
-					};
-					if (enabled) {
-						Pen.fillColor_(colors[midiLearn.if(\midiLearn,
-							midiLearn2.if(\midiLearn2,\label)
-						)]);
-					}{
-						Pen.fillColor_(colors[midiLearn.if(\midiLearn,
-							midiLearn2.if(\midiLearn2,\label)
-						)] * 0.8);
+					if (label.notNil) {
+						if (showLabelBackground) {
+							Color.black.alpha_(0.2).set;
+							Pen.fillRect(Rect(0,0,labelBounds[j].width,labelBounds[j].height));
+						};
+						Pen.font_(labelFont);
+						if (labelShadow) {
+							Pen.fillColor_(Color.black);
+							Pen.stringCenteredIn(label[j],
+								Rect(1,1,labelBounds[j].width,labelBounds[j].height));
+							Pen.stringCenteredIn(label[j],
+								Rect(1.5,1.5,labelBounds[j].width,labelBounds[j].height));
+						};
+						if (enabled) {
+							Pen.fillColor_(colors[midiLearn.if(\midiLearn,
+								midiLearn2.if(\midiLearn2,\label)
+							)]);
+						}{
+							Pen.fillColor_(colors[midiLearn.if(\midiLearn,
+								midiLearn2.if(\midiLearn2,\label)
+							)] * 0.8);
 
-					};
-					Pen.stringCenteredIn(label[j],
-					Rect(0,0,labelBounds[j].width,labelBounds[j].height));
-
+						};
+						Pen.stringCenteredIn(label[j],
+							Rect(0,0,labelBounds[j].width,labelBounds[j].height));
+					}
 				})
 				.visible_(visible)
 				.canFocus_(false)
