@@ -365,11 +365,8 @@ OscGroupClient {
 	// all messages come via the masterResponder
 	initMasterResponder{
 		masterResponder = OSCresponderNode(nil, \m,{|time, resp, msg|
-
 			var inUID;
-
 			msg=msg.drop(1);        // drop \m
-			msg=msg.drop(msg[0]+1); // drop junk
 			inUID=msg[0];           // the incoming user ID
 			msg=msg.drop(1);        // and drop it from the message
 
