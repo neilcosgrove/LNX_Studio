@@ -10,7 +10,7 @@
 
 LNX_LANGroup {
 
-	classvar lanAddrs, otherLanAddrs, <myAddrs, port, <>uid, otherAddrs;
+	classvar lanAddrs, otherLanAddrs, <myAddrs, port, <>uid, otherAddrs, <previousAddrs;
 
 	classvar <>verbose=false;
 
@@ -19,11 +19,15 @@ LNX_LANGroup {
 
 	var <myNetAddr, masterResponder, <isInternal=true, <>reportFunc, task, <ipModel;
 
+
+
 	*new {arg serveraddress, username, password, groupname, grouppassword, serverport = 22242,
 			localtoremoteport = 22243, localtxport = 22244, localrxport;
 		^super.newCopyArgs(serveraddress, username, password, groupname, grouppassword, serverport,
 			localtoremoteport, localtxport, localrxport).init;
 	}
+
+	*initClass{ this.loadPreviousAddrsFromPrefs }
 
 	init{
 		this.initMasterResponder;
@@ -85,23 +89,19 @@ LNX_LANGroup {
 
 	// scan for other computers (can use a specific address)
 	scan{|userIP|
-		var intAddr, startPort, ip;
+		var intAddr, startPort, ip, minDigit;
 		port = NetAddr.localAddr.port; // lang port
 		// get all my ip's
 		myAddrs = Pipe.findValuesForKey("ifconfig", "inet")
 			.reverse
-			.collect{|ip| NetAddr(ip.replace("addr:", ""),port) }
-			.reject {|addr| addr.digit(0)==127 or: { addr.digit(4)==0 }} // remove 127. so not selected by mistake
-			.reverse // this put 192 at the top of the list for me
-			;
+			.collect{|ip| NetAddr(ip.replace("addr:", ""),port) };
+			//.reject {|addr| addr.digit(0)==127 or: { addr.digit(4)==0 }} // remove 127. so not selected by mistake
+
 		// is local if size>0
 		if (myAddrs.size>0) {
 			// is local
-
 			ipModel.themeMethods_((items_:  myAddrs.collect(_.ip)));
-
 			myNetAddr = myAddrs[ipModel.value]; // is this a better option than the last ip
-
 			// transition
 			if (isInternal) {
 				// CHANGED was INTERNAL before
@@ -141,31 +141,40 @@ LNX_LANGroup {
 			isInternal = true;
 		};
 		// get the integer address to use in search
-		if (userIP.notNil) {
-			intAddr = userIP.addr;
-		}{
-			intAddr = myNetAddr.addr;
-		};
-		// fan out a search of addrs(-50,+50) & ports (-3,+3)
+		if (userIP.notNil) { intAddr = userIP.addr }{ intAddr = myNetAddr.addr };
+		// fan out a search of addrs(-50,+50) & ports (-1,+1)
 		{
-			// shall i just do all address in last digit ?
-			100.do{|a|
+			// we have found users here in the past
+			previousAddrs.do{|addr|
+				{
+					addr.sendBundle(nil, [\m,uid]++[\scan]++
+						(lanAddrs.collect{|addr| [addr.addr,addr.port]}.asList.flat)
+					);
+				}.try;
+				0.1.wait;
+			};
+
+			minDigit = NetAddr.fromIP(intAddr,port).digit(0); // lowest 1st digit to scan
+			// now scan 50 * 3 addresses
+			50.do{|a|
 				a= (a+1).div(2)*(a.odd.if(1,-1)); // [0,1,-1,2,-2..]
-				6.do{|p|
+				3.do{|p|
 					var tryAddr;
 					p= (p+1).div(2)*(p.odd.if(1,-1));
 					tryAddr = NetAddr.fromIP(intAddr+a,port+p);
 					// do i also want to check for intAddr equal
 					// and warning 126. is this ok ?  myNetAddr.array[0]==tryAddr.array[0]
-                    if (tryAddr!=myNetAddr and: {tryAddr.digit(3) > 0}
+					if (tryAddr!=myNetAddr and: {tryAddr.digit(3) > 0} and: {tryAddr.digit(0) >= minDigit}
                         and:{tryAddr.hostname!="192.168.1.255"}) // my router denies access
                     {
-						tryAddr.sendBundle(nil, [\m,uid]++[\scan]++
-							(lanAddrs.collect{|addr| [addr.addr,addr.port]}.asList.flat)
-						);
+						{
+							tryAddr.sendBundle(nil, [\m,uid]++[\scan]++
+								(lanAddrs.collect{|addr| [addr.addr,addr.port]}.asList.flat)
+							);
+						}.try;
 					};
+					0.1.wait;
 				};
-				0.2.wait; // will this help to stop messages going missing ?
 			};
 		}.fork;
 	}
@@ -181,10 +190,25 @@ LNX_LANGroup {
 		if (diff.size>0) {
 			diff.do{|addr|
 				this.report("Found user at:  "++(addr.simpleString));
+				previousAddrs = (previousAddrs.add(addr)).asSet;
+				this.savePreviousAddrsToPrefs;
 			};
 		};
 
 		otherAddrs = lanAddrs.difference(myAddrs); // now make a list of all other addrs
+	}
+
+	savePreviousAddrsToPrefs{
+		previousAddrs.collect{|addr| [addr.addr, addr.port]}.asList.flatNoString.savePref("prev_Addrs")
+	}
+
+	*loadPreviousAddrsFromPrefs{
+		previousAddrs=("prev_Addrs".loadPref ? []).clump(2).collect{|l| NetAddr(l[0],l[1].asInt)}.asSet
+	}
+
+	*clearPreviousAddrs{
+		previousAddrs = Set[];
+		previousAddrs.savePref("prev_Addrs")
 	}
 
 	// recieved a scan and respond
