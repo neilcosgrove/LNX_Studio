@@ -1154,6 +1154,7 @@ LNX_InstrumentTemplate {
 	// is guaranteed in Order sent via Host
 
 	setPVH{|index,value,latency,send=true|
+		p[index]=value;
 		if (send) {
 			//"-setPVH-------------------------------------------------".postln;
 			api.groupCmdOD('netSetP',index,value);
