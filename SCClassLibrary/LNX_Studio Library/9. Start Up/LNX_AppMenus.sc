@@ -116,6 +116,7 @@ LNX_AppMenus {
 					"-",
 					"Leave Colaboration",
 					"Close Network",
+					"Forget Users",
 					"-",
 					"Network Prefereces",
 				])
@@ -124,7 +125,8 @@ LNX_AppMenus {
 					 {0}{ studio.network.guiConnect
 					}{2}{ studio.network.collaboration.guiLeave
 					}{3}{ studio.network.disconnect
-					}{5}{ studio.network.preferences
+					}{4}{ LNX_LANGroup.clearPreviousAddrs
+					}{6}{ studio.network.preferences
 					}
 				};
 
@@ -291,10 +293,11 @@ LNX_AppMenus {
 
 			// network menu
 			Menu(
-				Action("Open Network", 	{ studio.network.guiConnect }).shortcut_("Ctrl+N"),
+				Action("Open Network", 			{ studio.network.guiConnect }).shortcut_("Ctrl+N"),
 				Action.separator,
 				Action("Leave Colaboration",	{ studio.network.collaboration.guiLeave }),
 				Action("Close Network",			{ studio.network.disconnect }).shortcut_("Ctrl+Shift+N"),
+				Action("Forget Users", { LNX_LANGroup.clearPreviousAddrs }),
 				Action.separator,
 				Action("Network Prefereces",	{ studio.network.preferences }),
 			).title_("Network"),

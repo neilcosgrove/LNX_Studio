@@ -25,7 +25,7 @@ MVC_LazyRefresh{
 
     classvar <>globalFPS, <refreshCount=0, <lastRefreshCount=0, <task, <taskRate=1, <rateAdjust=1;
 
-    var <>refreshFunc, <>fps=20, lastTime=0, nextTime, <>model, <>spread=true;
+    var <>refreshFunc, <>fps=20, lastTime=0, nextTime, <>model, <>spread=false;
 
 	// all views add 1 to the refreshCount when they are refreshed
 	*incRefresh{ refreshCount = refreshCount + 1 }
@@ -85,8 +85,11 @@ MVC_LazyRefresh{
 	}
 
 	// this replaces MVC_Model lazyValueRefresh so it sits in here
+
 	lazyValueRefresh{
 		var now;
+		// spread is causing a nil error with model when song closes. and this doesn't stop it...
+		// if (model.isNil) {^this};
 		now=SystemClock.seconds;
 		if ((now-lastTime)>(((globalFPS ? fps)*rateAdjust).reciprocal)) {
 			lastTime=now;

@@ -18,7 +18,7 @@ LNX_A2M : LNX_InstrumentTemplate {
 	isInstrument	{^true}						// does this need to be true?
 	isMIDI			{^true}						// has midi out
 	canBeSequenced	{^false}					// doesn't have a sequencer
-	mixerColor		{^Color(0.3,0.3,0.3,0.2)}	// colour in mixer
+	mixerColor{^Color(0.75,0.75,1,0.4)} 		// colour in mixer
 	onColor			{^Color(0.5,0.7,1)}			// Mixer on button colour
 	alwaysOnModel	{^models[4]}				// always on model
 	alwaysOn		{^models[4].isTrue}			// am i? used by melody maker to change onOff widgets
@@ -110,19 +110,19 @@ LNX_A2M : LNX_InstrumentTemplate {
 
 				// 9. min
 				[0, \unipolar, midiControl, 9+j, "Min"+k, {|me,val,latency,send|
-					this.setPVP(9+j,val,latency,true) }],
+					this.setPVP(9+j,val,latency,send) }],
 
 				// 10.max
 				[1, \unipolar, midiControl, 10+j, "Max"+k, {|me,val,latency,send|
-					this.setPVP(10+j,val,latency,true)}],
+					this.setPVP(10+j,val,latency,send)}],
 
 				// 11.curve
 				[0,[-4,4], midiControl, 11+j, "Slope"+k, (label_:"Slope", \zeroValue_:0), {|me,val,latency,send|
-					this.setPVP(11+j,val,latency,true)}],
+					this.setPVP(11+j,val,latency,send)}],
 
 				// 12. cc
 				[64+i, \MIDIcc, midiControl, 12+j, "CC"+k, {|me,val,latency,send|
-					this.setPVP(12+j,val,latency,true)}],
+					this.setPVP(12+j,val,latency,send)}],
 
 				// 13. peak / rms
 				[0,\switch,  midiControl, 13+j, "Peak/RMS"+k, (\strings_:["Peak","RMS"]), {|me,val,latency,send|
@@ -130,11 +130,11 @@ LNX_A2M : LNX_InstrumentTemplate {
 
 				// 14. attack (0-1) > (0-0.99)
 				[0,\unipolar, midiControl, 14+j, "Attack"+k, (label_:"Attack"), {|me,val,latency,send|
-					this.setPVP(14+j,val,latency,true)}],
+					this.setPVP(14+j,val,latency,send)}],
 
 				// 15. decay (0-1) > (0-0.99)
 				[0,\unipolar, midiControl, 15+j, "Decay"+k, (label_:"Decay"), {|me,val,latency,send|
-					this.setPVP(15+j,val,latency,true)}],
+					this.setPVP(15+j,val,latency,send)}],
 
 			];
 

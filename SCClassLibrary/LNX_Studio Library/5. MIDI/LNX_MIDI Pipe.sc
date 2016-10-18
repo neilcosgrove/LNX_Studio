@@ -1344,7 +1344,10 @@ LNX_MultiPipeOut{
 
 	var studio, parent, <insts, <names, <ids, <instNo, <onOffs, <midiBuffers, <gui, api;
 	var <>midiOutBuffer;
-	var w, h, fontHeight, rect, <midiOut=true;
+	var w, h, fontHeight, rect,
+
+	<midiOut=true; // to midi out
+
 	var <presets, <midiOutPresets, <postLoadList;
 	var <models;
 
@@ -1354,22 +1357,20 @@ LNX_MultiPipeOut{
 
 	init{|argStudio, argParent|
 		studio = argStudio;
-		parent = argParent; // what is this used for
+		parent = argParent; 				// this is melody maker and used to exclude it from the list of seq insts
 		models = IdentityDictionary[];
-		insts  = [];
-		names  = [];
-		ids    = [];
-		instNo = [];
-		onOffs      = IdentityDictionary[];
-		midiBuffers = IdentityDictionary[];
-		gui         = IdentityDictionary[];
-		presets        = []; // for onOffs
-		midiOutPresets = []; // for midiOut OnOff
+		insts  = [];						// list all instrumnets that can be sequenced
+		names  = [];						// their names
+		ids    = [];						// their ids
+		instNo = []; 						// and their instNo
+		onOffs      = IdentityDictionary[]; // on off values
+		midiBuffers = IdentityDictionary[]; // midi buffers for each inst
+		gui         = IdentityDictionary[]; // gui items
+		presets        = []; 				// for onOffs
+		midiOutPresets = []; 				// for midiOut OnOff
 		studio.addDependant(this);
-		studio.insts.addDependant(this);
-
-		rotateNoteDict = IdentityDictionary[];
-
+		studio.insts.addDependant(this);	// adding, moving, deleteing insts & changing namens,
+		rotateNoteDict = IdentityDictionary[]; // used for hocket release, ( midiNote:instID )
 	}
 
 	apiID_{|id| api = LNX_API.newTemp(this,id,#[\netOnOffID_, \netMIDIOut_]) }
@@ -1385,7 +1386,7 @@ LNX_MultiPipeOut{
 	}
 
 	pipeIn{|pipe|
-		if (models[\rotate].value.isTrue) {
+		if (models[\rotate].isTrue) {
 			// rotate outputs
 			if (pipe.isNote) {         // (only sends note events)
 				var idsOn;
@@ -1456,7 +1457,6 @@ LNX_MultiPipeOut{
 	// does this also need to update the presets??
 
 	update{|object, model, arg1,arg2|
-
 		if (model==\name) {
 			if (ids.includes(arg1)) {
 				names[ids.indexOf(arg1)]=arg2;
@@ -1466,32 +1466,34 @@ LNX_MultiPipeOut{
 
 		if (model==\instruments) {
 
-			object = object ? (studio.insts);
-			insts  = object.canBeSequenced;
+			object = object ? (studio.insts); 		// object should be an instance of LNX_Instruments
+			insts  = object.canBeSequenced;   		// collect all instrumnets that can be sequenced
 
-			insts.remove(parent); // not me
+			insts.remove(parent);             		// do not include me in the list
 
-			names  = insts.collect(_.name);
-			ids    = insts.collect(_.id);
-			instNo = object.canBeSequencedInstNo;
+			names  = insts.collect(_.name);			// get their names
+			ids    = insts.collect(_.id);			// get their ids
+			instNo = object.canBeSequencedInstNo;	// object is LNX_Instruments so this is a list of
+													// instNo that can be sequenced
 
 			// remove old
-			onOffs.keys.difference(ids).do{|id|
-				onOffs[id]=nil;
-				midiBuffers[id]=nil;
+			onOffs.keys.difference(ids).do{|id|		// if onOff keys (id) no longer in insts then
+				onOffs[id]=nil;						// remove on/off flag from onOff Dict
+				midiBuffers[id]=nil;				// and the midi buffers used
 			};
 
 			// add new
-			ids.difference(onOffs.keys).do{|id|
-				onOffs[id]=0;
-				midiBuffers[id]=LNX_MIDIBuffer()
-					.midiPipeOutFunc_{|pipe| studio.insts[id].pipeIn(pipe) };
+			ids.difference(onOffs.keys).do{|id|		// for anything new instrument in the ids
+				onOffs[id]=0;						// give us an onOff value
+				midiBuffers[id]=LNX_MIDIBuffer()	// and make me a midi buffer
+					.midiPipeOutFunc_{|pipe| studio.insts[id].pipeIn(pipe) }; // which goes to the inst
 			};
 
-			this.autoSize;
+			// this.updatePresets; // update presets to any changes
+
+			this.autoSize; // update GUI
 
 		};
-
 	}
 
 	//////////////////////////////////////////////////////////
@@ -1501,7 +1503,7 @@ LNX_MultiPipeOut{
 		presets.do{|preset,i|
 			preset.keys.difference(ids).do{|id| preset[id]=nil }; // remove old
 			ids.difference(preset.keys).do{|id| preset[id]=0 }; // add new
-		}
+		};
 	}
 
 	// purge just removes old ones
@@ -1552,26 +1554,24 @@ LNX_MultiPipeOut{
 		presetToAdd = IdentityDictionary[];
 		(l.popNI(size*2)).pairsDo{|key,value| presetToAdd[key]=value};
 		if (presets[i].notNil) { presets[i] = presetToAdd };
-
 	}
 
 	// for your own load preset
 	iLoadPreset{|i|
 		var preset;
-
+		// this is just midiout
 		if (midiOut != midiOutPresets[i]) {
 			midiOut = midiOutPresets[i];
 			this.changed(\midiOut);
 		};
-
+		// for each inst
 		preset = presets[i];
 		onOffs.keysDo{|id|
-			if (preset[id].notNil) {
+			if (preset[id].notNil) { // error here
 				onOffs[id]= preset[id];
 				if (onOffs[id]==0) { midiBuffers[id].releaseAll };
 			};
 		};
-
 		{ this.refresh }.defer;
 	}
 
@@ -1590,19 +1590,13 @@ LNX_MultiPipeOut{
 	// via insts order? update/purge 1st?
 
 	/*
-
 	a.a.multiPipeOut.getSaveList;
 	a.a.multiPipeOut.presets.last;
-
-	a.a.multiPipeOut.
-
 	*/
 
 	// the save list
 	getSaveList{
-
 		this.purgePresets; // remove any missing presets attached to deleted instruments
-
 		^["LNX_MultiPipeOut DOC", onOffs.size, presets.size, midiOut.asInt]
 
 		// we need to use inst no and not ids when saving because
@@ -1631,7 +1625,6 @@ LNX_MultiPipeOut{
 	// after the song has been loaded and id's assigned to the insts.
 	iPostSongLoad{|offset|
 		var onOffsSize, presetsSize, l = postLoadList;
-
 		offset = offset ? 0;
 
 		if (postLoadList.notNil) {
@@ -1659,7 +1652,7 @@ LNX_MultiPipeOut{
 			};
 
 			// presets
-			presets=[];
+			presets=[];  // nothing is getting added to this when dupped on a network
 			midiOutPresets=[];
 			presetsSize.do{
 				var presetToAdd;
@@ -1686,7 +1679,6 @@ LNX_MultiPipeOut{
 		};
 
 		postLoadList=nil; // stops it if addSong happens
-
 	}
 
 	iPostSongAdd{}
@@ -1783,13 +1775,13 @@ LNX_MultiPipeOut{
 			};
 	}
 
-	internalHeight{ ^((names.size+1)*fontHeight)
-						.clip(rect.height-1,rect.height+((names.size+1)*fontHeight))
-	}
+	internalHeight{ ^((names.size+1)*fontHeight).clip(rect.height-1,rect.height+((names.size+1)*fontHeight))}
 
-	autoSize{ gui[\userView].bounds_(Rect(0,0,w,this.internalHeight)) }
+	autoSize{ gui[\userView].bounds_(Rect(0,0,w,this.internalHeight)).refresh }
 
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 // used to not add latency to nil
 /*

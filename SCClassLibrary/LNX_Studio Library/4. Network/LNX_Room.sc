@@ -12,205 +12,181 @@ LNX_Room{
 	var <address, <name, <password, <location, <occupants;
 	var <tasks, <gui, <window, <>addAction, <>removeAction, <>clearAction;
 	var <testUsers, nudge;
-	
-	*broadcastNormal{ broadcastInterval=0.49 }
-	*broadcastSlow  { broadcastInterval=1.49 }
-	
-	// make a new room
-	
-	*new{|address, name, password, location|
-		^super.new.init(address, name, password, location)
-	}
 
-	getTXList{ ^[address, name, password, location] }
-	
-//	getTXList{
-//		if (network.isLAN) {
-//			^["LAN","Home","password",'Public']
-//		}{
-//			^[address, name, password, location]
-//		}
-//	}
-	
+	*broadcastNormal{ broadcastInterval=0.49 } // rate profile is normally broadcast in room
+	*broadcastSlow  { broadcastInterval=1.49 } // we do this slower but i can't remeber when
+
+	// make a new room
+	*new{|address, name, password, location| ^super.new.init(address, name, password, location)}
+
+	getTXList{ ^[address, name, password, location] } // a getSaveList for rooms
+
+//	getTXList{if (network.isLAN) {^["LAN","Home","password",'Public']}{^[address, name, password, location]}}
+
 	// the default room for LNX_Studio
-	
 	*default{
-		^super.new.init("realizedsound.mooo.com", "home", "password", 'Public')
+		^super.new.init("realizedsound.mooo.com", "home", "password", 'Public'); // this server is probably off
 			// server address, userid, userpassword, groupid, grouppassword
 			// or use "131.191.106.117"
 	}
-	
+
 	// make a random room
-	
 	*random{
 		^super.new.init("realizedsound.mooo.com",String.rand(8,0),String.rand(8,0),'Private')
 	}
-	
+
 	init{|argAddress, argName, argPassword, argLocation|
 		#address, name, password, location=[argAddress, argName, argPassword, argLocation];
 		location=location.asSymbol;
-		occupants=IdentityDictionary[];
-		tasks=IdentityDictionary[];
-		gui=IdentityDictionary[];
-		nudge=IdentityDictionary[];
+		occupants=IdentityDictionary[]; // who is in the room
+		tasks=IdentityDictionary[];		// broadcast profile & timeout user
+		gui=IdentityDictionary[];		// gui widgets etc...
+		nudge=IdentityDictionary[];		// last time we nudged a user
 	}
-	
+
 	// move this room to...
-	
 	moveTo{|argAddress, argName, argPassword, argLocation|
 		#address, name, password, location=[argAddress, argName, argPassword, argLocation];
 		location=location.asSymbol;
-		occupants=IdentityDictionary[];
-		{this.userListUpdate}.defer(1.5);
+		occupants=IdentityDictionary[];		// new room starts with no occupants until we find them
+		{this.userListUpdate}.defer(1.5);	// update user list
 	}
-	
+
 	// used as a little fix
-	
 	move{|argAddress, argName, argPassword, argLocation|
 		#address, name, password, location=[argAddress, argName, argPassword, argLocation];
 		location=location.asSymbol;
 	}
-	
+
 	// start & stop services in this room (used in moving address + room)
-	
 	stop{
-		this.removeResponders;
-		tasks.do(_.stop);
-		occupants=IdentityDictionary[];
+		this.removeResponders;			// stop listening for profiles, userLeftRoom, chat & nudge
+		tasks.do(_.stop);				// stop broadcasting profile & timing out users
+		occupants=IdentityDictionary[]; // no users
 	}
-	
+
+	// used when network moves to a new room
 	restart{
-		occupants=IdentityDictionary[];
-		tasks=IdentityDictionary[];
-		gui[\selectedUser]=nil;
-		gui[\occupants]=IdentityDictionary[];
-		this.broadcastProfile;
-		this.initResponders;
-		this.timeOutUsers;
-		this.announceRoom;
+		occupants=IdentityDictionary[]; 		// new room starts with no occupants until we find them
+		tasks=IdentityDictionary[];				// new tasks
+		gui[\selectedUser]=nil;					// no one is selected in the gui
+		gui[\occupants]=IdentityDictionary[];	// and gui list of users
+		this.broadcastProfile;					// start broadcasting my profile
+		this.initResponders;					// start listen for profiles, users leaving, chat & nudge
+		this.timeOutUsers;						// start timing out users
+		this.announceRoom;						// post the room details to the room dialog view
 	}
-	
-	// start all services for this room
-	
+
+	// start all services for this room, used when network is 1st started
 	startServices{
 		this.broadcastProfile;
 		this.initResponders;
 		this.timeOutUsers;
 		this.addTestUsers(0); // for testing
 	}
-	
+
 	// broadcast thisUser profile
-	
 	broadcastProfile{
 		tasks[\broadcastProfile] = Task({
-			loop { 
+			loop {
 				network.socket.sendBundle(nil,
 						['broadcastProfile',name]++(network.thisUser.getPublicList));
 				//("b"+broadcastInterval).post;
-				broadcastInterval.wait; // (25 broadcasts per 1 timeOut intervals)
+				broadcastInterval.wait; // (25 broadcasts per 1 timeOut interval)
 			};
 		}).start;
 	}
-	
+
+	// used whilst loading songs to maintain collaboration
 	broadcastOnce{
-		network.socket.sendBundle(nil,
-				['broadcastProfile',name]++(network.thisUser.getPublicList));
+		network.socket.sendBundle(nil, ['broadcastProfile',name]++(network.thisUser.getPublicList));
 	}
 
 	// room responders
-	
-	initResponders{		
+	initResponders{
+		// we recieved a profile
 		network.socket.addResp('broadcastProfile', {|time, resp, msg|
-			
-			//msg.postln;
-			
 			if (msg[1]==(name.asSymbol)) {  // oscGroup returns as string/symbol ?
 				this.recieveBroadcast(msg.drop(2));
 			};
 		});
+		// someone left the room
 		network.socket.addResp('userLeftRoom', {|time, resp, msg|
 			this.removeUser(msg[1].asSymbol);
 		});
+		// someone sent a message
 		network.socket.addResp('netTalk', {|time, resp, msg|
 			if (msg[1]==(name.asSymbol)) {  // oscGroup returns as string/symbol ?
 				this.netTalk(msg[2]);
 			}
 		});
+		// pictures no used yet
 		network.socket.addResp('requestPict', {|time,resp, msg|
 			"pict request recieved".postln;
 		});
+		// pictures no used yet
 		network.socket.addResp('broadcastPict', {|time,resp, msg|
 			"pict broadcast recieved".postln;
 		});
+		// we recieved a nudge
 		network.socket.addResp('nudge', {|time,resp, msg|
 			{this.recieveNudge(*(msg.drop(1)));}.defer;
 		});
+		// someone talked in the room
 		network.socket.addResp('netRoomMessage', {|time, resp, msg|
 			this.netRoomMessage(msg[1]);
 		});
 	}
-		
+
+	// stop listening to the network
 	removeResponders{
-		['broadcastProfile','userLeftRoom','netTalk','requestPict',
-							'broadcastPict','poke','netRoomMessage'].do{|id|
-			network.socket.removeResp(id)
-		};
+		['broadcastProfile','userLeftRoom','netTalk','requestPict','broadcastPict','poke','netRoomMessage']
+			.do{|id| network.socket.removeResp(id) };
 	}
-	
-	// every second time out any users that have not broadcast in the last 5 secs
-	
+
+	// once a second, time out any users that have not broadcast in the last 5 secs
 	timeOutUsers{
 		tasks[\timeOutUsers] = Task({
-			loop { 
+			loop {
 				occupants.do({|person|
+					// if we haven't heard from user in timeOutDuration then time them out
 					if (((SystemClock.now)-(person.lastPingTime))>timeOutDuration) {
 						"--".postln;
 						"I am timing out ".post;person.postln;
 						LNX_Protocols.now.asFormatedString(0,2).post;
 						[person.shortName,person.identityHash,
 							SystemClock.now,person.lastPingTime].postln;
-						{this.removeUser(person.id);}.fork;
+						{this.removeUser(person.id);}.fork; // remove the user from the room
 					};
 				});
 				1.wait;
 			};
 		}).start;
 	}
-	
+
 	// revieve a user broadcast message
-	
 	recieveBroadcast{|list|
 		var id;
-		id=list[0].asSymbol;
-		if (network.thisUser.id!=id) {
-			
+		id=list[0].asSymbol; 			// id is user id
+		if (network.thisUser.id!=id) {  // if i hear my own profile then ignore it. sometimes network can do this
 			{
-				if ((occupants.includesKey(id)).not) {
-					occupants.add(id -> LNX_User.newPublicUser(list));
-					
-					
-					//occupants[id].shortName
-					
-					this.addTextViaRoom("- "++occupants[id].shortName+
-						"has entered the room.",false,true);
-					
-					this.refresh;
+				if ((occupants.includesKey(id)).not) { // if user not already in my list of people here
+					occupants.add(id -> LNX_User.newPublicUser(list)); // add them
+					// announce them in the room
+					this.addTextViaRoom("- "++occupants[id].shortName+ "has entered the room.",false,true);
+					this.refresh;		// refresh gui
+					// if this is the 1st user i see then select them and show their profile
 					if (occupants.size==1) {
 						gui[\selectedUser]=gui[\occupants][0].id;
-						if (window.isClosed.not) {
-							gui[\profileView].string_(gui[\occupants][0].displayString);
-						};
+						if (window.isClosed.not) { gui[\profileView].string_(gui[\occupants][0].displayString) };
 					};
 				}{
-					occupants[id].pingIn;
-					if (occupants[id].editNo!=list[16]) {
-						occupants[id].putPublicList(list);
-						if (window.isClosed.not) {
-							// update profile display
+					occupants[id].pingIn; // we seen them again so update the last time we saw user as now
+					if (occupants[id].editNo!=list[16]) { 	// have they changed their profile since last time?
+						occupants[id].putPublicList(list);	// update profile
+						if (window.isClosed.not) {   		// and the gui
 							this.userListUpdate;
-							if (gui[\selectedUser]==id) {
-								this.updateUserProfile;
-							};
+							if (gui[\selectedUser]==id) { this.updateUserProfile };
 						};
 						network.refreshUserView;
 					};
@@ -218,9 +194,8 @@ LNX_Room{
 			}.defer;
 		}
 	}
-	
+
 	// update the gui list of users
-	
 	userListUpdate{
 		var userIndex,canSee;
 		// store the users in a sorted list
@@ -230,7 +205,6 @@ LNX_Room{
 		// and the ids in the same order
 		gui[\ids]=gui[\occupants].collect({|p| p.id});
 		// could i see the user last time
-		
 		{
 			if (window.isClosed.not) {
 				canSee=gui[\userList].canSee;
@@ -246,93 +220,80 @@ LNX_Room{
 					gui[\userList].value_(userIndex,canSee);
 				}
 			};
-			
-			
-			
 		}.defer;
-		
 	}
-	
+
 	// remove user from room
-	
 	removeUser{|id|
 		if (occupants[id].notNil) {
-			this.addTextViaRoom("- "++occupants[id].shortName++" has left the room.",false,true);
-			occupants.removeAt(id);
-			removeAction.value(id);
-			this.refresh;
+			this.addTextViaRoom("- "++occupants[id].shortName++" has left the room.",false,true); // announce it
+			occupants.removeAt(id); // remove them
+			removeAction.value(id); // not sure if this is used anymore
+			this.refresh;			// update gui
 		};
 	}
-	
+
 	// does the room have person in it
-	
 	includes{|person| ^(occupants.includesKey(person.id)) }
-	
+
 	// refresh the gui
-	
 	refresh{ this.userListUpdate }
-	
+
 	// close this room
-	
 	close{
-		network.socket.sendBundle(nil,['userLeftRoom',network.thisUser.id]);
-		tasks.do(_.stop);
-		this.removeResponders;
-		tasks=IdentityDictionary[];
-		occupants=IdentityDictionary[];
-		gui=nil;
+		network.socket.sendBundle(nil,['userLeftRoom',network.thisUser.id]); // tell others i have left
+		tasks.do(_.stop);				// stop broadcasting profile & timing out users
+		this.removeResponders;			// stop listening for profiles, userLeftRoom, chat & nudge
+		tasks=IdentityDictionary[];		// no tasks
+		occupants=IdentityDictionary[]; // no occupants
+		gui=nil;						// stop gui
 	}
-	
-	// send a message
-	
+
+	// send a message to the room
 	roomMessage{|msg|
 		network.socket.sendBundle(0,['netRoomMessage', msg]);
 		this.addText(msg);
 	}
-	
+
+	// net of above
 	netRoomMessage{|msg| this.addText(msg.asString) }
-	
+
+	// just talking in the collaboration, can't be seen in the room
 	talk{|msg|
 		msg=network.thisUser.shortName+":"+msg;
 		network.socket.sendBundle(0,['netTalk', name, msg]);
 		this.addTextViaRoom(msg,false,true);
 	}
-	
+
 	// recieve a message
-		
-	netTalk{|msg|
-		this.addTextViaRoom(msg.asString,false,true);
-	}
-	
+	netTalk{|msg| this.addTextViaRoom(msg.asString,false,true) }
+
 	// send a nudge
-	
 	nudge{|uid|
-		if ((nudge[uid].isNil)or:{((SystemClock.now-nudge[uid]))>30}) {
+		if ((nudge[uid].isNil)or:{((SystemClock.now-nudge[uid]))>30}) { // you can only nudge every 30 seconds
 			network.socket.sendBundle(nil,['nudge',network.thisUser.id,uid]);
 			this.addText("You have nudged"+(occupants[uid].name)++".");
 		};
-		nudge[uid]=SystemClock.now;
+		nudge[uid]=SystemClock.now; // last time this user was nudged
 	}
-	
+
 	// recieve a nudge
-	
 	recieveNudge{|fromUID,toUID|
 		fromUID=fromUID.asSymbol;
 		toUID=toUID.asSymbol;
 		if (network.thisUser.id==toUID) {
 			// for me
 			this.addText("You have been nudged by"+(occupants[fromUID].name)++".");
-			network.guiConnect;
+			network.guiConnect; // open gui if not already open
 		}{
 			// for someone else
 			this.addText(
 				""+(occupants[fromUID].name)+"has nudged"+(occupants[toUID].name)++"."
 			);
-		};	
+		};
 	}
-	
-	// add text to the dialog
-	
+
+	// add text to the dialog view
 	addText{|msg|
 		{
 			msg=msg.asString;
@@ -343,31 +304,28 @@ LNX_Room{
 			network.addTextToDialog(msg);
 		}.defer;
 	}
-	
+
 	// same as addText but put "[]" at the start in studio dialog
-	
 	addTextViaRoom{|msg,flash=false,force=false|
 		{
-			if (gui.notNil) {	
+			if (gui.notNil) {
 				msg=msg.asString;
 				if (gui[\dialogOut].notNil) {
 					gui[\dialogOut].addText(msg);
 					network.addTextToDialog(msg,flash,force);
 					gui[\dialogOutList]=gui[\dialogOut].dialog;
-				};	
+				};
 			}
 		}.defer;
 	}
-	
+
 	// announce the room in the dialog
-	
 	announceRoom{
 		{
 			gui[\dialogOutList]=[];
 			gui[\dialogOut].dialog_(gui[\dialogOutList]);
 			this.addText("------------------------------------------------------------");
-			
-			if (network.isLAN) {			
+			if (network.isLAN) {
 				this.addText("-    You are in "++(location.asString)++" LAN room:");
 				this.addText("-    "++name);
 			}{
@@ -377,56 +335,31 @@ LNX_Room{
 					this.addText("-    Password: "++password);
 				};
 			};
-				
 			this.addText("-    "++Date.localtime);
 			this.addText("------------------------------------------------------------");
-			//this.addText("");
-			
 			this.addText("");
-			
-			if ((network.isLAN.not) && (location==\Public)) {
-				
-//				this.addText("Sandbox is recommend in Public rooms.");
-//				this.addText("");
-			};
-			
 			if (name=="home") {
-							
 				this.addText("This is the \"Home\" room, which functions as a general meeting place.");
 				this.addText("");
-			
 				if (network.beenInCollaboration.not) {
-			
-					{
-						this.addText("A list of users in this room is on the left.");
-						//this.addText("");
-					}.defer(1.5);
-					{
-						this.addText(
-							"You can edit your own profile in the tab \"My Profile\" below.");
-						//this.addText("");
-					}.defer(3);
-					{
-						this.addText(
+					{ this.addText("A list of users in this room is on the left.") }.defer(1.5);
+					{ this.addText( "You can edit your own profile in the tab \"My Profile\" below.") }.defer(3);
+					{ this.addText(
 	"Invite people to a collaboration in a room with the \"Add\" and \"Invite\" buttons at the bottom.");
-						//this.addText("");
 					}.defer(4.5);
-					
 				};
-			
 			};
-			
 		}.defer;
 	}
-	
+
 	// make the gui
-	
+
 	createGUI{|argWindow,topWindow,topView|
-	
+
 		var userIndex, dialogOutList, col;
-	
+
 		window=argWindow;
-		
+
 		// get last user index if gui was open
 		if (gui.notNil) {
 			dialogOutList=gui[\dialogOutList]?[];
@@ -436,7 +369,7 @@ LNX_Room{
 		}{
 			gui=IdentityDictionary[]; // else new gui
 		};
-	
+
 		// user list
 		gui[\userList] = MVC_ListView(window,Rect(8,10+40,120,370))
 			.items_([])
@@ -474,13 +407,13 @@ LNX_Room{
 			.color_(\hilite,Color(0,0,0,0.5))
 			.font_(Font("Helvetica", 12))
 			.fontHeight_(18);
-			
+
 		gui[\userList].actions_(\enterKeyAction,gui[\userList].actions[\doubleClickAction]);
-		
+
 		this.refresh;
-		
+
 		col=Color(0,0,0,0.35);
-		
+
 		gui[\dialogView]=TabbedView.new(window,Rect(131,11-4-2+40,389,217+15+6),
 			["                                                                              ",
 			 "                                      "])
@@ -493,18 +426,18 @@ LNX_Room{
 			.font_(GUI.font.new("Helvetica",11))
 			.tabHeight_(15)
 			.value_(0)
-			.action_{|me|};	
-		
+			.action_{|me|};
+
 		MVC_PlainSquare(window,Rect(135,10-2+40,380,155+15+5+22))
 			.color_(\off,Color.black);
-	
+
 		// dialog output
 		gui[\dialogOut] = MVC_DialogView(window,Rect(136, 9+40, 378, 195))
 			.color_(\string,Color.black)
 			.color_(\background,Color.ndcMenuBG)
 			.lines_(14)
 			.dialog_(dialogOutList);
-			
+
 //		MVC_PlainSquare(window,Rect(135, 209+40, 380, 16))
 //			.color_(\off,Color.black);
 
@@ -524,15 +457,15 @@ LNX_Room{
 			.color_(\editBackground, Color(0,0,0,0.7))
 			.color_(\cursor,Color.white)
 			.font_(Font.new("Helvetica", 13));
-			
-			
+
+
 		// Room Dialog text
 		StaticText(window,Rect(404, 226+40, 100, 18))
 				.string_(" Room").align_(\center).stringColor_(Color.black)
 				.font_(GUI.font.new("Helvetica",12));
-			
+
 		col=Color(0.1,0.1,0.18,0.5);
-			
+
 		gui[\tabView]=TabbedView.new(window,Rect(131,231+40,389,151),
 												["<  Profile","My Profile"])
 			.tabPosition_    (\top)
@@ -545,7 +478,7 @@ LNX_Room{
 			.value_(0)
 			.tabWidth_(125)
 			.tabCurve_(13)
-			.action_{|me|};	
+			.action_{|me|};
 
 		// profile view
 		gui[\profileView] = TextView(gui[\tabView].views[0],Rect(4,4,381,128))
@@ -553,7 +486,7 @@ LNX_Room{
 			.background_(Color(0.267,0.282,0.267))
 			.stringColor_(Color.white)
 			.font_(Font("Monaco",12));
-		
+
 		// and select if still there
 		if (userIndex.isNumber) {
 			// move position if i could see them last time
@@ -561,7 +494,7 @@ LNX_Room{
 			gui[\selectedUser]=gui[\occupants][userIndex].id;
 			gui[\profileView].string_(gui[\occupants][userIndex].displayString);
 		};
-		
+
 		// my profile view
 		gui[\myProfileView] = TextView(gui[\tabView].views[1],Rect(4,4,101,128))
 			.editable_(true)
@@ -570,11 +503,11 @@ LNX_Room{
 			.stringColor_(Color.white)
 			.font_(Font("Monaco",12))
 			.string_(network.thisUser.fieldsString);
-		
-		
+
+
 		MVC_PlainSquare(gui[\tabView].views[1],Rect(105,4,280,(7*16)))
 			.color_(\off,Color.black);
-		
+
 		// the fields of my profile
 		8.do{|i|
 			gui[("f"++i).asSymbol]=MVC_Text(gui[\tabView].views[1],Rect(105,(i*16)+4,280,16))
@@ -595,9 +528,9 @@ LNX_Room{
 				.font_(Font("Monaco",12))
 				.string_(network.thisUser.field(i));
 		};
-			
+
 		MVC_OnOffView(window,Rect(8,386+40,57,30),"Add all")
-			.rounded_(true) 
+			.rounded_(true)
 			.font_(Font("Helvetica", 12, true))
 			.color_(\on,Color(0.9,0.9,0.9))
 			.color_(\off,Color(0.9,0.9,0.9))
@@ -608,11 +541,11 @@ LNX_Room{
 					gui[\selectedUser]=gui[\occupants][val].id;
 					gui[\profileView].string_(gui[\occupants][val].displayString);
 					occupants.do{|p| addAction.value(p)}
-				};	
+				};
 			};
-			
+
 		gui[\add]=MVC_OnOffView(window,Rect(71,386+40,57,30),"Add -->")
-			.rounded_(true) 
+			.rounded_(true)
 			.font_(Font("Helvetica", 12, true))
 			.color_(\on,Color(0.9,0.9,0.9))
 			.color_(\off,Color(0.9,0.9,0.9))
@@ -625,21 +558,21 @@ LNX_Room{
 					addAction.value(gui[\occupants][val]);
 				};
 			};
-			
-			
+
+
 		// delete all
 		MVC_OnOffView(window,Rect(71,424+40,57,20).insetBy(8,-1),"Clear")
-			.rounded_(true) 
+			.rounded_(true)
 			.font_(Font("Helvetica", 10, true))
 			.color_(\on,Color(0.9,0.9,0.9))
 			.color_(\off,Color(0.9,0.9,0.9))
 			.action_{
 				occupants.do{|p| clearAction.value(p.id)}
 			};
-			
+
 		// nudge
 		MVC_OnOffView(window,Rect(8,424+40,57,20).insetBy(8,-1),"Nudge")
-			.rounded_(true) 
+			.rounded_(true)
 			.font_(Font("Helvetica", 10, true))
 			.color_(\on,Color(0.9,0.9,0.9))
 			.color_(\off,Color(0.9,0.9,0.9))
@@ -651,32 +584,34 @@ LNX_Room{
 					this.nudge(uid);
 				};
 			};
-				
+
 //		// Safe Mode
 //		if (LNX_Studio.isStandalone && LNX_Mode.isSafe) {
 //			MVC_OnOffView(window,Rect(20, 453+40, 100, 20),"Sandbox: ON")
-//				.rounded_(true)  
+//				.rounded_(true)
 //				.color_(\on,Color.black)
 //				.color_(\string,Color.green)
 //				.color_(\off,Color.black)
-//				.action_{	}	
+//				.action_{	}
 //		}{
 //			MVC_OnOffView(window,Rect(40, 453+40, 60, 20),"Sandbox")
-//				.rounded_(true)  
+//				.rounded_(true)
 //				.color_(\on,Color(0.2,1,0.2))
 //				.color_(\off,Color(0.2,1,0.2))
 //				.action_{	 LNX_Mode.makeGUI(topWindow,{
 //					network.thisUser.saveProfileForSafeMode
 //				}) }
 //		};
-				
+
 	}
-	
+
+	// pressing add to add a user to the wish list
 	pressAdd{
 		gui[\add].down_(true);
 		{gui[\add].down_(false);}.defer(0.225)
 	}
-	
+
+	// orr add users by pressing invite
 	addViaInvite{
 		var val;
 		if (occupants.size>0) {
@@ -687,37 +622,37 @@ LNX_Room{
 		};
 		this.pressAdd;
 	}
-	
+
+	// update the profile we are looking at
 	updateUserProfile{
 		var val;
 		if (occupants.size>0) {
 			val = gui[\userList].value;
 			gui[\selectedUser]=gui[\occupants][val].id;
 			gui[\profileView].string_(gui[\occupants][val].displayString);
-		}	
+		}
 	}
-	
+
 	//
-	
+
 	////////////////////////////////////////////////////////////////////////////////////
-	
+
 	// make users for testing
-	
 	addTestUsers{|i|
 		var firstName;
 		testUsers=i.collect{LNX_User.rand};
 		testUsers.do({|user|
 			tasks.add((user.id) -> Task({
 				var msg, message=['broadcastProfile']++(user.getPublicList);
-				loop { 
+				loop {
 						(2.7.rand+2.7).wait;
 						network.socket.sendBundle(nil,message);
-						this.recieveBroadcast(	
+						this.recieveBroadcast(
 							message.drop(1).collect({|i|
 								(i.class==String).if(i.asSymbol,i) // why do i need to do this
 							})
 						);
-						
+
 						if (0.01.coin) {
 							{
 								msg=user.shortName+":"+(["hello ?","lets make some music",
@@ -735,14 +670,13 @@ LNX_Room{
 			);
 		});
 	}
-	
-	postln { ("a LNX_Room ("+address+name+password+location+") ").postln;}	
+
+	postln { ("a LNX_Room ("+address+name+password+location+") ").postln;}
 	printOn { arg stream; stream << ("a LNX_Room ("+address+name+password+location+") ")}
 
 }
 
-// some convenient tests 
-
+// some convenient tests
 + SequenceableCollection {
 
 	containsRoomList{|rL|
@@ -753,7 +687,7 @@ LNX_Room{
 		};
 		^false;
 	}
-	
+
 	containsRoomListNotPassword{|rL|
 		this.do{|r|
 			if ((r[0]==rL[0])and:{r[1]==rL[1]}) {
@@ -762,17 +696,17 @@ LNX_Room{
 		};
 		^false;
 	}
-	
+
 	isSameRoomList{|rL|
 		var r=this;
 		if ((r[0]==rL[0])and:{r[1]==rL[1]}) {^true}{^false}
 	}
-	
+
 	isSameRoomListIncPassword{|rL|
 		var r=this;
 		if ((r[0]==rL[0])and:{r[1]==rL[1]}and:{r[2]==rL[2]}) {^true}{^false}
 	}
-	
+
 }
 
 // end //

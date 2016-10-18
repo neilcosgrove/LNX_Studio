@@ -326,7 +326,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		noControl.do{|i|
 			template= template.add([0, [0,127,\linear,1], midiControl, i+14, Sub37.nameAt(i),
 				( label_:(Sub37.nameAt(i)),numberFunc_:\int),
-				{|me,val,latency| this.midiControlVP(i,val,latency) }]);
+				{|me,val,latency,send| this.midiControlVP(i,val,latency,send) }]);
 		};
 
 		// 88. midi clock out
@@ -523,11 +523,13 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	}
 
 	// set control
-	midiControlVP{|item,value,latency|
+	midiControlVP{|item,value,latency,send=true|
 		p[item+14]=value;
 		midi.control(Sub37.keyAt(item),value,latency +! syncDelay,false,true); // midi control out
-		api.sendVP((id++"_ccvp_"++item).asSymbol,
+		if (send) {
+			api.sendVP((id++"_ccvp_"++item).asSymbol,
 					'netMidiControlVP',item,value,midi.uidOut,midi.midiOutChannel);
+		};
 	}
 
 	// net version of above
@@ -595,63 +597,6 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 										\backgroundDown : Color(0.1,0.1,0.1,0.85),
 										\string : Color.black,
 										\focus : Color(0,0,0,0)));
-
-		// control strip ///////
-
-		// 1. channel onOff
-		MVC_OnOffView(models[1], window,Rect(182, 4, 26, 18),gui[\onOffTheme1])
-			.permanentStrings_(["On","On"]);
-
-		// 0. channel solo
-		MVC_OnOffView(models[0], window, Rect(211, 4, 26, 18),gui[\soloTheme])
-			.rounded_(true);
-
-		// 13. onSolo turns audioIn, seq or both on/off
-		MVC_PopUpMenu3(models[13],window,Rect(241,5,70,16), gui[\menuTheme2 ] );
-
-		// 3. in
-		MVC_PopUpMenu3(models[3],window,Rect(318,5,70,16), gui[\menuTheme2 ] );
-
-		// 9. channelSetup
-		MVC_PopUpMenu3(models[9],window,Rect(395,5,75,16), gui[\menuTheme2 ] );
-
-		// MIDI Settings
- 		MVC_FlatButton(window,Rect(488, 5, 43, 18),"MIDI")
-			.rounded_(true)
-			.shadow_(true)
-			.canFocus_(false)
-			.color_(\up,Color(0.6 , 0.562, 0.5))
-			.color_(\down,Color(0.6 , 0.562, 0.5)/2)
-			.color_(\string,Color.white)
-			.action_{ this.createMIDIInOutModelWindow(window,nil,nil,
-				(border1:Color(0.1221, 0.0297, 0.0297), border2: Color(0.6 , 0.562, 0.5))
-			)};
-
-		// MIDI Controls
-	 	MVC_FlatButton(window,Rect(534, 5, 43, 18),"Cntrl")
-			.rounded_(true)
-			.shadow_(true)
-			.canFocus_(false)
-			.color_(\up,Color(0.6 , 0.562, 0.5))
-			.color_(\down,Color(0.6 , 0.562, 0.5)/2)
-			.color_(\string,Color.white)
-			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
-
-		// the preset interface
-		presetView=MVC_PresetMenuInterface(window,589@5,180+17,
-				Color(0.6 , 0.562, 0.5)/1.6,
-				Color(0.6 , 0.562, 0.5)/3,
-				Color(0.6 , 0.562, 0.5)/1.5,
-				Color(0.6 , 0.562, 0.5),
-				Color.black
-			);
-		this.attachActionsToPresetGUI;
-
-		// 4.output channels
-		MVC_PopUpMenu3(models[4],window    ,Rect(965,5,70,16),gui[\menuTheme2  ]);
-
-		// 7.send channels
-		MVC_PopUpMenu3(models[7],window    ,Rect(965-75,5,70,16),gui[\menuTheme2]);
 
 		// tabs ///////
 
@@ -890,6 +835,64 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			.action_{|me|
 				moogPresets.do{|string,i| gui[i].canEdit_(me.value.isFalse) }
 			};
+
+				// control strip ///////
+
+		// 1. channel onOff
+		MVC_OnOffView(models[1], window,Rect(182, 4, 26, 18),gui[\onOffTheme1])
+			.permanentStrings_(["On","On"]);
+
+		// 0. channel solo
+		MVC_OnOffView(models[0], window, Rect(211, 4, 26, 18),gui[\soloTheme])
+			.rounded_(true);
+
+		// 13. onSolo turns audioIn, seq or both on/off
+		MVC_PopUpMenu3(models[13],window,Rect(241,5,70,16), gui[\menuTheme2 ] );
+
+		// 3. in
+		MVC_PopUpMenu3(models[3],window,Rect(318,5,70,16), gui[\menuTheme2 ] );
+
+		// 9. channelSetup
+		MVC_PopUpMenu3(models[9],window,Rect(395,5,75,16), gui[\menuTheme2 ] );
+
+		// MIDI Settings
+ 		MVC_FlatButton(window,Rect(488, 5, 43, 18),"MIDI")
+			.rounded_(true)
+			.shadow_(true)
+			.canFocus_(false)
+			.color_(\up,Color(0.6 , 0.562, 0.5))
+			.color_(\down,Color(0.6 , 0.562, 0.5)/2)
+			.color_(\string,Color.white)
+			.action_{ this.createMIDIInOutModelWindow(window,nil,nil,
+				(border1:Color(0.1221, 0.0297, 0.0297), border2: Color(0.6 , 0.562, 0.5))
+			)};
+
+		// MIDI Controls
+	 	MVC_FlatButton(window,Rect(534, 5, 43, 18),"Cntrl")
+			.rounded_(true)
+			.shadow_(true)
+			.canFocus_(false)
+			.color_(\up,Color(0.6 , 0.562, 0.5))
+			.color_(\down,Color(0.6 , 0.562, 0.5)/2)
+			.color_(\string,Color.white)
+			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
+
+		// the preset interface
+		presetView=MVC_PresetMenuInterface(window,589@5,180+17,
+				Color(0.6 , 0.562, 0.5)/1.6,
+				Color(0.6 , 0.562, 0.5)/3,
+				Color(0.6 , 0.562, 0.5)/1.5,
+				Color(0.6 , 0.562, 0.5),
+				Color.black
+			);
+		this.attachActionsToPresetGUI;
+
+		// 4.output channels
+		MVC_PopUpMenu3(models[4],window    ,Rect(965,5,70,16),gui[\menuTheme2  ]);
+
+		// 7.send channels
+		MVC_PopUpMenu3(models[7],window    ,Rect(965-75,5,70,16),gui[\menuTheme2]);
+
 
 
 	}

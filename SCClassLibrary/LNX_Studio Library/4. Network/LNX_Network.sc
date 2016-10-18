@@ -1,218 +1,202 @@
+// The Network ////////////////////////////////////////////////////////////////////////////
+/*
 
-// The Network ////////////////////////////////////////////////
+manages the network, its user interface & the network objects below...
+
+LNX_User : A network user + profile.
+LNX_Room : Places people meet to find each other.
+LNX_Collaboration : Start & maintain a collection of users in a collaboration. (also common time).
+LNX_Invite : An invite to start a collaboration from someone else
+LNX_MyInvite : My invite to other to join me in a collaboration
+LNX_Request : Are things all users need to agree to, like... deleting an instrument, closing a song etc
+
+LNX_API : Create an API for an object & expose chosen methods to the network + access its different protocols
+LNX_Protocols : Different ways of sending messsages. Normal, Guaranteed, Ordered, Large Clumped Lists.
+
+LNX_LANGroup : The network socket for LAN connections
+OscGroupClient : The network socket for OscGroup client connections
+OscGroupServer : Opening and managing your own OscGroup servers
+
+*/
 
 LNX_Network {
 
-	var	<studio,			<socket,
-		<location,			<oscGroup,
-		<api,
-
-		<thisUser,			<room,
-		<rooms,				<inRoom=false,
-		<collaboration,
-
-		<tasks,				<gui,
-		<window;
-
-	var	<beenInCollaboration;
+	// main vars
+	var	<studio,			<socket,			<location,
+		<api,				<thisUser,			<room,			<rooms,
+		<inRoom=false,		<collaboration,		<tasks,			<gui,
+		<window,			<beenInCollaboration;
 
 	// and transfer these over to collaboration or change or remove
-
 	var	<myNetAddr,			<theirNetAddr,
 		<pingTime,			<netClock=false;
 
 	// network preferences
-
 	var	<networkOnOpen, 	<serverOnOpen,
 		<serverCloseOnQuit,	<serverPort,
 		<serverMaxUsers, 	<serverMaxGroups,
 		<serverTimeOut,		<clientPort;
 
 	// test Public on LAN
-
 	var	prefWin,			prefGUI;
-
-	var	<isLAN;
-
-	var	<autoJoin = true;  // auto join if not standlone
+	var	<isLAN, 			<autoJoin = true;  // auto join if not standlone
 
 	////////////////////////////////////////////////////////////////////
 
+	// LNX_Network is used like a singleton so an instance is not really needed
 	*new {|studio| ^super.new.init(studio); }
 
+	// toggle between LAN and internet sockets
 	toggleLAN{
-		"toggleLAN".postln;
 		isLAN=isLAN.not;
-		[isLAN].savePref("isLAN");
-		this.disconnect;
-		{ this.guiConnect }.defer(0.1);
+		[isLAN].savePref("isLAN");		// save to prefs
+		this.disconnect; 				// leave current connection
+		{ this.guiConnect }.defer(0.1); // and start new one
 	}
 
-	init {|argStudio|
+	// init the network
+	init{|argStudio|
+		var prefList;
 
 		studio=argStudio;
-		this.socketAsNil;
+		this.socketAsNil; // uses a LNX_NullSocket to absorb any method calls not needed when offline
 
 		isLAN="isLAN".loadPref;
-		if (isLAN.isNil) { isLAN = true } { isLAN = isLAN[0].isTrue };
+		if (isLAN.isNil) { isLAN = true } { isLAN = isLAN[0].isTrue }; // use LAN by default else use prefs
 
-		// connect this network to everything
-		[
-			LNX_Room, LNX_Collaboration, LNX_Invite, LNX_MyInvite,
-			LNX_Protocols, LNX_Request, LNX_User, LNX_SampleBank
-		].do(_.network_(this));
+		// connect this network to all these classes so they refer to the network later
+		[LNX_Room, LNX_Collaboration, LNX_Invite, LNX_MyInvite, LNX_Protocols, LNX_Request,
+			LNX_User, LNX_SampleBank ].do(_.network_(this));
 
-		api   = LNX_API.newPermanent(this,\network,[\netIsListening]);
-		tasks = IdentityDictionary[];
+		api   = LNX_API.newPermanent(this,\network,[\netIsListening]); // used to sync isListening (groupSong)
+		tasks = IdentityDictionary[]; // tasks[\updateGUI] updates the preferences window on server running status
 		gui   = IdentityDictionary[];
-		this.loadRooms;
+		this.loadRooms;				  // used mainly by oscGroups. get default, recent & favoutite rooms
 
-		thisUser=LNX_User.thisUser;	    // make this user
+		thisUser=LNX_User.thisUser;	  // make this user
 
 		LNX_LANGroup.uid_(  thisUser.id); // to help stop circular messages coming back
 		OscGroupClient.uid_(thisUser.id); // to help stop circular messages coming back
-		LNX_ID.uid_(        thisUser.id);
+		LNX_ID.uid_(        thisUser.id); // LNX_ID creates unquie IDs for network messages, clumped list sending
 
-		// short cut for debugging, remove any in code neil!
-		myNetAddr=thisUser.netAddr;
+		myNetAddr=thisUser.netAddr; // short cut for debugging ?
 
 		theirNetAddr=NetAddr.new(myNetAddr.ip,myNetAddr.port+1); // not used anymore ?
 
-		//  make the default room (rooms[0][0])
+		//  make the default room (which is rooms[0][0])
 		room=LNX_Room.new(*rooms[0][0])
-			.addAction_{|person| collaboration.addToWishList(person) }
-			.clearAction_{|id| collaboration.removeFromWishList(id) }
-			.removeAction_{|id| collaboration.removeUser(id) };
+			.addAction_{|person| collaboration.addToWishList(person) } // add a user to the wish list
+			.clearAction_{|id|   collaboration.removeFromWishList(id)} // remove a user from the wish list
+			.removeAction_{|id|  collaboration.removeUser(id) };       // remove a user due to leaving room
 
 		// and pass it to the collaboration
-		collaboration=LNX_Collaboration.new(room)
-			.action_{ this.initCollaboration }
-			.moveAction_{|roomList,func,value| this.moveRoom(roomList,func,value)};
+		collaboration=LNX_Collaboration.new(room) // room is added to collaboration as 1st room
+			.action_{ this.initCollaboration }    // action to perform on succesful collaboration start
+			.moveAction_{|roomList,func,value| this.moveRoom(roomList,func,value)}; // change the room OSCGroups
 
-		this.startUp;
-
-	}
-
-	// auto open network, server etc...
-
-	startUp{
-		var prefList="networkPrefs".loadPref;
+		// get network preferences.. network opens on app Open but mainly OSCGroups setting
+		// onOpen, closeOnQuit, port, maxUsers, maxGroups, timeOut + client port
+		prefList="networkPrefs".loadPref;
 		if (prefList.isNil) {
-			this.resetPreferences;
-			this.savePreferences;
+			this.resetPreferences; // use default if not preferences file
+			this.savePreferences;  // now save
 		}{
-			#networkOnOpen,serverOnOpen,serverCloseOnQuit,serverPort,
-						serverMaxUsers,serverMaxGroups,serverTimeOut,clientPort=prefList;
-
+			#networkOnOpen, serverOnOpen, serverCloseOnQuit, serverPort, serverMaxUsers, serverMaxGroups,
+			serverTimeOut, clientPort = prefList; // put prefs in vars
 			clientPort=clientPort.asInt;
 		};
 
-		if (networkOnOpen.isTrue) { {this.guiConnect(false)}.defer(0.1) };
-		if (serverOnOpen.isTrue) { this.startServer };
-		OscGroupServer.serverCloseOnQuit_(serverCloseOnQuit.isTrue);
+		if (networkOnOpen.isTrue) { {this.guiConnect(false)}.defer(0.1) }; // start network if prefs say so
+		if (serverOnOpen.isTrue ) { this.startServer };                    // start OSCGroup severs if needed
+		OscGroupServer.serverCloseOnQuit_(serverCloseOnQuit.isTrue);       // update server close on quit
 
+		// has this user been in a collobration before ?
 		beenInCollaboration="beenInCollaboration".loadPref.notNil;
-
 	}
 
+	// start OSCGroups server
 	startServer{
 		OscGroupServer.start(serverPort,serverTimeOut,serverMaxUsers,serverMaxGroups);
 	}
 
+	// save the network preferences
 	savePreferences{
-		[networkOnOpen,serverOnOpen,serverCloseOnQuit,serverPort,
-			serverMaxUsers,serverMaxGroups,serverTimeOut,clientPort].savePref("networkPrefs")
+		[networkOnOpen, serverOnOpen, serverCloseOnQuit, serverPort, serverMaxUsers, serverMaxGroups,
+			serverTimeOut, clientPort].savePref("networkPrefs")
 	}
 
+	// default network settings
 	resetPreferences{
-		networkOnOpen     = false;
-		serverOnOpen      = false;
-		serverCloseOnQuit = false;
-		serverPort        = 22242;
-		serverMaxUsers    = 100;
-		serverMaxGroups   = 50;
-		serverTimeOut     = 60;
-		clientPort        = 22242;
+		networkOnOpen     = false; // LNX_Network opens when app starts
+		serverOnOpen      = false; // OSCGroups sevrer opens when app opens
+		serverCloseOnQuit = false; // OSCGroups server closed when app quits
+		serverPort        = 22242; // OSCGroups server port
+		serverMaxUsers    = 100;   // OSCGroups server max users
+		serverMaxGroups   = 50;    // OSCGroups server max groups
+		serverTimeOut     = 60;    // OSCGroups server time out users
+		clientPort        = 22242; // OSCGroups client port
 	}
 
-	////// temp call from on gui to connect
-
+	// gui call to open the network connection
 	guiConnect{|openWindow=true|
 		if ((this.isConnected||inRoom).not) {
-			this.initPublic;
-			this.createNetworkWindow(openWindow);
-			room.announceRoom;
-			studio.models[\network].value_(1);
-			studio.models[\network].dependantsPerform(\color_,\on,Color.yellow);
+			this.initNetwork;						// join a network
+			this.createNetworkWindow(openWindow);	// create the network window
+			room.announceRoom;						// post room details to the room dialog
+			studio.models[\network].value_(1);		// the mixer window gui widget that shows network is on
+			studio.models[\network].dependantsPerform(\color_,\on,Color.yellow); // and is yellow
 		}{
 			if (window.isClosed) {
-				if (openWindow) { this.createNetworkWindow };
+				if (openWindow) { this.createNetworkWindow }; // open network window
 			}{
-				window.front;
+				window.front; // or bring it to the front
 			};
 		}
 	}
 
-	// disconnect network
-
-	disconnect{
-		this.closeNetworkWindow;
-		studio.models[\network].value_(0);
-		tasks.do(_.stop);
-		tasks=IdentityDictionary[];
-		collaboration.guiLeave;
-		collaboration.close;
-		room.close;
-		inRoom=false;
-		socket.close; // remove all responders
-		this.socketAsNil;
-	}
-
-	// init a public network
-
-	initPublic{
-
+	// init the network
+	initNetwork{
 		inRoom=true;
 		// join the public network
-		this.joinPublicNetwork(
-			room.address,
-			thisUser.id,
-			thisUser.password,
-			room.name,
-			room.password
-		);
-
+		this.joinNetwork(room.address, thisUser.id, thisUser.password, room.name, room.password);
 		// and start services
-
-		room.startServices;
-		collaboration.startServices;
-
+		room.startServices; // boardcast my own profile and listen for others, leaving users & time out users
+		collaboration.startServices; // listen for invites & timeOutInvites
 	}
 
-	// join the public network
-	// the LAN is used for testing on 1 computer via local or internal IP address
-	joinPublicNetwork{|serveraddress, username, password, groupname, grouppassword|
-
+	// join the network using either LNX_LANGroup or OscGroupClient
+	joinNetwork{|serveraddress, username, password, groupname, grouppassword|
 		if (isLAN) {
 			// local: for LAN connections
-			oscGroup=LNX_LANGroup(
-				serveraddress, username, password, groupname, grouppassword, clientPort);
-			oscGroup.join;
-			this.socketAsPublic;
-			oscGroup.reportFunc_{|text| room.addText(text) };
+			socket=LNX_LANGroup(serveraddress, username, password, groupname, grouppassword, clientPort);
+			location='LAN';
+			LNX_Protocols.socket_(socket); // use this socket in LNX_Protocols as the method of networking
+			socket.reportFunc_{|text| room.addText(text) };
 		}{
-			// public: for internet connections
-			oscGroup=OscGroupClient(
-				serveraddress, username, password, groupname, grouppassword, clientPort);
-			oscGroup.join;
-			this.socketAsPublic;
+			// public: for internet connections (not very reliable now)
+			socket=OscGroupClient(serveraddress, username, password, groupname, grouppassword, clientPort);
+			socket.join;                   // start the osc client
+			location='Public';
+			LNX_Protocols.socket_(socket); // use this socket in LNX_Protocols as the method of networking
 		};
-
-
-		this.initPingResponders;
+		this.initPingResponders; // for debugging only
 	}
 
-	// ping ME! :)
+	// disconnect network, used by gui to close network or called on app quit
+	disconnect{
+		this.closeNetworkWindow;			// close the network window
+		studio.models[\network].value_(0);	// turn off the mixer window gui widget that shows network is on
+		tasks.do(_.stop);					// stop server watcher task
+		tasks=IdentityDictionary[];
+		collaboration.guiLeave;				// leave any collaboration we are in
+		collaboration.close;				// and free it
+		room.close;							// leave the room
+		inRoom=false;						// network is no longer in any room
+		socket.close; 						// remove all network responders
+		this.socketAsNil;					// set network socket as LNX_NullSocket
+	}
+
+	// ping me
 	initPingResponders{
 		socket.addResp('ping', {|time, resp, msg|
 			msg.postln;
@@ -223,37 +207,24 @@ LNX_Network {
 		});
 	}
 
-	/// state methods
-
-	thisUserID	{^thisUser.id}
-	isUserConnected{|id| ^collaboration.isUserConnected(id)}
-	connectedUsers{^collaboration.connectedUsers}
-	users		{^collaboration.users}
-	otherUsers    {^collaboration.otherUsers}
-	isConnected   {^collaboration.isConnected}
+	/// state/info methods
+	thisUserID		{^thisUser.id}
+	isUserConnected	{|id| ^collaboration.isUserConnected(id)}
+	connectedUsers	{^collaboration.connectedUsers}
+	users			{^collaboration.users}
+	otherUsers		{^collaboration.otherUsers}
+	isConnected		{^collaboration.isConnected}
 	isConnecting	{^collaboration.isConnecting}
-	isHost        {^collaboration.isHost}
-	host          {^collaboration.host}
-	c             {^collaboration} // for debugging
+	isHost			{^collaboration.isHost}
+	host			{^collaboration.host}
+	c				{^collaboration} // for debugging
 
-	// change sockets ////////
-
-	socketAsLAN{
-		location='LAN';
-		socket=theirNetAddr;
-		LNX_Protocols.socket_(socket);
-	}
-
-	socketAsPublic{
-		location='Public';
-		socket=oscGroup;
-		LNX_Protocols.socket_(socket);
-	}
-
+	// a LNX_NullSocket is used when the network is closed.
+	// It doesn't do anything but has the same interface as the other OSCGroups & LAN sockets
 	socketAsNil{
 		location=nil;
 		socket=LNX_NullSocket;
-		LNX_Protocols.socket_(socket);
+		LNX_Protocols.socket_(socket);  // LNX_NullSocket is now used in LNX_Protocols
 	}
 
 	/////// rooms in network /////////////////////////////////////////////
@@ -265,34 +236,18 @@ LNX_Network {
 	// [3]=recent rooms.
 	///////////////////////////
 
-	// get a stored room
-	// not used yet
-	// i tried to add studio1-3 to list of locations on invite but cpt returned on nil user 2nd go
+	// save the rooms to preferences
+	saveRooms{ rooms.collect{|l|[l.size,l]}.flatNoString.savePref("rooms") }
 
-	getRoom{|type=0,number=0|
-		if (rooms[type][number].notNil) {
-			^LNX_Room.new(*rooms[type][number])
-		}{
-			^nil
-		}
-	}
-
-	getRoomList{|type=0,number=0| ^rooms[type][number] }
-
-	// save the rooms
-	saveRooms{
-		rooms.collect{|l|[l.size,l]}.flatNoString.savePref("rooms")
-	}
-
-	// load rooms from disk
+	// load rooms from the preferences
 	loadRooms{
-		var list="rooms".loadPref;
-		if (list.isNil) {
+		var list="rooms".loadPref; // get pref list
+		if (list.isNil) {          // if nil use defaults
 			rooms=[[LNX_Room.default.getTXList],[
-				LNX_Room.default.getTXList,
-				["realizedsound.mooo.com", "studio1", "password", 'Public'],
-				["realizedsound.mooo.com", "studio2", "password", 'Public'],
-				["realizedsound.mooo.com", "studio3", "password", 'Public']
+				LNX_Room.default.getTXList, // default room on 1st open
+				["realizedsound.mooo.com", "studio1", "password", 'Public'], // this server prob not working now
+				["realizedsound.mooo.com", "studio2", "password", 'Public'], // this server prob not working now
+				["realizedsound.mooo.com", "studio3", "password", 'Public']  // this server prob not working now
 				//["127.0.0.1", "home", "password", 'Public']
 			],[],[]];
 		}{
@@ -300,68 +255,60 @@ LNX_Network {
 			rooms=[[],[],[],[]];
 			4.do{|i|
 				list.popI.do{
-					rooms[i]=rooms[i].add([list.popNS(3),list.pop.asSymbol].flatNoString)
+					rooms[i]=rooms[i].add([list.popNS(3),list.pop.asSymbol].flatNoString); // make room lists
 				}
 			}
 		};
-		gui[\rooms]=rooms.flatten(1);
+		gui[\rooms]=rooms.flatten(1); // for use by gui
 	}
 
-	// add room to the list of my rooms
+	// add room to the list of my rooms.
+	// type 0=Home room, 1=Default rooms, 2=favourites, 3=recent rooms.
 	addRoom{|roomList,type=3|
 		if ((rooms[0].containsRoomList(roomList).not)&&(rooms[1].containsRoomList(roomList).not)) {
-			if((rooms[2].containsRoomListNotPassword(roomList))||
-			 			(rooms[3].containsRoomListNotPassword(roomList))){
+			if((rooms[2].containsRoomListNotPassword(roomList))|| (rooms[3].containsRoomListNotPassword(roomList))){
 			  	rooms[2].do{|r,i|
-			  		if (r.isSameRoomList(roomList)) { rooms[2][i]=roomList} // update password
+			  		if (r.isSameRoomList(roomList)) { rooms[2][i]=roomList} // just update password
 			  	};
 			  	rooms[3].do{|r,i|
-			  		if (r.isSameRoomList(roomList)) { rooms[3][i]=roomList;} // update password
+			  		if (r.isSameRoomList(roomList)) { rooms[3][i]=roomList;} // just update password
 			  	};
 			}{
-			  	if ((rooms[2].containsRoomList(roomList).not)&&
-			  					(rooms[3].containsRoomList(roomList).not)) {
-					rooms[type]=rooms[type].add(roomList);
+			  	if ((rooms[2].containsRoomList(roomList).not)&& (rooms[3].containsRoomList(roomList).not)) {
+					rooms[type]=rooms[type].add(roomList);  // add room to list of rooms
 				};
 			};
-			this.saveRooms;
-			this.refreshRoomMenu;
+			this.saveRooms;       // save to prefs
+			this.refreshRoomMenu; // update gui menu items
 		};
 	}
 
-	// similar to clear history
+	// delete recent rooms (history)
 	clearRooms{
-		rooms[3]=[];
-		this.saveRooms;
-		this.refreshRoomMenu;
+		rooms[3]=[];        	// clear list
+		this.saveRooms;			// save to prefs
+		this.refreshRoomMenu;	// update gui menu items
 	}
 
+	// delete favourite rooms
 	clearFavourites{
-		rooms[2]=[];
-		this.saveRooms;
-		this.refreshRoomMenu;
+		rooms[2]=[];			// clear list
+		this.saveRooms;			// save to prefs
+		this.refreshRoomMenu;	// update gui menu items
 	}
 
-	// called from room text description
+	// called from go button in address bar
 	gotoUserTextRoom{
-		var goRoom;
-
-		goRoom=[gui[\serverAddress].value,gui[\roomText].value,gui[\passwordText].value,
+		var goRoom = [gui[\serverAddress].value,gui[\roomText].value,gui[\passwordText].value,
 			(gui[\roomText].value=="home").if('Public','Private')];
-
 		(rooms[0]++rooms[1]).do{|storedRoom|
-			if (goRoom.isSameRoomList(storedRoom)) {goRoom=storedRoom}; // set public if needed
+			if (goRoom.isSameRoomList(storedRoom)) {goRoom=storedRoom}; // copy from home or defaults if room matches
 		};
-
-		if (room.getTXList.isSameRoomListIncPassword(goRoom).not) {
-			this.moveRoom(goRoom);
-		}{
-			this.setToRoom(goRoom)
-		};
-
+		 // if room is different than current room then move to it
+		if (room.getTXList.isSameRoomListIncPassword(goRoom).not) { this.moveRoom(goRoom) };
 	}
 
-	// set text gui's of room
+	// set text gui's of room (room, address & password)
 	setToRoom{|roomList|
 		{
 			if (window.isClosed.not) {
@@ -374,40 +321,51 @@ LNX_Network {
 
 	// move to room, then call func with value
 	moveRoom{|roomList,func,value|
-
+		// only move if not the same room
 		if (roomList.isSameRoomListIncPassword(room.getTXList).not) {
-
-			room.stop;
-			socket.close;
-			room.moveTo(*roomList);
-			this.addRoom(roomList);
+			room.stop;				// stop broadcasting profile and timing out users out in this room
+			socket.close;			// close the network socket
+			room.moveTo(*roomList);	// move to new room
+			this.addRoom(roomList); // add new room to history
 			{
-				this.joinPublicNetwork(
-					room.address,
-					thisUser.id,
-					thisUser.password,
-					room.name,
-					room.password
-				);
-				room.restart;
-				this.setToRoom(room.getTXList);
-				collaboration.room_(room);
-				collaboration.startServices;
-				func.value(value);
-			}.defer(0.5);
-
+				// start network in new room
+				this.joinNetwork(room.address, thisUser.id, thisUser.password, room.name, room.password);
+				room.restart;					// start broadcasting profile and timing out users
+				this.setToRoom(room.getTXList); // update gui
+				collaboration.room_(room);		// update
+				collaboration.startServices;	// responders & tasks for starting a collaboration
+				func.value(value);				// call func once we have moved room
+			}.defer(0.5); // defer this for 0.5s.
 		};
 	}
 
-	startTimeOut{
-		if (this.isConnected) {
-			room.occupants.do{|u| u.lastPingTime_(SystemClock.now) };
-			room.tasks[\timeOutUsers].start;
-		}
+	// add currebt room to favourites
+	addRoomToFavourites{
+		if(rooms[2].containsRoomListNotPassword(room.getTXList).not){ // if current room not in list
+			rooms[2]=rooms[2].add(room.getTXList);	// add it
+			this.saveRooms;							// save to prefs
+			this.refreshRoomMenu;					// refresh the menu
+		};
 	}
 
-	stopTimeOut {	if (this.isConnected) {room.tasks[\timeOutUsers].stop } }
+	// set current room as home
+	setAsHomeRoom{
+		rooms[0]=[room.getTXList];	// set home as current room
+		this.saveRooms;				// save to preds
+		this.refreshRoomMenu;		// update menu
+	}
 
+	// used while loading a song. for large songs this can take a few seconds and we don't want to disconnect
+	// users just for loading a large song
+	stopTimeOut { if (this.isConnected) {room.tasks[\timeOutUsers].stop } } // stop room timing out users
+
+	// start timing users out in room, used after a song load to start timing out users again
+	startTimeOut{
+		if (this.isConnected) {
+			room.occupants.do{|u| u.lastPingTime_(SystemClock.now) }; // update last time we saw users as now
+			room.tasks[\timeOutUsers].start; // room start timing out users
+		}
+	}
 
 	// GUI //////////////////////////////////////////////////////////////////////////
 
@@ -419,7 +377,7 @@ LNX_Network {
 	// unpdate items in room menu
 	refreshRoomMenu{
 		{
-
+			// make a manu list and the funcs to call when those menu items are selected
 			gui[\newRoomMenu]=["(LNX_Rooms","-"];
 			gui[\newRoomFunc]=[nil,nil];
 
@@ -520,20 +478,6 @@ LNX_Network {
 		}.defer
 	}
 
-	addRoomToFavourites{
-		if(rooms[2].containsRoomListNotPassword(room.getTXList).not){
-			rooms[2]=rooms[2].add(room.getTXList);
-			this.saveRooms;
-			this.refreshRoomMenu;
-		};
-	}
-
-	setAsHomeRoom{
-		rooms[0]=[room.getTXList];
-		this.saveRooms;
-		this.refreshRoomMenu;
-	}
-
 	refreshUserView{ collaboration.refreshUserView }
 
 	////////////////////////
@@ -541,51 +485,38 @@ LNX_Network {
 	////////////////////////
 
 	preferences{
-
 		prefGUI=IdentityDictionary[];
+		prefWin=MVC_ModalWindow(studio.mixerWindow, 320@255);
+		prefWin.front;
+		prefGUI[\scrollView] = prefWin.scrollView;
 
-		prefWin=Window.new(window, 300@235);
-		prefWin.view.background = Gradient(Color(0.2,0.2,0.2)*0.8,Color(0.6,0.6,0.4)*0.8);
+		prefGUI[\buttonTheme] = (
+			orientation_:\horizontal,
+			rounded_:	true,
+			colors_: (up:Color(0.9,0.9,0.9), down:Color(0.9,0.9,0.9)/2)
+		);
 
-		StaticText.new(prefWin,Rect(72+4, 5, 200, 22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(72+4, 5, 200, 22))
 			.font_(Font("Helvetica", 16))
+			.shadow_(false)
 			.string_("Network Preferences")
-			.stringColor_(Color.black);
+			.color_(\string,Color.black);
 
-		StaticText.new(prefWin,Rect(71+4, 4, 200, 22))
-			.font_(Font("Helvetica", 16))
-			.string_("Network Preferences")
-			.stringColor_(Color.black);
 
-		StaticText.new(prefWin,Rect(70+4, 3, 200, 22))
-			.font_(Font("Helvetica", 16))
-			.string_("Network Preferences")
-			.stringColor_(Color.white);
-
-		StaticText.new(prefWin,Rect(5+2, 95-73+2, 60, 22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(5+2, 95-73+2, 60, 22))
 			.font_(Font("Helvetica",13))
+			.shadow_(false)
 			.string_("Client")
-			.stringColor_(Color.black);
+			.color_(\string,Color.black);
 
-		StaticText.new(prefWin,Rect(5, 95-73, 60, 22))
-			.font_(Font("Helvetica",13))
-			.string_("Client")
-			.stringColor_(Color.white);
-
-		// line
-		UserView(prefWin,Rect(50,107-73,300-55-10+5,1))
-			.background_(Color.orange*1.5/1.5).canFocus_(false);
-		UserView(prefWin,Rect(51,108-73,300-55-10+5,1))
-			.background_(Color.black).canFocus_(false);
-
-
-		StaticText.new(prefWin,Rect(5, 23+4+17, 70, 22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(5, 23+4+17, 70, 22))
 			.string_("On Open")
+			.shadow_(false)
 			.align_(\right)
-			.stringColor_(Color.white);
+			.color_(\string,Color.black);
 
 		// networkOnOpen
-		MVC_OnOffView(prefWin,Rect(80,46,114,17),"Remain offline","Connect to server")
+		MVC_OnOffView(prefGUI[\scrollView],Rect(80,46,114,17),"Remain offline","Connect to server")
 			.action_{|me|
 				networkOnOpen=(me.value.isTrue);
 				this.savePreferences;
@@ -595,12 +526,13 @@ LNX_Network {
 			.color_(\on,Color.orange)
 			.color_(\off,Color(0.4,0.4,0.4));
 
-		StaticText.new(prefWin,Rect(27,70,120,22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(27,70,120,22))
+			.shadow_(false)
 			.string_("In public rooms show")
-			.stringColor_(Color.white);
+			.color_(\string,Color.black);
 
 		// email
-		MVC_OnOffView(prefWin,Rect(152,65,42,16),"Email")
+		MVC_OnOffView(prefGUI[\scrollView],Rect(152,65,42,16),"Email")
 			.action_{|me|
 				thisUser.emailIsPublic_(me.value.isTrue);
 				thisUser.saveUserProfile;
@@ -611,7 +543,7 @@ LNX_Network {
 			.color_(\off,Color(0.4,0.4,0.4));
 
 		// skype
-		MVC_OnOffView(prefWin,Rect(152,83,42,16),"Skype")
+		MVC_OnOffView(prefGUI[\scrollView],Rect(152,83,42,16),"Skype")
 			.action_{|me|
 				thisUser.skypeIsPublic_(me.value.isTrue);
 				thisUser.saveUserProfile;
@@ -622,20 +554,22 @@ LNX_Network {
 			.color_(\off,Color(0.4,0.4,0.4));
 
 
-		StaticText.new(prefWin,Rect(208-11, 25+18, 80, 22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(208-11, 25+18, 80, 22))
 			.string_("Connect to :")
+			.shadow_(false)
 			.align_(\right)
 			.font_(Font("Helvetica",11))
-			.stringColor_(Color.white);
+			.color_(\string,Color.black);
 
-		StaticText.new(prefWin,Rect(208, 25+17+20, 30, 22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(208, 25+17+20, 30, 22))
 			.string_("Port")
+			.shadow_(false)
 			.align_(\right)
 			.font_(Font("Helvetica",11))
-			.stringColor_(Color.white);
+			.color_(\string,Color.black);
 
 		// client port
-		MVC_NumberBox(prefWin,Rect(245, 27+18+20, 35, 16))
+		MVC_NumberBox(prefGUI[\scrollView],Rect(245, 27+18+20, 35, 16))
 			.action_{|me|
 				var value;
 				value=(me.value).asInt.clip(1,99999);
@@ -652,29 +586,14 @@ LNX_Network {
 
 		// server options ////////////////////////
 
-		StaticText.new(prefWin,Rect(5+2, 95+2, 60, 22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(5+2, 95+2, 60, 22))
 			.font_(Font("Helvetica",13))
+			.shadow_(false)
 			.string_("Server")
-			.stringColor_(Color.black);
-
-		StaticText.new(prefWin,Rect(5, 95, 60, 22))
-			.font_(Font("Helvetica",13))
-			.string_("Server")
-			.stringColor_(Color.white);
-
-		// line
-		UserView(prefWin,Rect(55,107,300-55-10,1))
-			.background_(Color.orange*1.5/1.5).canFocus_(false);
-		UserView(prefWin,Rect(56,108,300-55-10,1))
-			.background_(Color.black).canFocus_(false);
-
-		StaticText.new(prefWin,Rect(5, 63+55, 70, 22))
-			.string_("On Open")
-			.align_(\right)
-			.stringColor_(Color.white);
+			.color_(\string,Color.black);
 
 		// serverOnOpen
-		MVC_OnOffView(prefWin,Rect(80,120,114,17),"Don't start server","Start a server")
+		MVC_OnOffView(prefGUI[\scrollView],Rect(80,120,114,17),"Don't start server","Start a server")
 			.action_{|me|
 				serverOnOpen=(me.value.isTrue);
 				this.savePreferences;
@@ -684,13 +603,14 @@ LNX_Network {
 			.color_(\on,Color.orange)
 			.color_(\off,Color(0.4,0.4,0.4));
 
-		StaticText.new(prefWin,Rect(5, 83+55, 70, 22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(5, 83+55, 70, 22))
 			.string_("On Close")
+			.shadow_(false)
 			.align_(\right)
-			.stringColor_(Color.white);
+			.color_(\string,Color.black);
 
 		// serverCloseOnQuit
-		MVC_OnOffView(prefWin,Rect(80,140,114,17),"Leave server running","Quit server + terminal")
+		MVC_OnOffView(prefGUI[\scrollView],Rect(80,140,114,17),"Leave server running","Quit server + terminal")
 			.action_{|me|
 				serverCloseOnQuit=(me.value.isTrue);
 				OscGroupServer.serverCloseOnQuit_(serverCloseOnQuit);
@@ -701,7 +621,7 @@ LNX_Network {
 			.color_(\on,Color.yellow)
 			.color_(\off,Color.orange);
 
-		gui[\severIcon]=UserView(prefWin,Rect(190,60-8+55,110,110))
+		gui[\severIcon]=MVC_UserView(prefGUI[\scrollView],Rect(190,60-8+55,110,110))
 			.canFocus_( false )
 			.drawFunc_{|me|
 				var isRunning;
@@ -728,14 +648,15 @@ LNX_Network {
 
 			};
 
-		StaticText.new(prefWin,Rect(5, 109-1+55, 70, 22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(5, 109-1+55, 70, 22))
 			.string_("Max Users")
+			.shadow_(false)
 			.align_(\right)
 			.font_(Font("Helvetica",11))
-			.stringColor_(Color.white);
+			.color_(\string,Color.black);
 
 		// max users
-		MVC_NumberBox(prefWin,Rect(76+4, 110+55, 35, 16))
+		MVC_NumberBox(prefGUI[\scrollView],Rect(76+4, 110+55, 35, 16))
 			.action_{|me|
 				var value;
 				value=(me.value).asInt.clip(2,99999);
@@ -750,14 +671,15 @@ LNX_Network {
 			.color_(\background,Color.ndcMenuBG)
 			.align_(\center);
 
-		StaticText.new(prefWin,Rect(1+4, 109+22-1+55, 70, 22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(1+4, 109+22-1+55, 70, 22))
 			.string_("Max Groups")
+			.shadow_(false)
 			.font_(Font("Helvetica",11))
 			.align_(\right)
-			.stringColor_(Color.white);
+			.color_(\string,Color.black);
 
 		// max groups
-		MVC_NumberBox(prefWin,Rect(76+4, 110+22+55, 35, 16))
+		MVC_NumberBox(prefGUI[\scrollView],Rect(76+4, 110+22+55, 35, 16))
 			.action_{|me|
 				var value;
 				value=(me.value).asInt.clip(1,99999);
@@ -772,19 +694,21 @@ LNX_Network {
 			.color_(\background,Color.ndcMenuBG)
 			.align_(\center);
 
-		StaticText.new(prefWin,Rect(5, 109+22+22-1+55, 70, 22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(5, 109+22+22-1+55, 70, 22))
 			.string_("Timeout users")
+			.shadow_(false)
 			.align_(\right)
 			.font_(Font("Helvetica",11))
-			.stringColor_(Color.white);
+			.color_(\string,Color.black);
 
-		StaticText.new(prefWin,Rect(76+4+35+4, 109+22+22-1+55, 40, 22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(76+4+35+4, 109+22+22-1+55, 40, 22))
 			.string_("(secs)")
+			.shadow_(false)
 			.font_(Font("Helvetica",11))
-			.stringColor_(Color.white);
+			.color_(\string,Color.black);
 
 		// timeout users
-		MVC_NumberBox(prefWin,Rect(76+4, 110+22+22+55, 35, 16))
+		MVC_NumberBox(prefGUI[\scrollView],Rect(76+4, 110+22+22+55, 35, 16))
 			.action_{|me|
 				var value;
 				value=(me.value).asInt.clip(1,99999);
@@ -799,14 +723,15 @@ LNX_Network {
 			.color_(\background,Color.ndcMenuBG)
 			.align_(\center);
 
-		StaticText.new(prefWin,Rect(125, 109-1+55, 30, 22))
+		MVC_Text.new(prefGUI[\scrollView],Rect(125, 109-1+55, 30, 22))
 			.string_("Port")
+			.shadow_(false)
 			.align_(\right)
 			.font_(Font("Helvetica",11))
-			.stringColor_(Color.white);
+			.color_(\string,Color.black);
 
 		// port
-		MVC_NumberBox(prefWin,Rect(159, 110+55, 35, 16))
+		MVC_NumberBox(prefGUI[\scrollView],Rect(159, 110+55, 35, 16))
 			.action_{|me|
 				var value;
 				value=(me.value).asInt.clip(1,99999);
@@ -822,7 +747,7 @@ LNX_Network {
 			.align_(\center);
 
 		// start
-		gui[\startButton]=Button.new(prefWin,Rect(125+19+7+5+2, 113+30-11+55, 38, 19))
+		gui[\startButton]=MVC_MultiOnOffView(prefGUI[\scrollView],Rect(125+19+7+5+2, 113+30-11+55, 38, 19))
 			.states_([ ["Start", Color.green, Color.grey*0.4 ],
 								["Stop", Color.red, Color.grey*0.4 ]])
 			.value_(OscGroupServer.isRunning.if(1,0))
@@ -855,12 +780,12 @@ LNX_Network {
 		};
 
 		// Ok
-		Button.new(prefWin,Rect(240, 210, 50, 20))
-			.states_([ [ "OK", Color.black, Color.orange ]])
-			.action_{	 prefWin.close }
-			.focus;
+		MVC_FlatButton(prefGUI[\scrollView],Rect(240, 210, 50, 20),"Ok", prefGUI[\buttonTheme])
+			.canFocus_(true)
+			.color_(\up,Color.white)
+			.action_{ prefWin.close };
 
-		MVC_FlatButton(prefWin,Rect(241, 7, 45, 17),"Reset")
+		MVC_FlatButton(prefGUI[\scrollView],Rect(241, 7, 45, 17),"Reset")
 			.action_{
 				this.resetPreferences;
 				this.savePreferences;
@@ -899,12 +824,10 @@ LNX_Network {
 				.create(toFront).view;
 			window.view.background_(Color(0,3/77,1/103,65/77));
 
-
 //			window = MVC_ModalWindow(
 //				(studio.mixerWindow.isVisible).if(studio.mixerWindow,studio.window),
 //
 //				(525)@(523));
-
 
 			gui[\rb] = MVC_RoundBounds(window, Rect(11,11,525,523))
 				.width_(6)
@@ -1083,31 +1006,28 @@ LNX_Network {
 	}
 
 	disconnectCollaboration{
-		studio.hideNetworkGUI;
-		LNX_Protocols.removeResponders;
-		{studio.models[\network].dependantsPerform(\color_,\on,Color.yellow)}.defer;
+		studio.hideNetworkGUI; // hide the gui in the mixer window
+		LNX_Protocols.removeResponders; // turn of all protocol responders
+		{studio.models[\network].dependantsPerform(\color_,\on,Color.yellow)}.defer; // gui yellow
 	}
-
-	////////////////////////////////////
 
 	// sync onSolo ///////////////////////////////////////////////////////////////////////
 
-	//////////////////////////////////// move this!!! and i don't need an api just for this
+	isListening	{^(this.isConnected)and:{thisUser.isListening} } // am i listening to the 'group song'
 
-	isListening	{^(this.isConnected)and:{thisUser.isListening} }
-
+	// set isListening to group song
 	isListening_{|value|
 		if (this.isConnected) {
-			thisUser.isListening_(value);
-			collaboration.refreshUserView;
-			api.sendOD(\netIsListening,thisUser.id,value);
-			studio.userHasChangedListening;
+			thisUser.isListening_(value);  					// set is listening to this user
+			collaboration.refreshUserView; 					// update gui
+			api.sendOD(\netIsListening,thisUser.id,value);	// tell everyone else if i'm listening
+			studio.userHasChangedListening; 				// update onSolos
 		};
 	}
 
 	netIsListening{|userID,value|
-		this.users[userID].isListening_(value.booleanValue);
-		collaboration.refreshUserView;
+		this.users[userID].isListening_(value.booleanValue); // someone has started or stop listening to the 'group'
+		collaboration.refreshUserView;						 // update gui
 	}
 
 }

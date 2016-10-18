@@ -223,7 +223,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 			template= template.add(
 				[spec.asSpec.default ? 0, spec, midiControl, i+17, RolandJP08.nameAt(i),
 				(label_:(RolandJP08.labelAt(i)),numberFunc_:(RolandJP08.numberFuncAt(i))),
-				{|me,val,latency| this.midiControlVP(i,val,latency) }]);
+				{|me,val,latency,send| this.midiControlVP(i,val,latency,send) }]);
 		};
 
 		// 60. oct VCO2
@@ -236,7 +236,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		#models,defaults=template.generateAllModels;
 
 		// adjust VCO2 so it quants to the Oct if model[60] is on
-		models[29].action_{|me,val,latency|
+		models[29].action_{|me,val,latency,send|
 			var newVal = val;
 			if (p[60].isTrue) { newVal = val.nearestInList([1, 32, 92, 166, 224, 255]) };
 			if (thisThread.clock==SystemClock) {
@@ -244,7 +244,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 			}{
 				{if (newVal!=val) { me.value_(newVal) }}.defer;
 			};
-			this.midiControlVP(12,newVal,latency);
+			this.midiControlVP(12,newVal,latency,send);
 		};
 
 		// list all parameters you want exluded from a preset change
@@ -684,11 +684,13 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 	}
 
 	// set control
-	midiControlVP{|item,value,latency|
+	midiControlVP{|item,value,latency,send=true|
 		p[item+17]=value;
 		this.midiControlOut(item,value,latency);
-		api.sendVP((id++"_ccvp_"++item).asSymbol,
-					'netMidiControlVP',item,value,midi.uidOut,midi.midiOutChannel);
+		if (send) {
+			api.sendVP((id++"_ccvp_"++item).asSymbol,
+			'netMidiControlVP',item,value,midi.uidOut,midi.midiOutChannel);
+		}
 	}
 
 	// net version of above
@@ -757,53 +759,6 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 										\backgroundDown : Color(0.1,0.1,0.1,0.85),
 										\string : Color.black,
 										\focus : Color(0,0,0,0)));
-
-		// control strip ///////
-
-		// 1. channel onOff
-		MVC_OnOffView(models[1], window,Rect(185, 4, 26, 18),gui[\onOffTheme1])
-			.permanentStrings_(["On","On"]);
-
-		// 0. channel solo
-		MVC_OnOffView(models[0], window, Rect(215, 4, 26, 18),gui[\soloTheme])
-			.rounded_(true);
-
-		// 13. onSolo turns audioIn, seq or both on/off
-		MVC_PopUpMenu3(models[13],window,Rect(258,5,70,16), gui[\menuTheme2 ] );
-
-		// 3. in
-		MVC_PopUpMenu3(models[3],window,Rect(338,5,70,16), gui[\menuTheme2 ] );
-
-		// 9. channelSetup
-		MVC_PopUpMenu3(models[9],window,Rect(417,5,75,16), gui[\menuTheme2 ] );
-
-		// MIDI Settings
- 		MVC_FlatButton(window,Rect(502, 4, 43, 18),"MIDI")
-			.rounded_(true)
-			.shadow_(true)
-			.canFocus_(false)
-			.color_(\up,Color.orange*0.75)
-			.color_(\down,Color.orange*0.75/2)
-			.color_(\string,Color.white)
-			.action_{ this.createMIDIInOutModelWindow(window,nil,nil,
-				(border1:Color(0.1221, 0.0297, 0.0297), border2: Color.orange), midi2
-			)};
-
-		// MIDI Controls
-	 	MVC_FlatButton(window,Rect(553, 4, 43, 18),"Cntrl")
-			.rounded_(true)
-			.shadow_(true)
-			.canFocus_(false)
-			.color_(\up,Color.orange*0.75)
-			.color_(\down,Color.orange*0.75/2)
-			.color_(\string,Color.white)
-			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
-
-		// 4.output channels
-		MVC_PopUpMenu3(models[4],window    ,Rect(864,5,70,16),gui[\menuTheme2  ]);
-
-		// 7.send channels
-		MVC_PopUpMenu3(models[7],window    ,Rect(783,5,70,16),gui[\menuTheme2]);
 
 		// tabs ///////
 		gui[\masterTabs]=MVC_TabbedView(window, Rect(0,12, 952, 433), offset:((20)@0))
@@ -1081,7 +1036,55 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 			.string_("= [PATCH 2 + Power On] JP-08/BACKUP/All files")
 			.font_(Font("Helvetica",11))
 			.shadow_(false)
-			.color_(\string,Color.black)
+			.color_(\string,Color.black);
+
+				// control strip ///////
+
+		// 1. channel onOff
+		MVC_OnOffView(models[1], window,Rect(185, 4, 26, 18),gui[\onOffTheme1])
+			.permanentStrings_(["On","On"]);
+
+		// 0. channel solo
+		MVC_OnOffView(models[0], window, Rect(215, 4, 26, 18),gui[\soloTheme])
+			.rounded_(true);
+
+		// 13. onSolo turns audioIn, seq or both on/off
+		MVC_PopUpMenu3(models[13],window,Rect(258,5,70,16), gui[\menuTheme2 ] );
+
+		// 3. in
+		MVC_PopUpMenu3(models[3],window,Rect(338,5,70,16), gui[\menuTheme2 ] );
+
+		// 9. channelSetup
+		MVC_PopUpMenu3(models[9],window,Rect(417,5,75,16), gui[\menuTheme2 ] );
+
+		// MIDI Settings
+ 		MVC_FlatButton(window,Rect(502, 4, 43, 18),"MIDI")
+			.rounded_(true)
+			.shadow_(true)
+			.canFocus_(false)
+			.color_(\up,Color.orange*0.75)
+			.color_(\down,Color.orange*0.75/2)
+			.color_(\string,Color.white)
+			.action_{ this.createMIDIInOutModelWindow(window,nil,nil,
+				(border1:Color(0.1221, 0.0297, 0.0297), border2: Color.orange), midi2
+			)};
+
+		// MIDI Controls
+	 	MVC_FlatButton(window,Rect(553, 4, 43, 18),"Cntrl")
+			.rounded_(true)
+			.shadow_(true)
+			.canFocus_(false)
+			.color_(\up,Color.orange*0.75)
+			.color_(\down,Color.orange*0.75/2)
+			.color_(\string,Color.white)
+			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front };
+
+		// 4.output channels
+		MVC_PopUpMenu3(models[4],window    ,Rect(864,5,70,16),gui[\menuTheme2  ]);
+
+		// 7.send channels
+		MVC_PopUpMenu3(models[7],window    ,Rect(783,5,70,16),gui[\menuTheme2]);
+
 
 	}
 

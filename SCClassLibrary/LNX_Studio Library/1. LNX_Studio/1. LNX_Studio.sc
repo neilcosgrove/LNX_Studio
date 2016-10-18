@@ -935,6 +935,8 @@ LNX_Studio {
 			};
 			this.addInst(class, open:new.isTrue, id:id, onOff:onOff,
 							autoAdd:autoAdd, autoBeat:autoBeat,loadList:loadList); // add the instrument
+			insts[id].postSongLoad; // used by melody maker so we have all inst ids
+
 			// update the onSolo for userID isListening
 			if (userID==network.thisUser.id) {
 				if (network.isListening.not) {onSoloGroup.userInstOn_('lnx_song',id,0) }
