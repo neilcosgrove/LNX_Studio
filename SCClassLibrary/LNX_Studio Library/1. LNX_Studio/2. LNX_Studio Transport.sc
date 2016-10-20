@@ -34,7 +34,7 @@
 	}
 
 	// start play from delta (delta can be negative but will start with lates)
-	play	{|delta=0,argBeat|
+	play{|delta=0,argBeat|
 		var b, firstLoop=true;
 
 		this.startTime;
@@ -60,7 +60,7 @@
 					if (jumpTo.notNil) {
 						insts.do(_.stopAllNotes);
 						insts.clockPriority.do{|inst| inst.clockPause(actualLatency) };
-						instBeat = beat = jumpTo.asInt;
+						instBeat = beat = jumpTo.asInt; // is not correct and needs to take pop into account
 						MVC_Automation.jumpTo(jumpTo);
 						jumpTo=nil;
 						MVC_Automation.updateBeatRefNow(beat,absTime);
@@ -259,7 +259,10 @@
 	}
 
 	// host it
-	hostJumpTo{|val| jumpTo=val; }
+	hostJumpTo{|val|
+		jumpTo=val;
+		insts.do(_.jumpTo); // clock has jumped
+	}
 
 	// jumpTo while stopped
 	jumpWhileStopped{|val|
