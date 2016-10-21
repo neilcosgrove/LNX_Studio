@@ -140,10 +140,14 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	iInitVars{
 		// user content !!!!!!!
 		sampleBank = LNX_SampleBank(server,apiID:((id++"_url_").asSymbol))
-				.selectedAction_{|bank,val,send=true| }
+				.selectedAction_{|bank,val,send=true|
+					//model[x].valueAction_(val,....
+					this.relaunchClip
+				}
 				.itemAction_{|bank,items,send=false| }
 				.metaDataUpdateFunc_{|me,model|
 					if (model===\start) { this.relaunchClip };
+					if (model===\end  ) { this.relaunchClip };
 				}
 				.title_("");
 
@@ -177,12 +181,14 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	// ***  DO SWIPE/scoll left/right in sample view
+
 	// repitch mode
 	clockInRepitch{|instBeat,absTime3,latency,beat|
 
-		var sampleIndex=0; // sample used in bank
-
-		beat = instBeat/3; // use inst beat at slower rate
+		var sampleIndex=sampleBank.selectedSampleNo;  // sample used in bank
+		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
+		beat = instBeat/3; 							  // use inst beat at slower rate
 
 		// pos index (all the time for the moment)
 		if (instBeat%2==0) {
@@ -195,10 +201,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		};
 
 		// launch at start pos or relaunch sample if needed
-		if ((relaunch)or:{beat%p[11]==0}) {
+		if (relaunch or:{beat%p[11]==0}) {
 			var numFrames, bufferL, bufferR, duration, rate, offset, startFrame, durFrame;
 			var sample = sampleBank[sampleIndex];
-			if (sample.isNil) {^nil};        						// no samples loaded in bank exception
 
 			bufferL			= sample.buffer.bufnum(0);          	// this only comes from LNX_BufferArray
 			bufferR			= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
@@ -217,7 +222,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		};
 
 		// change pos rate if bpm changed
-		if ((newBPM) and:{node.notNil}) {
+		if (newBPM and:{node.notNil}) {
 			var numFrames, duration, rate, startFrame, durFrame;
 
 			numFrames		= sampleBank.numFrames(sampleIndex); 	// total number of frames in sample
@@ -266,6 +271,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	// stop playing buffer
 	stopBuffer{|latency|
+		// gate stop rather than free
 		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_free", node] )};
 	}
 
@@ -283,6 +289,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		sampleBank.putLoadListURL( l.popEND("*** END URL Bank Doc ***"));
 		sampleBank.adjustViews;
 		if (sampleBank.size>0) { sampleBank.allInterfacesSelect(0) };
+	}
+
+	iFree{
+		sampleBank.free;
+		webBrowser.free;
 	}
 
 	// GUI ////////////////////////////////////////////////////////////////////////////////////////////
@@ -311,7 +322,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.color_(\border, Color(6/11,42/83,29/65))
 			.resize_(5);
 
-
 		gui[\scrollView] = MVC_CompositeView(gui[\scrollViewOuter] ,
 				Rect(0,0,thisWidth-22,thisHeight-22-1))
 			.color_(\background,Color(6/11,42/83,29/65))
@@ -331,6 +341,12 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.color_(\background, Color(0.5,0.45,0.45))
 			.color_(\border, Color(0,0,0,0.35));
 
+		gui[\speakerIcon] = MVC_Icon(gui[\scrollViewOuter], Rect(386,210, 18, 18).insetBy(3,3))
+			.icon_(\speaker);
+
+		sampleBank.speakerIcon_(gui[\speakerIcon]);
+
+		// this is the list
 		sampleBank.window2_(gui[\sampleListCompositeView]);
 
 		// the sample editor
@@ -340,8 +356,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			true,
 			webBrowser,
 			(border2: Color(59/108,65/103,505/692), border1: Color(0,1/103,9/77)),
-			50
+			50,
+			interface:\strangeLoop
 		);
+
+
 
 		// 11. repeat
 		MVC_MyKnob(gui[\scrollView], models[11],Rect(15,245,30,30),gui[\knob2Theme]);

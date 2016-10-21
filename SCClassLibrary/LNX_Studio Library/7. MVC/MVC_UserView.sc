@@ -7,7 +7,7 @@ MVC_UserView{
 
 	var <>parent, <window, bounds, <view;
 	var <canFocus=false, <focusColor, <drawFunc, <mouseOverAction;
-	var <mouseDownAction, <mouseMoveAction, <mouseUpAction, <keyDownAction, <keyUpAction;
+	var <mouseDownAction, <mouseMoveAction, <mouseUpAction, <keyDownAction, <keyUpAction, <mouseWheelAction;
 	var <resize=5;
 	var <rect;
 	var <>clearOnRefresh=true;
@@ -68,6 +68,7 @@ MVC_UserView{
 			.mouseMoveAction_(mouseMoveAction)
 			.mouseUpAction_(mouseUpAction)
 			.mouseOverAction_(mouseOverAction)
+			.mouseWheelAction_(mouseWheelAction)
 			.keyDownAction_(keyDownAction)
 			.keyUpAction_(keyUpAction)
 			.resize_(resize)
@@ -129,6 +130,11 @@ MVC_UserView{
 	mouseOverAction_{|func|
 		mouseOverAction=func;
 		if (view.notClosed) { view.mouseOverAction_(mouseOverAction) };
+	}
+
+	mouseWheelAction_{|func|
+		mouseWheelAction=func;
+		if (view.notClosed) { view.mouseWheelAction_(mouseOverAction) };
 	}
 
 	keyDownAction_{|func|

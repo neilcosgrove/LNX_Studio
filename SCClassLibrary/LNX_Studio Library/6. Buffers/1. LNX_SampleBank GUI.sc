@@ -263,7 +263,6 @@
 
 		// the 2nd list in SCCode
 
-
 		if (window2.notNil) {
 			var h = 20;
 			var t = i * h;
@@ -487,11 +486,13 @@
 	// adding a download from search in the metaeditor doesn't update when loaded
 	// use select same item when finishing downloads
 
-	openMetadataEditor{|window,i,search=false,webBrowser,argColors,x=0|
+	openMetadataEditor{|window,i,search=false,webBrowser,argColors,x=0,interface|
 
 		var buffer, models, otherModel, size, numChannels,  gui, colors, width, zoom, offset,
 			setVarsFunc, setModelsFunc, selectSampleFunc, lastPlayValue=false,
 			pos=(-1), pos2=(-1), scrollTask, moveIDX=0, status=(-5), mvcWindow;
+
+		var editModel = [0,[0,3,\lin,1]].asModel; // 0: start, 1:end, 2:addMove maker 3:delete marker
 
 		// used after a buffer has loaded to update gui
 		var updateFunc={|buf|
@@ -543,6 +544,7 @@
 				// when there are samples in the bank
 				gui[\name].model_(models[\name]);
 				gui[\sampleStartAdaptor].model_(models[\start]);
+				gui[\sampleEndAdaptor].model_(models[\end]);
 				if (gui[\pitch].notNil) { gui[\pitch].model_(models[\pitch]) };
 				gui[\start].model_(models[\start]);
 				if (gui[\bpm].notNil) { gui[\bpm].model_(models[\bpm]) };
@@ -568,6 +570,7 @@
 				// when the bank is empty
 				gui[\name].model_("Press search to add samples -->".asModel);
 				gui[\sampleStartAdaptor].model_(nil);
+				gui[\sampleEndAdaptor].model_(nil);
 				if (gui[\pitch].notNil) { gui[\pitch].model_(nil) };
 				gui[\start].model_(nil);
 				if (gui[\bpm].notNil) { gui[\bpm].model_(nil) };
@@ -770,6 +773,10 @@
 		gui[\sampleStartAdaptor] = MVC_FuncAdaptor ( models[\start] )
 			.func_{ if (this.notEmpty) {gui[\sampleView].refresh} };
 
+		// update the end position
+		gui[\sampleEndAdaptor] = MVC_FuncAdaptor ( models[\end] )
+			.func_{ if (this.notEmpty) {gui[\sampleView].refresh} };
+
 		// update the position and use to colour play button
 		gui[\samplePosAdaptor2] = MVC_FuncAdaptor ( otherModel[\pos2] )
 			.func_{|me,value,delta|
@@ -917,6 +924,7 @@
 					var o = offset.value;
 					var w2= z/w*size;
 					var start = this.start(i);
+					var end = this.end(i);
 					var y;
 					var visualOffset;
 
@@ -965,7 +973,14 @@
 
 					// the start index
 					y = start * w / z - ( o * w / z) + 2;
-					Color.white.set;
+					Color(0.5,1,0.5).set;
+					Pen.moveTo(y@1);
+					Pen.lineTo(y@(h-2));
+					Pen.stroke;
+
+					// the end index
+					y = end * w / z - ( o * w / z) + 2;
+					Color(1,0.5,0.5).set;
 					Pen.moveTo(y@1);
 					Pen.lineTo(y@(h-2));
 					Pen.stroke;
@@ -1000,20 +1015,20 @@
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
-						Pen.stringCenteredIn ("Downloading� "++(status.asInt)
+						Pen.stringCenteredIn ("Downloading "++(status.asInt)
 												++"%",Rect(0,0,w,h));
 					};
 					if (status==(-1)) {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
-						Pen.stringCenteredIn ("Connecting�",Rect(0,0,w,h));
+						Pen.stringCenteredIn ("Connecting",Rect(0,0,w,h));
 					};
 					if (status==(-2)) {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
-						Pen.stringCenteredIn ("Converting�",Rect(0,0,w,h));
+						Pen.stringCenteredIn ("Converting",Rect(0,0,w,h));
 					};
 					if (status==(-4)) {
 						Pen.smoothing_(true);
@@ -1032,16 +1047,25 @@
 
 				if (this.notEmpty) {
 
-					models[\start].valueAction_(index,0,true);
+					if (editModel==0) {models[\start].valueAction_(index,0,true)};
+					if (editModel==1) {models[\end  ].valueAction_(index,0,true)};
 
+					moveIDX=0;
 			         // scroll when off edge
 					scrollTask=Task({inf.do{
 						(1/30).wait;
 						if ((follow.value.isFalse) or: ({pos<0 and: {pos2<0}})) {
 							if (moveIDX!=0) {
 								offset.valueAction_(offset.value+(zoom.value/20*moveIDX));
-								models[\start].valueAction_(
-									models[\start].value+(zoom.value/20*moveIDX));
+
+								if (editModel==0) {
+									models[\start].valueAction_(models[\start].value+(zoom.value/20*moveIDX));
+								};
+
+								if (editModel==1) {
+									models[\end  ].valueAction_(models[\end  ].value+(zoom.value/20*moveIDX));
+								};
+
 							};
 						};
 					}}).start(AppClock);
@@ -1058,12 +1082,27 @@
 					moveIDX=0;
 					if (x<0) { moveIDX = -1 * ((x).abs/40+0.25) };
 					if (x>w) { moveIDX = 1 * ((x-w).abs/40+0.25) };
-					models[\start].valueAction_(index,0,true);
+					if (editModel==0) {models[\start].valueAction_(index,0,true)};
+					if (editModel==1) {models[\end  ].valueAction_(index,0,true)};
 				}
 			}
 			.mouseUpAction_{|me,x,y|
 				scrollTask.stop;
 				scrollTask=nil;
+			}
+			.mouseWheelAction_{|me,x,y,modifiers, dx, dy|
+				var move;
+
+				if (dx<0) {
+					move = 1 * (dx.abs/20+0.25);
+					offset.valueAction_(offset.value+(zoom.value/20*move));
+				};
+
+				if (dx>0) {
+					move = -1 * (dx.abs/20+0.25);
+					offset.valueAction_(offset.value+(zoom.value/20*move));
+				};
+
 			}
 			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 				// 27 -, 24 +, 49 space, 125 down, 126 up, 123 left, 124 right
@@ -1092,9 +1131,77 @@
 			.focus;
 
 
-		if (window.isKindOf(MVC_CompositeView).not) {
 
-			// interface in GSRythmn
+		if (interface.isNil) {
+			if (window.isKindOf(MVC_CompositeView).not) { interface = \gsr } { interface = \sccode }
+		};
+
+		if (interface == \strangeLoop ) { // interface in strange loop
+
+			// the edit mode
+			gui[\amp] = MVC_MyKnob3(gui[\scrollView], editModel, Rect(95,245, 28, 28),
+				gui[\knobTheme1])
+				.label_("Edit mode");
+
+
+			// follow
+			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(562, 200, 50, 20),"Follow", follow)
+				.rounded_(true)
+				.color_(\on,Color(0.5,1,0.5,0.88))
+				.color_(\off,Color(1,1,1,0.88)/4);
+
+			// the sample amp
+			gui[\amp] = MVC_MyKnob3(gui[\scrollView], models[\amp], Rect(496,282, 28, 28),
+				gui[\knobTheme1])
+				.label_("Amp");
+
+			// the sample pitch
+			gui[\pitch] = MVC_MyKnob3(gui[\scrollView], models[\pitch], Rect(539,282, 28, 28),
+				gui[\knobTheme1])
+				.label_("Pitch");
+
+
+			// the sample start
+			gui[\start] = MVC_MyKnob3(gui[\scrollView], models[\start], Rect(584, 282, 28, 28),
+				gui[\knobTheme1])
+				.label_("Start");
+
+			// the sample loop
+			gui[\loop]= MVC_OnOffView(gui[\scrollView], models[\loop],
+										Rect(574, 234, 46, 20),"Loop")
+				.rounded_(true)
+				.color_(\on,Color(50/77,61/77,1))
+				.color_(\off,Color(1,1,1,0.88)/4);
+
+			// sampleRate
+			gui[\sampleRate] = MVC_StaticText( gui[\scrollView], Rect(322,196,65,18),
+										gui[\infoTheme])
+				.label_("Sample Rate:");
+
+			// duration
+			gui[\duration] = MVC_StaticText( gui[\scrollView], Rect(477,196,65,18),
+										gui[\infoTheme])
+				.label_("Duration:");
+
+			//numChannels
+			gui[\numChannels] = MVC_StaticText( gui[\scrollView], Rect(144,196,65,18),
+										gui[\infoTheme])
+				.label_("Num Channels:");
+
+			if ((this.notEmpty) and:{ buffer.isLoaded}) {
+				gui[\sampleRate].string_((buffer.sampleRate/1000).asString+"kHz");
+				gui[\duration].string_((buffer.duration.round(0.01)).asString+"sec(s)");
+				gui[\numChannels].string_((buffer.numChannels).asString);
+			}{
+				gui[\sampleRate].string_("- kHz");
+				gui[\duration].string_("- sec(s)");
+				gui[\numChannels].string_("-");
+			};
+
+		};
+
+
+		if (interface == \gsr) { // interface in GSRythmn
 
 			// sampleRate
 			gui[\sampleRate] = MVC_StaticText( gui[\scrollView], Rect(297,196,65,18),
@@ -1161,9 +1268,9 @@
 					gui[\window].close;
 					// gui.do(_.free);  // this causes a crash?
 				};
-		}{
+		};
 
-			// interface in SCCode
+		if (interface == \sccode) { // interface in SCCode
 
 			// follow
 			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(562, 200, 50, 20),"Follow", follow)
