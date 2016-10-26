@@ -297,7 +297,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 	updateDSP{|oldP,latency|
 		var in=LNX_AudioDevices.firstFXBus+(p[2]*2);
 		var out=(p[3]>=0).if(p[3]*2,LNX_AudioDevices.firstFXBus+(p[3].neg*2-2));
-
+		var outCh = LNX_AudioDevices.getOutChannelIndex(p[11]);
 		var xin  = LNX_AudioDevices.firstInputBus+(p[7]*2);
 		var xout;
 
@@ -316,6 +316,9 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			[\n_set, node, \xInputChannels,xin],
 			[\n_set, node, \channelSetup, p[8]],
 			[\n_set, node, \xChannelSetup, p[9]],
+			[\n_set, node, \on, p[1]],
+			[\n_set, node, \sendAmp, p[12]],
+			[\n_set, node, \sendChannels, outCh],
 			[\n_set, node, \on, p[1]],
 			[\n_set, node, \lowFreq ,p[13]],
 			[\n_set, node, \highFreq,p[14]],
