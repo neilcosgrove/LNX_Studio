@@ -1,5 +1,5 @@
-// a demo of lnx protocols
-// for teaching purposes
+// focus is lost when adding samples now
+// also funcs called a lot when selecting sample
 
 /////  entering numbers via keyboard to tempo doesn't update LNX_InstrumentTemplate:bpmChange
 
@@ -121,33 +121,63 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				this.syncDelay_(val);
 			}],
 
-			// 11. repeat
-			[32,[8,128,\lin,8],  (label_:"Repeat (n)"), {|me,val,latency,send|
-				this.setPVPModel(11,val,latency,send);
-				this.bpmChange(latency); // ? also pos change
-				this.updatePOS;
+			// 11. selected sample
+			[0, [0,sampleBank.size,\linear,1],  (label_:"Sample"), midiControl, 11, "Sample",
+				{|me,val,latency,send|
+					this.setPVPModel(11,val,latency,send);
+					relaunch = true;
+					sampleBank.allInterfacesSelect(val,false);
 			}],
 
 		].generateAllModels;
 
 		// list all parameters you want exluded from a preset change
 		presetExclusion=[0,1];
-		randomExclusion=[0,1];
+		randomExclusion=[0,1,10];
 		autoExclusion=[];
 
+	}
+
+	getMixerArgs{^[
+		[\amp,           p[ 2].dbamp       ],
+		[\outChannel,    LNX_AudioDevices.getOutChannelIndex(p[4])],
+		[\pan,           p[5]             ],
+		[\sendChannel,  LNX_AudioDevices.getOutChannelIndex(p[7])],
+		[\sendAmp,       p[8].dbamp       ]
+	]}
+
+	updateDSP{|oldP,latency|
+		if (instOutSynth.notNil) {
+			server.sendBundle(latency +! syncDelay,
+				*this.getMixerArgs.collect{|i| [\n_set, instOutSynth.nodeID]++i } );
+		};
 	}
 
 	iInitVars{
 		// user content !!!!!!!
 		sampleBank = LNX_SampleBank(server,apiID:((id++"_url_").asSymbol))
 				.selectedAction_{|bank,val,send=true|
-					//model[x].valueAction_(val,....
-					this.relaunchClip
+					models[11].valueAction_(val,nil,true);
+					relaunch = true;
 				}
-				.itemAction_{|bank,items,send=false| }
+				.itemAction_{|bank,items,send=false|
+					models[11].controlSpec_([0,sampleBank.size,\linear,1]);
+					{models[11].dependantsPerform(\items_,bank.names)}.defer;
+				}
 				.metaDataUpdateFunc_{|me,model|
-					if (model===\start) { this.relaunchClip };
-					if (model===\end  ) { this.relaunchClip };
+					var sampleIndex=sampleBank.selectedSampleNo;  // sample used in bank
+					if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
+					if ((model==\start)||(model==\end)) {
+						var startRatio  = sampleBank.actualStart(sampleIndex);	// start pos ratio
+						var endRatio    = sampleBank.actualEnd  (sampleIndex);	// end   pos ratio
+						var durRatio    = endRatio - startRatio;				// dur ratio
+						var duration	= sampleBank.duration   (sampleIndex) * durRatio;
+						var bpm			= sampleBank.bpm		(sampleIndex);  // use the bpm of the sample
+						var length      = duration / ((60/bpm)/24*3); // to work out number of beats
+						sampleBank.modelValueAction_(sampleIndex,\length,length,send:false);
+						relaunch = true; // modelValueAction_ may do a relaunch as well but not always
+					};
+					if (model==\length) { relaunch = true };
 				}
 				.title_("");
 
@@ -163,14 +193,12 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	// all these events must happen on the clock else sample playback will drift
 	// should maintain sample accurate playback. to test
 
-	updatePOS{ relaunch = true }
-	bpmChange{ newBPM   = true }
-	clockPlay{ relaunch = true }
-	jumpTo   { relaunch = true }
+	updatePOS	{ relaunch = true }
+	bpmChange	{ newBPM   = true }
+	clockPlay	{ relaunch = true }
+	jumpTo   	{ relaunch = true }
 
-	relaunchClip { relaunch = true }
-
-	// and these events need to happen on latency
+	// and these events need to happen with latency
 
 	// clock in, select mode
 	clockIn3{|instBeat,absTime3,latency,beat|
@@ -181,41 +209,41 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// ***  DO SWIPE/scoll left/right in sample view
-
 	// repitch mode
 	clockInRepitch{|instBeat,absTime3,latency,beat|
-
-		var sampleIndex=sampleBank.selectedSampleNo;  // sample used in bank
+		var length;
+		var sampleIndex=p[11];						  // sample used in bank
 		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
-		beat = instBeat/3; 							  // use inst beat at slower rate
+		if (this.isOff) { ^this };                    // inst is off exception
+		beat   = instBeat/3; 					      // use inst beat at slower rate
+		length = sampleBank.length(sampleIndex);      // lenth of loop in (n) beats
 
 		// pos index (all the time for the moment)
 		if (instBeat%2==0) {
-			var numFrames	= sampleBank.numFrames(sampleIndex);	// total number of frames in sample
-			var startRatio  = sampleBank.start    (sampleIndex);	// start pos ratio
-			var durRatio    = 1 - startRatio;						// dur ratio
-			var offsetRatio = durRatio * (beat%p[11]) / p[11];		// offset in frames
+			var startRatio  = sampleBank.actualStart(sampleIndex);	// start pos ratio
+			var endRatio    = sampleBank.actualEnd  (sampleIndex);	// end   pos ratio
+			var durRatio    = endRatio - startRatio;				// dur ratio
+			var offsetRatio = durRatio * (beat%length) / length;		// offset in frames
 			// is this just drawing the line?
 			sampleBank.otherModels[sampleIndex][\pos].valueAction_(startRatio+offsetRatio,latency +! syncDelay);
 		};
 
 		// launch at start pos or relaunch sample if needed
-		if (relaunch or:{beat%p[11]==0}) {
-			var numFrames, bufferL, bufferR, duration, rate, offset, startFrame, durFrame;
-			var sample = sampleBank[sampleIndex];
-
+		if (relaunch or:{beat % length==0}) {
+			var numFrames, bufferL, bufferR, duration, rate, offset, startFrame, endFrame, durFrame, attackLevel;
+			var sample      = sampleBank[sampleIndex];
 			bufferL			= sample.buffer.bufnum(0);          	// this only comes from LNX_BufferArray
 			bufferR			= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
+			numFrames		= sampleBank.numFrames  (sampleIndex);	// total number of frames in sample
+			startFrame 		= sampleBank.actualStart(sampleIndex) * numFrames;	// start pos frame
+			endFrame		= sampleBank.actualEnd  (sampleIndex) * numFrames;	// end pos frame
+			durFrame        = endFrame - startFrame; 							// frames playing for
+			duration		= sampleBank.duration   (sampleIndex) * (durFrame/numFrames); // playing dur in secs
+			rate			= duration / ((studio.absTime)*3*length);// play back rate so it fits in (n) beats
+			offset 			= durFrame * (beat % length) / length;	 // offset in frames
+			attackLevel     = relaunch.if(0,1);						 // fade in if relaunched else no attack
 
-			numFrames		= sampleBank.numFrames(sampleIndex); 	// total number of frames in sample
-			startFrame      = sampleBank.start    (sampleIndex)*numFrames; // start pos frame
-			durFrame        = numFrames - startFrame; 				// frames playing for
-			duration		= sampleBank.duration (sampleIndex) * (durFrame/numFrames); // playing dur in secs
-			rate			= duration / ((studio.absTime)*3*p[11]);// play back rate so it fits in (n) beats
-			offset 			= durFrame * (beat%p[11]) / p[11];		// offset in frames
-
-			this.playBuffer(bufferL,bufferR,rate,startFrame+offset,durFrame,latency); // play sample
+			this.playBuffer(bufferL,bufferR,rate,startFrame+offset,durFrame,attackLevel,latency); // play sample
 
 			relaunch= false; newBPM = false; // stop next stage from happening next time
 			^this;
@@ -223,13 +251,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		// change pos rate if bpm changed
 		if (newBPM and:{node.notNil}) {
-			var numFrames, duration, rate, startFrame, durFrame;
-
-			numFrames		= sampleBank.numFrames(sampleIndex); 	// total number of frames in sample
-			startFrame      = sampleBank.start    (sampleIndex)*numFrames; // start pos frame
-			durFrame        = numFrames - startFrame;			 	// frames playing for
-			duration		= sampleBank.duration (sampleIndex) * (durFrame/numFrames);  // playing dur in secs
-			rate			= duration / ((studio.absTime)*3*p[11]);// play back rate so it fits in (n) beats
+			var numFrames, duration, rate, startFrame, endFrame, durFrame;
+			numFrames		= sampleBank.numFrames  (sampleIndex); 	// total number of frames in sample
+			startFrame      = sampleBank.actualStart(sampleIndex) * numFrames;	// start pos frame
+			endFrame		= sampleBank.actualEnd  (sampleIndex) * numFrames;	// end pos frame
+			durFrame        = endFrame - startFrame;			 				// frames playing for
+			duration		= sampleBank.duration   (sampleIndex) * (durFrame/numFrames);  // playing dur in secs
+			rate			= duration / ((studio.absTime)*3*length); // play back rate so it fits in (n) beats
 
 			server.sendBundle(latency +! syncDelay,[\n_set, node, \rate, rate]); // change playback rate
 
@@ -239,7 +267,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	}
 
 	// play a buffer
-	playBuffer{|bufnumL,bufnumR,rate,startFrame,durFrame,latency|
+	playBuffer{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,latency|
 
 		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_free", node] )};
 		node = server.nextNodeID;
@@ -250,17 +278,20 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			\bufnumR,bufnumR,
 			\rate,rate,
 			\startFrame,startFrame,
-			\durFrame:durFrame
+			\durFrame:durFrame,
+			\attackLevel:attackLevel
 		]);
 
 	}
 
 	*initUGens{|server|
 
-		SynthDef("Looper_Play",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100|
+		SynthDef("Looper_Play",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
+				gate=1,attackLevel=1|
 
 			var index  = Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame) + startFrame;
 			var signal = BufRd.ar(1, [bufnumL,bufnumR], index ,loop:0); // mono
+			signal     = signal * EnvGen.ar(Env.new([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,doneAction:2);
 
 			DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0
 			OffsetOut.ar(outputChannels,signal); 		 // now send out
@@ -271,8 +302,10 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	// stop playing buffer
 	stopBuffer{|latency|
-		// gate stop rather than free
-		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_free", node] )};
+		if (node.notNil) {
+			server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0])
+			//server.sendBundle(latency +! syncDelay, ["/n_free", node] )
+		};
 	}
 
 	// **************************************************************************************************//
@@ -360,10 +393,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			interface:\strangeLoop
 		);
 
-
-
-		// 11. repeat
-		MVC_MyKnob(gui[\scrollView], models[11],Rect(15,245,30,30),gui[\knob2Theme]);
+		// 11. sample
+		MVC_PopUpMenu3(gui[\scrollView], models[11], Rect(20, 340, 112, 17),gui[\menuTheme  ])
+			.items_(sampleBank.names);
 
 
 	}

@@ -492,7 +492,8 @@
 			setVarsFunc, setModelsFunc, selectSampleFunc, lastPlayValue=false,
 			pos=(-1), pos2=(-1), scrollTask, moveIDX=0, status=(-5), mvcWindow;
 
-		var editModel = [0,[0,3,\lin,1]].asModel; // 0: start, 1:end, 2:addMove maker 3:delete marker
+		// -1:doNothing, 0:start, 1:end, 2:addMaker, 3:moveMaker 4:deleteMarker
+		var editModel = [-1,[-1,4,\lin,1]].asModel;
 
 		// used after a buffer has loaded to update gui
 		var updateFunc={|buf|
@@ -546,10 +547,11 @@
 				gui[\sampleStartAdaptor].model_(models[\start]);
 				gui[\sampleEndAdaptor].model_(models[\end]);
 				if (gui[\pitch].notNil) { gui[\pitch].model_(models[\pitch]) };
-				gui[\start].model_(models[\start]);
+				if (gui[\start].notNil) {gui[\start].model_(models[\start]) };
 				if (gui[\bpm].notNil) { gui[\bpm].model_(models[\bpm]) };
 				gui[\loop].model_(models[\loop]);
 				if (gui[\velocity].notNil) { gui[\velocity].model_(models[\velocity])};
+				if (gui[\length].notNil) { gui[\length].model_(models[\length])};
 				gui[\samplePosAdaptor].model_(otherModel[\pos]);
 				gui[\samplePosAdaptor2].model_(otherModel[\pos2]);
 				gui[\path].string_(buffer.url);
@@ -572,10 +574,11 @@
 				gui[\sampleStartAdaptor].model_(nil);
 				gui[\sampleEndAdaptor].model_(nil);
 				if (gui[\pitch].notNil) { gui[\pitch].model_(nil) };
-				gui[\start].model_(nil);
+				if (gui[\start].notNil) { gui[\start].model_(nil) };
 				if (gui[\bpm].notNil) { gui[\bpm].model_(nil) };
 				gui[\loop].model_(nil);
 				if (gui[\velocity].notNil) { gui[\velocity].model_(nil)};
+				if (gui[\length].notNil) { gui[\length].model_(nil)};
 				gui[\samplePosAdaptor].model_(nil);
 				gui[\percentageComplete].model_(-5.asModel);
 				gui[\samplePosAdaptor2].model_(nil);
@@ -584,6 +587,7 @@
 				gui[\sampleRate].string_("- kHz");
 				gui[\duration].string_("- sec(s)");
 				gui[\numChannels].string_("-");
+
 			}
 		};
 
@@ -923,8 +927,8 @@
 					var z = zoom.value;
 					var o = offset.value;
 					var w2= z/w*size;
-					var start = this.start(i);
-					var end = this.end(i);
+					var start = this.actualStart(i);
+					var end = this.actualEnd(i);
 					var y;
 					var visualOffset;
 
@@ -971,19 +975,39 @@
 
 					};
 
+					Color.white.set;
+
 					// the start index
-					y = start * w / z - ( o * w / z) + 2;
-					Color(0.5,1,0.5).set;
-					Pen.moveTo(y@1);
-					Pen.lineTo(y@(h-2));
+					start = start * w / z - ( o * w / z) + 2;
+					Pen.moveTo(start@(h-2));
+					Pen.lineTo(start@1);
 					Pen.stroke;
+					Pen.moveTo(start@1);
+					Pen.lineTo((start+7)@6);
+					Pen.lineTo(start@11);
+					Pen.fill;
 
 					// the end index
-					y = end * w / z - ( o * w / z) + 2;
-					Color(1,0.5,0.5).set;
-					Pen.moveTo(y@1);
-					Pen.lineTo(y@(h-2));
+					end = end * w / z - ( o * w / z) + 2;
+					Pen.moveTo(end@(h-2));
+					Pen.lineTo(end@1);
 					Pen.stroke;
+					Pen.moveTo(end@1);
+					Pen.lineTo((end-7)@6);
+					Pen.lineTo(end@11);
+					Pen.fill;
+
+					// faded start
+					if (start>0) {
+						Color(0,0,0,0.5).set;
+						Pen.fillRect(Rect(0,0,start-1,h));
+					};
+
+					// faded end
+					if (end<w) {
+						Color(0,0,0,0.5).set;
+						Pen.fillRect(Rect(end+1,0,w-end,h));
+					};
 
 					if(pos>=0) {
 
@@ -1039,13 +1063,25 @@
 				};
 
 			}
-			.mouseDownAction_{|me,x,y|
+			.mouseDownAction_{|me,x,y,modifiers, buttonNumber, clickCount|
 				var w = me.bounds.width-4;
 				var z = zoom.value;
 				var o = offset.value;
 				var index = ((x-2).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
 
+				var minIndex = ((x-10).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
+				var maxIndex = ((x+6 ).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
+
 				if (this.notEmpty) {
+
+					// // -1:doNothing, 0:start, 1:end, 2:addMaker, 3:moveMaker 4:deleteMarker
+
+					editModel.value_(-1);
+
+					if ( models[\start].value.inclusivelyBetween(minIndex,maxIndex)) { editModel.value_(0) };
+					if ( models[\end  ].value.inclusivelyBetween(minIndex,maxIndex)) { editModel.value_(1) };
+
+					if (clickCount==2) { editModel.value_(2) };
 
 					if (editModel==0) {models[\start].valueAction_(index,0,true)};
 					if (editModel==1) {models[\end  ].valueAction_(index,0,true)};
@@ -1137,12 +1173,22 @@
 		};
 
 		if (interface == \strangeLoop ) { // interface in strange loop
-
-			// the edit mode
+/*			// the edit mode
 			gui[\amp] = MVC_MyKnob3(gui[\scrollView], editModel, Rect(95,245, 28, 28),
 				gui[\knobTheme1])
-				.label_("Edit mode");
+				.label_("Edit mode");*/
 
+			// length
+			gui[\length]=MVC_NumberBox(gui[\scrollView],models[\length], Rect(55, 245, 42, 16))
+				.resoultion_(25)
+				.rounded_(true)
+				.visualRound_(1)
+				.label_("Length (n) beats")
+				.font_(Font("Helvetica", 11))
+				.color_(\focus,Color.grey(alpha:0))
+				.color_(\string,Color.white)
+				.color_(\typing,Color.yellow)
+				.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 			// follow
 			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(562, 200, 50, 20),"Follow", follow)
@@ -1155,16 +1201,22 @@
 				gui[\knobTheme1])
 				.label_("Amp");
 
-			// the sample pitch
-			gui[\pitch] = MVC_MyKnob3(gui[\scrollView], models[\pitch], Rect(539,282, 28, 28),
-				gui[\knobTheme1])
-				.label_("Pitch");
+			// bpm
+			// gui[\bpm] = MVC_MyKnob3(gui[\scrollView], models[\bpm], Rect(539,282, 28, 28),
+			// gui[\knobTheme1])
+			// .label_("BPM");
 
 
-			// the sample start
-			gui[\start] = MVC_MyKnob3(gui[\scrollView], models[\start], Rect(584, 282, 28, 28),
-				gui[\knobTheme1])
-				.label_("Start");
+		gui[\bpm]=MVC_NumberBox(gui[\scrollView],models[\bpm], Rect(55, 290, 42, 16))
+			.resoultion_(25)
+			.rounded_(true)
+			.visualRound_(0.01)
+			.label_("BPM")
+			.font_(Font("Helvetica", 11))
+			.color_(\focus,Color.grey(alpha:0))
+			.color_(\string,Color.white)
+			.color_(\typing,Color.yellow)
+			.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 			// the sample loop
 			gui[\loop]= MVC_OnOffView(gui[\scrollView], models[\loop],

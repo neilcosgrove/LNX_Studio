@@ -29,7 +29,7 @@ q.samples
 
 LNX_SampleBank{
 
-	classvar >network, <sampleBanks, <masterMeta, <masterMetaKeys;
+	classvar >network, <sampleBanks, <masterMeta, <masterMetaKeys, <versionKeys;
 	classvar >updateFuncs, >clipboard, >studio;
 	classvar <waitingToEmptyTrash = false;
 
@@ -63,10 +63,15 @@ LNX_SampleBank{
 			active:		1,      // on/off (mute)
 			velocity: 	100,	// nearest velocity
 			markers: 	[],		// list of markers
-			bpm:		120		// the bpm
+			bpm:		120,	// the bpm
+			length:		64		// the length of the loop in beats
 		);
 
 		masterMetaKeys = masterMeta.keys.asArray.sort; // for saving & loading
+
+		versionKeys = ();
+		versionKeys[1.1] = [\active, \amp, \bpm, \end, \loop, \markers, \name, \pitch, \start, \velocity];
+
 	}
 
 	// add metadata models to list and return those models
@@ -84,12 +89,12 @@ LNX_SampleBank{
 		metaModel[\velocity] = [100,[0,127]].asModel;        // nearest velocity
 		metaModel[\markers ] = [];                           // list of markers (not a model yet)
 		metaModel[\bpm]      = \bpm.asModel;                 // the bpm
+		metaModel[\length]   = \length.asModel;				 // the length of the loop in beats
 
 		// network stuff
-		[\pitch,\amp,\loop,\start,\end,\active,\velocity,\bpm].do{|key|
+		[\pitch,\amp,\loop,\start,\end,\active,\velocity,\bpm,\length].do{|key|
 			metaModel[key].action_{|me,val,latency,send,toggle|
 				this.setModelVP(this.geti(metaModel),key,val,latency,send);
-				 metaDataUpdateFunc.value(this,key);		 // used in StrangeLoop
 			}
 		};
 
@@ -102,6 +107,9 @@ LNX_SampleBank{
 		^metaModel;
 	}
 
+	// used in strnagle loop
+	modelValueAction_{|i,model,val,latency,send| metaModels.wrapAt(i)[model].valueAction_(val,latency,send)}
+
 	// find index model
 	geti{|metaModel| ^metaModels.indexOf(metaModel) }
 
@@ -110,6 +118,7 @@ LNX_SampleBank{
 		if (send) {
 			api.sendVP(id++key++"_vp_"++index,'netSetModelVP',index,key,value);
 		};
+		metaDataUpdateFunc.value(this,key);		 // used in StrangeLoop
 	}
 
 	// net reciever of all the 5 methods above
@@ -160,6 +169,9 @@ LNX_SampleBank{
 	ends		{ ^metaModels.collect{|b| b.end.value    } }
 	end_		{|i,value| metaModels[i][\end].value_(value) }
 
+	actualStart {|i| ^this.start(i).min(this.end(i)) }
+	actualEnd   {|i| ^this.start(i).max(this.end(i)) }
+
 	active		{|i| ^metaModels.wrapAt(i)[\active  ].value }
 	actives		{ ^metaModels.collect{|b| b.active.value  } }
 	active_		{|i,value| metaModels[i][\active].value_(value) }
@@ -171,6 +183,10 @@ LNX_SampleBank{
 	bpm			{|i| ^metaModels.wrapAt(i)[\bpm   ].value }
 	bpms		{ ^metaModels.collect{|b| b.bpm.value } }
 	bpm_		{|i,value| metaModels[i][\bpm].value_(value) }
+
+	length		{|i| ^metaModels.wrapAt(i)[\length   ].value }
+	lengths		{ ^metaModels.collect{|b| b.length.value } }
+	length_		{|i,value| metaModels[i][\length].value_(value) }
 
 	url			{|i| ^samples[i].url}
 	urls		{|i| ^samples.collect(_.url)}
@@ -527,7 +543,7 @@ LNX_SampleBank{
 	// get the save list from the new style URL SampleBank
 	getSaveListURL{
 		var saveList;
-		saveList=["SC URL Bank Doc v1.1",title.asSymbol,this.size];
+		saveList=["SC URL Bank Doc v1.2",title.asSymbol,this.size];
 
 		samples.do{|sample,i|
 			saveList=saveList.add(samples[i].url);
@@ -561,10 +577,7 @@ LNX_SampleBank{
 		if (versionString[..14]=="SC URL Bank Doc") {
 			isLoading=true;
 
-
 			if (clear) { this.removeAllSamples }; // carefull with this
-
-
 
 			this.title_(l.popS);
 			n=l.popI;
@@ -580,7 +593,7 @@ LNX_SampleBank{
 	// recursive add each url sample
 	recursiveLoadURL{|n,i,l,version,updateBank=true|
 
-		var metadata, metaModel;
+		var metadata, metaModel, keysToUse;
 
 		studio.flashServerIcon; // gui
 
@@ -588,8 +601,11 @@ LNX_SampleBank{
 
 		metaModel = metaModels.last;  // its the last one added in addURL
 
+		// use version keys to load data
+		if (version <= 1.1) { keysToUse = versionKeys[1.1] } { keysToUse = masterMetaKeys };
+
 		// add metadata
-		masterMetaKeys.do{|key|
+		keysToUse.do{|key|
 			if ((version==1)and:{key==\bpm}) {
 				"Samplebank v1.0 bpm added".postln; // v1 didn't have bpm
 			}{
