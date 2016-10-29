@@ -547,7 +547,10 @@
 				gui[\sampleStartAdaptor].model_(models[\start]);
 				gui[\sampleEndAdaptor].model_(models[\end]);
 				if (gui[\pitch].notNil) { gui[\pitch].model_(models[\pitch]) };
+
 				if (gui[\start].notNil) {gui[\start].model_(models[\start]) };
+				if (gui[\end].notNil) {gui[\end].model_(models[\end]) };
+
 				if (gui[\bpm].notNil) { gui[\bpm].model_(models[\bpm]) };
 				gui[\loop].model_(models[\loop]);
 				if (gui[\velocity].notNil) { gui[\velocity].model_(models[\velocity])};
@@ -556,6 +559,7 @@
 				gui[\samplePosAdaptor2].model_(otherModel[\pos2]);
 				gui[\path].string_(buffer.url);
 				gui[\amp].model_(models[\amp]);
+
 				gui[\percentageComplete].model_(
 					(buffer.models.notNil).if{buffer.models[\percentageComplete]}{-5.asModel});
 				zoom.controlSpec_([ (  (width/16/size).clip(0,1)   ),1,2]);
@@ -575,6 +579,12 @@
 				gui[\sampleEndAdaptor].model_(nil);
 				if (gui[\pitch].notNil) { gui[\pitch].model_(nil) };
 				if (gui[\start].notNil) { gui[\start].model_(nil) };
+
+
+				if (gui[\start].notNil) {gui[\start].model_(nil) };
+				if (gui[\end].notNil) {gui[\end].model_(nil) };
+				gui[\markers] = nil;
+
 				if (gui[\bpm].notNil) { gui[\bpm].model_(nil) };
 				gui[\loop].model_(nil);
 				if (gui[\velocity].notNil) { gui[\velocity].model_(nil)};
@@ -997,6 +1007,31 @@
 					Pen.lineTo(end@11);
 					Pen.fill;
 
+
+					Pen.font_(Font.sansSerif(9));
+
+					models[\markers].do{|x,i|
+						x = x * w / z - ( o * w / z) + 2;
+
+						if ((x>=(-15))&&(x<=w)) { // only draw if in view bounds
+
+							Color(0.8,0.8,1,0.5).set;
+							Pen.moveTo(x@(h-2));
+							Pen.lineTo(x@1);
+							Pen.stroke;
+
+
+
+							if ((x>=start)&&(x<=end)) { // only draw number if in start-end range
+								var rect = Rect(x,h-14,15,12);
+								Pen.fillRect(rect);
+								Color.black.set;
+								Pen.stringCenteredIn((i+1).asString,rect);
+							};
+
+						};
+					};
+
 					// faded start
 					if (start>0) {
 						Color(0,0,0,0.5).set;
@@ -1081,7 +1116,11 @@
 					if ( models[\start].value.inclusivelyBetween(minIndex,maxIndex)) { editModel.value_(0) };
 					if ( models[\end  ].value.inclusivelyBetween(minIndex,maxIndex)) { editModel.value_(1) };
 
-					if (clickCount==2) { editModel.value_(2) };
+					if (clickCount==2) {
+						editModel.value_(2);
+						this.addMarker(selectedSampleNo,index);
+						me.refresh;
+					};
 
 					if (editModel==0) {models[\start].valueAction_(index,0,true)};
 					if (editModel==1) {models[\end  ].valueAction_(index,0,true)};

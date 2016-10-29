@@ -199,7 +199,8 @@ LNX_SampleBank{
 
 	addMarker{|i,pos|
 		var markers = metaModels.wrapAt(i)[\markers];
-		markers = markers.add(pos);
+		if (markers.size>=1000) {^this}; // max 1000 markers
+		markers = markers.add(pos).sort;
 		metaModels.wrapAt(i)[\markers] = markers;
 	}
 	removeMarker{|i,j|
