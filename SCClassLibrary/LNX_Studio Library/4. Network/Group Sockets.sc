@@ -198,7 +198,7 @@ LNX_LANGroup {
 	}
 
 	savePreviousAddrsToPrefs{
-		previousAddrs.collect{|addr| [addr.addr, addr.port]}.asList.flatNoString.savePref("prev_Addrs")
+		previousAddrs.collect{|addr| [addr.hostname, addr.port]}.asList.flatNoString.savePref("prev_Addrs")
 	}
 
 	*loadPreviousAddrsFromPrefs{
