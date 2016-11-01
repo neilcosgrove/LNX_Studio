@@ -45,6 +45,8 @@ LNX_SampleBank{
 	var <>window2,  <zeroBuffer, <>speakerIcon,
 	    <>selectedAction, <>itemAction, <>loadedAction, <>selectMeFunc;
 
+	var <>metaDataUpdateFunc;
+
 	// init the class
 	*initClass {
 		sampleBanks=Set[];
@@ -87,6 +89,7 @@ LNX_SampleBank{
 		[\pitch,\amp,\loop,\start,\end,\active,\velocity,\bpm].do{|key|
 			metaModel[key].action_{|me,val,latency,send,toggle|
 				this.setModelVP(this.geti(metaModel),key,val,latency,send);
+				 metaDataUpdateFunc.value(this,key);		 // used in StrangeLoop
 			}
 		};
 
@@ -173,6 +176,8 @@ LNX_SampleBank{
 	urls		{|i| ^samples.collect(_.url)}
 
 	numFrames{|i| ^this.sample(i).numFrames }
+
+	duration{|i| ^this.sample(i).duration }
 
 	markers { ^metaModels.collect( _.markers ) }
 
