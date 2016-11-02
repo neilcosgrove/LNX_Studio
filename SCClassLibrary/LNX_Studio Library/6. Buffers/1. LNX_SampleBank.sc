@@ -29,23 +29,24 @@ q.samples
 
 LNX_SampleBank{
 
-	classvar >network, <sampleBanks, <masterMeta, <masterMetaKeys, <versionKeys;
+	classvar >network, <sampleBanks, <masterMeta, <versionKeys;
 	classvar >updateFuncs, >clipboard, >studio;
 	classvar <waitingToEmptyTrash = false;
+	classvar <maxNoMarkers = 1000;
 
-	var <api, <id;
+	var <api, 			<id;
 
 	var <server,		<>updateFunc,		<freed=false,
 	    <samples,		<metaModels, 		<otherModels,
 	    <>title="",		<isLoading=false;
 
-	var <window, <guiList, <selectedSampleNo=0, <lastSynth,
-	    <task, <lastModel, follow, iModel, >selectSampleFuncs;
+	var <window, 		<guiList, 			<selectedSampleNo=0,
+		<lastSynth,		<task, 				<lastModel,
+		follow, 		iModel, 			>selectSampleFuncs;
 
-	var <>window2,  <zeroBuffer, <>speakerIcon,
-	    <>selectedAction, <>itemAction, <>loadedAction, <>selectMeFunc;
-
-	var <>metaDataUpdateFunc;
+	var <>window2,		<zeroBuffer,		<>speakerIcon,
+		<>itemAction,	<>loadedAction,		<>selectedAction,
+		<>selectMeFunc,	<>metaDataUpdateFunc;
 
 	// init the class
 	*initClass {
@@ -54,23 +55,27 @@ LNX_SampleBank{
 
 		// do not add to this metadata without changing the saveList
 		masterMeta = (
-			name:		"",     // rename sample
-			pitch:		60.0,   // nearest pitch
-			amp:		1,      // adjust amp
-			loop:		0,      // loop sample
-			start:		0,      // start frame
-			end:		1,      // end frame (1 is end of sample)
-			active:		1,      // on/off (mute)
-			velocity: 	100,	// nearest velocity
-			markers: 	[],		// list of markers
-			bpm:		120,	// the bpm
-			length:		64		// the length of the loop in beats
+			name:				"",     // rename sample
+			pitch:				60.0,   // nearest pitch
+			amp:				1,      // adjust amp
+			loop:				0,      // loop sample
+			start:				0,      // start frame
+			end:				1,      // end frame (1 is end of sample)
+			active:				1,      // on/off (mute)
+			velocity: 			100,	// nearest velocity
+			markers: 			[],		// list of all markers
+			enabledMarkers:		[],		// all markers >start && <end   (not saved)
+			disabledMarkers:	[],		// all markers <=start || >=end (not saved)
+			workingMakers:      [],     // start ++ enabledMarkers ++ end
+			workingDur:         [],     // and their durations
+			bpm:				120,	// the bpm
+			length:				64		// the length of the loop in beats
 		);
 
-		masterMetaKeys = masterMeta.keys.asArray.sort; // for saving & loading
-
+		// metadata & order data saved
 		versionKeys = ();
-		versionKeys[1.1] = [\active, \amp, \bpm, \end, \loop, \markers, \name, \pitch, \start, \velocity];
+		versionKeys[1.1] = #[\active, \amp, \bpm, \end, \loop, \markers, \name, \pitch, \start, \velocity];
+		versionKeys[1.2] = #[\active, \amp, \bpm, \end, \length, \loop, \markers, \name, \pitch, \start, \velocity]
 
 	}
 
@@ -79,29 +84,37 @@ LNX_SampleBank{
 		var metaModel = ();
 		var otherModel = ();
 
-		metaModel[\name    ] =        "".asModel;            // rename sample
-		metaModel[\pitch   ] =     \midi.asModel;            // nearest pitch
-		metaModel[\amp     ] =      \db6.asModel;            // need to change loading
-		metaModel[\loop    ] =   \switch.asModel;            // loop sample
-		metaModel[\start   ] = \unipolar.asModel;            // start frame
-		metaModel[\end     ] = \unipolar.asModel.value_(1);  // end frame (1 is end of sample)
-		metaModel[\active  ] =   \switch.asModel.value_(1);  // on/off (mute)
-		metaModel[\velocity] = [100,[0,127]].asModel;        // nearest velocity
-		metaModel[\markers ] = [];                           // list of markers (not a model yet)
-		metaModel[\bpm]      = \bpm.asModel;                 // the bpm
-		metaModel[\length]   = \length.asModel;				 // the length of the loop in beats
+		metaModel[\name    ] 		=        "".asModel;            // rename sample
+		metaModel[\pitch   ] 		=     \midi.asModel;            // nearest pitch
+		metaModel[\amp     ] 		=      \db6.asModel;            // need to change loading
+		metaModel[\loop    ] 		=   \switch.asModel;            // loop sample
+		metaModel[\start   ] 		= \unipolar.asModel;            // start frame
+		metaModel[\end     ] 		= \unipolar.asModel.value_(1);  // end frame (1 is end of sample)
+		metaModel[\active  ] 		=   \switch.asModel.value_(1);  // on/off (mute)
+		metaModel[\velocity] 		= [100,[0,127]].asModel;        // nearest velocity
+		metaModel[\markers ] 		= [];                           // list of markers (not a model yet)
+
+		metaModel[\enabledMarkers ]	= [];							// all markers >start && <end   (not saved)
+		metaModel[\disabledMarkers] = [];							// all markers <=start || >=end (not saved)
+		metaModel[\workingMarkers ] = [];							// start ++ enabledMarkers ++ end
+		metaModel[\workingDur     ] = [];							// and their durations
+		metaModel[\firstMarker    ] = 0;							// and their durations
+
+		metaModel[\bpm     ]     	= \bpm.asModel;                 // the bpm
+		metaModel[\length  ]		= \length.asModel;				// the length of the loop in beats
 
 		// network stuff
-		[\pitch,\amp,\loop,\start,\end,\active,\velocity,\bpm,\length].do{|key|
+		#[\pitch,\amp,\loop,\start,\end,\active,\velocity,\bpm,\length].do{|key|
 			metaModel[key].action_{|me,val,latency,send,toggle|
 				this.setModelVP(this.geti(metaModel),key,val,latency,send);
+				if ((key===\start)|| (key===\end)) { this.updateMarkers(this.geti(metaModel)) }; // this will sort as well
 			}
 		};
 
-		otherModel[\pos] = \bipolar.asModel.value_(-1); // -1 is not playing
+		otherModel[\pos]  = \bipolar.asModel.value_(-1); // -1 is not playing
 		otherModel[\pos2] = \bipolar.asModel.value_(-1); // -1 is not playing
 
-		metaModels=metaModels.add(metaModel);
+		metaModels = metaModels.add(metaModel);
 		otherModels=otherModels.add(otherModel);
 
 		^metaModel;
@@ -138,8 +151,8 @@ LNX_SampleBank{
 	notEmpty    { ^(samples.size>0) }
 	isEmpty		{ ^(samples.size<=0) }
 
-	path		{|i|	^samples.wrapAt(i).path }
-	paths		{|i|	^samples.collect(_.path) }
+	path		{|i| ^samples.wrapAt(i).path }
+	paths		{|i| ^samples.collect(_.path) }
 	numChannels {|i| ^samples.wrapAt(i).numChannels}
 	selectedSample{ if (selectedSampleNo.notNil) { ^this.sample(selectedSampleNo) }{ ^nil }}
 
@@ -188,6 +201,10 @@ LNX_SampleBank{
 	lengths		{ ^metaModels.collect{|b| b.length.value } }
 	length_		{|i,value| metaModels[i][\length].value_(value) }
 
+
+	workingMarkers{|i|}
+	workingDur{|i|}
+
 	url			{|i| ^samples[i].url}
 	urls		{|i| ^samples.collect(_.url)}
 
@@ -199,9 +216,10 @@ LNX_SampleBank{
 
 	addMarker{|i,pos|
 		var markers = metaModels.wrapAt(i)[\markers];
-		if (markers.size>=1000) {^this}; // max 1000 markers
-		markers = markers.add(pos).sort;
+		if (markers.size>=maxNoMarkers) {^this}; // no more than max markers
+		markers = markers.add(pos);
 		metaModels.wrapAt(i)[\markers] = markers;
+		this.updateMarkers(i);
 	}
 	removeMarker{|i,j|
 		metaModels.wrapAt(i)[\markers].removeAt(j);
@@ -210,6 +228,33 @@ LNX_SampleBank{
 		metaModels.wrapAt(i)[\markers] = [];
 	}
 
+	guiDeleteMarker{|i,j|
+		this.removeMarker(i,j);
+		this.updateMarkers(i);
+	}
+
+	updateMarkers{|i|
+		var enabled, working;
+		var j       = i.wrap(0,this.size.asInt-1);
+		var markers = metaModels[j][\markers];
+		var start   = this.actualStart(i);
+		var end     = this.actualEnd(i);
+		markers     = markers.sort;
+		metaModels[j][\markers]         = markers;
+		enabled		=  markers.select{|marker| (marker> start) && (marker< end) };
+		metaModels[j][\enabledMarkers]  = enabled;
+		metaModels[j][\disabledMarkers] = markers.select{|marker| (marker<=start) || (marker>=end) };
+		working		= [start]++enabled++end;
+		metaModels[j][\workingMarkers]  = working.drop(-1);  // i may drop the drop(-1). i might need end pos
+		metaModels[j][\workingDur]      = working.differentiate.drop(1);
+
+		metaModels[j][\firstMarker]		= markers.indexOf(enabled[0]) ? 0;
+
+		metaModels[j][\workingMarkers].postln;
+		metaModels[j][\workingDur].postln;
+	}
+
+
 	// music instrument (give args on desired note and sample bank will return bufNumbers & rate)
 	getMusicInst{|note,root,spo,transpose,static|
 
@@ -217,7 +262,7 @@ LNX_SampleBank{
 
 		if (this.isEmpty||isLoading) { ^[0,0,0,0,0,0,0,0] }; // drop out
 
-		note  = note + transpose - static;		                      // apply trans & static
+		note  = note + transpose - static;		                      	// apply trans & static
 		note  = (note - root) / spo * 12 + root;                        // adjust note to steps/oct
 		i     = this.pitches.indexOfNearest(note);                      // find the nearest sample
 		rate  = (note + (static / spo * 12) - this.pitch(i)).midiratio; // work out rate for note
@@ -548,7 +593,7 @@ LNX_SampleBank{
 
 		samples.do{|sample,i|
 			saveList=saveList.add(samples[i].url);
-			masterMetaKeys.do{|key|
+			versionKeys[1.2].do{|key|
 				if (key==\markers) {
 					saveList=saveList.add( metaModels[i][key].size );
 					saveList=saveList++metaModels[i][key];
@@ -603,7 +648,7 @@ LNX_SampleBank{
 		metaModel = metaModels.last;  // its the last one added in addURL
 
 		// use version keys to load data
-		if (version <= 1.1) { keysToUse = versionKeys[1.1] } { keysToUse = masterMetaKeys };
+		if (version <= 1.1) { keysToUse = versionKeys[1.1] } { keysToUse = versionKeys[1.2] };
 
 		// add metadata
 		keysToUse.do{|key|
@@ -613,6 +658,7 @@ LNX_SampleBank{
 				if (key==\markers) {
 					var size = l.popI;                       // no of markers
 					metaModel[key] = l.popNF(size);          // now pop them all
+					this.updateMarkers(i);
 				}{
 					if (masterMeta[key].isFloat) {           // if master is float
 						metaModel[key].value_(l.popF);      // pop a float

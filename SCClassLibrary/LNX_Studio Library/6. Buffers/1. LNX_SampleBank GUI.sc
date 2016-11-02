@@ -494,6 +494,8 @@
 
 		// -1:doNothing, 0:start, 1:end, 2:addMaker, 3:moveMaker 4:deleteMarker
 		var editModel = [-1,[-1,4,\lin,1]].asModel;
+		var markerIndex = nil;
+		var startOrEnd = \start;
 
 		// used after a buffer has loaded to update gui
 		var updateFunc={|buf|
@@ -583,7 +585,6 @@
 
 				if (gui[\start].notNil) {gui[\start].model_(nil) };
 				if (gui[\end].notNil) {gui[\end].model_(nil) };
-				gui[\markers] = nil;
 
 				if (gui[\bpm].notNil) { gui[\bpm].model_(nil) };
 				gui[\loop].model_(nil);
@@ -765,7 +766,15 @@
 				if (this.notEmpty) {
 					zoom.multipyValueAction_(0.5);
 					if ((follow.value.isFalse) or: ({pos<0 and: {pos2<0}})) {
-						offset.valueAction_( this.start(i) -  (this.start(i)*(zoom.value)));
+						var zoomInSite;
+						if (markerIndex.notNil) { zoomInSite = models[\markers][markerIndex] };
+
+						if (startOrEnd===\start) {
+							zoomInSite = zoomInSite ? this.start(i);
+						}{
+							zoomInSite = zoomInSite ? this.end(i);
+						};
+						offset.valueAction_( zoomInSite -  (zoomInSite*(zoom.value)));
 					}{
 						if (pos2>=0) {
 							offset.value_(pos2 - (zoom.value*pos2));
@@ -989,46 +998,53 @@
 
 					// the start index
 					start = start * w / z - ( o * w / z) + 2;
-					Pen.moveTo(start@(h-2));
-					Pen.lineTo(start@1);
-					Pen.stroke;
-					Pen.moveTo(start@1);
-					Pen.lineTo((start+7)@6);
-					Pen.lineTo(start@11);
-					Pen.fill;
+					if ((start>=0)&&(start<=(w+2))) {
+						Pen.moveTo(start@(h-2));
+						Pen.lineTo(start@1);
+						Pen.stroke;
+						Pen.moveTo(start@1);
+						Pen.lineTo((start+7)@6);
+						Pen.lineTo(start@11);
+						Pen.fill;
+					};
 
 					// the end index
 					end = end * w / z - ( o * w / z) + 2;
-					Pen.moveTo(end@(h-2));
-					Pen.lineTo(end@1);
-					Pen.stroke;
-					Pen.moveTo(end@1);
-					Pen.lineTo((end-7)@6);
-					Pen.lineTo(end@11);
-					Pen.fill;
-
+					if ((end>=0)&&(end<=(w+2+15))) {
+						Pen.moveTo(end@(h-2));
+						Pen.lineTo(end@1);
+						Pen.stroke;
+						Pen.moveTo(end@1);
+						Pen.lineTo((end-7)@6);
+						Pen.lineTo(end@11);
+						Pen.fill;
+					};
 
 					Pen.font_(Font.sansSerif(9));
 
-					models[\markers].do{|x,i|
+					models[\enabledMarkers].do{|x,i|
+						var rect;
 						x = x * w / z - ( o * w / z) + 2;
-
 						if ((x>=(-15))&&(x<=w)) { // only draw if in view bounds
-
-							Color(0.8,0.8,1,0.5).set;
+						if ((i+models[\firstMarker])==markerIndex)
+								{ Color(1,1,1,0.6).set } { Color(0.8,0.8,1,0.5).set };
 							Pen.moveTo(x@(h-2));
 							Pen.lineTo(x@1);
 							Pen.stroke;
+							rect = Rect(x,h-14,15,12);
+							Pen.fillRect(rect);
+							Color.black.set;
+							Pen.stringCenteredIn((i+1).asString,rect);
+						};
+					};
 
-
-
-							if ((x>=start)&&(x<=end)) { // only draw number if in start-end range
-								var rect = Rect(x,h-14,15,12);
-								Pen.fillRect(rect);
-								Color.black.set;
-								Pen.stringCenteredIn((i+1).asString,rect);
-							};
-
+					models[\disabledMarkers].do{|x,i|
+						x = x * w / z - ( o * w / z) + 2;
+						if ((x>=(-15))&&(x<=w)) { // only draw if in view bounds
+						if (i==markerIndex) { Color(1,1,1,0.6).set } { Color(0.8,0.8,1,0.5).set };
+							Pen.moveTo(x@(h-2));
+							Pen.lineTo(x@1);
+							Pen.stroke;
 						};
 					};
 
@@ -1112,18 +1128,37 @@
 					// // -1:doNothing, 0:start, 1:end, 2:addMaker, 3:moveMaker 4:deleteMarker
 
 					editModel.value_(-1);
+					markerIndex = nil;
 
-					if ( models[\start].value.inclusivelyBetween(minIndex,maxIndex)) { editModel.value_(0) };
-					if ( models[\end  ].value.inclusivelyBetween(minIndex,maxIndex)) { editModel.value_(1) };
+					if ( models[\start].value.inclusivelyBetween(minIndex,maxIndex)) {
+						editModel.value_(0);
+						startOrEnd = \start;
+					};
+					if ( models[\end  ].value.inclusivelyBetween(minIndex,maxIndex)) {
+						editModel.value_(1);
+						startOrEnd = \end;
+					};
 
 					if (clickCount==2) {
 						editModel.value_(2);
 						this.addMarker(selectedSampleNo,index);
+						markerIndex = models[\markers].indexOf(index);
 						me.refresh;
+					};
+
+					if (editModel.value == (-1)) {
+						models[\markers].do{|val,i|
+							if (val.inclusivelyBetween(minIndex,maxIndex)) {
+								editModel.value_(3);
+								markerIndex = i;
+							};
+						};
 					};
 
 					if (editModel==0) {models[\start].valueAction_(index,0,true)};
 					if (editModel==1) {models[\end  ].valueAction_(index,0,true)};
+
+					me.refresh;
 
 					moveIDX=0;
 			         // scroll when off edge
@@ -1132,15 +1167,26 @@
 						if ((follow.value.isFalse) or: ({pos<0 and: {pos2<0}})) {
 							if (moveIDX!=0) {
 								offset.valueAction_(offset.value+(zoom.value/20*moveIDX));
-
+								// move start
 								if (editModel==0) {
 									models[\start].valueAction_(models[\start].value+(zoom.value/20*moveIDX));
 								};
-
+								// move end
 								if (editModel==1) {
-									models[\end  ].valueAction_(models[\end  ].value+(zoom.value/20*moveIDX));
+									models[\end  ].valueAction_(models[\end  ].value);
 								};
+								// move marker
+								if (editModel==3) {
+									// this needs networking
+									var index = (models[\markers][markerIndex]+(zoom.value/20*moveIDX)).clip(0,1);
+									models[\markers][markerIndex] = index;
+									models[\markers] = models[\markers];
+									this.updateMarkers(i); // this will sort as well
 
+
+									markerIndex = models[\markers].indexOf(index);
+									me.refresh;
+								};
 							};
 						};
 					}}).start(AppClock);
@@ -1159,11 +1205,23 @@
 					if (x>w) { moveIDX = 1 * ((x-w).abs/40+0.25) };
 					if (editModel==0) {models[\start].valueAction_(index,0,true)};
 					if (editModel==1) {models[\end  ].valueAction_(index,0,true)};
+					if (editModel==3) {
+						// this needs networking
+						models[\markers][markerIndex] = index;
+						models[\markers] = models[\markers];
+						this.updateMarkers(i); // this will sort as well
+						markerIndex = models[\markers].indexOf(index);
+						me.refresh;
+					};
+
+
 				}
 			}
 			.mouseUpAction_{|me,x,y|
 				scrollTask.stop;
 				scrollTask=nil;
+				//markerIndex = nil;
+				//me.refresh;
 			}
 			.mouseWheelAction_{|me,x,y,modifiers, dx, dy|
 				var move;
@@ -1181,14 +1239,28 @@
 			}
 			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 				// 27 -, 24 +, 49 space, 125 down, 126 up, 123 left, 124 right
+				if ((key.isDel) && (markerIndex.notNil)) {
+					if (markerIndex>(models[\markers].size-1)){
+						markerIndex = nil;
+					}{
+						this.guiDeleteMarker(i, markerIndex);
+						me.refresh;
+					};
+				};
+
 				switch (keycode)
-					{27} { if (this.notEmpty) {zoom.multipyValueAction_(2)} }
+					{27} { if (this.notEmpty) { zoom.multipyValueAction_(2) } }
 					{24} {
 						if (this.notEmpty) {
+							var zoomInSite;
 							zoom.multipyValueAction_(0.5);
-							offset.valueAction_(
-								models[\start].value -  ((models[\start].value)*(zoom.value))
-							);
+							if (markerIndex.notNil) { zoomInSite = models[\markers][markerIndex] };
+							if (startOrEnd===\start) {
+								zoomInSite = zoomInSite ? this.start(i);
+							}{
+								zoomInSite = zoomInSite ? this.end(i);
+							};
+							offset.valueAction_( zoomInSite -  (zoomInSite*(zoom.value)));
 						}
 					}
 					{49} { if (this.notEmpty) {this.play(this.geti(models))} }

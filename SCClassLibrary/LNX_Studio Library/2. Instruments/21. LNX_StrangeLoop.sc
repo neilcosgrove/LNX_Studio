@@ -209,6 +209,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	// zoom in on last object moved
+
 	// repitch mode
 	clockInRepitch{|instBeat,absTime3,latency,beat|
 		var length;
@@ -289,7 +291,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		SynthDef("Looper_Play",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
 				gate=1,attackLevel=1|
 
-			var index  = Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame) + startFrame;
+			var index  = startFrame + Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame);
 			var signal = BufRd.ar(1, [bufnumL,bufnumR], index ,loop:0); // mono
 			signal     = signal * EnvGen.ar(Env.new([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,doneAction:2);
 
