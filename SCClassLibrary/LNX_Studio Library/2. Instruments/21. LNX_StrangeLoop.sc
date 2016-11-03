@@ -1,7 +1,19 @@
+///////////////////////
+//  LNX_StrangeLoop //
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+// Possible modes are...
+//	  repitch : sample rate is changed to fit loop length
+//	  marker  : sample rate is fixed and event happen on markers. clip or fold to extend.
+//    grain   : grains are streched to fit loop length & Grain events happen on markers
+//
+// Think about...
+//    clock offset start, one shot, zeroX, tap bpm, stopping sampleRefresh when not following
+//
+// BUGS: !!!
+//
 // focus is lost when adding samples now
 // also funcs called a lot when selecting sample
-
-/////  entering numbers via keyboard to tempo doesn't update LNX_InstrumentTemplate:bpmChange
+//  entering numbers via keyboard to tempo doesn't update LNX_InstrumentTemplate:bpmChange
 
 LNX_StrangeLoop : LNX_InstrumentTemplate {
 
@@ -23,16 +35,15 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	isMixerInstrument{^true}
 	mixerColor		 {^Color(0.75,0.75,1,0.4)} // colour in mixer
 	hasLevelsOut	 {^true}
-
-	peakModel   {^models[6]}
-	volumeModel {^models[2]}
-	outChModel  {^models[4]}
-	soloModel   {^models[0]}
-	onOffModel  {^models[1]}
-	panModel    {^models[5]}
-	sendChModel {^models[7]}
-	sendAmpModel{^models[8]}
-	syncModel   {^models[10]}
+	peakModel   	 {^models[6]}
+	volumeModel 	 {^models[2]}
+	outChModel  	 {^models[4]}
+	soloModel   	 {^models[0]}
+	onOffModel  	 {^models[1]}
+	panModel    	 {^models[5]}
+	sendChModel 	 {^models[7]}
+	sendAmpModel	 {^models[8]}
+	syncModel   	 {^models[10]}
 
 	header {
 		// define your document header details
@@ -138,21 +149,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	}
 
-	getMixerArgs{^[
-		[\amp,           p[ 2].dbamp       ],
-		[\outChannel,    LNX_AudioDevices.getOutChannelIndex(p[4])],
-		[\pan,           p[5]             ],
-		[\sendChannel,  LNX_AudioDevices.getOutChannelIndex(p[7])],
-		[\sendAmp,       p[8].dbamp       ]
-	]}
-
-	updateDSP{|oldP,latency|
-		if (instOutSynth.notNil) {
-			server.sendBundle(latency +! syncDelay,
-				*this.getMixerArgs.collect{|i| [\n_set, instOutSynth.nodeID]++i } );
-		};
-	}
-
 	iInitVars{
 		// user content !!!!!!!
 		sampleBank = LNX_SampleBank(server,apiID:((id++"_url_").asSymbol))
@@ -165,19 +161,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 					{models[11].dependantsPerform(\items_,bank.names)}.defer;
 				}
 				.metaDataUpdateFunc_{|me,model|
-					var sampleIndex=sampleBank.selectedSampleNo;  // sample used in bank
-					if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
-					if ((model==\start)||(model==\end)) {
-						var startRatio  = sampleBank.actualStart(sampleIndex);	// start pos ratio
-						var endRatio    = sampleBank.actualEnd  (sampleIndex);	// end   pos ratio
-						var durRatio    = endRatio - startRatio;				// dur ratio
-						var duration	= sampleBank.duration   (sampleIndex) * durRatio;
-						var bpm			= sampleBank.bpm		(sampleIndex);  // use the bpm of the sample
-						var length      = duration / ((60/bpm)/24*3); // to work out number of beats
-						sampleBank.modelValueAction_(sampleIndex,\length,length,send:false);
-						relaunch = true; // modelValueAction_ may do a relaunch as well but not always
-					};
-					if (model==\length) { relaunch = true };
+					if (mode===\repitch) { this.updateRepitch(model) };
 				}
 				.title_("");
 
@@ -186,9 +170,22 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	}
 
-	// **************************************************************************************************//
-	// **************************************************************************************************//
-	// **************************************************************************************************//
+	// mode selecting /////////////////////////////////////////////////////////////////////////////////////////
+
+	// clock in, select mode
+	clockIn3{|instBeat,absTime3,latency,beat|
+		if (mode===\repitch) { this.clockInRepitch(instBeat,absTime3,latency,beat); ^this };
+	}
+
+	// and these events need to happen with latency
+
+	clockStop {|latency|
+		if (mode===\repitch) { this.stopBufferRepitch(latency); ^this };
+	}
+
+	clockPause{|latency|
+		if (mode===\repitch) { this.stopBufferRepitch(latency); ^this };
+	}
 
 	// all these events must happen on the clock else sample playback will drift
 	// should maintain sample accurate playback. to test
@@ -198,121 +195,26 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	clockPlay	{ relaunch = true }
 	jumpTo   	{ relaunch = true }
 
-	// and these events need to happen with latency
-
-	// clock in, select mode
-	clockIn3{|instBeat,absTime3,latency,beat|
-		if (mode===\repitch) { this.clockInRepitch(instBeat,absTime3,latency,beat); ^this };
-	}
-	clockStop {|latency| this.stopBuffer(latency) }
-	clockPause{|latency| this.stopBuffer(latency) }
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	// zoom in on last object moved
-
-	// repitch mode
-	clockInRepitch{|instBeat,absTime3,latency,beat|
-		var length;
-		var sampleIndex=p[11];						  // sample used in bank
-		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
-		if (this.isOff) { ^this };                    // inst is off exception
-		beat   = instBeat/3; 					      // use inst beat at slower rate
-		length = sampleBank.length(sampleIndex);      // lenth of loop in (n) beats
-
-		// pos index (all the time for the moment)
-		if (instBeat%2==0) {
-			var startRatio  = sampleBank.actualStart(sampleIndex);	// start pos ratio
-			var endRatio    = sampleBank.actualEnd  (sampleIndex);	// end   pos ratio
-			var durRatio    = endRatio - startRatio;				// dur ratio
-			var offsetRatio = durRatio * (beat%length) / length;		// offset in frames
-			// is this just drawing the line?
-			sampleBank.otherModels[sampleIndex][\pos].valueAction_(startRatio+offsetRatio,latency +! syncDelay);
-		};
-
-		// launch at start pos or relaunch sample if needed
-		if (relaunch or:{beat % length==0}) {
-			var numFrames, bufferL, bufferR, duration, rate, offset, startFrame, endFrame, durFrame, attackLevel;
-			var sample      = sampleBank[sampleIndex];
-			bufferL			= sample.buffer.bufnum(0);          	// this only comes from LNX_BufferArray
-			bufferR			= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
-			numFrames		= sampleBank.numFrames  (sampleIndex);	// total number of frames in sample
-			startFrame 		= sampleBank.actualStart(sampleIndex) * numFrames;	// start pos frame
-			endFrame		= sampleBank.actualEnd  (sampleIndex) * numFrames;	// end pos frame
-			durFrame        = endFrame - startFrame; 							// frames playing for
-			duration		= sampleBank.duration   (sampleIndex) * (durFrame/numFrames); // playing dur in secs
-			rate			= duration / ((studio.absTime)*3*length);// play back rate so it fits in (n) beats
-			offset 			= durFrame * (beat % length) / length;	 // offset in frames
-			attackLevel     = relaunch.if(0,1);						 // fade in if relaunched else no attack
-
-			this.playBuffer(bufferL,bufferR,rate,startFrame+offset,durFrame,attackLevel,latency); // play sample
-
-			relaunch= false; newBPM = false; // stop next stage from happening next time
-			^this;
-		};
-
-		// change pos rate if bpm changed
-		if (newBPM and:{node.notNil}) {
-			var numFrames, duration, rate, startFrame, endFrame, durFrame;
-			numFrames		= sampleBank.numFrames  (sampleIndex); 	// total number of frames in sample
-			startFrame      = sampleBank.actualStart(sampleIndex) * numFrames;	// start pos frame
-			endFrame		= sampleBank.actualEnd  (sampleIndex) * numFrames;	// end pos frame
-			durFrame        = endFrame - startFrame;			 				// frames playing for
-			duration		= sampleBank.duration   (sampleIndex) * (durFrame/numFrames);  // playing dur in secs
-			rate			= duration / ((studio.absTime)*3*length); // play back rate so it fits in (n) beats
-
-			server.sendBundle(latency +! syncDelay,[\n_set, node, \rate, rate]); // change playback rate
-
-			newBPM = false; // stop this from happening next time
-		};
-
-	}
-
-	// play a buffer
-	playBuffer{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,latency|
-
-		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_free", node] )};
-		node = server.nextNodeID;
-
-		server.sendBundle(latency +! syncDelay, ["/s_new", \Looper_Play, node, 0, instGroupID,
-			\outputChannels, this.instGroupChannel,
-			\bufnumL,bufnumL,
-			\bufnumR,bufnumR,
-			\rate,rate,
-			\startFrame,startFrame,
-			\durFrame:durFrame,
-			\attackLevel:attackLevel
-		]);
-
-	}
-
 	*initUGens{|server|
-
-		SynthDef("Looper_Play",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
-				gate=1,attackLevel=1|
-
-			var index  = startFrame + Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame);
-			var signal = BufRd.ar(1, [bufnumL,bufnumR], index ,loop:0); // mono
-			signal     = signal * EnvGen.ar(Env.new([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,doneAction:2);
-
-			DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0
-			OffsetOut.ar(outputChannels,signal); 		 // now send out
-
-		}).send(server);
-
+		this.initUGensRepitch(server);
 	}
 
-	// stop playing buffer
-	stopBuffer{|latency|
-		if (node.notNil) {
-			server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0])
-			//server.sendBundle(latency +! syncDelay, ["/n_free", node] )
+	// mixer synth stuFF /////////////////////////////////////////////////////////////////////////////////////////
+
+	getMixerArgs{^[
+		[\amp,           p[2].dbamp       ],
+		[\outChannel,    LNX_AudioDevices.getOutChannelIndex(p[4])],
+		[\pan,           p[5]             ],
+		[\sendChannel,  LNX_AudioDevices.getOutChannelIndex(p[7])],
+		[\sendAmp,       p[8].dbamp       ]
+	]}
+
+	updateDSP{|oldP,latency|
+		if (instOutSynth.notNil) {
+			server.sendBundle(latency +! syncDelay,
+				*this.getMixerArgs.collect{|i| [\n_set, instOutSynth.nodeID]++i } );
 		};
 	}
-
-	// **************************************************************************************************//
-	// **************************************************************************************************//
-	// **************************************************************************************************//
 
 	// disk i/o /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -349,7 +251,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 						\colors_      : (\on : Color(1,0.5,0),
 									   \numberDown : Color(1,0.5,0)/4),
 						\resoultion_	: 1.5 );
-
 
 		gui[\scrollViewOuter] = MVC_RoundedComView(window,
 									Rect(11,11,thisWidth-22,thisHeight-22-1))
@@ -391,14 +292,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			true,
 			webBrowser,
 			(border2: Color(59/108,65/103,505/692), border1: Color(0,1/103,9/77)),
-			50,
+			200,
 			interface:\strangeLoop
 		);
 
 		// 11. sample
 		MVC_PopUpMenu3(gui[\scrollView], models[11], Rect(20, 340, 112, 17),gui[\menuTheme  ])
 			.items_(sampleBank.names);
-
 
 	}
 

@@ -201,9 +201,8 @@ LNX_SampleBank{
 	lengths		{ ^metaModels.collect{|b| b.length.value } }
 	length_		{|i,value| metaModels[i][\length].value_(value) }
 
-
-	workingMarkers{|i|}
-	workingDur{|i|}
+	workingMarkers{|i| ^metaModels.wrapAt(i)[\workingMarkers] }
+	workingDur    {|i| ^metaModels.wrapAt(i)[\workingDur    ] }
 
 	url			{|i| ^samples[i].url}
 	urls		{|i| ^samples.collect(_.url)}
@@ -233,25 +232,23 @@ LNX_SampleBank{
 		this.updateMarkers(i);
 	}
 
-	updateMarkers{|i|
+	// update metadata on markers.
+	updateMarkers{|i,updateFunc=false|
 		var enabled, working;
 		var j       = i.wrap(0,this.size.asInt-1);
 		var markers = metaModels[j][\markers];
 		var start   = this.actualStart(i);
 		var end     = this.actualEnd(i);
-		markers     = markers.sort;
+		markers     					= markers.sort;
 		metaModels[j][\markers]         = markers;
-		enabled		=  markers.select{|marker| (marker> start) && (marker< end) };
+		enabled							= markers.select{|marker| (marker> start) && (marker< end) };
 		metaModels[j][\enabledMarkers]  = enabled;
 		metaModels[j][\disabledMarkers] = markers.select{|marker| (marker<=start) || (marker>=end) };
-		working		= [start]++enabled++end;
-		metaModels[j][\workingMarkers]  = working.drop(-1);  // i may drop the drop(-1). i might need end pos
+		working							= [start]++enabled++end;
+		metaModels[j][\workingMarkers]  = working.drop(-1);  		// i may drop the drop(-1). i might need end pos
 		metaModels[j][\workingDur]      = working.differentiate.drop(1);
-
 		metaModels[j][\firstMarker]		= markers.indexOf(enabled[0]) ? 0;
-
-		metaModels[j][\workingMarkers].postln;
-		metaModels[j][\workingDur].postln;
+		if (updateFunc) {metaDataUpdateFunc.value(this,\markers)};	// used in StrangeLoop
 	}
 
 

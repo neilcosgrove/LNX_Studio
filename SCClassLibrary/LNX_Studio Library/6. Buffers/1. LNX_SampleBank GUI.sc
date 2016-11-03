@@ -491,11 +491,9 @@
 		var buffer, models, otherModel, size, numChannels,  gui, colors, width, zoom, offset,
 			setVarsFunc, setModelsFunc, selectSampleFunc, lastPlayValue=false,
 			pos=(-1), pos2=(-1), scrollTask, moveIDX=0, status=(-5), mvcWindow;
-
-		// -1:doNothing, 0:start, 1:end, 2:addMaker, 3:moveMaker 4:deleteMarker
-		var editModel = [-1,[-1,4,\lin,1]].asModel;
+		var editMode 	= -1; // -1:doNothing, 0:start, 1:end, 2:addMaker, 3:moveMaker 4:deleteMarker
 		var markerIndex = nil;
-		var startOrEnd = \start;
+		var startOrEnd	= \start;
 
 		// used after a buffer has loaded to update gui
 		var updateFunc={|buf|
@@ -541,23 +539,21 @@
 
 		setVarsFunc.value;
 
-		// set the models (used when selecting differt samples and the gui needs updating)
+		// set the models (used when selecting different samples and the gui needs updating)
 		setModelsFunc={
 			if (this.notEmpty) {
 				// when there are samples in the bank
 				gui[\name].model_(models[\name]);
 				gui[\sampleStartAdaptor].model_(models[\start]);
-				gui[\sampleEndAdaptor].model_(models[\end]);
-				if (gui[\pitch].notNil) { gui[\pitch].model_(models[\pitch]) };
-
-				if (gui[\start].notNil) {gui[\start].model_(models[\start]) };
-				if (gui[\end].notNil) {gui[\end].model_(models[\end]) };
-
-				if (gui[\bpm].notNil) { gui[\bpm].model_(models[\bpm]) };
+				gui[\sampleEndAdaptor  ].model_(models[\end]);
+				if (gui[\pitch   ].notNil) {gui[\pitch   ].model_(models[\pitch   ])};
+				if (gui[\start   ].notNil) {gui[\start   ].model_(models[\start   ])};
+				if (gui[\end     ].notNil) {gui[\end     ].model_(models[\end     ])};
+				if (gui[\bpm     ].notNil) {gui[\bpm     ].model_(models[\bpm     ])};
+				if (gui[\velocity].notNil) {gui[\velocity].model_(models[\velocity])};
+				if (gui[\length  ].notNil) {gui[\length  ].model_(models[\length  ])};
 				gui[\loop].model_(models[\loop]);
-				if (gui[\velocity].notNil) { gui[\velocity].model_(models[\velocity])};
-				if (gui[\length].notNil) { gui[\length].model_(models[\length])};
-				gui[\samplePosAdaptor].model_(otherModel[\pos]);
+				gui[\samplePosAdaptor ].model_(otherModel[\pos ]);
 				gui[\samplePosAdaptor2].model_(otherModel[\pos2]);
 				gui[\path].string_(buffer.url);
 				gui[\amp].model_(models[\amp]);
@@ -566,12 +562,12 @@
 					(buffer.models.notNil).if{buffer.models[\percentageComplete]}{-5.asModel});
 				zoom.controlSpec_([ (  (width/16/size).clip(0,1)   ),1,2]);
 				if (buffer.isLoaded) {
-					gui[\sampleRate].string_((buffer.sampleRate/1000).asString+"kHz");
-					gui[\duration].string_((buffer.duration.round(0.01)).asString+"sec(s)");
+					gui[\sampleRate ].string_((buffer.sampleRate/1000).asString+"kHz");
+					gui[\duration   ].string_((buffer.duration.round(0.01)).asString+"sec(s)");
 					gui[\numChannels].string_((buffer.numChannels).asString);
 				}{
-					gui[\sampleRate].string_("- kHz");
-					gui[\duration].string_("- sec(s)");
+					gui[\sampleRate ].string_("- kHz");
+					gui[\duration   ].string_("- sec(s)");
 					gui[\numChannels].string_("-");
 				};
 			}{
@@ -579,17 +575,13 @@
 				gui[\name].model_("Press search to add samples -->".asModel);
 				gui[\sampleStartAdaptor].model_(nil);
 				gui[\sampleEndAdaptor].model_(nil);
-				if (gui[\pitch].notNil) { gui[\pitch].model_(nil) };
-				if (gui[\start].notNil) { gui[\start].model_(nil) };
-
-
-				if (gui[\start].notNil) {gui[\start].model_(nil) };
-				if (gui[\end].notNil) {gui[\end].model_(nil) };
-
-				if (gui[\bpm].notNil) { gui[\bpm].model_(nil) };
+				if (gui[\pitch   ].notNil) {gui[\pitch   ].model_(nil)};
+				if (gui[\start   ].notNil) {gui[\start   ].model_(nil)};
+				if (gui[\end     ].notNil) {gui[\end     ].model_(nil)};
+				if (gui[\bpm     ].notNil) {gui[\bpm     ].model_(nil)};
+				if (gui[\velocity].notNil) {gui[\velocity].model_(nil)};
+				if (gui[\length  ].notNil) {gui[\length  ].model_(nil)};
 				gui[\loop].model_(nil);
-				if (gui[\velocity].notNil) { gui[\velocity].model_(nil)};
-				if (gui[\length].notNil) { gui[\length].model_(nil)};
 				gui[\samplePosAdaptor].model_(nil);
 				gui[\percentageComplete].model_(-5.asModel);
 				gui[\samplePosAdaptor2].model_(nil);
@@ -689,13 +681,13 @@
 
 		// search the web button
 		if (search) {
-				MVC_FlatButton(gui[\scrollView] ,Rect(546+x, 12, 20, 20),"search")
-					.color_(\up,Color(35/48,35/48,40/48)/3 )
-					.color_(\down,Color(35/48,35/48,40/48)/3 )
-					.color_(\string,Color.white)
-					.rounded_(true)
-					.mode_(\icon)
-					.action_{ webBrowser.open };
+			MVC_FlatButton(gui[\scrollView] ,Rect(546+x, 12, 20, 20),"search")
+				.color_(\up,Color(35/48,35/48,40/48)/3 )
+				.color_(\down,Color(35/48,35/48,40/48)/3 )
+				.color_(\string,Color.white)
+				.rounded_(true)
+				.mode_(\icon)
+				.action_{ webBrowser.open };
 		};
 
 		// up
@@ -942,7 +934,7 @@
 				Pen.stroke;
 
 				if (this.notEmpty) {
-					var sD; // should lead to LNX_BufferArray.sampleData
+					var sampleData; // sampleData, should lead to LNX_BufferArray.sampleData
 					var z = zoom.value;
 					var o = offset.value;
 					var w2= z/w*size;
@@ -953,10 +945,10 @@
 
 					if (buffer.buffer.notNil) {
 
-						// should lead to LNX_BufferArray.sampleData
-						sD=buffer.buffer.sampleData;
+						// sampleData, should lead to LNX_BufferArray.sampleData
+						sampleData=buffer.buffer.sampleData;
 
-						if (sD.notNil) {
+						if (sampleData.notNil) {
 
 							// the wave form
 							Pen.smoothing_(true);
@@ -964,25 +956,16 @@
 							Color(0.7,0.8,1,0.8).set;
 
 							channelsToDraw.do{|channelNo|
-
 								var h4, h3;
 								h4 = h2 / channelsToDraw;
-								if (channelsToDraw==2) {
-									h3 = h2 * ( (channelNo==0).if(0.5,1.5));
-								}{
-									h3 = h2;
-								};
+								if (channelsToDraw==2) { h3 = h2 * ( (channelNo==0).if(0.5,1.5)) }{ h3 = h2 };
+								visualOffset =  (o * size).round(w2*2).asInt; // *2 because w/2 in below do
 
-								// *2 because w/2 in below do
-								visualOffset =  (o * size).round(w2*2);
-
-								Pen.moveTo(2@((sD.atI(visualOffset,
-									numChannels, channelNo) )*h4+h3));
-
-								(w/2).do{|i|
+								Pen.moveTo(2@((sampleData.atInt(visualOffset, numChannels, channelNo) )*h4+h3));
+								(w/2).asInt.do{|i|
 									i=i*2;
 									Pen.lineTo((i+2)@((
-										sD.atI(
+										sampleData.atInt(
 											( i * w2 ) + visualOffset, numChannels, channelNo
 										)
 									)*h4+h3));
@@ -1061,27 +1044,23 @@
 					};
 
 					if(pos>=0) {
-
 						// the playbackIndex index
 						y = pos * w / z - ( o * w / z) + 2;
 						Color.yellow.set;
 						Pen.moveTo(y@1);
 						Pen.lineTo(y@(h-2));
-
 					};
 
 					if(pos2>=0) {
-
 						y = pos2 * w / z - ( o * w / z) + 2;
 						Color.yellow.set;
 						Pen.moveTo(y@1);
 						Pen.lineTo(y@(h-2));
-
 					};
 
 					Pen.stroke;
 
-					sD=nil; // release so it can be freed
+					sampleData=nil; // release so it can be freed
 
 				};
 
@@ -1126,37 +1105,36 @@
 				if (this.notEmpty) {
 
 					// // -1:doNothing, 0:start, 1:end, 2:addMaker, 3:moveMaker 4:deleteMarker
-
-					editModel.value_(-1);
+					editMode    = -1;
 					markerIndex = nil;
 
 					if ( models[\start].value.inclusivelyBetween(minIndex,maxIndex)) {
-						editModel.value_(0);
+						editMode   = 0;
 						startOrEnd = \start;
 					};
 					if ( models[\end  ].value.inclusivelyBetween(minIndex,maxIndex)) {
-						editModel.value_(1);
+						editMode   = 1;
 						startOrEnd = \end;
 					};
 
 					if (clickCount==2) {
-						editModel.value_(2);
+						editMode = 2;
 						this.addMarker(selectedSampleNo,index);
 						markerIndex = models[\markers].indexOf(index);
 						me.refresh;
 					};
 
-					if (editModel.value == (-1)) {
+					if (editMode == (-1)) {
 						models[\markers].do{|val,i|
 							if (val.inclusivelyBetween(minIndex,maxIndex)) {
-								editModel.value_(3);
+								editMode    = 3;
 								markerIndex = i;
 							};
 						};
 					};
 
-					if (editModel==0) {models[\start].valueAction_(index,0,true)};
-					if (editModel==1) {models[\end  ].valueAction_(index,0,true)};
+					if (editMode==0) {models[\start].valueAction_(index,0,true)};
+					if (editMode==1) {models[\end  ].valueAction_(index,0,true)};
 
 					me.refresh;
 
@@ -1168,22 +1146,20 @@
 							if (moveIDX!=0) {
 								offset.valueAction_(offset.value+(zoom.value/20*moveIDX));
 								// move start
-								if (editModel==0) {
+								if (editMode==0) {
 									models[\start].valueAction_(models[\start].value+(zoom.value/20*moveIDX));
 								};
 								// move end
-								if (editModel==1) {
+								if (editMode==1) {
 									models[\end  ].valueAction_(models[\end  ].value);
 								};
 								// move marker
-								if (editModel==3) {
+								if (editMode==3) {
 									// this needs networking
 									var index = (models[\markers][markerIndex]+(zoom.value/20*moveIDX)).clip(0,1);
 									models[\markers][markerIndex] = index;
 									models[\markers] = models[\markers];
-									this.updateMarkers(i); // this will sort as well
-
-
+									this.updateMarkers(i,true); // this will sort as well
 									markerIndex = models[\markers].indexOf(index);
 									me.refresh;
 								};
@@ -1203,13 +1179,13 @@
 					moveIDX=0;
 					if (x<0) { moveIDX = -1 * ((x).abs/40+0.25) };
 					if (x>w) { moveIDX = 1 * ((x-w).abs/40+0.25) };
-					if (editModel==0) {models[\start].valueAction_(index,0,true)};
-					if (editModel==1) {models[\end  ].valueAction_(index,0,true)};
-					if (editModel==3) {
+					if (editMode==0) {models[\start].valueAction_(index,0,true)};
+					if (editMode==1) {models[\end  ].valueAction_(index,0,true)};
+					if (editMode==3) {
 						// this needs networking
 						models[\markers][markerIndex] = index;
 						models[\markers] = models[\markers];
-						this.updateMarkers(i); // this will sort as well
+						this.updateMarkers(i,true); // this will sort as well
 						markerIndex = models[\markers].indexOf(index);
 						me.refresh;
 					};
@@ -1520,9 +1496,8 @@
 + FloatArray {
 
 	// integer index into a flat multichannel FloatArray
-	atI{|index, numChannels=1, channel=0|
-		var index1 = index.asInteger * numChannels + channel;
-		^ this.clipAt(index1 + numChannels);
+	atInt{|index, numChannels=1, channel=0|
+		^ this.clipAt( index * numChannels + channel + numChannels);
 	}
 
 	// simple linear interpolation into a flat multichannel FloatArray
