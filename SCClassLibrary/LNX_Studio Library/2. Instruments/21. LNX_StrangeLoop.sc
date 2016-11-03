@@ -1,6 +1,6 @@
-///////////////////////
-//  LNX_StrangeLoop //
-//////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+// LNX_StrangeLoop //
+////////////////////
 // Possible modes are...
 //	  repitch : sample rate is changed to fit loop length
 //	  marker  : sample rate is fixed and event happen on markers. clip or fold to extend.
@@ -21,7 +21,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	var <relaunch = false, <newBPM = false;
 
-	var <mode = \repitch; // normal, repitch, grains, etc..
+	var <mode = \marker; // normal, repitch, grains, etc..
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -162,6 +162,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				}
 				.metaDataUpdateFunc_{|me,model|
 					if (mode===\repitch) { this.updateRepitch(model) };
+					if (mode===\marker ) { this.updateMarker (model) };
 				}
 				.title_("");
 
@@ -175,16 +176,19 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	// clock in, select mode
 	clockIn3{|instBeat,absTime3,latency,beat|
 		if (mode===\repitch) { this.clockInRepitch(instBeat,absTime3,latency,beat); ^this };
+		if (mode===\marker ) { this.clockInMarker (instBeat,absTime3,latency,beat); ^this };
 	}
 
 	// and these events need to happen with latency
 
 	clockStop {|latency|
 		if (mode===\repitch) { this.stopBufferRepitch(latency); ^this };
+		if (mode===\marker ) { this.stopBufferMarker (latency); ^this };
 	}
 
 	clockPause{|latency|
 		if (mode===\repitch) { this.stopBufferRepitch(latency); ^this };
+		if (mode===\marker ) { this.stopBufferMarker (latency); ^this };
 	}
 
 	// all these events must happen on the clock else sample playback will drift
@@ -197,6 +201,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	*initUGens{|server|
 		this.initUGensRepitch(server);
+		this.initUGensMarker (server);
 	}
 
 	// mixer synth stuFF /////////////////////////////////////////////////////////////////////////////////////////

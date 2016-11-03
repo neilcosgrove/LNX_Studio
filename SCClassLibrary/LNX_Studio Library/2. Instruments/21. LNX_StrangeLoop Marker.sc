@@ -1,11 +1,11 @@
-// ************* //
-// Repitch mode  //
-// ************* //
+// ************ //
+// Marker mode  //
+// ************ //
 
 + LNX_StrangeLoop {
 
 	// repitch mode
-	clockInRepitch{|instBeat,absTime3,latency,beat|
+	clockInMarker{|instBeat,absTime3,latency,beat|
 		var length;
 		var sampleIndex=p[11];						  // sample used in bank
 		if (this.isOff) { ^this };                    // inst is off exception
@@ -38,7 +38,7 @@
 			offset 			= durFrame * (beat % length) / length;	 // offset in frames
 			attackLevel     = relaunch.if(0,1);						 // fade in if relaunched else no attack
 
-			this.playBuffeRepitch(bufferL,bufferR,rate,startFrame+offset,durFrame,attackLevel,latency); // play sample
+			this.playBuffeMarker(bufferL,bufferR,rate,startFrame+offset,durFrame,attackLevel,latency); // play sample
 
 			relaunch= false; newBPM = false; // stop next stage from happening next time
 			^this;
@@ -62,7 +62,7 @@
 	}
 
 	// sample bank has changed...so do this
-	updateRepitch{|model|
+	updateMarker{|model|
 		var sampleIndex=sampleBank.selectedSampleNo;  // sample used in bank
 		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
 		//model.postln;
@@ -80,12 +80,12 @@
 	}
 
 	// play a buffer
-	playBuffeRepitch{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,latency|
+	playBuffeMarker{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,latency|
 
 		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_free", node] )};
 		node = server.nextNodeID;
 
-		server.sendBundle(latency +! syncDelay, ["/s_new", \SLoopRepitch, node, 0, instGroupID,
+		server.sendBundle(latency +! syncDelay, ["/s_new", \SLoopMarker, node, 0, instGroupID,
 			\outputChannels, this.instGroupChannel,
 			\bufnumL,bufnumL,
 			\bufnumR,bufnumR,
@@ -97,9 +97,9 @@
 
 	}
 
-	*initUGensRepitch{|server|
+	*initUGensMarker{|server|
 
-		SynthDef("SLoopRepitch",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
+		SynthDef("SLoopMarker",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
 				gate=1,attackLevel=1|
 
 			var index  = startFrame + Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame);
@@ -114,7 +114,7 @@
 	}
 
 	// stop playing buffer
-	stopBufferRepitch{|latency|
+	stopBufferMarker{|latency|
 		if (node.notNil) {
 			server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0])
 			//server.sendBundle(latency +! syncDelay, ["/n_free", node] )
