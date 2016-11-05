@@ -17,11 +17,9 @@
 
 LNX_StrangeLoop : LNX_InstrumentTemplate {
 
-	var <sampleBank, <webBrowser;
-
-	var <relaunch = false, <newBPM = false;
-
-	var <mode = \marker; // normal, repitch, grains, etc..
+	var <sampleBank,		<webBrowser;
+	var <relaunch = false,	<newBPM = false;
+	var <mode = \marker,	<markerSeq;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -140,6 +138,26 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 					sampleBank.allInterfacesSelect(val,false);
 			}],
 
+			// 12. transpose  -48 to 48
+			[0, [-48,48,\linear,1],  (label_:"Transpose"), midiControl, 12, "Transpose",
+				{|me,val,latency,send|
+					this.setPVPModel(12,val,latency,send);
+			}],
+
+			// 13. fine  -1 to 1
+			[0, [-1,1],  (label_:"Fine"), midiControl, 13, "Fine",
+				{|me,val,latency,send|
+					this.setPVPModel(13,val,latency,send);
+					if (mode===\marker) { this.changeRateMarker };
+			}],
+
+			// 14. clip, fold or wrap
+			[0, [0,2,\linear,1],  (label_:"Fold/Wrap", items_:["1 Shot","Reverse","Repeat"]), midiControl, 14, "Fold/Wrap",
+				{|me,val,latency,send|
+					this.setPVPModel(14,val,latency,send);
+					if (mode===\marker) { this.changeRateMarker };
+			}],
+
 		].generateAllModels;
 
 		// list all parameters you want exluded from a preset change
@@ -169,6 +187,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		// the webBrowsers used to search for new sounds!
 		webBrowser = LNX_WebBrowser(server,sampleBank);
 
+		this.initVarsMarker;
+
 	}
 
 	// mode selecting /////////////////////////////////////////////////////////////////////////////////////////
@@ -191,11 +211,19 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		if (mode===\marker ) { this.stopBufferMarker (latency); ^this };
 	}
 
+
+	bpmChange	{
+		if (mode===\repitch) { newBPM = true; ^this };
+		//if (mode===\marker ) { this.updateVarsMarker; ^this };
+	}
+
 	// all these events must happen on the clock else sample playback will drift
 	// should maintain sample accurate playback. to test
 
+
+
 	updatePOS	{ relaunch = true }
-	bpmChange	{ newBPM   = true }
+
 	clockPlay	{ relaunch = true }
 	jumpTo   	{ relaunch = true }
 
@@ -231,6 +259,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		sampleBank.putLoadListURL( l.popEND("*** END URL Bank Doc ***"));
 		sampleBank.adjustViews;
 		if (sampleBank.size>0) { sampleBank.allInterfacesSelect(0) };
+		this.makeMarkerSeq;
 	}
 
 	iFree{
@@ -250,11 +279,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	// create all the GUI widgets while attaching them to models
 	createWidgets{
 
-		gui[\knob2Theme]=(	\labelFont_   : Font("Helvetica",12),
+		gui[\knobTheme1]=(	\labelFont_   : Font("Helvetica",12),
 						\numberFont_	: Font("Helvetica",12),
 						\numberWidth_ : 0,
-						\colors_      : (\on : Color(1,0.5,0),
-									   \numberDown : Color(1,0.5,0)/4),
+						\colors_      : (\on : Color(0.66,0.66,1),
+									   \numberDown : Color(0.66,0.66,1)/4),
 						\resoultion_	: 1.5 );
 
 		gui[\scrollViewOuter] = MVC_RoundedComView(window,
@@ -304,6 +333,15 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		// 11. sample
 		MVC_PopUpMenu3(gui[\scrollView], models[11], Rect(20, 340, 112, 17),gui[\menuTheme  ])
 			.items_(sampleBank.names);
+
+		// 12. transpose
+		MVC_MyKnob3(gui[\scrollView], models[12], Rect(580, 285, 28, 28),gui[\knobTheme1]).zeroValue_(0);
+
+		// 13. fine
+		MVC_MyKnob3(gui[\scrollView], models[13], Rect(650, 285, 28, 28),gui[\knobTheme1]).zeroValue_(0);
+
+		// 14. fold/wrap
+		MVC_PopUpMenu3(gui[\scrollView], models[14], Rect(565, 345, 112, 17),gui[\menuTheme]);
 
 	}
 

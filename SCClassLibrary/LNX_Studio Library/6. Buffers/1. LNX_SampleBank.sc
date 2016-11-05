@@ -202,7 +202,7 @@ LNX_SampleBank{
 	length_		{|i,value| metaModels[i][\length].value_(value) }
 
 	workingMarkers{|i| ^metaModels.wrapAt(i)[\workingMarkers] }
-	workingDur    {|i| ^metaModels.wrapAt(i)[\workingDur    ] }
+	workingDurs   {|i| ^metaModels.wrapAt(i)[\workingDur    ] }
 
 	url			{|i| ^samples[i].url}
 	urls		{|i| ^samples.collect(_.url)}
@@ -263,7 +263,7 @@ LNX_SampleBank{
 		note  = (note - root) / spo * 12 + root;                        // adjust note to steps/oct
 		i     = this.pitches.indexOfNearest(note);                      // find the nearest sample
 		rate  = (note + (static / spo * 12) - this.pitch(i)).midiratio; // work out rate for note
-		rate  = rate.round(0.00000000001);                              // round it
+		rate  = rate.round(0.0000000001);                               // round it
 		sampleArray = samples[i].buffer;                                // get the bufferArray
 		if (sampleArray.notNil) {
 			left  = sampleArray.bufnum(0);                             // the left buffer

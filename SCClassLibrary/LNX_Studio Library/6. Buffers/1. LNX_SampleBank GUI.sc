@@ -1267,7 +1267,7 @@
 
 			// length
 			gui[\length]=MVC_NumberBox(gui[\scrollView],models[\length], Rect(55, 245, 42, 16))
-				.resoultion_(25)
+				.resoultion_(250)
 				.rounded_(true)
 				.visualRound_(1)
 				.label_("Length (n) beats")
