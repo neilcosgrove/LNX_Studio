@@ -4,8 +4,12 @@
 
 LNX_MarkerEvent {
 	var <>offset, <>startFrame, <>durFrame;
+
 	*new {|offset, startFrame, durFrame| ^super.newCopyArgs(offset, startFrame, durFrame) }
+
 	free { offset = startFrame = durFrame = nil }
+
+	printOn {|stream| stream << this.class.name << "(" << offset << "," << startFrame << "," << durFrame << ")" }
 }
 
 + LNX_StrangeLoop {
@@ -29,71 +33,88 @@ LNX_MarkerEvent {
 
 	// on load is no good, must be on 1st import?
 
-	// this should only happen on 1st import else loopDurBeats could change
+	// this should only happen on 1st import else length could change
 
+	// this isn't called by anthing yet
 	updateVarsMarker{
-		var startRatio, endRatio, durRatio, totalDuration, absTime, loopDurTime, loopDurBeats;
+		var startRatio, endRatio, durRatio, totalDuration, absTime, loopDurTime, length;
 		var sampleIndex=p[11];
 
-		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
+		if (sampleBank[sampleIndex].isNil) { ^this };		 	// no samples loaded in bank exception
 
-		startRatio    = sampleBank.actualStart(sampleIndex); // start pos ratio
-		endRatio      = sampleBank.actualEnd  (sampleIndex); // end   pos ratio
-		durRatio      = endRatio - startRatio;				 // dur ratio
-		totalDuration = sampleBank.duration(sampleIndex);	 // total dur of sample in secs
-		loopDurTime   = totalDuration * durRatio;			 // total dur of loop in secs
-		absTime       = studio.absTime;						 // rate of stuido clock ticks
-		loopDurBeats  = (loopDurTime / absTime / 3).round.asInt;
-		// dur of loop in beats, not using faster x3 clock yet
+		startRatio    = sampleBank.actualStart(sampleIndex);	// start pos ratio
+		endRatio      = sampleBank.actualEnd  (sampleIndex);	// end   pos ratio
+		durRatio      = endRatio - startRatio;					// dur ratio
+		totalDuration = sampleBank.duration(sampleIndex);		// total dur of sample in secs
+		loopDurTime   = totalDuration * durRatio;			 	// total dur of loop in secs
+		absTime       = studio.absTime;							// rate of stuido clock ticks
+		length		  = (loopDurTime / absTime /3).round.asInt;	// dur of loop in beats, on slower clock
 
-		sampleBank.modelValueAction_(sampleIndex,\length,loopDurBeats,send:false);
+		sampleBank.modelValueAction_(sampleIndex,\length,length,send:false); // set length in buffer metadata
 
 		this.makeMarkerSeq;
 
 	}
 
 	makeMarkerSeq{
-		var startRatio, endRatio, durRatio, totalDuration, absTime, loopDurTime, loopDurBeats, loopDurBeats3;
+		var startRatio, endRatio, durRatio, absTime, length, length3;
 		var workingMarkers, workingDurs, numFrames;
 		var sampleIndex=p[11];
 
 		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
 
-		startRatio    = sampleBank.actualStart(sampleIndex);  // start pos ratio
-		absTime       = studio.absTime;						  // rate of stuido clock ticks
-		loopDurBeats  = sampleBank.length(sampleIndex).asInt; // dur of loop in beats, not using faster x3 clock yet
-		loopDurBeats3 = loopDurBeats * 3;					  // this is length of loop in beats on clock3
-		numFrames	  = sampleBank.numFrames  (sampleIndex);  // total number of frames in sample
+		startRatio	= sampleBank.actualStart(sampleIndex);	// start pos ratio
+		endRatio    = sampleBank.actualEnd  (sampleIndex);	// end   pos ratio
+		durRatio    = endRatio - startRatio;				// dur ratio
+		absTime		= studio.absTime;						// rate of stuido clock3 ticks\
+		length 		= sampleBank.length(sampleIndex).asInt;
+		length3		= length * 3;							// this is length of loop in beats on clock3
+		numFrames	= sampleBank.numFrames(sampleIndex);	// total number of frames in sample
 
-		// now i need to put the markers into this seq
-		markerSeq = nil ! loopDurBeats3; // clock dur split up into beats.
 
-		workingMarkers = sampleBank.workingMarkers(sampleIndex).reverse; // ratio of buf len
-		workingDurs    = sampleBank.workingDurs   (sampleIndex).reverse; // ratio of buf len
+		// ***
+		// so this length needs to be shorten some how ??
+		//
+		markerSeq	= nil ! ((length3 * durRatio).round(3).asInt); // this is not a good idea
+
+		//markerSeq	= nil ! length3; // now i need to put the markers into this seq, clock dur split up into beats.
+
+
+
+		workingMarkers = sampleBank.workingMarkers(sampleIndex); // ratio of buf len
+		workingDurs    = sampleBank.workingDurs   (sampleIndex); // ratio of buf len
+
+
+		//workingMarkers = sampleBank.workingMarkers(sampleIndex).reverse; // ratio of buf len
+		//workingDurs    = sampleBank.workingDurs   (sampleIndex).reverse; // ratio of buf len
 
 		// into seq goes:  offset start in sec, startFrame, durFrame
 		workingMarkers.do{|marker,j|
-			var when  		= (marker - startRatio * loopDurBeats3).round(3); // when will it happen from 0 @ start & loopDurBeats3
-			var index  		= when.floor.asInt; // where to put in the seq index
-			var offset		= when.frac;        // what is frac offset from beat
-			var startFrame	= marker * numFrames;
-			var durFrame	= workingDurs[j] * numFrames;
+			var when  		= (marker - startRatio * length3).round(3); // when will it happen from 0 @ start & length3
+			var index  		= when.floor.asInt;							// where to put in the seq index
+			var offset		= when.frac;     							// what is frac offset from beat
+			var startFrame	= (marker * numFrames).asInt;
+			var durFrame	= (workingDurs[j] * numFrames).asInt;
 
 			markerSeq.clipPut(index, LNX_MarkerEvent(offset, startFrame, durFrame));
 
 		};
+
+		~m = markerSeq;
+
 	}
 
 	// repitch mode
 	clockInMarker{|instBeat3,absTime3,latency,beat3|
-		var loopDurBeats3, markerEvent, instBeat;
+		var length3, markerEvent, instBeat;
 		var sampleIndex=p[11];						  // sample used in bank
 		if (this.isOff) { ^this };                    // inst is off exception
 		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
-		instBeat   = instBeat3/3; 					  // use inst beat at slower rate
-		loopDurBeats3 = sampleBank.length(sampleIndex).asInt * 3; // this is length of loop in beats on clock3
+		instBeat = instBeat3/3; 					  // use inst beat at slower rate
+		length3 = sampleBank.length(sampleIndex).asInt * 3; // this is length of loop in beats on clock3
 
-		markerEvent = markerSeq[instBeat3 % loopDurBeats3];
+//		markerEvent = markerSeq[instBeat3 % length3];
+		markerEvent = markerSeq.wrapAt(instBeat3);
 
 		// pos index (all the time for the moment)
 		if (instBeat%2==0) {};
@@ -111,6 +132,8 @@ LNX_MarkerEvent {
 			this.playBuffeMarker(bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,latency);
 				nil;
 			}.sched(markerEvent.offset * absTime3);
+
+			//[instBeat3 % length3, markerEvent].postln;
 
 		};
 
@@ -138,8 +161,9 @@ LNX_MarkerEvent {
 		};
 	}
 
+	// change playback rate
 	changeRateMarker{|latency|
-		server.sendBundle(latency +! syncDelay,[\n_set, node, \rate, (p[12]+p[13]).midiratio.round(0.0000000001)]); // change playback rate
+		server.sendBundle(latency +! syncDelay,[\n_set, node, \rate, (p[12]+p[13]).midiratio.round(0.0000000001)]);
 	}
 
 	// play a buffer
@@ -150,6 +174,7 @@ LNX_MarkerEvent {
 
 		server.sendBundle(latency +! syncDelay, ["/s_new", \SLoopMarker, node, 0, instGroupID,
 			\outputChannels, this.instGroupChannel,
+			\id,id,
 			\bufnumL,bufnumL,
 			\bufnumR,bufnumR,
 			\rate,rate,
@@ -164,7 +189,7 @@ LNX_MarkerEvent {
 	*initUGensMarker{|server|
 
 		SynthDef("SLoopMarker",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
-				gate=1,attackLevel=1, clipMode=0|
+				gate=1,attackLevel=1, clipMode=0, id=0|
 			var signal;
 			var index  = Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio);
 
@@ -178,8 +203,16 @@ LNX_MarkerEvent {
 			DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0
 			OffsetOut.ar(outputChannels,signal);			 // now send out
 
+			SendReply.kr(Impulse.kr(20), '/sIdx', [index], id); // send sample index back to client
+
 		}).send(server);
 
+	}
+
+	sIdx_in_{|index|
+		var sampleIndex = p[11];
+		var numFrames	= sampleBank.numFrames(sampleIndex);	// total number of frames in sample
+		sampleBank.otherModels[sampleIndex][\pos].valueAction_(index/numFrames);
 	}
 
 	// stop playing buffer

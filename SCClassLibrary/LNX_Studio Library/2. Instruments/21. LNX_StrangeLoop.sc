@@ -142,6 +142,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[0, [-48,48,\linear,1],  (label_:"Transpose"), midiControl, 12, "Transpose",
 				{|me,val,latency,send|
 					this.setPVPModel(12,val,latency,send);
+					if (mode===\marker) { this.changeRateMarker };
 			}],
 
 			// 13. fine  -1 to 1
@@ -152,10 +153,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 14. clip, fold or wrap
-			[0, [0,2,\linear,1],  (label_:"Fold/Wrap", items_:["1 Shot","Reverse","Repeat"]), midiControl, 14, "Fold/Wrap",
+			[0, [0,2,\linear,1],  (label_:"Fold/Wrap", items_:["Clip","Fold","Wrap"]), midiControl, 14, "Fold/Wrap",
 				{|me,val,latency,send|
 					this.setPVPModel(14,val,latency,send);
-					if (mode===\marker) { this.changeRateMarker };
 			}],
 
 		].generateAllModels;
@@ -172,6 +172,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		sampleBank = LNX_SampleBank(server,apiID:((id++"_url_").asSymbol))
 				.selectedAction_{|bank,val,send=true|
 					models[11].valueAction_(val,nil,true);
+					if (mode===\marker ) { this.makeMarkerSeq};
 					relaunch = true;
 				}
 				.itemAction_{|bank,items,send=false|
@@ -341,7 +342,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_MyKnob3(gui[\scrollView], models[13], Rect(650, 285, 28, 28),gui[\knobTheme1]).zeroValue_(0);
 
 		// 14. fold/wrap
-		MVC_PopUpMenu3(gui[\scrollView], models[14], Rect(565, 345, 112, 17),gui[\menuTheme]);
+		MVC_PopUpMenu3(gui[\scrollView], models[14], Rect(565, 345, 80, 17),gui[\menuTheme]);
 
 	}
 
