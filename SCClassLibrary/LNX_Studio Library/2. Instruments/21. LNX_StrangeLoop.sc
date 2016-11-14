@@ -20,6 +20,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <sampleBank,		<webBrowser;
 	var <relaunch = false,	<newBPM = false;
 	var <mode = \marker,	<markerSeq;
+	var <lastMarkerEvent,	<repeatNo=0;
+	var <allMakerEvents,    <noteOnNodes;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -153,10 +155,38 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 14. clip, fold or wrap
-			[0, [0,2,\linear,1],  (label_:"Fold/Wrap", items_:["Clip","Fold","Wrap"]), midiControl, 14, "Fold/Wrap",
+			[0, [0,2,\linear,1],  (items_:["Clip","Fold","Wrap"]), midiControl, 14, "Fold/Wrap",
 				{|me,val,latency,send|
 					this.setPVPModel(14,val,latency,send);
 			}],
+
+			// 15. repeat prob
+			[0, [0,100,\lin,0.1,0,"%"],  (label_:"Repeat", numberFunc_:\float1), midiControl, 15, "Repeat",
+				{|me,val,latency,send|
+					this.setPVPModel(15,val,latency,send);
+					//if (mode===\marker) { this.changeRateMarker };
+			}],
+
+			// 16. repeat transpose  -48 to 48
+			[0, [-48,48,\linear,1],  (label_:"R Trans"), midiControl, 16, "R Trans",
+				{|me,val,latency,send|
+					this.setPVPModel(16,val,latency,send);
+			}],
+
+			// 17. repeat amp
+			[1, [0,1],  (label_:"R Amp", numberFunc_:\float2), midiControl, 17, "R Amp",
+				{|me,val,latency,send|
+					this.setPVPModel(17,val,latency,send);
+					//if (mode===\marker) { this.changeRateMarker };
+			}],
+
+			// 18. hold on
+			[1, \switch,  (items_:["Off","Hold On"]), midiControl, 18, "Hold On",
+				{|me,val,latency,send|
+					this.setPVPModel(18,val,latency,send);
+					if (val==0) { this.stopBufferMarker(latency ? (studio.latency)) };
+			}],
+
 
 		].generateAllModels;
 
@@ -190,6 +220,12 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		this.initVarsMarker;
 
+		noteOnNodes = nil ! 128; // note on events store synth nodes so note off event can release them
+
+	}
+
+	iInitMIDI{
+		this.useMIDIPipes;
 	}
 
 	// mode selecting /////////////////////////////////////////////////////////////////////////////////////////
@@ -205,6 +241,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	clockStop {|latency|
 		if (mode===\repitch) { this.stopBufferRepitch(latency); ^this };
 		if (mode===\marker ) { this.stopBufferMarker (latency); ^this };
+		this.stopPlayMarker;
 	}
 
 	clockPause{|latency|
@@ -223,10 +260,10 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 
 
-	updatePOS	{ relaunch = true }
+	updatePOS	{ relaunch = true; this.stopPlayMarker; }
 
 	clockPlay	{ relaunch = true }
-	jumpTo   	{ relaunch = true }
+	jumpTo   	{ relaunch = true; this.stopPlayMarker; }
 
 	*initUGens{|server|
 		this.initUGensRepitch(server);
@@ -332,7 +369,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		);
 
 		// 11. sample
-		MVC_PopUpMenu3(gui[\scrollView], models[11], Rect(20, 340, 112, 17),gui[\menuTheme  ])
+		MVC_PopUpMenu3(gui[\scrollView], models[11], Rect(269, 355, 112, 17),gui[\menuTheme  ])
 			.items_(sampleBank.names);
 
 		// 12. transpose
@@ -343,6 +380,27 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		// 14. fold/wrap
 		MVC_PopUpMenu3(gui[\scrollView], models[14], Rect(565, 345, 80, 17),gui[\menuTheme]);
+
+		// 15. repeat prob
+		MVC_MyKnob3(gui[\scrollView], models[15], Rect(717, 285, 28, 28),gui[\knobTheme1]).zeroValue_(0);
+
+		// 16. repeat trans
+		MVC_MyKnob3(gui[\scrollView], models[16], Rect(717, 226, 28, 28),gui[\knobTheme1]).zeroValue_(0);
+
+		// 17. repeat amp
+		MVC_MyKnob3(gui[\scrollView], models[17], Rect(650, 226, 28, 28),gui[\knobTheme1]).zeroValue_(0);
+
+		// 18. hold on
+		MVC_PopUpMenu3(gui[\scrollView], models[18], Rect(665, 345, 80, 17),gui[\menuTheme]);
+
+		// \newMarkerLength
+		gui[\newMarkerLength]=MVC_StaticText(gui[\scrollView],"", Rect(55, 335, 42, 16))
+			.label_("Length (n) beats")
+			.font_(Font("Helvetica", 11))
+			.color_(\focus,Color.grey(alpha:0))
+			.color_(\string,Color.white)
+			.color_(\typing,Color.yellow)
+			.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 	}
 
