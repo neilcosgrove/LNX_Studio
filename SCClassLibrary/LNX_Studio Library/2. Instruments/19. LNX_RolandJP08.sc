@@ -341,7 +341,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		models[(index+17)].lazyValue_(value, true); // set model, no action
 		p[index+17]=value;                          // set p[]
 
-		api.sendVP(\ccvp++index, \netExtCntIn, index+17, value);  // network it
+		api.sendVP(\ccvp++index, \netExtCntIn, index, value);  // network it
 
 	}
 
