@@ -527,6 +527,7 @@ LNX_SampleBank{
 					this.play(i);
 				}; // play when finished downloading
 				{
+					this.updateMarkers(i); // MAKE MARKERS
 					selectMeFunc.value(i);
 					// used only in scCode at mo
 					if (window2.notNil) {
@@ -535,6 +536,7 @@ LNX_SampleBank{
 				}.defer;  // will this work with many users?
 			};
 			{
+				this.updateMarkers(i); // MAKE MARKERS
 				this.selectSample(i,false,false);
 				// used only in scCode at mo
 				if (window2.notNil) {
