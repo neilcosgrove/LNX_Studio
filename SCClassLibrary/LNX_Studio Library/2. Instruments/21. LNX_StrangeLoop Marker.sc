@@ -3,6 +3,9 @@
 // ************ //
 
 // +++ proll + dark patches + marker metadata ie default, clip or wrap,  rev
+// ** markers aren't updated when deleted or added, only when moved
+// ** make pos lazy driven
+// ** when mouseDown or scrolling reduce fps with lazyFresh
 
 LNX_MarkerEvent {
 	var <>offset, <>startFrame, <>durFrame;
@@ -165,6 +168,9 @@ LNX_MarkerEvent {
 	// sample bank has changed...so do this
 	updateMarker{|model|
 		var sampleIndex=sampleBank.selectedSampleNo;  // sample used in bank
+
+		//var sampleIndex=p[11] bug when we dup with index>0
+
 		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
 		//model.postln;
 		if ((model==\start)||(model==\end)) {
@@ -190,8 +196,18 @@ LNX_MarkerEvent {
 	// this might need a buffer and a voicer
 
 	// still release problems when swapping over from hold or stopping
+	markerPipeIn{|pipe|
 
-	pipeIn{|pipe|
+		if (pipe.isNoteOff) {
+			var note    = pipe.note.asInt;
+			var latency = pipe.latency;
+			var node    = noteOnNodes[note];
+
+			if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]) };
+			noteOnNodes[note] = nil;
+		};
+
+		if (p[18].isTrue) { ^this }; // hold on exception
 
 		if (pipe.isNoteOn ) {
 			var note		= pipe.note.asInt;
@@ -214,15 +230,6 @@ LNX_MarkerEvent {
 				bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency
 			);
 			lastMarkerEvent = markerEvent;
-		};
-
-		if (pipe.isNoteOff) {
-			var note    = pipe.note.asInt;
-			var latency = pipe.latency;
-			var node    = noteOnNodes[note];
-
-			if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]) };
-			noteOnNodes[note] = nil;
 		};
 
 	}
