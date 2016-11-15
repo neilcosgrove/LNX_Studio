@@ -521,7 +521,7 @@
 
 	addTextToDialog{|text,flash=true,force=false|
 		if ((network.isConnected)||force) {
-			gui[\userDialog].addText(text,flash)
+			gui[\userDialog].addText(text,flash);
 		};
 	}
 

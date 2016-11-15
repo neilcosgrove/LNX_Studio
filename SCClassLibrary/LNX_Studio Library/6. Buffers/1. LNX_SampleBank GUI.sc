@@ -1141,6 +1141,7 @@
 						this.addMarker(selectedSampleNo,index);
 						markerIndex = models[\markers].indexOf(index);
 						gui[\sampleView].refresh;
+						this.updateMarkers(i,true); // this will sort as well
 					};
 
 					if (editMode == (-1)) {
@@ -1241,6 +1242,7 @@
 					}{
 						this.guiDeleteMarker(i, markerIndex);
 						gui[\sampleView].refresh;
+						this.updateMarkers(i,true); // this will sort as well
 					};
 				};
 

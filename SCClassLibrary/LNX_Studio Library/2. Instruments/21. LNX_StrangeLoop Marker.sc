@@ -143,7 +143,7 @@ LNX_MarkerEvent {
 			};
 		};
 
-		// launch at start pos or relaunch sample if needed
+		// launch at start pos  [ or relaunch sample if needed** no relaunch yet]
 		if (markerEvent.notNil) {
 			var sample      = sampleBank[sampleIndex];
 			var rate		= (p[12]+p[13]+(repeatNo*p[16])).midiratio.round(0.0000000001).clip(0,100000);
@@ -167,12 +167,17 @@ LNX_MarkerEvent {
 
 	// sample bank has changed...so do this
 	updateMarker{|model|
-		var sampleIndex=sampleBank.selectedSampleNo;  // sample used in bank
+		var sampleIndex=p[11];  // sample used in bank
 
-		//var sampleIndex=p[11] bug when we dup with index>0
+		//model.postln;
 
 		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
-		//model.postln;
+
+		if (model==\itemFunc) {};
+
+		if (model==\selectFunc) {
+			this.makeMarkerSeq;
+		};
 		if ((model==\start)||(model==\end)) {
 			this.makeMarkerSeq;
 			relaunch = true; // modelValueAction_ may do a relaunch as well but not always
@@ -191,7 +196,6 @@ LNX_MarkerEvent {
 	changeRateMarker{|latency|
 		server.sendBundle(latency +! syncDelay,[\n_set, node, \rate, (p[12]+p[13]).midiratio.round(0.0000000001)]);
 	}
-
 
 	// this might need a buffer and a voicer
 

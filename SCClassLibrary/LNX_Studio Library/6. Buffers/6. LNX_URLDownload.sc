@@ -202,6 +202,7 @@ LNX_URLDownload {
 				pSymbolKill = ("curl " ++ url.replace(" ", "%20") ++ " -I").asSymbol; // not fs!
 				selector = (url[..23]=="http://www.freesound.org").if(
 												\curlInfoFreeSound,\curlInfo);
+
 				url.perform(selector,path,{|res,pid,argInfo,found|
 					// if curl finished with result = 0
 					if (res==0) {
@@ -502,59 +503,55 @@ LNX_FreeSoundAPIKey{
 		
 	// returns pid
 	curl{|path,action|
-		^("curl \""
-			++ (this.freeSound2URL.replace(" ", "%20"))
-			++ "\" > \""
-			++ (path.replace("%20", " "))
-			++ "\""
-		).unixCmd(action); 
+		^Platform.getURL(
+			this.freeSound2URL.replace(" ", "%20"),
+			path.replace("%20", " "),
+			action); 
 	}
 
 	// get info from the header as an IdentityDictionary (used curl -I)
 	curlInfo{|path,action| 
-		^("curl \""
-			++ (this.replace(" ", "%20"))
-			++ "\" > \""
-			++ (path.replace("%20", " "))
-			++ "\" -I"
-		).unixCmd({|res,pid|
-			var info = IdentityDictionary[];
-			var list = path.loadList;
-			var found = true;
-			
-			list	.collect{|s| s.split($:)}
-				.select {|s| s.size>=2}
-				.do     {|l|
-					var value = l[1..].join($:);
-					// this should always be true, but not tested
-					if (value[0]==($ )) { value = value[1..] };
-					// convert to int or symbol
-					if (value.asInt.asString==value) {
-						value = value.asInt
-					}{ 
-						if (value.asFloat.asString==value) { value = value.asFloat};
-					}; 
-					// add it to the IdentityDictionary
-					info[l[0].toLower.asSymbol] = value;
-				};
-			
-			// test for not found
-			list	.collect{|s| s.split($:)}
-				.select {|s| s.size==1}
-				.do{|item|
-				item=item[0];
-					if (item.contains("HTTP")) {
-						if (item.contains("404")) {
-							found = false; // 404 error
-						};
-					};	
-				};
-			
-			if (info.isEmpty) { found = false };
-			
-			action.value(res,pid,info,found);
-			
-		}); 
+		^Platform.getURLInfo(
+			this.replace(" ", "%20"),
+			path.replace("%20", " "),
+			{|res,pid|
+				var info = IdentityDictionary[];
+				var list = path.loadList;
+				var found = true;
+				
+				list	.collect{|s| s.split($:)}
+					.select {|s| s.size>=2}
+					.do     {|l|
+						var value = l[1..].join($:);
+						// this should always be true, but not tested
+						if (value[0]==($ )) { value = value[1..] };
+						// convert to int or symbol
+						if (value.asInt.asString==value) {
+							value = value.asInt
+						}{ 
+							if (value.asFloat.asString==value) { value = value.asFloat};
+						}; 
+						// add it to the IdentityDictionary
+						info[l[0].toLower.asSymbol] = value;
+					};
+				
+				// test for not found
+				list.collect{|s| s.split($:)}
+					.select {|s| s.size==1}
+					.do{|item|
+						item=item[0];
+						if (item.contains("HTTP")) {
+							if (item.contains("404")) {
+								found = false; // 404 error
+							};
+						};	
+					};
+				
+				if (info.isEmpty) { found = false };
+				
+				action.value(res,pid,info,found);
+				
+			}); 
 	}
 	
 	// FreeSound Support ////////////////////////////////////////////////////////////////////
