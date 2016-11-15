@@ -20,6 +20,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <sampleBank,		<webBrowser;
 	var <relaunch = false,	<newBPM = false;
 	var <mode = \marker,	<markerSeq;
+	var <lastMarkerEvent,	<repeatNo=0;
+	var <allMakerEvents,    <noteOnNodes;
+	var <sequencer,			<seqOutBuffer;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -153,10 +156,42 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 14. clip, fold or wrap
-			[0, [0,2,\linear,1],  (label_:"Fold/Wrap", items_:["Clip","Fold","Wrap"]), midiControl, 14, "Fold/Wrap",
+			[0, [0,2,\linear,1],  (items_:["Clip","Fold","Wrap"]), midiControl, 14, "Fold/Wrap",
 				{|me,val,latency,send|
 					this.setPVPModel(14,val,latency,send);
 			}],
+
+			// 15. repeat prob
+			[0, [0,100,\lin,0.1,0,"%"],  (label_:"Repeat", numberFunc_:\float1), midiControl, 15, "Repeat",
+				{|me,val,latency,send|
+					this.setPVPModel(15,val,latency,send);
+					//if (mode===\marker) { this.changeRateMarker };
+			}],
+
+			// 16. repeat transpose  -48 to 48
+			[0, [-48,48,\linear,1],  (label_:"R Trans"), midiControl, 16, "R Trans",
+				{|me,val,latency,send|
+					this.setPVPModel(16,val,latency,send);
+			}],
+
+			// 17. repeat amp
+			[1, [0,1],  (label_:"R Amp", numberFunc_:\float2), midiControl, 17, "R Amp",
+				{|me,val,latency,send|
+					this.setPVPModel(17,val,latency,send);
+					//if (mode===\marker) { this.changeRateMarker };
+			}],
+
+			// 18. hold on
+			[1, \switch,  (items_:["Sequncer","Play Loop"]), midiControl, 18, "Hold On",
+				{|me,val,latency,send|
+					this.setPVPModel(18,val,latency,send);
+					if (val==0) {
+						this.stopBufferMarker(latency ? (studio.latency))
+					}{
+						seqOutBuffer.releaseAll(latency ? studio.actualLatency)
+					};
+			}],
+
 
 		].generateAllModels;
 
@@ -166,6 +201,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		autoExclusion=[];
 
 	}
+
 
 	iInitVars{
 		// user content !!!!!!!
@@ -188,26 +224,59 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		// the webBrowsers used to search for new sounds!
 		webBrowser = LNX_WebBrowser(server,sampleBank);
 
+		sequencer = LNX_PianoRollSequencer(id++\pR)
+			.pipeOutAction_{|pipe|
+				if (this.isOff.not) {seqOutBuffer.pipeIn(pipe)};
+			}
+			.releaseAllAction_{ seqOutBuffer.releaseAll(studio.actualLatency) }
+			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
+				//keyboardView.view.keyDownAction.value(me,char, modifiers, unicode, keycode, key)
+			}
+			.keyUpAction_{|me, char, modifiers, unicode, keycode, key|
+				//.view.keyUpAction.value(me, char, modifiers, unicode, keycode, key)
+			}
+			.recordFocusAction_{
+				//keyboardView.focus
+			};
+
 		this.initVarsMarker;
 
+		noteOnNodes = nil ! 128; // note on events store synth nodes so note off event can release them
+
 	}
+
+	iInitMIDI{
+		this.useMIDIPipes;
+		seqOutBuffer  = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromSequencerBuffer(pipe) };
+	}
+
+	fromSequencerBuffer{|pipe| this.markerPipeIn(pipe) }
+
+	pipeIn{|pipe| this.markerPipeIn(pipe) }
 
 	// mode selecting /////////////////////////////////////////////////////////////////////////////////////////
 
 	// clock in, select mode
 	clockIn3{|instBeat,absTime3,latency,beat|
+		if (p[18].isFalse) { sequencer.do(_.clockIn3(beat,absTime,latency,beat)) };
 		if (mode===\repitch) { this.clockInRepitch(instBeat,absTime3,latency,beat); ^this };
 		if (mode===\marker ) { this.clockInMarker (instBeat,absTime3,latency,beat); ^this };
+
 	}
 
 	// and these events need to happen with latency
 
 	clockStop {|latency|
+		sequencer.do(_.clockStop(studio.actualLatency));
+		seqOutBuffer.releaseAll(studio.actualLatency);
+		this.stopPlayMarker;
 		if (mode===\repitch) { this.stopBufferRepitch(latency); ^this };
 		if (mode===\marker ) { this.stopBufferMarker (latency); ^this };
 	}
 
 	clockPause{|latency|
+		sequencer.do(_.clockPause(studio.actualLatency));
+		seqOutBuffer.releaseAll(studio.actualLatency);
 		if (mode===\repitch) { this.stopBufferRepitch(latency); ^this };
 		if (mode===\marker ) { this.stopBufferMarker (latency); ^this };
 	}
@@ -223,10 +292,10 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 
 
-	updatePOS	{ relaunch = true }
+	updatePOS	{ relaunch = true; this.stopPlayMarker; }
 
 	clockPlay	{ relaunch = true }
-	jumpTo   	{ relaunch = true }
+	jumpTo   	{ relaunch = true; this.stopPlayMarker; }
 
 	*initUGens{|server|
 		this.initUGensRepitch(server);
@@ -253,25 +322,51 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	// disk i/o /////////////////////////////////////////////////////////////////////////////////////////
 
 	// for your own saving
-	iGetSaveList{ ^sampleBank.getSaveListURL }
+	iGetSaveList{ ^(sampleBank.getSaveListURL) ++ (sequencer.getSaveList) }
 
 	// for your own loading
 	iPutLoadList{|l,noPre,loadVersion,templateLoadVersion|
 		sampleBank.putLoadListURL( l.popEND("*** END URL Bank Doc ***"));
 		sampleBank.adjustViews;
-		if (sampleBank.size>0) { sampleBank.allInterfacesSelect(0) };
+		if (sampleBank.size>0) { sampleBank.allInterfacesSelect(p[11]) };
 		this.makeMarkerSeq;
+		sequencer.putLoadList(l.popEND("*** END OBJECT DOC ***"));
 	}
 
+	// free this
 	iFree{
 		sampleBank.free;
 		webBrowser.free;
+		sequencer.free;
 	}
+
+	// PRESETS /////////////////////////
+
+	// get the current state as a list
+	iGetPresetList{ ^sequencer.iGetPresetList }
+
+	// add a statelist to the presets
+	iAddPresetList{|l| sequencer.iAddPresetList(l.popEND("*** END Score DOC ***").reverse) }
+
+	// save a state list over a current preset
+	iSavePresetList{|i,l| sequencer.iSavePresetList(i,l.popEND("*** END Score DOC ***").reverse) }
+
+	// for your own load preset
+	iLoadPreset{|i,newP,latency| sequencer.iLoadPreset(i) }
+
+	// for your own remove preset
+	iRemovePreset{|i| sequencer.iRemovePreset(i) }
+
+	// for your own removal of all presets
+	iRemoveAllPresets{ sequencer.iRemoveAllPresets }
+
+	// clear the sequencer
+	clearSequencer{ sequencer.clear }
 
 	// GUI ////////////////////////////////////////////////////////////////////////////////////////////
 
 	*thisWidth  {^800}
-	*thisHeight {^400}
+	*thisHeight {^600}
 
 	createWindow{|bounds|
 		this.createTemplateWindow(bounds,Color(0.15,0.15,0.15));
@@ -304,7 +399,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		// the list scroll view
 		gui[\sampleListCompositeView] = MVC_RoundedScrollView(gui[\scrollView],
-				Rect(160, 230, 315, 101))
+				Rect(583, 40, 150, 41))
 			.width_(3.5)
 			.hasBorder_(true)
 			.hasVerticalScroller_(true)
@@ -312,7 +407,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.color_(\background, Color(0.5,0.45,0.45))
 			.color_(\border, Color(0,0,0,0.35));
 
-		gui[\speakerIcon] = MVC_Icon(gui[\scrollViewOuter], Rect(386,210, 18, 18).insetBy(3,3))
+		gui[\speakerIcon] = MVC_Icon(gui[\scrollViewOuter], Rect(716, 17, 12, 12))
 			.icon_(\speaker);
 
 		sampleBank.speakerIcon_(gui[\speakerIcon]);
@@ -327,22 +422,59 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			true,
 			webBrowser,
 			(border2: Color(59/108,65/103,505/692), border1: Color(0,1/103,9/77)),
-			200,
+			0,
 			interface:\strangeLoop
 		);
 
 		// 11. sample
-		MVC_PopUpMenu3(gui[\scrollView], models[11], Rect(20, 340, 112, 17),gui[\menuTheme  ])
+		MVC_PopUpMenu3(gui[\scrollView], models[11], Rect(583, 14, 112, 17), gui[\menuTheme  ])
 			.items_(sampleBank.names);
 
 		// 12. transpose
-		MVC_MyKnob3(gui[\scrollView], models[12], Rect(580, 285, 28, 28),gui[\knobTheme1]).zeroValue_(0);
+		MVC_MyKnob3(gui[\scrollView], models[12], Rect(605, 218, 28, 28), gui[\knobTheme1]).zeroValue_(0);
 
 		// 13. fine
-		MVC_MyKnob3(gui[\scrollView], models[13], Rect(650, 285, 28, 28),gui[\knobTheme1]).zeroValue_(0);
+		MVC_MyKnob3(gui[\scrollView], models[13], Rect(667, 218, 28, 28), gui[\knobTheme1]).zeroValue_(0);
 
 		// 14. fold/wrap
-		MVC_PopUpMenu3(gui[\scrollView], models[14], Rect(565, 345, 80, 17),gui[\menuTheme]);
+		MVC_PopUpMenu3(gui[\scrollView], models[14], Rect(686, 175, 80, 17), gui[\menuTheme]);
+
+		// 15. repeat prob
+		MVC_MyKnob3(gui[\scrollView], models[15], Rect(605, 286, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+
+		// 16. repeat trans
+		MVC_MyKnob3(gui[\scrollView], models[16], Rect(667, 286, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+
+		// 17. repeat amp
+		MVC_MyKnob3(gui[\scrollView], models[17], Rect(725, 286, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+
+		// 18. hold on
+		MVC_PopUpMenu3(gui[\scrollView], models[18], Rect(593, 175, 80, 17), gui[\menuTheme]);
+
+		// \newMarkerLength
+		gui[\newMarkerLength]=MVC_StaticText(gui[\scrollView],"", Rect(703, 107, 42, 16))
+			.label_("Length (n) beats")
+			.font_(Font("Helvetica", 11))
+			.color_(\focus,Color.grey(alpha:0))
+			.color_(\string,Color.white)
+			.color_(\typing,Color.yellow)
+			.color_(\background,Color(46/77,46/79,72/145)/1.5);
+
+		// piano roll
+		sequencer.createWidgets(gui[\scrollView],Rect(3,220,567, 340)
+				,(\selectRect:Color.white,
+				 \background: Color(0.22, 0.22, 0.25),
+				 \velocityBG: Color(0.22, 0.22, 0.25),
+				 \buttons:    Color(0.5,0.5,1),
+				 \boxes:	  Color(0.1, 0.05, 0, 0.5),
+				 \noteBG:     Color(0.5,0.5,1),
+				 \noteBGS:    Color(0.5,0.5,1)*1.5,
+				 \velocity:   Color(0.5,0.5,1),
+				 \noteBS:     Color.black,
+				 \velocitySel:Color(0.5,0.5,1)*1.5
+				),
+				parentViews: [ window]
+				);
 
 	}
 

@@ -501,6 +501,7 @@
 				setVarsFunc.value;
 				setModelsFunc.value;
 				gui[\sampleView].refresh;
+				gui[\posWaveView].refresh;
 			};
 		};
 
@@ -600,6 +601,7 @@
 			setVarsFunc.value;
 			setModelsFunc.value;
 			gui[\sampleView].refresh;
+			gui[\posWaveView].refresh;
 			this.selectSample(i,true);
 			this.updateSelectedSample(i);
 		};
@@ -637,6 +639,7 @@
 		zoom = [1,[ (  (width/16/size).clip(0,1)   ),1,2]].asModel.action_{|me,value|
 			if (this.notEmpty) {
 				gui[\sampleView].refresh;
+				gui[\posWaveView].refresh;
 				gui[\offset].thumbSizeAsRatio_(value);
 				offset.controlSpec_([0,1-value]);
 			};
@@ -644,7 +647,10 @@
 
 		// the offset model
 		offset = [0, [0,1-(zoom.value)]].asModel.action_{
-			if (this.notEmpty) {gui[\sampleView].refresh}
+			if (this.notEmpty) {
+				gui[\sampleView].refresh;
+				gui[\posWaveView].refresh;
+			}
 		};
 
 //******** needs some work
@@ -799,9 +805,12 @@
 					{
 						pos2=value;
 						if (follow.value.isTrue) {
-								offset.value_(pos2 - (zoom.value*pos2));
+							var prevoiusValue = offset.value;
+							offset.value_(pos2 - (zoom.value*pos2));
+							if (prevoiusValue!=offset.value) { gui[\sampleView].refresh };
 						};
-						gui[\sampleView].refresh;
+						gui[\posWaveView].refresh;
+
 						// change the color of the play button
 						if (((value>=0)==lastPlayValue).not) {
 							lastPlayValue = (value>=0);
@@ -832,9 +841,12 @@
 							{
 								pos=value;
 								if (follow.value.isTrue) {
+									var prevoiusValue = offset.value;
 									offset.value_(pos - (zoom.value*pos));
+									if (prevoiusValue!=offset.value) { gui[\sampleView].refresh };
 								};
-								gui[\sampleView].refresh;
+								gui[\posWaveView].refresh;
+
 								// change the color of the play button
 								if (((value>=0)==lastPlayValue).not) {
 									lastPlayValue = (value>=0);
@@ -1043,23 +1055,6 @@
 						Pen.fillRect(Rect(end+1,0,w-end,h));
 					};
 
-					if(pos>=0) {
-						// the playbackIndex index
-						y = pos * w / z - ( o * w / z) + 2;
-						Color.yellow.set;
-						Pen.moveTo(y@1);
-						Pen.lineTo(y@(h-2));
-					};
-
-					if(pos2>=0) {
-						y = pos2 * w / z - ( o * w / z) + 2;
-						Color.yellow.set;
-						Pen.moveTo(y@1);
-						Pen.lineTo(y@(h-2));
-					};
-
-					Pen.stroke;
-
 					sampleData=nil; // release so it can be freed
 
 				};
@@ -1092,6 +1087,30 @@
 					};
 				};
 
+			};
+
+			// the was pos view
+			gui[\posWaveView] = MVC_UserView(gui[\scrollView],Rect(10,50,width,120))
+				.drawFunc_{|me|
+					var w = me.bounds.width;
+					var h = me.bounds.height;
+					var z = zoom.value;
+					var o = offset.value;
+					var y;
+					if(pos>=0) {
+						// the playbackIndex index
+						y = pos * w / z - ( o * w / z) + 2;
+						Color.yellow.set;
+						Pen.moveTo(y@1);
+						Pen.lineTo(y@(h-2));
+					};
+					if(pos2>=0) {
+						y = pos2 * w / z - ( o * w / z) + 2;
+						Color.yellow.set;
+						Pen.moveTo(y@1);
+						Pen.lineTo(y@(h-2));
+					};
+					Pen.stroke;
 			}
 			.mouseDownAction_{|me,x,y,modifiers, buttonNumber, clickCount|
 				var w = me.bounds.width-4;
@@ -1121,7 +1140,7 @@
 						editMode = 2;
 						this.addMarker(selectedSampleNo,index);
 						markerIndex = models[\markers].indexOf(index);
-						me.refresh;
+						gui[\sampleView].refresh;
 					};
 
 					if (editMode == (-1)) {
@@ -1136,7 +1155,7 @@
 					if (editMode==0) {models[\start].valueAction_(index,0,true)};
 					if (editMode==1) {models[\end  ].valueAction_(index,0,true)};
 
-					me.refresh;
+					gui[\sampleView].refresh;
 
 					moveIDX=0;
 			         // scroll when off edge
@@ -1161,7 +1180,8 @@
 									models[\markers] = models[\markers];
 									this.updateMarkers(i,true); // this will sort as well
 									markerIndex = models[\markers].indexOf(index);
-									me.refresh;
+									gui[\sampleView].refresh;
+									gui[\posWaveView].refresh;
 								};
 							};
 						};
@@ -1187,7 +1207,7 @@
 						models[\markers] = models[\markers];
 						this.updateMarkers(i,true); // this will sort as well
 						markerIndex = models[\markers].indexOf(index);
-						me.refresh;
+						gui[\sampleView].refresh;
 					};
 
 
@@ -1197,7 +1217,7 @@
 				scrollTask.stop;
 				scrollTask=nil;
 				//markerIndex = nil;
-				//me.refresh;
+				//gui[\sampleView].refresh;
 			}
 			.mouseWheelAction_{|me,x,y,modifiers, dx, dy|
 				var move;
@@ -1220,7 +1240,7 @@
 						markerIndex = nil;
 					}{
 						this.guiDeleteMarker(i, markerIndex);
-						me.refresh;
+						gui[\sampleView].refresh;
 					};
 				};
 
@@ -1266,7 +1286,7 @@
 				.label_("Edit mode");*/
 
 			// length
-			gui[\length]=MVC_NumberBox(gui[\scrollView],models[\length], Rect(55, 245, 42, 16))
+			gui[\length]=MVC_NumberBox(gui[\scrollView],models[\length], Rect(602, 107, 42, 16))
 				.resoultion_(250)
 				.rounded_(true)
 				.visualRound_(1)
@@ -1278,13 +1298,13 @@
 				.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 			// follow
-			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(562, 200, 50, 20),"Follow", follow)
+			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(663, 144, 50, 20),"Follow", follow)
 				.rounded_(true)
 				.color_(\on,Color(0.5,1,0.5,0.88))
 				.color_(\off,Color(1,1,1,0.88)/4);
 
 			// the sample amp
-			gui[\amp] = MVC_MyKnob3(gui[\scrollView], models[\amp], Rect(496,282, 28, 28),
+			gui[\amp] = MVC_MyKnob3(gui[\scrollView], models[\amp], Rect(722, 218, 28, 28),
 				gui[\knobTheme1])
 				.label_("Amp");
 
@@ -1294,7 +1314,7 @@
 			// .label_("BPM");
 
 
-		gui[\bpm]=MVC_NumberBox(gui[\scrollView],models[\bpm], Rect(55, 290, 42, 16))
+		gui[\bpm]=MVC_NumberBox(gui[\scrollView],models[\bpm], Rect(602, 146, 42, 16))
 			.resoultion_(25)
 			.rounded_(true)
 			.visualRound_(0.01)
@@ -1307,7 +1327,7 @@
 
 			// the sample loop
 			gui[\loop]= MVC_OnOffView(gui[\scrollView], models[\loop],
-										Rect(574, 234, 46, 20),"Loop")
+										Rect(726, 144, 46, 20),"Loop")
 				.rounded_(true)
 				.color_(\on,Color(50/77,61/77,1))
 				.color_(\off,Color(1,1,1,0.88)/4);
@@ -1484,6 +1504,7 @@
 				setVarsFunc.value;
 				setModelsFunc.value;
 				gui[\sampleView].refresh;
+				gui[\posWaveView].refresh;
 			};
 
 		} ];
