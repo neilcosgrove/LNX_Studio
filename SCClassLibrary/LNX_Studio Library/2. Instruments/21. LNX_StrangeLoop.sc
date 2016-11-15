@@ -1,15 +1,25 @@
-// a demo of lnx protocols
-// for teaching purposes
-
-/////  entering numbers via keyboard to tempo doesn't update LNX_InstrumentTemplate:bpmChange
+////////////////////////////////////////////////////////////////////////////////////////////
+// LNX_StrangeLoop //
+////////////////////
+// Possible modes are...
+//	  repitch : sample rate is changed to fit loop length
+//	  marker  : sample rate is fixed and event happen on markers. clip or fold to extend.
+//    grain   : grains are streched to fit loop length & Grain events happen on markers
+//
+// Think about...
+//    clock offset start, one shot, zeroX, tap bpm, stopping sampleRefresh when not following
+//
+// BUGS: !!!
+//
+// focus is lost when adding samples now
+// also funcs called a lot when selecting sample
+//  entering numbers via keyboard to tempo doesn't update LNX_InstrumentTemplate:bpmChange
 
 LNX_StrangeLoop : LNX_InstrumentTemplate {
 
-	var <sampleBank, <webBrowser;
-
-	var <relaunch = false, <newBPM = false;
-
-	var <mode = \repitch; // normal, repitch, grains, etc..
+	var <sampleBank,		<webBrowser;
+	var <relaunch = false,	<newBPM = false;
+	var <mode = \marker,	<markerSeq;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -23,16 +33,15 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	isMixerInstrument{^true}
 	mixerColor		 {^Color(0.75,0.75,1,0.4)} // colour in mixer
 	hasLevelsOut	 {^true}
-
-	peakModel   {^models[6]}
-	volumeModel {^models[2]}
-	outChModel  {^models[4]}
-	soloModel   {^models[0]}
-	onOffModel  {^models[1]}
-	panModel    {^models[5]}
-	sendChModel {^models[7]}
-	sendAmpModel{^models[8]}
-	syncModel   {^models[10]}
+	peakModel   	 {^models[6]}
+	volumeModel 	 {^models[2]}
+	outChModel  	 {^models[4]}
+	soloModel   	 {^models[0]}
+	onOffModel  	 {^models[1]}
+	panModel    	 {^models[5]}
+	sendChModel 	 {^models[7]}
+	sendAmpModel	 {^models[8]}
+	syncModel   	 {^models[10]}
 
 	header {
 		// define your document header details
@@ -121,18 +130,39 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				this.syncDelay_(val);
 			}],
 
-			// 11. repeat
-			[32,[8,128,\lin,8],  (label_:"Repeat (n)"), {|me,val,latency,send|
-				this.setPVPModel(11,val,latency,send);
-				this.bpmChange(latency); // ? also pos change
-				this.updatePOS;
+			// 11. selected sample
+			[0, [0,sampleBank.size,\linear,1],  (label_:"Sample"), midiControl, 11, "Sample",
+				{|me,val,latency,send|
+					this.setPVPModel(11,val,latency,send);
+					relaunch = true;
+					sampleBank.allInterfacesSelect(val,false);
+			}],
+
+			// 12. transpose  -48 to 48
+			[0, [-48,48,\linear,1],  (label_:"Transpose"), midiControl, 12, "Transpose",
+				{|me,val,latency,send|
+					this.setPVPModel(12,val,latency,send);
+					if (mode===\marker) { this.changeRateMarker };
+			}],
+
+			// 13. fine  -1 to 1
+			[0, [-1,1],  (label_:"Fine"), midiControl, 13, "Fine",
+				{|me,val,latency,send|
+					this.setPVPModel(13,val,latency,send);
+					if (mode===\marker) { this.changeRateMarker };
+			}],
+
+			// 14. clip, fold or wrap
+			[0, [0,2,\linear,1],  (label_:"Fold/Wrap", items_:["Clip","Fold","Wrap"]), midiControl, 14, "Fold/Wrap",
+				{|me,val,latency,send|
+					this.setPVPModel(14,val,latency,send);
 			}],
 
 		].generateAllModels;
 
 		// list all parameters you want exluded from a preset change
 		presetExclusion=[0,1];
-		randomExclusion=[0,1];
+		randomExclusion=[0,1,10];
 		autoExclusion=[];
 
 	}
@@ -141,143 +171,84 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		// user content !!!!!!!
 		sampleBank = LNX_SampleBank(server,apiID:((id++"_url_").asSymbol))
 				.selectedAction_{|bank,val,send=true|
-					//model[x].valueAction_(val,....
-					this.relaunchClip
+					models[11].valueAction_(val,nil,true);
+					if (mode===\marker ) { this.makeMarkerSeq};
+					relaunch = true;
 				}
-				.itemAction_{|bank,items,send=false| }
+				.itemAction_{|bank,items,send=false|
+					models[11].controlSpec_([0,sampleBank.size,\linear,1]);
+					{models[11].dependantsPerform(\items_,bank.names)}.defer;
+				}
 				.metaDataUpdateFunc_{|me,model|
-					if (model===\start) { this.relaunchClip };
-					if (model===\end  ) { this.relaunchClip };
+					if (mode===\repitch) { this.updateRepitch(model) };
+					if (mode===\marker ) { this.updateMarker (model) };
 				}
 				.title_("");
 
 		// the webBrowsers used to search for new sounds!
 		webBrowser = LNX_WebBrowser(server,sampleBank);
 
+		this.initVarsMarker;
+
 	}
 
-	// **************************************************************************************************//
-	// **************************************************************************************************//
-	// **************************************************************************************************//
-
-	// all these events must happen on the clock else sample playback will drift
-	// should maintain sample accurate playback. to test
-
-	updatePOS{ relaunch = true }
-	bpmChange{ newBPM   = true }
-	clockPlay{ relaunch = true }
-	jumpTo   { relaunch = true }
-
-	relaunchClip { relaunch = true }
-
-	// and these events need to happen on latency
+	// mode selecting /////////////////////////////////////////////////////////////////////////////////////////
 
 	// clock in, select mode
 	clockIn3{|instBeat,absTime3,latency,beat|
 		if (mode===\repitch) { this.clockInRepitch(instBeat,absTime3,latency,beat); ^this };
-	}
-	clockStop {|latency| this.stopBuffer(latency) }
-	clockPause{|latency| this.stopBuffer(latency) }
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	// ***  DO SWIPE/scoll left/right in sample view
-
-	// repitch mode
-	clockInRepitch{|instBeat,absTime3,latency,beat|
-
-		var sampleIndex=sampleBank.selectedSampleNo;  // sample used in bank
-		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
-		beat = instBeat/3; 							  // use inst beat at slower rate
-
-		// pos index (all the time for the moment)
-		if (instBeat%2==0) {
-			var numFrames	= sampleBank.numFrames(sampleIndex);	// total number of frames in sample
-			var startRatio  = sampleBank.start    (sampleIndex);	// start pos ratio
-			var durRatio    = 1 - startRatio;						// dur ratio
-			var offsetRatio = durRatio * (beat%p[11]) / p[11];		// offset in frames
-			// is this just drawing the line?
-			sampleBank.otherModels[sampleIndex][\pos].valueAction_(startRatio+offsetRatio,latency +! syncDelay);
-		};
-
-		// launch at start pos or relaunch sample if needed
-		if (relaunch or:{beat%p[11]==0}) {
-			var numFrames, bufferL, bufferR, duration, rate, offset, startFrame, durFrame;
-			var sample = sampleBank[sampleIndex];
-
-			bufferL			= sample.buffer.bufnum(0);          	// this only comes from LNX_BufferArray
-			bufferR			= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
-
-			numFrames		= sampleBank.numFrames(sampleIndex); 	// total number of frames in sample
-			startFrame      = sampleBank.start    (sampleIndex)*numFrames; // start pos frame
-			durFrame        = numFrames - startFrame; 				// frames playing for
-			duration		= sampleBank.duration (sampleIndex) * (durFrame/numFrames); // playing dur in secs
-			rate			= duration / ((studio.absTime)*3*p[11]);// play back rate so it fits in (n) beats
-			offset 			= durFrame * (beat%p[11]) / p[11];		// offset in frames
-
-			this.playBuffer(bufferL,bufferR,rate,startFrame+offset,durFrame,latency); // play sample
-
-			relaunch= false; newBPM = false; // stop next stage from happening next time
-			^this;
-		};
-
-		// change pos rate if bpm changed
-		if (newBPM and:{node.notNil}) {
-			var numFrames, duration, rate, startFrame, durFrame;
-
-			numFrames		= sampleBank.numFrames(sampleIndex); 	// total number of frames in sample
-			startFrame      = sampleBank.start    (sampleIndex)*numFrames; // start pos frame
-			durFrame        = numFrames - startFrame;			 	// frames playing for
-			duration		= sampleBank.duration (sampleIndex) * (durFrame/numFrames);  // playing dur in secs
-			rate			= duration / ((studio.absTime)*3*p[11]);// play back rate so it fits in (n) beats
-
-			server.sendBundle(latency +! syncDelay,[\n_set, node, \rate, rate]); // change playback rate
-
-			newBPM = false; // stop this from happening next time
-		};
-
+		if (mode===\marker ) { this.clockInMarker (instBeat,absTime3,latency,beat); ^this };
 	}
 
-	// play a buffer
-	playBuffer{|bufnumL,bufnumR,rate,startFrame,durFrame,latency|
+	// and these events need to happen with latency
 
-		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_free", node] )};
-		node = server.nextNodeID;
-
-		server.sendBundle(latency +! syncDelay, ["/s_new", \Looper_Play, node, 0, instGroupID,
-			\outputChannels, this.instGroupChannel,
-			\bufnumL,bufnumL,
-			\bufnumR,bufnumR,
-			\rate,rate,
-			\startFrame,startFrame,
-			\durFrame:durFrame
-		]);
-
+	clockStop {|latency|
+		if (mode===\repitch) { this.stopBufferRepitch(latency); ^this };
+		if (mode===\marker ) { this.stopBufferMarker (latency); ^this };
 	}
+
+	clockPause{|latency|
+		if (mode===\repitch) { this.stopBufferRepitch(latency); ^this };
+		if (mode===\marker ) { this.stopBufferMarker (latency); ^this };
+	}
+
+
+	bpmChange	{
+		if (mode===\repitch) { newBPM = true; ^this };
+		//if (mode===\marker ) { this.updateVarsMarker; ^this };
+	}
+
+	// all these events must happen on the clock else sample playback will drift
+	// should maintain sample accurate playback. to test
+
+
+
+	updatePOS	{ relaunch = true }
+
+	clockPlay	{ relaunch = true }
+	jumpTo   	{ relaunch = true }
 
 	*initUGens{|server|
-
-		SynthDef("Looper_Play",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100|
-
-			var index  = Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame) + startFrame;
-			var signal = BufRd.ar(1, [bufnumL,bufnumR], index ,loop:0); // mono
-
-			DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0
-			OffsetOut.ar(outputChannels,signal); 		 // now send out
-
-		}).send(server);
-
+		this.initUGensRepitch(server);
+		this.initUGensMarker (server);
 	}
 
-	// stop playing buffer
-	stopBuffer{|latency|
-		// gate stop rather than free
-		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_free", node] )};
-	}
+	// mixer synth stuFF /////////////////////////////////////////////////////////////////////////////////////////
 
-	// **************************************************************************************************//
-	// **************************************************************************************************//
-	// **************************************************************************************************//
+	getMixerArgs{^[
+		[\amp,           p[2].dbamp       ],
+		[\outChannel,    LNX_AudioDevices.getOutChannelIndex(p[4])],
+		[\pan,           p[5]             ],
+		[\sendChannel,  LNX_AudioDevices.getOutChannelIndex(p[7])],
+		[\sendAmp,       p[8].dbamp       ]
+	]}
+
+	updateDSP{|oldP,latency|
+		if (instOutSynth.notNil) {
+			server.sendBundle(latency +! syncDelay,
+				*this.getMixerArgs.collect{|i| [\n_set, instOutSynth.nodeID]++i } );
+		};
+	}
 
 	// disk i/o /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -289,6 +260,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		sampleBank.putLoadListURL( l.popEND("*** END URL Bank Doc ***"));
 		sampleBank.adjustViews;
 		if (sampleBank.size>0) { sampleBank.allInterfacesSelect(0) };
+		this.makeMarkerSeq;
 	}
 
 	iFree{
@@ -308,13 +280,12 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	// create all the GUI widgets while attaching them to models
 	createWidgets{
 
-		gui[\knob2Theme]=(	\labelFont_   : Font("Helvetica",12),
+		gui[\knobTheme1]=(	\labelFont_   : Font("Helvetica",12),
 						\numberFont_	: Font("Helvetica",12),
 						\numberWidth_ : 0,
-						\colors_      : (\on : Color(1,0.5,0),
-									   \numberDown : Color(1,0.5,0)/4),
+						\colors_      : (\on : Color(0.66,0.66,1),
+									   \numberDown : Color(0.66,0.66,1)/4),
 						\resoultion_	: 1.5 );
-
 
 		gui[\scrollViewOuter] = MVC_RoundedComView(window,
 									Rect(11,11,thisWidth-22,thisHeight-22-1))
@@ -356,15 +327,22 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			true,
 			webBrowser,
 			(border2: Color(59/108,65/103,505/692), border1: Color(0,1/103,9/77)),
-			50,
+			200,
 			interface:\strangeLoop
 		);
 
+		// 11. sample
+		MVC_PopUpMenu3(gui[\scrollView], models[11], Rect(20, 340, 112, 17),gui[\menuTheme  ])
+			.items_(sampleBank.names);
 
+		// 12. transpose
+		MVC_MyKnob3(gui[\scrollView], models[12], Rect(580, 285, 28, 28),gui[\knobTheme1]).zeroValue_(0);
 
-		// 11. repeat
-		MVC_MyKnob(gui[\scrollView], models[11],Rect(15,245,30,30),gui[\knob2Theme]);
+		// 13. fine
+		MVC_MyKnob3(gui[\scrollView], models[13], Rect(650, 285, 28, 28),gui[\knobTheme1]).zeroValue_(0);
 
+		// 14. fold/wrap
+		MVC_PopUpMenu3(gui[\scrollView], models[14], Rect(565, 345, 80, 17),gui[\menuTheme]);
 
 	}
 

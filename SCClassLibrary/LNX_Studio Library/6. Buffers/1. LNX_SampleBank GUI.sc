@@ -491,8 +491,9 @@
 		var buffer, models, otherModel, size, numChannels,  gui, colors, width, zoom, offset,
 			setVarsFunc, setModelsFunc, selectSampleFunc, lastPlayValue=false,
 			pos=(-1), pos2=(-1), scrollTask, moveIDX=0, status=(-5), mvcWindow;
-
-		var editModel = [0,[0,3,\lin,1]].asModel; // 0: start, 1:end, 2:addMove maker 3:delete marker
+		var editMode 	= -1; // -1:doNothing, 0:start, 1:end, 2:addMaker, 3:moveMaker 4:deleteMarker
+		var markerIndex = nil;
+		var startOrEnd	= \start;
 
 		// used after a buffer has loaded to update gui
 		var updateFunc={|buf|
@@ -538,32 +539,35 @@
 
 		setVarsFunc.value;
 
-		// set the models (used when selecting differt samples and the gui needs updating)
+		// set the models (used when selecting different samples and the gui needs updating)
 		setModelsFunc={
 			if (this.notEmpty) {
 				// when there are samples in the bank
 				gui[\name].model_(models[\name]);
 				gui[\sampleStartAdaptor].model_(models[\start]);
-				gui[\sampleEndAdaptor].model_(models[\end]);
-				if (gui[\pitch].notNil) { gui[\pitch].model_(models[\pitch]) };
-				gui[\start].model_(models[\start]);
-				if (gui[\bpm].notNil) { gui[\bpm].model_(models[\bpm]) };
+				gui[\sampleEndAdaptor  ].model_(models[\end]);
+				if (gui[\pitch   ].notNil) {gui[\pitch   ].model_(models[\pitch   ])};
+				if (gui[\start   ].notNil) {gui[\start   ].model_(models[\start   ])};
+				if (gui[\end     ].notNil) {gui[\end     ].model_(models[\end     ])};
+				if (gui[\bpm     ].notNil) {gui[\bpm     ].model_(models[\bpm     ])};
+				if (gui[\velocity].notNil) {gui[\velocity].model_(models[\velocity])};
+				if (gui[\length  ].notNil) {gui[\length  ].model_(models[\length  ])};
 				gui[\loop].model_(models[\loop]);
-				if (gui[\velocity].notNil) { gui[\velocity].model_(models[\velocity])};
-				gui[\samplePosAdaptor].model_(otherModel[\pos]);
+				gui[\samplePosAdaptor ].model_(otherModel[\pos ]);
 				gui[\samplePosAdaptor2].model_(otherModel[\pos2]);
 				gui[\path].string_(buffer.url);
 				gui[\amp].model_(models[\amp]);
+
 				gui[\percentageComplete].model_(
 					(buffer.models.notNil).if{buffer.models[\percentageComplete]}{-5.asModel});
 				zoom.controlSpec_([ (  (width/16/size).clip(0,1)   ),1,2]);
 				if (buffer.isLoaded) {
-					gui[\sampleRate].string_((buffer.sampleRate/1000).asString+"kHz");
-					gui[\duration].string_((buffer.duration.round(0.01)).asString+"sec(s)");
+					gui[\sampleRate ].string_((buffer.sampleRate/1000).asString+"kHz");
+					gui[\duration   ].string_((buffer.duration.round(0.01)).asString+"sec(s)");
 					gui[\numChannels].string_((buffer.numChannels).asString);
 				}{
-					gui[\sampleRate].string_("- kHz");
-					gui[\duration].string_("- sec(s)");
+					gui[\sampleRate ].string_("- kHz");
+					gui[\duration   ].string_("- sec(s)");
 					gui[\numChannels].string_("-");
 				};
 			}{
@@ -571,11 +575,13 @@
 				gui[\name].model_("Press search to add samples -->".asModel);
 				gui[\sampleStartAdaptor].model_(nil);
 				gui[\sampleEndAdaptor].model_(nil);
-				if (gui[\pitch].notNil) { gui[\pitch].model_(nil) };
-				gui[\start].model_(nil);
-				if (gui[\bpm].notNil) { gui[\bpm].model_(nil) };
+				if (gui[\pitch   ].notNil) {gui[\pitch   ].model_(nil)};
+				if (gui[\start   ].notNil) {gui[\start   ].model_(nil)};
+				if (gui[\end     ].notNil) {gui[\end     ].model_(nil)};
+				if (gui[\bpm     ].notNil) {gui[\bpm     ].model_(nil)};
+				if (gui[\velocity].notNil) {gui[\velocity].model_(nil)};
+				if (gui[\length  ].notNil) {gui[\length  ].model_(nil)};
 				gui[\loop].model_(nil);
-				if (gui[\velocity].notNil) { gui[\velocity].model_(nil)};
 				gui[\samplePosAdaptor].model_(nil);
 				gui[\percentageComplete].model_(-5.asModel);
 				gui[\samplePosAdaptor2].model_(nil);
@@ -584,6 +590,7 @@
 				gui[\sampleRate].string_("- kHz");
 				gui[\duration].string_("- sec(s)");
 				gui[\numChannels].string_("-");
+
 			}
 		};
 
@@ -674,13 +681,13 @@
 
 		// search the web button
 		if (search) {
-				MVC_FlatButton(gui[\scrollView] ,Rect(546+x, 12, 20, 20),"search")
-					.color_(\up,Color(35/48,35/48,40/48)/3 )
-					.color_(\down,Color(35/48,35/48,40/48)/3 )
-					.color_(\string,Color.white)
-					.rounded_(true)
-					.mode_(\icon)
-					.action_{ webBrowser.open };
+			MVC_FlatButton(gui[\scrollView] ,Rect(546+x, 12, 20, 20),"search")
+				.color_(\up,Color(35/48,35/48,40/48)/3 )
+				.color_(\down,Color(35/48,35/48,40/48)/3 )
+				.color_(\string,Color.white)
+				.rounded_(true)
+				.mode_(\icon)
+				.action_{ webBrowser.open };
 		};
 
 		// up
@@ -751,7 +758,15 @@
 				if (this.notEmpty) {
 					zoom.multipyValueAction_(0.5);
 					if ((follow.value.isFalse) or: ({pos<0 and: {pos2<0}})) {
-						offset.valueAction_( this.start(i) -  (this.start(i)*(zoom.value)));
+						var zoomInSite;
+						if (markerIndex.notNil) { zoomInSite = models[\markers][markerIndex] };
+
+						if (startOrEnd===\start) {
+							zoomInSite = zoomInSite ? this.start(i);
+						}{
+							zoomInSite = zoomInSite ? this.end(i);
+						};
+						offset.valueAction_( zoomInSite -  (zoomInSite*(zoom.value)));
 					}{
 						if (pos2>=0) {
 							offset.value_(pos2 - (zoom.value*pos2));
@@ -919,21 +934,21 @@
 				Pen.stroke;
 
 				if (this.notEmpty) {
-					var sD; // should lead to LNX_BufferArray.sampleData
+					var sampleData; // sampleData, should lead to LNX_BufferArray.sampleData
 					var z = zoom.value;
 					var o = offset.value;
 					var w2= z/w*size;
-					var start = this.start(i);
-					var end = this.end(i);
+					var start = this.actualStart(i);
+					var end = this.actualEnd(i);
 					var y;
 					var visualOffset;
 
 					if (buffer.buffer.notNil) {
 
-						// should lead to LNX_BufferArray.sampleData
-						sD=buffer.buffer.sampleData;
+						// sampleData, should lead to LNX_BufferArray.sampleData
+						sampleData=buffer.buffer.sampleData;
 
-						if (sD.notNil) {
+						if (sampleData.notNil) {
 
 							// the wave form
 							Pen.smoothing_(true);
@@ -941,25 +956,16 @@
 							Color(0.7,0.8,1,0.8).set;
 
 							channelsToDraw.do{|channelNo|
-
 								var h4, h3;
 								h4 = h2 / channelsToDraw;
-								if (channelsToDraw==2) {
-									h3 = h2 * ( (channelNo==0).if(0.5,1.5));
-								}{
-									h3 = h2;
-								};
+								if (channelsToDraw==2) { h3 = h2 * ( (channelNo==0).if(0.5,1.5)) }{ h3 = h2 };
+								visualOffset =  (o * size).round(w2*2).asInt; // *2 because w/2 in below do
 
-								// *2 because w/2 in below do
-								visualOffset =  (o * size).round(w2*2);
-
-								Pen.moveTo(2@((sD.atI(visualOffset,
-									numChannels, channelNo) )*h4+h3));
-
-								(w/2).do{|i|
+								Pen.moveTo(2@((sampleData.atInt(visualOffset, numChannels, channelNo) )*h4+h3));
+								(w/2).asInt.do{|i|
 									i=i*2;
 									Pen.lineTo((i+2)@((
-										sD.atI(
+										sampleData.atInt(
 											( i * w2 ) + visualOffset, numChannels, channelNo
 										)
 									)*h4+h3));
@@ -971,42 +977,90 @@
 
 					};
 
+					Color.white.set;
+
 					// the start index
-					y = start * w / z - ( o * w / z) + 2;
-					Color(0.5,1,0.5).set;
-					Pen.moveTo(y@1);
-					Pen.lineTo(y@(h-2));
-					Pen.stroke;
+					start = start * w / z - ( o * w / z) + 2;
+					if ((start>=0)&&(start<=(w+2))) {
+						Pen.moveTo(start@(h-2));
+						Pen.lineTo(start@1);
+						Pen.stroke;
+						Pen.moveTo(start@1);
+						Pen.lineTo((start+7)@6);
+						Pen.lineTo(start@11);
+						Pen.fill;
+					};
 
 					// the end index
-					y = end * w / z - ( o * w / z) + 2;
-					Color(1,0.5,0.5).set;
-					Pen.moveTo(y@1);
-					Pen.lineTo(y@(h-2));
-					Pen.stroke;
+					end = end * w / z - ( o * w / z) + 2;
+					if ((end>=0)&&(end<=(w+2+15))) {
+						Pen.moveTo(end@(h-2));
+						Pen.lineTo(end@1);
+						Pen.stroke;
+						Pen.moveTo(end@1);
+						Pen.lineTo((end-7)@6);
+						Pen.lineTo(end@11);
+						Pen.fill;
+					};
+
+					Pen.font_(Font.sansSerif(9));
+
+					models[\enabledMarkers].do{|x,i|
+						var rect;
+						x = x * w / z - ( o * w / z) + 2;
+						if ((x>=(-15))&&(x<=w)) { // only draw if in view bounds
+						if ((i+models[\firstMarker])==markerIndex)
+								{ Color(1,1,1,0.6).set } { Color(0.8,0.8,1,0.5).set };
+							Pen.moveTo(x@(h-2));
+							Pen.lineTo(x@1);
+							Pen.stroke;
+							rect = Rect(x,h-14,15,12);
+							Pen.fillRect(rect);
+							Color.black.set;
+							Pen.stringCenteredIn((i+1).asString,rect);
+						};
+					};
+
+					models[\disabledMarkers].do{|x,i|
+						x = x * w / z - ( o * w / z) + 2;
+						if ((x>=(-15))&&(x<=w)) { // only draw if in view bounds
+						if (i==markerIndex) { Color(1,1,1,0.6).set } { Color(0.8,0.8,1,0.5).set };
+							Pen.moveTo(x@(h-2));
+							Pen.lineTo(x@1);
+							Pen.stroke;
+						};
+					};
+
+					// faded start
+					if (start>0) {
+						Color(0,0,0,0.5).set;
+						Pen.fillRect(Rect(0,0,start-1,h));
+					};
+
+					// faded end
+					if (end<w) {
+						Color(0,0,0,0.5).set;
+						Pen.fillRect(Rect(end+1,0,w-end,h));
+					};
 
 					if(pos>=0) {
-
 						// the playbackIndex index
 						y = pos * w / z - ( o * w / z) + 2;
 						Color.yellow.set;
 						Pen.moveTo(y@1);
 						Pen.lineTo(y@(h-2));
-
 					};
 
 					if(pos2>=0) {
-
 						y = pos2 * w / z - ( o * w / z) + 2;
 						Color.yellow.set;
 						Pen.moveTo(y@1);
 						Pen.lineTo(y@(h-2));
-
 					};
 
 					Pen.stroke;
 
-					sD=nil; // release so it can be freed
+					sampleData=nil; // release so it can be freed
 
 				};
 
@@ -1039,16 +1093,50 @@
 				};
 
 			}
-			.mouseDownAction_{|me,x,y|
+			.mouseDownAction_{|me,x,y,modifiers, buttonNumber, clickCount|
 				var w = me.bounds.width-4;
 				var z = zoom.value;
 				var o = offset.value;
 				var index = ((x-2).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
 
+				var minIndex = ((x-10).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
+				var maxIndex = ((x+6 ).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
+
 				if (this.notEmpty) {
 
-					if (editModel==0) {models[\start].valueAction_(index,0,true)};
-					if (editModel==1) {models[\end  ].valueAction_(index,0,true)};
+					// // -1:doNothing, 0:start, 1:end, 2:addMaker, 3:moveMaker 4:deleteMarker
+					editMode    = -1;
+					markerIndex = nil;
+
+					if ( models[\start].value.inclusivelyBetween(minIndex,maxIndex)) {
+						editMode   = 0;
+						startOrEnd = \start;
+					};
+					if ( models[\end  ].value.inclusivelyBetween(minIndex,maxIndex)) {
+						editMode   = 1;
+						startOrEnd = \end;
+					};
+
+					if (clickCount==2) {
+						editMode = 2;
+						this.addMarker(selectedSampleNo,index);
+						markerIndex = models[\markers].indexOf(index);
+						me.refresh;
+					};
+
+					if (editMode == (-1)) {
+						models[\markers].do{|val,i|
+							if (val.inclusivelyBetween(minIndex,maxIndex)) {
+								editMode    = 3;
+								markerIndex = i;
+							};
+						};
+					};
+
+					if (editMode==0) {models[\start].valueAction_(index,0,true)};
+					if (editMode==1) {models[\end  ].valueAction_(index,0,true)};
+
+					me.refresh;
 
 					moveIDX=0;
 			         // scroll when off edge
@@ -1057,15 +1145,24 @@
 						if ((follow.value.isFalse) or: ({pos<0 and: {pos2<0}})) {
 							if (moveIDX!=0) {
 								offset.valueAction_(offset.value+(zoom.value/20*moveIDX));
-
-								if (editModel==0) {
+								// move start
+								if (editMode==0) {
 									models[\start].valueAction_(models[\start].value+(zoom.value/20*moveIDX));
 								};
-
-								if (editModel==1) {
-									models[\end  ].valueAction_(models[\end  ].value+(zoom.value/20*moveIDX));
+								// move end
+								if (editMode==1) {
+									models[\end  ].valueAction_(models[\end  ].value);
 								};
-
+								// move marker
+								if (editMode==3) {
+									// this needs networking
+									var index = (models[\markers][markerIndex]+(zoom.value/20*moveIDX)).clip(0,1);
+									models[\markers][markerIndex] = index;
+									models[\markers] = models[\markers];
+									this.updateMarkers(i,true); // this will sort as well
+									markerIndex = models[\markers].indexOf(index);
+									me.refresh;
+								};
 							};
 						};
 					}}).start(AppClock);
@@ -1082,13 +1179,25 @@
 					moveIDX=0;
 					if (x<0) { moveIDX = -1 * ((x).abs/40+0.25) };
 					if (x>w) { moveIDX = 1 * ((x-w).abs/40+0.25) };
-					if (editModel==0) {models[\start].valueAction_(index,0,true)};
-					if (editModel==1) {models[\end  ].valueAction_(index,0,true)};
+					if (editMode==0) {models[\start].valueAction_(index,0,true)};
+					if (editMode==1) {models[\end  ].valueAction_(index,0,true)};
+					if (editMode==3) {
+						// this needs networking
+						models[\markers][markerIndex] = index;
+						models[\markers] = models[\markers];
+						this.updateMarkers(i,true); // this will sort as well
+						markerIndex = models[\markers].indexOf(index);
+						me.refresh;
+					};
+
+
 				}
 			}
 			.mouseUpAction_{|me,x,y|
 				scrollTask.stop;
 				scrollTask=nil;
+				//markerIndex = nil;
+				//me.refresh;
 			}
 			.mouseWheelAction_{|me,x,y,modifiers, dx, dy|
 				var move;
@@ -1106,14 +1215,28 @@
 			}
 			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 				// 27 -, 24 +, 49 space, 125 down, 126 up, 123 left, 124 right
+				if ((key.isDel) && (markerIndex.notNil)) {
+					if (markerIndex>(models[\markers].size-1)){
+						markerIndex = nil;
+					}{
+						this.guiDeleteMarker(i, markerIndex);
+						me.refresh;
+					};
+				};
+
 				switch (keycode)
-					{27} { if (this.notEmpty) {zoom.multipyValueAction_(2)} }
+					{27} { if (this.notEmpty) { zoom.multipyValueAction_(2) } }
 					{24} {
 						if (this.notEmpty) {
+							var zoomInSite;
 							zoom.multipyValueAction_(0.5);
-							offset.valueAction_(
-								models[\start].value -  ((models[\start].value)*(zoom.value))
-							);
+							if (markerIndex.notNil) { zoomInSite = models[\markers][markerIndex] };
+							if (startOrEnd===\start) {
+								zoomInSite = zoomInSite ? this.start(i);
+							}{
+								zoomInSite = zoomInSite ? this.end(i);
+							};
+							offset.valueAction_( zoomInSite -  (zoomInSite*(zoom.value)));
 						}
 					}
 					{49} { if (this.notEmpty) {this.play(this.geti(models))} }
@@ -1137,12 +1260,22 @@
 		};
 
 		if (interface == \strangeLoop ) { // interface in strange loop
-
-			// the edit mode
+/*			// the edit mode
 			gui[\amp] = MVC_MyKnob3(gui[\scrollView], editModel, Rect(95,245, 28, 28),
 				gui[\knobTheme1])
-				.label_("Edit mode");
+				.label_("Edit mode");*/
 
+			// length
+			gui[\length]=MVC_NumberBox(gui[\scrollView],models[\length], Rect(55, 245, 42, 16))
+				.resoultion_(250)
+				.rounded_(true)
+				.visualRound_(1)
+				.label_("Length (n) beats")
+				.font_(Font("Helvetica", 11))
+				.color_(\focus,Color.grey(alpha:0))
+				.color_(\string,Color.white)
+				.color_(\typing,Color.yellow)
+				.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 			// follow
 			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(562, 200, 50, 20),"Follow", follow)
@@ -1155,16 +1288,22 @@
 				gui[\knobTheme1])
 				.label_("Amp");
 
-			// the sample pitch
-			gui[\pitch] = MVC_MyKnob3(gui[\scrollView], models[\pitch], Rect(539,282, 28, 28),
-				gui[\knobTheme1])
-				.label_("Pitch");
+			// bpm
+			// gui[\bpm] = MVC_MyKnob3(gui[\scrollView], models[\bpm], Rect(539,282, 28, 28),
+			// gui[\knobTheme1])
+			// .label_("BPM");
 
 
-			// the sample start
-			gui[\start] = MVC_MyKnob3(gui[\scrollView], models[\start], Rect(584, 282, 28, 28),
-				gui[\knobTheme1])
-				.label_("Start");
+		gui[\bpm]=MVC_NumberBox(gui[\scrollView],models[\bpm], Rect(55, 290, 42, 16))
+			.resoultion_(25)
+			.rounded_(true)
+			.visualRound_(0.01)
+			.label_("BPM")
+			.font_(Font("Helvetica", 11))
+			.color_(\focus,Color.grey(alpha:0))
+			.color_(\string,Color.white)
+			.color_(\typing,Color.yellow)
+			.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 			// the sample loop
 			gui[\loop]= MVC_OnOffView(gui[\scrollView], models[\loop],
@@ -1357,9 +1496,8 @@
 + FloatArray {
 
 	// integer index into a flat multichannel FloatArray
-	atI{|index, numChannels=1, channel=0|
-		var index1 = index.asInteger * numChannels + channel;
-		^ this.clipAt(index1 + numChannels);
+	atInt{|index, numChannels=1, channel=0|
+		^ this.clipAt( index * numChannels + channel + numChannels);
 	}
 
 	// simple linear interpolation into a flat multichannel FloatArray
