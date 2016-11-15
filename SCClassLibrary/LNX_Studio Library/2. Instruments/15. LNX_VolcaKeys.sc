@@ -487,13 +487,13 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 
 		gui[\menuTheme ]=( \font_		: Font("Arial", 10),
 						\labelShadow_	: false,
-						\colors_      : (\background: Color(0.6 , 0.562, 0.5),
+						\colors_      	: (\background: Color(0.6 , 0.562, 0.5),
 										\label:Color.black,
 										\string:Color.black,
 									   \focus:Color.clear));
 
 		gui[\midiTheme]= ( \rounded_	: true,
-						\canFocus_	: false,
+						\canFocus_		: false,
 						\shadow_		: true,
 						\colors_		: (	\up 		: Color(0.31,0.31,0.49),
 										\down	: Color(0.31,0.31,0.49),
@@ -546,48 +546,6 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 
 		// widgets
 
-		// 1. channel onOff
-		MVC_OnOffView(models[1], window,Rect(10, 5, 26, 18),gui[\onOffTheme1])
-			.permanentStrings_(["On","On"]);
-
-		// 0. channel solo
-		MVC_OnOffView(models[0], window, Rect(40, 5, 26, 18),gui[\soloTheme])
-			.rounded_(true);
-
-		// 3. in
-		MVC_PopUpMenu3(models[3],window,Rect(80,5,70,17), gui[\menuTheme ] );
-
-		// 9. channelSetup
-		MVC_PopUpMenu3(models[9],window,Rect(160,5,75,17), gui[\menuTheme ] );
-
-		// MIDI Settings
- 		MVC_FlatButton(window,Rect(250, 4, 43, 19),"MIDI")
-			.rounded_(true)
-			.canFocus_(false)
-			.shadow_(true)
-			.color_(\up,Color(0.6 , 0.562, 0.5))
-			.color_(\down,Color(0.6 , 0.562, 0.5) )
-			.color_(\string,Color.white)
-			.resize_(9)
-			.action_{ this.createMIDIInOutModelWindow(window,
-				colors:(border1:Color(0.1221, 0.0297, 0.0297), border2: Color(0.6 , 0.562, 0.5))
-			) };
-
-		// MIDI Control
- 		MVC_FlatButton(window,Rect(300, 4, 43, 19),"Cntrl")
-			.rounded_(true)
-			.canFocus_(false)
-			.shadow_(true)
-			.color_(\up,Color(0.6 , 0.562, 0.5))
-			.color_(\down,Color(0.6 , 0.562, 0.5) )
-			.color_(\string,Color.white)
-			.resize_(9)
-			.action_{  LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front  };
-
-
-		MVC_PlainSquare(window, Rect(668,27, 5, 5 ))
-			.color_(\off, Color(0.6 , 0.562, 0.5));
-
 		gui[\masterTabs]=MVC_TabbedView(window, Rect(9, 14, 670, 310-15), offset:((345+181)@(-2)))
 			.labels_(["Control","Piano Roll"])
 			.font_(Font("Helvetica", 12))
@@ -635,7 +593,6 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 			.showNumberBox_(false)
 			.color_(\hilite,Color(0,0,0,0.5))
 			.color_(\knob,Color.white);
-
 
 		// 27. onSolo turns audioIn, seq or both on/off
 		MVC_PopUpMenu3(models[27], gui[\controlsTab] ,Rect(579, 174, 70, 16), gui[\menuTheme] );
@@ -722,6 +679,47 @@ LNX_VolcaKeys : LNX_InstrumentTemplate {
 				if (p[30].isTrue) {
 					api.sendOD(\netPipeIn, pipe.kind, pipe.note, pipe.velocity)}; // and network
 			};
+
+		// 1. channel onOff
+		MVC_OnOffView(models[1], window,Rect(10, 5, 26, 18),gui[\onOffTheme1])
+			.permanentStrings_(["On","On"]);
+
+		// 0. channel solo
+		MVC_OnOffView(models[0], window, Rect(40, 5, 26, 18),gui[\soloTheme])
+			.rounded_(true);
+
+		// 3. in
+		MVC_PopUpMenu3(models[3],window,Rect(80,5,70,17), gui[\menuTheme ] );
+
+		// 9. channelSetup
+		MVC_PopUpMenu3(models[9],window,Rect(160,5,75,17), gui[\menuTheme ] );
+
+		// MIDI Settings
+ 		MVC_FlatButton(window,Rect(250, 4, 43, 19),"MIDI")
+			.rounded_(true)
+			.canFocus_(false)
+			.shadow_(true)
+			.color_(\up,Color(0.6 , 0.562, 0.5))
+			.color_(\down,Color(0.6 , 0.562, 0.5) )
+			.color_(\string,Color.white)
+			.resize_(9)
+			.action_{ this.createMIDIInOutModelWindow(window,
+				colors:(border1:Color(0.1221, 0.0297, 0.0297), border2: Color(0.6 , 0.562, 0.5))
+			) };
+
+		// MIDI Control
+ 		MVC_FlatButton(window,Rect(300, 4, 43, 19),"Cntrl")
+			.rounded_(true)
+			.canFocus_(false)
+			.shadow_(true)
+			.color_(\up,Color(0.6 , 0.562, 0.5))
+			.color_(\down,Color(0.6 , 0.562, 0.5) )
+			.color_(\string,Color.white)
+			.resize_(9)
+			.action_{  LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front  };
+
+		MVC_PlainSquare(window, Rect(668,27, 5, 5 ))
+			.color_(\off, Color(0.6 , 0.562, 0.5));
 
 	}
 
