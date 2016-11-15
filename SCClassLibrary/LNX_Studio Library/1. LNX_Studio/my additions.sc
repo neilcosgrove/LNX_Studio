@@ -1032,13 +1032,36 @@ gives min, max, averages and total
 	}
 
 	*getURL {|url, savePath, action|
+		var oldAction = action;
+		// action = {|status, pid|
+		// 	this.dumpBackTrace;
+		// 	oldAction.(status, pid);
+		// };
 		if (String.unixCmdActions.isNil) { Class.initClassTree(String) };
-		Platform.case(
+		^Platform.case(
 			\windows, {
 				"Platform.getURL is not yet supported on windows".postln;
 				if (action.notNil) { action.(1, nil) };
+				nil;
 			},
 			{ ("curl -s " ++ url ++ " > " ++ savePath.unixSafe).unixCmd(action) }
+		);
+	}
+
+	*getURLInfo {|url, savePath, action|
+		var oldAction = action;
+		// action = {|status, pid|
+		// 	this.dumpBackTrace;
+		// 	oldAction.(status, pid);
+		// };
+		if (String.unixCmdActions.isNil) { Class.initClassTree(String) };
+		^Platform.case(
+			\windows, {
+				"Platform.getURLInfo is not yet supported on windows".postln;
+				if (action.notNil) { action.(1, nil) };
+				nil;
+			},
+			{ ("curl -s " ++ url ++ " > " ++ savePath.unixSafe ++ " -I").unixCmd(action) }
 		);
 	}
 }

@@ -120,7 +120,7 @@ LNX_URLDownloadManager {
 		task.stop;
 		if ((downloads.isEmpty)&&downLoading) {
 			downLoading = false;
-			studio.addTextToDialog("Finished.",false,true);
+			{ studio.addTextToDialog("Finished.",false,true) }.defer(0);
 		};
 	}
 	

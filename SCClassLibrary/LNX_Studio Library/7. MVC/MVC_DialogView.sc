@@ -121,7 +121,7 @@ MVC_DialogView : MVC_View {
 		string=str;
 
 		if (view.notClosed) {
-			view.string_(string);
+			{ view.string_(string) }.defer;
 			if (flash) {
 				if ((lastDisplayTime.isNil) or:{(SystemClock.seconds-lastDisplayTime)>20}) {
 					view.background_(colors[\string])

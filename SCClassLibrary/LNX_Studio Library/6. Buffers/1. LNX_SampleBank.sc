@@ -580,7 +580,6 @@ LNX_SampleBank{
 		};
 
 		if (alreadyExists) { action.value(buffer) }; // if it exists we have it and can use it now
-
 	}
 
 	// get the save list from the new style URL SampleBank
