@@ -208,12 +208,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		sampleBank = LNX_SampleBank(server,apiID:((id++"_url_").asSymbol))
 				.selectedAction_{|bank,val,send=true|
 					models[11].valueAction_(val,nil,true);
-					if (mode===\marker ) { this.makeMarkerSeq};
+					if (mode===\marker ) { this.updateMarker (\selectFunc) };
 					relaunch = true;
 				}
 				.itemAction_{|bank,items,send=false|
 					models[11].controlSpec_([0,sampleBank.size,\linear,1]);
 					{models[11].dependantsPerform(\items_,bank.names)}.defer;
+					if (mode===\marker ) { this.updateMarker (\itemFunc) };
 				}
 				.metaDataUpdateFunc_{|me,model|
 					if (mode===\repitch) { this.updateRepitch(model) };
@@ -328,9 +329,12 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	iPutLoadList{|l,noPre,loadVersion,templateLoadVersion|
 		sampleBank.putLoadListURL( l.popEND("*** END URL Bank Doc ***"));
 		sampleBank.adjustViews;
+		sequencer.putLoadList(l.popEND("*** END OBJECT DOC ***"));
+	}
+
+	iPostLoad{|noPre,loadVersion,templateLoadVersion|
 		if (sampleBank.size>0) { sampleBank.allInterfacesSelect(p[11]) };
 		this.makeMarkerSeq;
-		sequencer.putLoadList(l.popEND("*** END OBJECT DOC ***"));
 	}
 
 	// free this
