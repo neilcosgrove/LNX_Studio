@@ -574,7 +574,12 @@ LNX_MIDIPatch {
 
 	*panic{ patches.do(_.panic) }
 
-	panic{ 127.do({|n|  if (outs[midiOut].notNil) { outs[midiOut].noteOff(midiOutChannel, n, 0) } }) }
+	panic {
+		if (outs[midiOut].notNil) {
+			outs[midiOut].allNotesOff(midiOutChannel);
+			127.do({|n| outs[midiOut].noteOff(midiOutChannel, n, 0) } );
+		};
+	}
 
 	// for midi clock out, only used for external out
 	songPtr {|songPtr,latency|
@@ -1314,6 +1319,7 @@ NoMIDI {
 	*stop     {}
 	*midiClock{}
 	*continue {}
+	*allNotesOff   {}
 	*noteOnLatency {}
 	*noteOffLatency{}
 	*controlLatency{}
