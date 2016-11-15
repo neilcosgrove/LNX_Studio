@@ -529,7 +529,7 @@
 
 	autoSizeGUI{
 		var h;
-		h=network.collaboration.autoSizeGUI(0);
+		h=network.collaboration.autoSizeGUI(yos);
 		mixerGUI[\libraryScrollView].bounds_(Rect(11, 13+yos, 190, 343+yos-h));
 		gui[\netScrollView].bounds_(Rect(11,372+yos-h,190,105));
 	}
