@@ -170,6 +170,36 @@ MVC_Automation {
 		};
 	}
 
+	//duration in seconds
+	*absDuration{
+		var tempoChanges = nil, absDur = 0;
+		// get any tempo changes
+		allAutomations.do{|v, i|
+		    if (v.name == "LNX_Studio (Tempo)") {
+		        tempoChanges = i;
+		    }
+		};
+		if (tempoChanges.notNil) {
+			//the long way - need to work out duration in chunks
+		    var lastTempo = allAutomations[tempoChanges].startValue,
+		        lastBeat = 0,
+		        events = allAutomations[tempoChanges].events.sort({|a,b| a.beat < b.beat }),
+		        diff = 0;
+		    events.do{|evt|
+		        diff = evt.beat - lastBeat;
+	            absDur = absDur + ((2.5/lastTempo) * diff);
+		        lastTempo = evt.value;
+		        lastBeat = evt.beat;
+		    };
+		    diff = duration - lastBeat;
+		    absDur = absDur + ((2.5/lastTempo) * diff);
+		} {
+			//the quick way - no tempo changes, so simple calculation
+			absDur = (2.5/studio.models[\tempo].value) * duration;
+		};
+		^absDur;
+	}
+
 	// value in from MVC_Model (to review all sources)... i think i've check all sources now tbc
 	// this is where the models trigger automation recording
 	valueIn_{|value,argBeat|
