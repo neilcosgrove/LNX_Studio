@@ -448,7 +448,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	iPostLoad{}
 
 	// free this
-	iFree{ sequencer.do(_.free) }
+	iFree{ sequencer.free }
 
 	// PRESETS /////////////////////////
 

@@ -344,7 +344,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	//iFreeAutomation{ sequencer.freeAutomation }
 
 	// free this
-	iFree{ sequencer.do(_.free) }
+	iFree{ sequencer.free }
 
 	// PRESETS /////////////////////////
 
