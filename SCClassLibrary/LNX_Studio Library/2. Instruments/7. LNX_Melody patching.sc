@@ -226,6 +226,7 @@ a.a.touch(0);
 		arpeggiatorMod.free;
 		arpegSequencer.free;
 		multiPipeOut.free;
+		sequencer.free;
 	}
 
 	// pipes in for distribution ********************************************************** !!!
