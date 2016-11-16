@@ -341,7 +341,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		models[(index+17)].lazyValue_(value, true); // set model, no action
 		p[index+17]=value;                          // set p[]
 
-		api.sendVP(\ccvp++index, \netExtCntIn, index+17, value);  // network it
+		api.sendVP(\ccvp++index, \netExtCntIn, index, value);  // network it
 
 	}
 
@@ -600,7 +600,7 @@ Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ].size
 		midiInBuffer.releaseAll;
 		seqOutBuffer.releaseAll;
 		midiOutBuffer.releaseAll;
-		sequencer.do(_.free);
+		sequencer.free;
 		midi2.free;
 		midiInBuffer.free;
 		midiOutBuffer.free;

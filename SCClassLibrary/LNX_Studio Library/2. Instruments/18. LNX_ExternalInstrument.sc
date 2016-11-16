@@ -76,7 +76,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 				var index = pipe.num.asInt;
 				models[index+14].lazyValue_(pipe.val, true); // set model, no action
 				p[index+14]=pipe.val;                        // set p[]
-				api.sendOD(\netExtCntIn, index+14, pipe.val);// network it
+				api.sendOD(\netExtCntIn, index, pipe.val);// network it
 			}
 			{\program} { // program
 				midi.program(pipe.program,pipe.latency);
@@ -103,8 +103,8 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 
 	// external midi setting controls (these are network methods)
 	netExtCntIn{|index,val|
-		p[index.asInt]=val.asFloat;
-		models[index.asInt].lazyValue_(val.asFloat,false); // false is no auto
+		p[index.asInt+14]=val.asFloat;
+		models[index.asInt+14].lazyValue_(val.asFloat,false); // false is no auto
 	}
 
 	// midi coming from in buffer
@@ -344,7 +344,7 @@ LNX_ExternalInstrument : LNX_InstrumentTemplate {
 	//iFreeAutomation{ sequencer.freeAutomation }
 
 	// free this
-	iFree{ sequencer.do(_.free) }
+	iFree{ sequencer.free }
 
 	// PRESETS /////////////////////////
 

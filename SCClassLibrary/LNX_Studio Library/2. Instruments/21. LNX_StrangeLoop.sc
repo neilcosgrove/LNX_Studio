@@ -342,6 +342,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		sampleBank.free;
 		webBrowser.free;
 		sequencer.free;
+		{LNX_SampleBank.emptyTrash}.defer(1); // empty trash 1 seconds later
 	}
 
 	// PRESETS /////////////////////////
