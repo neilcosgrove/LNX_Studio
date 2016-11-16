@@ -890,7 +890,7 @@
 				var h2= h/2;
 				var channelsToDraw=numChannels.clip(1,2);
 
-				MVC_LazyRefresh.incRefresh;
+				MVC_LazyRefresh.incRefreshN(2);
 
 				width = w; // incase of resize
 
@@ -1097,6 +1097,7 @@
 					var z = zoom.value;
 					var o = offset.value;
 					var y;
+					MVC_LazyRefresh.incRefresh;
 					if(pos>=0) {
 						// the playbackIndex index
 						y = pos * w / z - ( o * w / z) + 2;
@@ -1113,13 +1114,14 @@
 					Pen.stroke;
 			}
 			.mouseDownAction_{|me,x,y,modifiers, buttonNumber, clickCount|
-				var w = me.bounds.width-4;
-				var z = zoom.value;
-				var o = offset.value;
-				var index = ((x-2).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
-
+				var w 		 = me.bounds.width-4;
+				var z 		 = zoom.value;
+				var o 		 = offset.value;
+				var index	 = ((x-2 ).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
 				var minIndex = ((x-10).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
 				var maxIndex = ((x+6 ).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
+
+				MVC_LazyRefresh.mouseDown;
 
 				if (this.notEmpty) {
 
@@ -1191,9 +1193,9 @@
 				}
 			}
 			.mouseMoveAction_{|me,x,y|
-				var w = me.bounds.width-4;
-				var z = zoom.value;
-				var o = offset.value;
+				var w 	  = me.bounds.width-4;
+				var z	  = zoom.value;
+				var o	  = offset.value;
 				var index = ((x-2).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
 
 				if (this.notEmpty) {
@@ -1219,6 +1221,7 @@
 				scrollTask=nil;
 				//markerIndex = nil;
 				//gui[\sampleView].refresh;
+				MVC_LazyRefresh.mouseUp;
 			}
 			.mouseWheelAction_{|me,x,y,modifiers, dx, dy|
 				var move;
