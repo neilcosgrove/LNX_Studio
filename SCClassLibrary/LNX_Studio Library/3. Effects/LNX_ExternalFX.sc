@@ -149,8 +149,8 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 
 	}
 
-		// return the volume model
-	volumeModel{^models[13] }
+	// return the volume model
+	volumeModel{^models[4] }
 
 	*thisWidth  {^261}
 	*thisHeight {^263}
@@ -203,7 +203,6 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 
 		// 2.in
 		MVC_PopUpMenu3(models[2],gui[\scrollView],Rect(7,7,70,17),gui[\menuTheme]);
-
 
 		// 11. sendChannels
 		MVC_PopUpMenu3(models[11],gui[\scrollView],Rect(85,7,70,17),gui[\menuTheme]);
@@ -262,22 +261,22 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			sendChannels=4, sendAmp=0, on=1, lowFreq=20000, highFreq=20|
 			var in2Out, out2In, silent, mono;
 
-			var in = In.ar(inputChannels, 2)*(inAmp.dbamp);
-			in2Out = SelectX.ar(on.lag,[Silent.ar,in]);
-			silent = Silent.ar;
+			var in = In.ar(inputChannels, 2)*(inAmp.dbamp); 			// from LNX input bus
+			silent = Silent.ar;											// silence
+			in2Out = SelectX.ar(on.lag,[silent,in]);					// on/Off (bypass)
 			mono   = in2Out[0]+in2Out[1];
 			in2Out = Select.ar(channelSetup,[
 				[in2Out[0],in2Out[1]],mono.dup, [mono,silent], [silent,mono]]);
-			in2Out = LPF.ar(in2Out,lowFreq.clip(20,20000).lag(0.2));
-			in2Out = HPF.ar(in2Out,highFreq.clip(20,20000).lag(0.2));
-			Out.ar(xOutputChannels,in2Out);
+			in2Out = LPF.ar(in2Out,lowFreq.clip(20,20000).lag(0.2));	// the lowpass filter
+			in2Out = HPF.ar(in2Out,highFreq.clip(20,20000).lag(0.2));	// and the high pass
+			Out.ar(xOutputChannels,in2Out);								// send to external
 
-			out2In = In.ar(xInputChannels, 2);
+			out2In = In.ar(xInputChannels, 2);							// return from external
 			out2In = Select.ar(xChannelSetup,[
 				[out2In[0],out2In[1]],(out2In[0]+out2In[1]).dup, out2In[0].dup, out2In[1].dup]);
-			out2In = SelectX.ar(on.lag,[in,out2In]) ;
-			Out.ar(outputChannels, out2In * (outAmp.dbamp) ); // out
-			Out.ar(sendChannels, out2In * sendAmp); // and send
+			out2In = SelectX.ar(on.lag,[in,out2In]);					// on/Off (bypass)
+			Out.ar(outputChannels, out2In * (outAmp.dbamp));			// to LNX output bus
+			Out.ar(sendChannels  , out2In * sendAmp.dbamp);				// and LNX sendOut bus
 
 		}).send(s);
 
@@ -319,12 +318,10 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			[\n_set, node, \on, p[1]],
 			[\n_set, node, \sendAmp, p[12]],
 			[\n_set, node, \sendChannels, outCh],
-			[\n_set, node, \on, p[1]],
 			[\n_set, node, \lowFreq ,p[13]],
 			[\n_set, node, \highFreq,p[14]],
 		);
 
 	}
-
 
 }
