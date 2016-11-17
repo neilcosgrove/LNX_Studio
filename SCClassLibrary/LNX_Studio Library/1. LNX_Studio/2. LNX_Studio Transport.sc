@@ -444,6 +444,7 @@
 		{
 			bpm=value;
 			insts.do{|inst| inst.bpm_(bpm)}; // update all insts
+			// 2.5 = 60 / 24 (MIDI ticks per quarter note)
 			absTime=2.5/bpm;
 			models[\tempo].lazyValue_(bpm,false);
 			nil
