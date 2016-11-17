@@ -1991,7 +1991,7 @@ LNX_Studio {
 	*/
 	exportStems {|extraTime=3|
 		var i = 0,
-			n = insts.instruments.size;
+			n = insts.mixerInstruments.size;
 
 		Dialog.savePanel({ arg path;
 
@@ -2005,9 +2005,9 @@ LNX_Studio {
 
 	exportNext {|path, i, n, extraTime|
 		var inst, path1;
-        inst = insts.instruments[i];
+        inst = insts.mixerInstruments[i];
         inst.postln;
-        insts.instruments.do {|inst2|
+        insts.mixerInstruments.do {|inst2|
             if (inst2.id != inst.id) {
                 { this.deleteInst(inst2.id) }.defer(0);
             };
