@@ -118,6 +118,9 @@ LNX_Studio {
 
 	var <>myHack,		<>hackOn=false; // for my own hacking of lnx, to remove
 
+	// exporter
+	var <exporter;
+
 	var midi2, padNotes; // temp for CARBON ************
 
 	// create a new studio ///////////////////////////////////////////////////////
@@ -253,6 +256,7 @@ LNX_Studio {
 		LNX_BufferProxy.studio_(this);        // for gui flashing
 		LNX_URLDownloadManager.studio_(this); // for "Downloading samples..." & "Finished." Dialog
 		insts.addDependant(LNX_POP); 		  // for updating gui positions
+		exporter       = LNX_Export(this);
 
 		#show1, showNone = (("show1 showNone").loadPref?[true,false]).collect(_.isTrue);
 
@@ -1981,71 +1985,6 @@ LNX_Studio {
 				this.updatePadMixer(inst)
 			}
 		};
-	}
-
-	// EXPORT STEMS //
-	/*
-	a.quickLoad;
-	a.loadDemoSong(true);
-	a.exportStems;
-	*/
-	exportStems {|extraTime=3|
-		var i = 0,
-			n = insts.mixerInstruments.size;
-
-		Dialog.savePanel({ arg path;
-
-			path.mkdir;
-
-			{ this.exportNext(path, i, n, extraTime); }.fork;
-			
-		});
-
-	}
-
-	exportNext {|path, i, n, extraTime|
-		var inst, path1;
-        inst = insts.mixerInstruments[i];
-        inst.postln;
-        insts.mixerInstruments.do {|inst2|
-            if (inst2.id != inst.id) {
-                { this.deleteInst(inst2.id) }.defer(0);
-            };
-        };
-
-        0.1.wait;
-
-        path1 = server.prepareForRecord(
-            path +/+
-            (inst.id + "-" + inst.name) ++
-            "." ++ (server.recHeaderFormat)
-        );
-
-        0.1.wait;
-
-        server.record;
-
-        0.5.wait;
-
-        { this.play(LNX_Protocols.latency, beat); }.defer(0);
-
-        MVC_Automation.absDuration.wait;
-
-        { this.pause; }.defer(0);
-
-        extraTime.wait;
-
-        server.stopRecording;
-
-        i = i+1;
-
-        { this.quickLoad }.defer(0);
-        
-        if (i < n) {
-            0.1.wait;
-            while ({ this.isLoading }) { 0.1.wait; };
-            this.exportNext(path, i, n, extraTime);
-        }
 	}
 
 }
