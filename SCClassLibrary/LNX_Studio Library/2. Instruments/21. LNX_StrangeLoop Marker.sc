@@ -23,14 +23,11 @@ LNX_MarkerEvent {
 // probRatio.hashCoin(beat*probRatio); // samll difference in probRatio will not have similar result i.e big diff
 + Number{ hashCoin{|hash,precision=1000000| ^(this>(hash.hash%precision/precision))} }
 
+// space bar is playing wrong sample on load
+
 + LNX_StrangeLoop {
 
-	initMarker{
-
-
-	}
-
-	initVarsMarker{
+	marker_initVars{
 		markerSeq = [];
 		allMakerEvents = [];
 	}
@@ -53,7 +50,7 @@ LNX_MarkerEvent {
 	// this should only happen on 1st import else length could change
 
 	// this isn't called by anthing yet
-	updateVarsMarker{
+	marker_updateVars{
 		var startRatio, endRatio, durRatio, totalDuration, absTime, loopDurTime, length;
 		var sampleIndex=p[11];
 
@@ -69,11 +66,12 @@ LNX_MarkerEvent {
 
 		sampleBank.modelValueAction_(sampleIndex,\length,length,send:false); // set length in buffer metadata
 
-		this.makeMarkerSeq;
-
+		this.marker_makeSeq;
 	}
 
-	makeMarkerSeq{
+	// ***********
+
+	marker_makeSeq{
 		var startRatio, endRatio, durRatio, absTime, length, length3;
 		var workingMarkers, workingDurs, numFrames;
 		var sampleIndex=p[11];
@@ -120,7 +118,7 @@ LNX_MarkerEvent {
 	}
 
 	// repitch mode
-	clockInMarker{|instBeat3,absTime3,latency,beat3|
+	marker_clockIn{|instBeat3,absTime3,latency,beat3|
 		var length3, markerEvent, instBeat;
 		var sampleIndex=p[11];						  // sample used in bank
 
@@ -153,7 +151,7 @@ LNX_MarkerEvent {
 			var bufferR		= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
 
 			{
-			this.playBuffeMarker(bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
+			this.marker_playBuffer(bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
 				nil;
 			}.sched(markerEvent.offset * absTime3);
 
@@ -166,47 +164,51 @@ LNX_MarkerEvent {
 	}
 
 	// sample bank has changed...so do this
-	updateMarker{|model|
+	marker_update{|model|
 		var sampleIndex=p[11];  // sample used in bank
-
-		//model.postln;
 
 		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
 
-		if (model==\itemFunc) {};
+		if (model==\itemFunc) { ^this };
+
+		"**** ".post; model.post; " ****".postln;
 
 		if (model==\selectFunc) {
-			this.makeMarkerSeq;
+			this.marker_makeSeq;
 		};
 		if ((model==\start)||(model==\end)) {
-			this.makeMarkerSeq;
+			this.marker_makeSeq;
 			relaunch = true; // modelValueAction_ may do a relaunch as well but not always
 		};
 		if (model==\length) {
-			this.makeMarkerSeq;
+			this.marker_makeSeq;
 			relaunch = true;
 		};
 		if (model==\markers) {
-			this.makeMarkerSeq;
+			this.marker_makeSeq;
 			relaunch = true;
 		};
 	}
 
 	// change playback rate
-	changeRateMarker{|latency|
-		server.sendBundle(latency +! syncDelay,[\n_set, node, \rate, (p[12]+p[13]).midiratio.round(0.0000000001)]);
+	marker_changeRate{|latency|
+		(noteOnNodes++node).select(_.notNil).do{|node|
+			server.sendBundle(latency +! syncDelay,[\n_set, node, \rate, (p[12]+p[13]).midiratio.round(0.0000000001)]);
+		};
 	}
 
 	// this might need a buffer and a voicer
 
 	// still release problems when swapping over from hold or stopping
-	markerPipeIn{|pipe|
+	marker_pipeIn{|pipe|
+
+		if (sampleBank[p[11]].isNil) { ^this }; // no sample exception
 
 		if (pipe.isNoteOff) {
 			var note    = pipe.note.asInt;
 			var latency = pipe.latency;
 			var node    = noteOnNodes[note];
-
+			if (node.isNil) { ^this }; // no node exception
 			if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]) };
 			noteOnNodes[note] = nil;
 		};
@@ -225,12 +227,15 @@ LNX_MarkerEvent {
 			var clipMode    = p[14];
 			var bufferL		= sample.buffer.bufnum(0);          	// this only comes from LNX_BufferArray
 			var bufferR		= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
+			if (markerEvent.isNil) { ^this }; // no marker event exception
 
 			// incase already playing ??
-			if (noteOnNodes[note].notNil) { server.sendBundle(latency +! syncDelay, ["/n_set", noteOnNodes[note], \gate, 0]) };
+			if (noteOnNodes[note].notNil) {
+				server.sendBundle(latency +! syncDelay, ["/n_set", noteOnNodes[note], \gate, 0])
+			};
 
 			noteOnNodes[note] =
-			  this.playBuffeMarkerMIDI(
+			  this.marker_playBufferMIDI(
 				bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency
 			);
 			lastMarkerEvent = markerEvent;
@@ -238,13 +243,10 @@ LNX_MarkerEvent {
 
 	}
 
-	// play a buffer
+	// play a buffer for play loop mode
+	marker_playBuffer{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,clipMode,amp,latency|
 
-	// have a seperate section for hold and another for sequencing
-
-	playBuffeMarker{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,clipMode,amp,latency|
-
-		this.stopBufferMarker(latency);
+		this.marker_stopBuffer(latency);
 
 		node = server.nextNodeID;
 
@@ -262,7 +264,8 @@ LNX_MarkerEvent {
 		]);
 	}
 
-	playBuffeMarkerMIDI{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,clipMode,amp,latency|
+	// play a buffer for sequencer mode
+	marker_playBufferMIDI{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,clipMode,amp,latency|
 		var node = server.nextNodeID;
 
 		server.sendBundle(latency +! syncDelay, ["/s_new", \SLoopMarker, node, 0, instGroupID,
@@ -282,7 +285,7 @@ LNX_MarkerEvent {
 
 	}
 
-	*initUGensMarker{|server|
+	*marker_initUGens{|server|
 
 		SynthDef("SLoopMarker",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
 				gate=1,attackLevel=1, clipMode=0, id=0, amp=1|
@@ -304,18 +307,22 @@ LNX_MarkerEvent {
 
 	}
 
+	// index of playback, returned from the server
 	sIdx_in_{|index|
 		var sampleIndex = p[11];
 		var numFrames	= sampleBank.numFrames(sampleIndex);	// total number of frames in sample
-		sampleBank.otherModels[sampleIndex][\pos].valueAction_(index/numFrames);
+
+		if (sampleBank.otherModels[sampleIndex].notNil) {
+			sampleBank.otherModels[sampleIndex][\pos].lazyValueAction_(index/numFrames);
+		};
 	}
 
 	// stop playing buffer
-	stopBufferMarker{|latency|
+	marker_stopBuffer{|latency|
 		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]) };
 	}
 
-	stopPlayMarker{
+	marker_stopPlay{
 		lastMarkerEvent = nil;
 		repeatNo        = 0;
 	}

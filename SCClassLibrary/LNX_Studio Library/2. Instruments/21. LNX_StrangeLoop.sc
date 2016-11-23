@@ -138,6 +138,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				{|me,val,latency,send|
 					this.setPVPModel(11,val,latency,send);
 					relaunch = true;
+
+					// i still need this below...
+
 					sampleBank.allInterfacesSelect(val,false);
 			}],
 
@@ -145,14 +148,14 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[0, [-48,48,\linear,1],  (label_:"Transpose"), midiControl, 12, "Transpose",
 				{|me,val,latency,send|
 					this.setPVPModel(12,val,latency,send);
-					if (mode===\marker) { this.changeRateMarker };
+					if (mode===\marker) { this.marker_changeRate };
 			}],
 
 			// 13. fine  -1 to 1
 			[0, [-1,1],  (label_:"Fine"), midiControl, 13, "Fine",
 				{|me,val,latency,send|
 					this.setPVPModel(13,val,latency,send);
-					if (mode===\marker) { this.changeRateMarker };
+					if (mode===\marker) { this.marker_changeRate };
 			}],
 
 			// 14. clip, fold or wrap
@@ -165,7 +168,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[0, [0,100,\lin,0.1,0,"%"],  (label_:"Repeat", numberFunc_:\float1), midiControl, 15, "Repeat",
 				{|me,val,latency,send|
 					this.setPVPModel(15,val,latency,send);
-					//if (mode===\marker) { this.changeRateMarker };
 			}],
 
 			// 16. repeat transpose  -48 to 48
@@ -178,7 +180,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[1, [0,1],  (label_:"R Amp", numberFunc_:\float2), midiControl, 17, "R Amp",
 				{|me,val,latency,send|
 					this.setPVPModel(17,val,latency,send);
-					//if (mode===\marker) { this.changeRateMarker };
 			}],
 
 			// 18. hold on
@@ -186,7 +187,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				{|me,val,latency,send|
 					this.setPVPModel(18,val,latency,send);
 					if (val==0) {
-						this.stopBufferMarker(latency ? (studio.latency))
+						this.marker_stopBuffer(latency ? (studio.latency))
 					}{
 						seqOutBuffer.releaseAll(latency ? studio.actualLatency)
 					};
@@ -202,23 +203,38 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	}
 
+	updateGUI{|tempP|
+		(11..18).do{|i| p[i] = tempP[i] };
+		tempP.do{|v,j|
+			if (p[j]!=v) {
+				models[j].lazyValueAction_(v,send:false)
+			}{
+				models[j].lazyValue_(v,auto:false)
+			};
+		};
+		this.iUpdateGUI(tempP);
+	}
 
 	iInitVars{
 		// user content !!!!!!!
 		sampleBank = LNX_SampleBank(server,apiID:((id++"_url_").asSymbol))
 				.selectedAction_{|bank,val,send=true|
 					models[11].valueAction_(val,nil,true);
-					if (mode===\marker ) { this.updateMarker (\selectFunc) };
+					if (mode===\marker ) { this.marker_update(\selectFunc) };
 					relaunch = true;
 				}
 				.itemAction_{|bank,items,send=false|
 					models[11].controlSpec_([0,sampleBank.size,\linear,1]);
 					{models[11].dependantsPerform(\items_,bank.names)}.defer;
-					if (mode===\marker ) { this.updateMarker (\itemFunc) };
+					if (mode===\marker ) { this.marker_update(\itemFunc) };
 				}
 				.metaDataUpdateFunc_{|me,model|
-					if (mode===\repitch) { this.updateRepitch(model) };
-					if (mode===\marker ) { this.updateMarker (model) };
+					if (mode===\repitch) { this.pitch_update (model) };
+					if (mode===\marker ) { this.marker_update(model) };
+				}
+				.finishedLoadingFunc_{|me|
+					// needed else we have wrong markers in sampleBank
+					if (me.size>0) { me.allInterfacesSelect(p[11]) };
 				}
 				.title_("");
 
@@ -240,7 +256,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				//keyboardView.focus
 			};
 
-		this.initVarsMarker;
+		this.marker_initVars;
 
 		noteOnNodes = nil ! 128; // note on events store synth nodes so note off event can release them
 
@@ -251,17 +267,17 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		seqOutBuffer  = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromSequencerBuffer(pipe) };
 	}
 
-	fromSequencerBuffer{|pipe| this.markerPipeIn(pipe) }
+	fromSequencerBuffer{|pipe| this.marker_pipeIn(pipe) }
 
-	pipeIn{|pipe| this.markerPipeIn(pipe) }
+	pipeIn{|pipe| this.marker_pipeIn(pipe) }
 
 	// mode selecting /////////////////////////////////////////////////////////////////////////////////////////
 
 	// clock in, select mode
 	clockIn3{|instBeat,absTime3,latency,beat|
 		if (p[18].isFalse) { sequencer.do(_.clockIn3(beat,absTime,latency,beat)) };
-		if (mode===\repitch) { this.clockInRepitch(instBeat,absTime3,latency,beat); ^this };
-		if (mode===\marker ) { this.clockInMarker (instBeat,absTime3,latency,beat); ^this };
+		if (mode===\repitch) { this.pitch_clockIn (instBeat,absTime3,latency,beat); ^this };
+		if (mode===\marker ) { this.marker_clockIn(instBeat,absTime3,latency,beat); ^this };
 
 	}
 
@@ -270,16 +286,16 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	clockStop {|latency|
 		sequencer.do(_.clockStop(studio.actualLatency));
 		seqOutBuffer.releaseAll(studio.actualLatency);
-		this.stopPlayMarker;
-		if (mode===\repitch) { this.stopBufferRepitch(latency); ^this };
-		if (mode===\marker ) { this.stopBufferMarker (latency); ^this };
+		this.marker_stopPlay;
+		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
+		if (mode===\marker ) { this.marker_stopBuffer(latency); ^this };
 	}
 
 	clockPause{|latency|
 		sequencer.do(_.clockPause(studio.actualLatency));
 		seqOutBuffer.releaseAll(studio.actualLatency);
-		if (mode===\repitch) { this.stopBufferRepitch(latency); ^this };
-		if (mode===\marker ) { this.stopBufferMarker (latency); ^this };
+		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
+		if (mode===\marker ) { this.marker_stopBuffer(latency); ^this };
 	}
 
 
@@ -291,16 +307,15 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	// all these events must happen on the clock else sample playback will drift
 	// should maintain sample accurate playback. to test
 
-
-
-	updatePOS	{ relaunch = true; this.stopPlayMarker; }
+	updatePOS	{ relaunch = true; this.marker_stopPlay; }
 
 	clockPlay	{ relaunch = true }
-	jumpTo   	{ relaunch = true; this.stopPlayMarker; }
+
+	jumpTo   	{ relaunch = true; this.marker_stopPlay; }
 
 	*initUGens{|server|
-		this.initUGensRepitch(server);
-		this.initUGensMarker (server);
+		this.pitch_initUGens (server);
+		this.marker_initUGens(server);
 	}
 
 	// mixer synth stuFF /////////////////////////////////////////////////////////////////////////////////////////
@@ -333,8 +348,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	}
 
 	iPostLoad{|noPre,loadVersion,templateLoadVersion|
-		if (sampleBank.size>0) { sampleBank.allInterfacesSelect(p[11]) };
-		this.makeMarkerSeq;
+		this.marker_makeSeq;
 	}
 
 	// free this

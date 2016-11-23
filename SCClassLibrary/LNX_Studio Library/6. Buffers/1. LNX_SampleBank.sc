@@ -48,6 +48,8 @@ LNX_SampleBank{
 		<>itemAction,	<>loadedAction,		<>selectedAction,
 		<>selectMeFunc,	<>metaDataUpdateFunc;
 
+	var <>finishedLoadingFunc;
+
 	// init the class
 	*initClass {
 		sampleBanks=Set[];
@@ -695,6 +697,7 @@ LNX_SampleBank{
 	// this sampleBank has now finished loading
 	finishedLoading{
 		isLoading=false;
+		finishedLoadingFunc.value(this);
 		if (sampleBanks.select(_.isLoading).isEmpty) {
 			if (waitingToEmptyTrash) {
 				LNX_BufferProxy.emptyTrash; // after everything has loaded and we need to empty

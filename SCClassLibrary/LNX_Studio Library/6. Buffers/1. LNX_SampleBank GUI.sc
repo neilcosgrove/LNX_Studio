@@ -41,10 +41,10 @@
 	}
 
 	// used to update the selected sample in GSRhythm
-	updateSelectedSample{|i|
+	updateSelectedSample{|i,update=true|
 		i=i.clip(0,samples.size-1);
 		selectedSampleNo=i;
-		selectedAction.value(this,selectedSampleNo);
+		if (update) { selectedAction.value(this,selectedSampleNo) };
 	}
 
 	// used to update the sample name list in GSRhythm
@@ -426,8 +426,8 @@
 	// select sample
 	allInterfacesSelect{|i,send=false|
 		this.selectSample(i,send);
-		this.updateSelectedSample(i);
-		selectSampleFuncs.do{|func| func.value(i) };	// this is a problem
+		this.updateSelectedSample(i,update:false);
+		selectSampleFuncs.do{|func| func.value(i,update:false) };	// this is a problem
 	}
 
 
@@ -596,14 +596,16 @@
 		};
 
 		// select sample from within this method (there is 1 @ the bottom for outside this method
-		selectSampleFunc={|j|
+		selectSampleFunc={|j,update=true|
 			i=(j.asInt).wrap(0,samples.size-1);
 			setVarsFunc.value;
 			setModelsFunc.value;
 			gui[\sampleView].refresh;
 			gui[\posWaveView].refresh;
-			this.selectSample(i,true);
-			this.updateSelectedSample(i);
+			if (update) {
+				this.selectSample(i,true);
+				this.updateSelectedSample(i);
+			};
 		};
 
 		selectSampleFuncs = selectSampleFuncs.add(selectSampleFunc);
