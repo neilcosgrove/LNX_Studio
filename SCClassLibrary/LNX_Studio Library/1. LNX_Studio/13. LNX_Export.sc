@@ -1,6 +1,37 @@
+// EXPORT STEMS //
+/*
+a.quickLoad;
+a.exporter.exportStems;
+
+a.loadDemoSong(true);
+(
+g = [LNX_ExportGroup("drums"),
+    LNX_ExportGroup("bass"),
+    LNX_ExportGroup("strings"),
+    LNX_ExportGroup("synth"),
+    LNX_ExportGroup("piano")];
+g[0].addInst(a.insts.mixerInstruments[0]);
+g[0].addInst(a.insts.mixerInstruments[1]);
+g[0].addInst(a.insts.mixerInstruments[2]);
+g[1].addInst(a.insts.mixerInstruments[3]);
+g[1].addInst(a.insts.mixerInstruments[4]);
+g[2].addInst(a.insts.mixerInstruments[5]);
+g[3].addInst(a.insts.mixerInstruments[6]);
+g[3].addInst(a.insts.mixerInstruments[7]);
+g[4].addInst(a.insts.mixerInstruments[8]);
+a.exporter.exportStems(groups: g);
+)
+
+g[0].removeInst(a.insts.mixerInstruments[2]);
+g[0].insts;
+
+a.exporter.skipExport;
+a.exporter.stopExport;
+*/
 LNX_Export {
 
-    var <studio, <isExporting=false, <continueExporting=true;
+    var <studio, <isExporting=false,
+        <continueExportingThis=true, <continueExportingAll=true;
 
     *new {|studio| ^super.new.init(studio) }
 
@@ -8,36 +39,56 @@ LNX_Export {
         studio=argStudio
     }
 
-    stopExport { continueExporting=false }
+    stopExport {
+        continueExportingThis = false;
+        continueExportingAll = false;
+    }
 
-    // EXPORT STEMS //
-    /*
-    a.quickLoad;
-    a.loadDemoSong(true);
-    a.exporter.exportStems;
-    a.exporter.stopExport;
-    */
-    exportStems {|extraTime=3|
+    skipExport {
+        continueExportingThis = false;
+        continueExportingAll = true;
+    }
+
+    exportStems {|extraTime=3, groups=nil|
         var i = 0,
-            n = studio.insts.mixerInstruments.size;
+            n = 0,
+            s = studio;
 
-        Dialog.savePanel({ arg path;
+        if (groups.isNil) {
+            n = s.insts.mixerInstruments.size;
+            groups = Array.fill(n, {|i|
+                var g, inst;
+                inst = s.insts.mixerInstruments[i];
+                g = LNX_ExportGroup(inst.id + "-" + inst.name);
+                g.name.postln;
+                g.addInst(inst);
+            });
+        };
+
+        n = groups.size;
+
+        Dialog.savePanel({|path|
             path.mkdir;
             isExporting = true;
-            continueExporting = true;
-            { this.exportNext(path, i, n, extraTime); }.fork;
+            continueExportingThis = true;
+            continueExportingAll = true;
+            { this.exportNext(path, groups, i, n, extraTime); }.fork;
         });
     }
 
-    exportNext {|path, i, n, extraTime|
-        var s, inst, path1,
+    exportNext {|path, groups, i, n, extraTime|
+        var s, group, path1,
             pauseTime, endTime, t;
+
+        groups.postln;
+
         s = studio;
-        inst = s.insts.mixerInstruments[i];
-        inst.postln;
-        s.insts.mixerInstruments.do {|inst2|
-            if (inst2.id != inst.id) {
-                { s.deleteInst(inst2.id) }.defer(0);
+        group = groups[i];
+
+        // remove instruments not in group
+        s.insts.mixerInstruments.do {|inst|
+            if (group.hasInst(inst).not) {
+                { s.deleteInst(inst.id) }.defer(0);
             };
         };
 
@@ -45,28 +96,28 @@ LNX_Export {
         endTime = pauseTime + extraTime;
         t = 0;
 
-        0.1.wait;
-
         path1 = s.server.prepareForRecord(
             path +/+
-            (inst.id + "-" + inst.name) ++
+            group.name ++
             "." ++ (s.server.recHeaderFormat)
         );
 
-        0.1.wait;
+        0.2.wait;
+
         s.server.record;
+
         0.5.wait;
 
         { s.play(LNX_Protocols.latency, s.beat); }.defer(0);
 
-        while ({continueExporting and: (t < pauseTime)}, {
+        while ({continueExportingThis and: (t < pauseTime)}, {
             t = t+s.absTime;
             s.absTime.wait;
         });
 
         { s.pause; }.defer(0);
 
-        while ({continueExporting and: (t < endTime)}, {
+        while ({continueExportingThis and: (t < endTime)}, {
             t = t+s.absTime;
             s.absTime.wait;
         });
@@ -77,13 +128,47 @@ LNX_Export {
 
         { s.quickLoad }.defer(0);
         
-        if (continueExporting and: (i < n)) {
+        if (continueExportingAll and: (i < n)) {
+            continueExportingThis = true;
             0.1.wait;
-            while ({ s.isLoading }) { 0.1.wait; };
-            this.exportNext(path, i, n, extraTime);
+            while ({ s.isLoading }) { 0.5.wait; };
+            3.wait;
+            this.exportNext(path, groups, i, n, extraTime);
         } {
             isExporting = false;
             "Export complete".postln;
         }
     }
+}
+
+LNX_ExportGroup {
+
+    var <insts, <>name;
+
+    *new {|name| ^super.new.init(name) }
+
+    init {|argName="export"|
+        insts = List.new;
+        name = argName;
+    }
+
+    addInst {|inst|
+        insts.add(inst.id);
+    }
+
+    removeInst {|inst|
+        if (this.hasInst(inst)) {
+            insts.removeAt(insts.indexOf(inst.id));
+        };
+    }
+
+    hasInst {|inst|
+        insts.do {|id|
+            if (inst.id == id) {
+                ^true;
+            }
+        }
+        ^false;
+    }
+
 }
