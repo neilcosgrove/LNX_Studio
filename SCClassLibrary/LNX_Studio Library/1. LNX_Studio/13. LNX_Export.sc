@@ -1,29 +1,32 @@
 LNX_Export {
 
-    var <studio;
+    var <studio, <isExporting=false, <continueExporting=true;
 
     *new {|studio| ^super.new.init(studio) }
 
-    init {|argStudio| studio=argStudio }
+    init {|argStudio|
+        studio=argStudio
+    }
+
+    stopExport { continueExporting=false }
 
     // EXPORT STEMS //
     /*
     a.quickLoad;
     a.loadDemoSong(true);
     a.exporter.exportStems;
+    a.exporter.stopExport;
     */
     exportStems {|extraTime=3|
         var i = 0,
             n = studio.insts.mixerInstruments.size;
 
         Dialog.savePanel({ arg path;
-
             path.mkdir;
-
+            isExporting = true;
+            continueExporting = true;
             { this.exportNext(path, i, n, extraTime); }.fork;
-            
         });
-
     }
 
     exportNext {|path, i, n, extraTime|
@@ -40,7 +43,6 @@ LNX_Export {
 
         pauseTime = MVC_Automation.absDuration;
         endTime = pauseTime + extraTime;
-        endTime.postln;
         t = 0;
 
         0.1.wait;
@@ -54,18 +56,17 @@ LNX_Export {
         0.1.wait;
         s.server.record;
         0.5.wait;
-        t = 0;
 
         { s.play(LNX_Protocols.latency, s.beat); }.defer(0);
 
-        while ({t < pauseTime}, {
+        while ({continueExporting and: (t < pauseTime)}, {
             t = t+s.absTime;
             s.absTime.wait;
         });
 
         { s.pause; }.defer(0);
 
-        while ({t < endTime}, {
+        while ({continueExporting and: (t < endTime)}, {
             t = t+s.absTime;
             s.absTime.wait;
         });
@@ -76,10 +77,13 @@ LNX_Export {
 
         { s.quickLoad }.defer(0);
         
-        if (i < n) {
+        if (continueExporting and: (i < n)) {
             0.1.wait;
             while ({ s.isLoading }) { 0.1.wait; };
             this.exportNext(path, i, n, extraTime);
+        } {
+            isExporting = false;
+            "Export complete".postln;
         }
     }
 }
