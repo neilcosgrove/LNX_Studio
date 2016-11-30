@@ -6,21 +6,22 @@
 	/////// server controls & studio transport models //////////////////////////////////////////
 
 	makeBatch{
-
-		if (batchOn && (lastBatchFolder.notNil)) {
-			this.guiLoadInstFromLibrary("Library/SC Code/BATCH",LNX_Code,"BATCH");
-			{
-				0.5.wait;
-				lastBatchFolder.folderContents.do{|fileName|
-					insts.visualOrder.last.userBank.guiAddURL(
-						("file:/"++(fileName.dropFolder(5)))
-					);
-				};
-			}.fork(AppClock);
-			batchOn=false;
-			batchFolder_(batchFolder+1);
-			batch_(1);
-		};
+		{
+			if (batchOn && (lastBatchFolder.notNil)) {
+				this.guiLoadInstFromLibrary("SC Code/BATCH",LNX_Code,"BATCH");
+				{
+					0.5.wait;
+					lastBatchFolder.folderContents.do{|fileName|
+						insts.visualOrder.last.userBank.guiAddURL(
+							("file:/"++(fileName.dropFolder(5)))
+						);
+					};
+				}.fork(AppClock);
+				batchOn=false;
+				batchFolder_(batchFolder+1);
+				batch_(1);
+			};
+		}.defer(0.1);
 	}
 
 	initModels {
@@ -91,6 +92,8 @@
 		models[\record]=[\switch, midiControl, 2, "Record", (strings_:["Rec","Stop"]),
 			{|me,val|
 
+				server.recSampleFormat_("int16");
+
 				if (server.serverRunning) {
 					if (me.value == 1) {
 
@@ -105,8 +108,8 @@
 							);
 							{server.record}.defer(0.1);
 						}{
-							var dir = LNX_BufferProxy.userPath +/+ "BATCH" +/+
-							(this.name) ++"_bin" + batchFolder;
+							//var dir = LNX_BufferProxy.userPath +/+ "melodrive" +/+ (this.name) ++"_bin" + batchFolder;
+							var dir = LNX_BufferProxy.userPath +/+ "BATCH" +/+ (this.name) ++"_bin" + batchFolder;
 
 							lastBatchFolder = dir;
 
@@ -149,7 +152,7 @@
 			.automationActive_(false);
 
 		// tempo
-		models[\tempo]=[bpm,[10,500], midiControl, 7, "Tempo", (moveRound_:1,resoultion_:10),
+		models[\tempo]=[bpm,[1,500], midiControl, 7, "Tempo", (moveRound_:1,resoultion_:10),
 			{|me,val| this.guiSetBPM(val) }].asModel;
 
 		// tap

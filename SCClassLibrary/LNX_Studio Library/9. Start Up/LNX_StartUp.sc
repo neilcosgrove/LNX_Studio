@@ -90,6 +90,9 @@ LNX_StartUp {
 		//SCDoc.renderAll;
 		SCDoc.indexAllDocuments;
 		this.postStartUp;
+
+		LNX_AppMenus.initMyHack(studio);
+
 	}
 
 	*postStartUp{
