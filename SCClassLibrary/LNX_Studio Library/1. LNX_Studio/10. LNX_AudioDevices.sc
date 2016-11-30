@@ -176,7 +176,7 @@ LNX_AudioDevices {
 		inputDevices.do{|device|
 			if (channelHistoryIn[device].isNil) {                   // if device not already found
 				var findNumber = device.select(_.isDecDigit).asInt; // try and find a number
-				if ((findNumber>0) && (findNumber<=64) && (findNumber.even)) {  // if its usable
+				if ((findNumber>0) && (findNumber<=128) && (findNumber.even)) {  // if its usable
 					channelHistoryIn[device] = findNumber;         // use this number
 				}{
 					channelHistoryIn[device] = 2;                  // else use default 2
@@ -191,7 +191,7 @@ LNX_AudioDevices {
 		outputDevices.do{|device|
 			if (channelHistoryOut[device].isNil) {                  // if device not already found
 				var findNumber = device.select(_.isDecDigit).asInt; // try and find a number
-				if ((findNumber>0) && (findNumber<=64) && (findNumber.even)) {  // if its usable
+				if ((findNumber>0) && (findNumber<=128) && (findNumber.even)) {  // if its usable
 					channelHistoryOut[device] = findNumber;        // use this number
 				}{
 					channelHistoryOut[device] = 2;                 // else use default 2
@@ -346,7 +346,7 @@ LNX_AudioDevices {
 
 		// in channels
 		gui[\inNoChannels] = MVC_NumberBox(window, Rect(x+165,y+25,25,17), gui[\numberTheme])
-			.controlSpec_([2,64,\lin,2,2])
+			.controlSpec_([2,128,\lin,2,2])
 			.label_("Channels")
 			.mouseWorks_(false)
 			.action_{|me|
@@ -379,7 +379,7 @@ LNX_AudioDevices {
 
 		// out channels
 		gui[\outNoChannels] = MVC_NumberBox(window, Rect(x+165,y+45,25,17), gui[\numberTheme])
-			.controlSpec_([2,64,\lin,2,2])
+			.controlSpec_([2,128,\lin,2,2])
 			.rounded_(true)
 			.mouseWorks_(false)
 			.action_{|me|
