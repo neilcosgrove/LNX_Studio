@@ -218,8 +218,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	iInitVars{
 		// user content !!!!!!!
 		sampleBank = LNX_SampleBank(server,apiID:((id++"_url_").asSymbol))
-				.selectedAction_{|bank,val,send=true|
-					models[11].valueAction_(val,nil,true);
+				.selectedAction_{|bank,val,send=true,update=true|
+					if (update) {models[11].valueAction_(val,nil,true)};
 					if (mode===\marker ) { this.marker_update(\selectFunc) };
 					relaunch = true;
 				}
@@ -234,7 +234,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				}
 				.finishedLoadingFunc_{|me|
 					// needed else we have wrong markers in sampleBank
-					if (me.size>0) { me.allInterfacesSelect(p[11]) };
+					if (me.size>0) { me.allInterfacesSelect(p[11], false, false) };
 				}
 				.title_("");
 
@@ -494,6 +494,12 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				),
 				parentViews: [ window]
 				);
+
+		// learn button
+		MVC_FlatButton(gui[\scrollView], Rect(600, 340, 43, 18),"Import")
+			.action_{
+				this.marker_Import;
+			};
 
 	}
 

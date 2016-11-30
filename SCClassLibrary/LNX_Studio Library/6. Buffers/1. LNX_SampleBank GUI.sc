@@ -15,10 +15,10 @@
 	isOpen{ ^((window.notNil)and:{window.isClosed.not}) }
 
 	// select the sample in this gui
-	selectSample{|i,focus=false,send=true|
+	selectSample{|i,focus=false,send=true,update=true|
 		i=i.clip(0,samples.size-1);
 		selectedSampleNo=i;
-		selectedAction.value(this,selectedSampleNo,send);
+		selectedAction.value(this,selectedSampleNo,send,update);
 		// + update gui
 		guiList.do{|gui,j|
 			if (i==j) {
@@ -424,8 +424,8 @@
 	}
 
 	// select sample
-	allInterfacesSelect{|i,send=false|
-		this.selectSample(i,send);
+	allInterfacesSelect{|i,send=false,update=true|
+		this.selectSample(i,false,send,update);
 		this.updateSelectedSample(i,update:false);
 		selectSampleFuncs.do{|func| func.value(i,update:false) };	// this is a problem
 	}

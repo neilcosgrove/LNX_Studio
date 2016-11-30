@@ -100,7 +100,7 @@ LNX_SampleBank{
 		metaModel[\disabledMarkers] = [];							// all markers <=start || >=end (not saved)
 		metaModel[\workingMarkers ] = [];							// start ++ enabledMarkers ++ end
 		metaModel[\workingDur     ] = [];							// and their durations
-		metaModel[\firstMarker    ] = 0;							// and their durations
+		metaModel[\firstMarker    ] = 0;							// and their durations *** (used for gui numbers)
 
 		metaModel[\bpm     ]     	= \bpm.asModel;                 // the bpm
 		metaModel[\length  ]		= \length.asModel;				// the length of the loop in beats
@@ -108,8 +108,9 @@ LNX_SampleBank{
 		// network stuff
 		#[\pitch,\amp,\loop,\start,\end,\active,\velocity,\bpm,\length].do{|key|
 			metaModel[key].action_{|me,val,latency,send,toggle|
-				this.setModelVP(this.geti(metaModel),key,val,latency,send);
+
 				if ((key===\start)|| (key===\end)) { this.updateMarkers(this.geti(metaModel)) }; // this will sort as well
+				this.setModelVP(this.geti(metaModel),key,val,latency,send);
 			}
 		};
 
@@ -241,6 +242,7 @@ LNX_SampleBank{
 		var markers = metaModels[j][\markers];
 		var start   = this.actualStart(i);
 		var end     = this.actualEnd(i);
+
 		markers     					= markers.sort;
 		metaModels[j][\markers]         = markers;
 		enabled							= markers.select{|marker| (marker> start) && (marker< end) };
@@ -658,7 +660,6 @@ LNX_SampleBank{
 				if (key==\markers) {
 					var size = l.popI;                       // no of markers
 					metaModel[key] = l.popNF(size);          // now pop them all
-					this.updateMarkers(i);
 				}{
 					if (masterMeta[key].isFloat) {           // if master is float
 						metaModel[key].value_(l.popF);      // pop a float
@@ -673,6 +674,8 @@ LNX_SampleBank{
 			};
 		};
 
+		this.updateMarkers(i); // this must be after above so all info is loaded 1st
+
 		// recursive add each buffer to reduce load on cpu
 		{
 			if (freed.not) {
@@ -685,8 +688,8 @@ LNX_SampleBank{
 						};
 					}.defer; // add one by one
 				}{
-					this.finishedLoading; // notLoading so can play now
 					selectedSampleNo=0;  // what about loading???
+					this.finishedLoading; // notLoading so can play now
 					this.updateGUI(updateBank);	 // and update GUI
 				};
 			};

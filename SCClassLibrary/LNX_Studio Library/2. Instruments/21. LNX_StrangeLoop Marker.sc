@@ -8,11 +8,15 @@
 // ** when mouseDown or scrolling reduce fps with lazyFresh
 
 LNX_MarkerEvent {
-	var <>offset, <>startFrame, <>durFrame;
-	*new     {|offset, startFrame, durFrame| ^super.newCopyArgs(offset, startFrame, durFrame) }
+	var <>markerNo, <>deltaBeats, <>offset, <>startFrame, <>durFrame;
+	*new     {|markerNo, deltaBeats, offset, startFrame, durFrame|
+		^super.newCopyArgs(markerNo, deltaBeats, offset, startFrame, durFrame)
+	}
 	endFrame { ^startFrame+durFrame }
-	free     { offset = startFrame = durFrame = nil }
-	printOn  {|stream| stream << this.class.name << "(" << offset << "," << startFrame << "," << durFrame << ")" }
+	free     { markerNo = deltaBeats = offset = startFrame = durFrame = nil }
+	printOn  {|stream| stream << this.class.name << "(" << markerNo << "," << deltaBeats << "," << offset
+		<< "," << startFrame << "," << durFrame
+		<< ")" }
 }
 
 // pseudo random coin, provide your own seed each time
@@ -24,6 +28,7 @@ LNX_MarkerEvent {
 + Number{ hashCoin{|hash,precision=1000000| ^(this>(hash.hash%precision/precision))} }
 
 // space bar is playing wrong sample on load
+// you can't move start marker to zero
 
 + LNX_StrangeLoop {
 
@@ -72,7 +77,7 @@ LNX_MarkerEvent {
 	// ***********
 
 	marker_makeSeq{
-		var startRatio, endRatio, durRatio, absTime, length, length3;
+		var startRatio, endRatio, durRatio, length, length3;
 		var workingMarkers, workingDurs, numFrames;
 		var sampleIndex=p[11];
 
@@ -81,7 +86,6 @@ LNX_MarkerEvent {
 		startRatio	= sampleBank.actualStart(sampleIndex);	// start pos ratio
 		endRatio    = sampleBank.actualEnd  (sampleIndex);	// end   pos ratio
 		durRatio    = endRatio - startRatio;				// dur ratio
-		absTime		= studio.absTime;						// rate of stuido clock3 ticks\
 		length 		= sampleBank.length(sampleIndex).asInt;
 		length3		= length * 3;							// this is length of loop in beats on clock3
 		numFrames	= sampleBank.numFrames(sampleIndex);	// total number of frames in sample
@@ -91,6 +95,9 @@ LNX_MarkerEvent {
 		//
 		//markerSeq	= nil ! length3; // now i need to put the markers into this seq, clock dur split up into beats.
 		markerSeq	= nil ! ((length3 * durRatio).round(3).asInt); // this is not a good idea ??
+
+		// maybe don't do *durRatio above ?
+
 		allMakerEvents = [];
 
 		workingMarkers = sampleBank.workingMarkers(sampleIndex); // ratio of buf len
@@ -101,19 +108,29 @@ LNX_MarkerEvent {
 		//workingDurs    = sampleBank.workingDurs   (sampleIndex).reverse; // ratio of buf len
 
 		// into seq goes:  offset start in sec, startFrame, durFrame
-		workingMarkers.do{|marker,j|
-			var when  		= (marker - startRatio * length3).round(3); // when will it happen from 0 @ start & length3
-			var index  		= when.floor.asInt;							// where to put in the seq index
-			var offset		= when.frac;     							// what is frac offset from beat
+		workingMarkers.do{|marker,markerNo|
+			var deltaBeats  = (marker - startRatio * length3); // when will it happen from 0 @ start & length3
+			var when        = deltaBeats.round(3).clip(0,markerSeq.size-1); // quantise
+			var index  		= when.floor.asInt;					// where to put in the seq index
+			var offset		= when.frac;     					// what is frac offset from beat
 			var startFrame	= (marker * numFrames).asInt;
-			var durFrame	= (workingDurs[j] * numFrames).asInt;
-			var markerEvent = LNX_MarkerEvent(offset, startFrame, durFrame);
-			allMakerEvents 	= allMakerEvents.add(markerEvent);
-			markerSeq.clipPut(index, markerEvent);
+			var durFrame	= (workingDurs[markerNo] * numFrames).asInt;
+			var markerEvent = LNX_MarkerEvent(markerNo, deltaBeats, offset, startFrame, durFrame);
+
+			allMakerEvents 	= allMakerEvents.add(markerEvent); // for pRoll
+			markerSeq.clipPut(index, markerEvent); // for autoSeq
 
 		};
 
 		if (gui[\newMarkerLength].notNil) { gui[\newMarkerLength].string_((markerSeq.size/3*64/length).asString) };
+
+	}
+
+	marker_Import{
+		markerSeq.postln;
+		markerSeq.size.postln; // we are forcing a length that might not be correct, can we set this?
+		allMakerEvents.postln;
+
 
 	}
 
@@ -151,7 +168,7 @@ LNX_MarkerEvent {
 			var bufferR		= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
 
 			{
-			this.marker_playBuffer(bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
+		this.marker_playBuffer(bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
 				nil;
 			}.sched(markerEvent.offset * absTime3);
 
@@ -170,8 +187,6 @@ LNX_MarkerEvent {
 		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
 
 		if (model==\itemFunc) { ^this };
-
-		"**** ".post; model.post; " ****".postln;
 
 		if (model==\selectFunc) {
 			this.marker_makeSeq;
