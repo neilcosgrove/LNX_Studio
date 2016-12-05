@@ -505,6 +505,11 @@
 			};
 		};
 
+		// tap tempo
+		var tapTempo = LNX_TapTempo()
+			.tapFunc_{|me, bpm| if (models[\bpm].notNil) { models[\bpm].valueAction_(bpm.round(0.1)) } }
+			.firstTapFunc_{|me| if (this.notEmpty) {this.play(i)} };
+
 		mvcWindow = window;
 		if (window.isKindOf(MVC_Window)) { window=window.view };
 
@@ -1320,6 +1325,8 @@
 			// gui[\knobTheme1])
 			// .label_("BPM");
 
+		// tap button
+		MVC_FlatButton(gui[\scrollView], Rect(655, 115, 33, 18),"Tap").action_{ tapTempo.tap };
 
 		gui[\bpm]=MVC_NumberBox(gui[\scrollView],models[\bpm], Rect(602, 146, 42, 16))
 			.resoultion_(25)

@@ -451,30 +451,6 @@
 		}.sched(delta);
 	}
 
-	// tap tempo bpm
-	tap{
-		var thisTimeTap, bpm;
-		if (noTaps==0) {
-			firstTapTime=SystemClock.now;
-			lastTapTime=firstTapTime;
-			noTaps=noTaps+1;
-		}{
-			thisTimeTap=SystemClock.now;
-			if ((thisTimeTap-lastTapTime)>2) {
-				noTaps=1;
-				firstTapTime=SystemClock.now;
-				lastTapTime=thisTimeTap;
-				totalTapTime=0;
-			}{
-				lastTapTime=thisTimeTap;
-				totalTapTime=lastTapTime-firstTapTime;
-				noTaps=noTaps+1;
-				bpm=60/(totalTapTime/(noTaps-1));
-				models[\tempo].valueAction_(bpm.asInt);
-			}
-		};
-	}
-
 	togglePlay  { if (extClock.not) {models[\play].valueAction_  (1- models[\play].value)} }
 	toggleRecord{ if (extClock.not) {models[\record].valueAction_(1- models[\record].value)} }
 

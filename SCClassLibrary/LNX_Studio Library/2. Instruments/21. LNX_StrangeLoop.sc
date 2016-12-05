@@ -17,12 +17,9 @@
 
 LNX_StrangeLoop : LNX_InstrumentTemplate {
 
-	var <sampleBank,		<webBrowser;
-	var <relaunch = false,	<newBPM = false;
-	var <mode = \marker,	<markerSeq;
-	var <lastMarkerEvent,	<repeatNo=0;
-	var <allMakerEvents,    <noteOnNodes;
-	var <sequencer,			<seqOutBuffer;
+	var <sampleBank,		<webBrowser, 	<relaunch = false,	<newBPM = false;
+	var <mode = \marker,	<markerSeq,		<lastMarkerEvent,	<repeatNo=0;
+	var <allMakerEvents,    <noteOnNodes,	<sequencer,			<seqOutBuffer;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -276,8 +273,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	// clock in, select mode
 	clockIn3{|instBeat,absTime3,latency,beat|
 		if (p[18].isFalse) { sequencer.do(_.clockIn3(beat,absTime,latency,beat)) };
-		if (mode===\repitch) { this.pitch_clockIn (instBeat,absTime3,latency,beat); ^this };
-		if (mode===\marker ) { this.marker_clockIn(instBeat,absTime3,latency,beat); ^this };
+		if (mode===\repitch) { this.pitch_clockIn3 (instBeat,absTime3,latency,beat); ^this };
+		if (mode===\marker ) { this.marker_clockIn3(instBeat,absTime3,latency,beat); ^this };
 
 	}
 
@@ -495,7 +492,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				parentViews: [ window]
 				);
 
-		// learn button
+		// import button
 		MVC_FlatButton(gui[\scrollView], Rect(600, 340, 43, 18),"Import")
 			.action_{
 				this.marker_Import;

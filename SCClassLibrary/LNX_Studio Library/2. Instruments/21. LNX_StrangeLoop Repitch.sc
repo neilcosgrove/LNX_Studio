@@ -5,7 +5,7 @@
 + LNX_StrangeLoop {
 
 	// repitch mode
-	pitch_clockIn{|instBeat,absTime3,latency,beat|
+	pitch_clockIn3{|instBeat,absTime3,latency,beat|
 		var length;
 		var sampleIndex=p[11];						  // sample used in bank
 		if (this.isOff) { ^this };                    // inst is off exception

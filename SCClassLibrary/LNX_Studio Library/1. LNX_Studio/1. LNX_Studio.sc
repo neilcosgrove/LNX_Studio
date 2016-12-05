@@ -107,8 +107,7 @@ LNX_Studio {
 		<extClock=false, 	<>beat=0,			<>instBeat=0,
 		<isPlaying=false,
 		lastPos=0,			extBeat=0, 			<extIsPlaying=false,
-		noTaps=0, 			firstTapTime=0, 	lastTapTime=0,
-		totalTapTime=0,    <extTiming,			tasks,
+		<tapTempo,			<extTiming,			tasks,
 		<>batchOn=false,	<>batch,			<>batchFolder=0,
 		<lastBatchFolder,	jumpTo;
 
@@ -244,6 +243,7 @@ LNX_Studio {
 		bpm         = 90+(60.rand);
 		absTime     = 2.5/bpm;
 		extTiming   = [];
+		tapTempo    = LNX_TapTempo().tapFunc_{|me,bpm| models[\tempo].valueAction_(bpm.asInt) };
 		MVC_StepSequencer.studio_(this);      // not great, why am i doing this? To get absTime
 		LNX_SampleBank.studio_(this);         // to find out if playing to change download speed
 		LNX_PianoRollSequencer.studio_(this); // for pianoroll guiJumpTo call
@@ -255,6 +255,8 @@ LNX_Studio {
 		insts.addDependant(LNX_POP); 		  // for updating gui positions
 
 		#show1, showNone = (("show1 showNone").loadPref?[true,false]).collect(_.isTrue);
+
+
 
 	}
 
@@ -1998,7 +2000,7 @@ LNX_Studio {
 			path.mkdir;
 
 			{ this.exportNext(path, i, n, extraTime); }.fork;
-			
+
 		});
 
 	}
@@ -2040,7 +2042,7 @@ LNX_Studio {
         i = i+1;
 
         { this.quickLoad }.defer(0);
-        
+
         if (i < n) {
             0.1.wait;
             while ({ this.isLoading }) { 0.1.wait; };

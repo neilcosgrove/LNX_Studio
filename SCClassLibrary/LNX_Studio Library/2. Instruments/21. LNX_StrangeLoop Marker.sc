@@ -15,8 +15,7 @@ LNX_MarkerEvent {
 	endFrame { ^startFrame+durFrame }
 	free     { markerNo = deltaBeats = offset = startFrame = durFrame = nil }
 	printOn  {|stream| stream << this.class.name << "(" << markerNo << "," << deltaBeats << "," << offset
-		<< "," << startFrame << "," << durFrame
-		<< ")" }
+							  << "," << startFrame << "," << durFrame << ")" }
 }
 
 // pseudo random coin, provide your own seed each time
@@ -103,13 +102,12 @@ LNX_MarkerEvent {
 		workingMarkers = sampleBank.workingMarkers(sampleIndex); // ratio of buf len
 		workingDurs    = sampleBank.workingDurs   (sampleIndex); // ratio of buf len
 
-		// reverse means we can loose 1st marker
-		//workingMarkers = sampleBank.workingMarkers(sampleIndex).reverse; // ratio of buf len
-		//workingDurs    = sampleBank.workingDurs   (sampleIndex).reverse; // ratio of buf len
-
 		// into seq goes:  offset start in sec, startFrame, durFrame
 		workingMarkers.do{|marker,markerNo|
 			var deltaBeats  = (marker - startRatio * length3); // when will it happen from 0 @ start & length3
+
+			//var deltaBeats  = ((marker - startRatio) / durRatio * length3); // when will it happen from 0 @ start & length3
+
 			var when        = deltaBeats.round(3).clip(0,markerSeq.size-1); // quantise
 			var index  		= when.floor.asInt;					// where to put in the seq index
 			var offset		= when.frac;     					// what is frac offset from beat
@@ -134,8 +132,11 @@ LNX_MarkerEvent {
 
 	}
 
+
+	//// ***** use BPM !!!!!
+
 	// repitch mode
-	marker_clockIn{|instBeat3,absTime3,latency,beat3|
+	marker_clockIn3{|instBeat3,absTime3,latency,beat3|
 		var length3, markerEvent, instBeat;
 		var sampleIndex=p[11];						  // sample used in bank
 
@@ -143,11 +144,12 @@ LNX_MarkerEvent {
 		if (p[18].isFalse) { ^this };				  // no hold exception
 		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
 
-		instBeat = instBeat3/3; 					  // use inst beat at slower rate
+		//instBeat = instBeat3/3; 					  // use inst beat at slower rate
+
 		length3 = sampleBank.length(sampleIndex).asInt * 3; // this is length of loop in beats on clock3
 
 //		markerEvent = markerSeq[instBeat3 % length3];
-		markerEvent = markerSeq.wrapAt(instBeat3); // this might not be needed anymore, leave or check.
+		markerEvent = markerSeq.wrapAt(instBeat3); // midi in might be out of range so wrap. maybe return nil?
 
 		if  (markerEvent.notNil) {
 			if (((p[15]/100).hashCoin(beat3)) && (markerEvent.notNil)) {

@@ -156,7 +156,7 @@
 			{|me,val| this.guiSetBPM(val) }].asModel;
 
 		// tap
-		models[\tap]=[0, [0,0], midiControl, 6, "Tap", (strings_:"Tap"), {this.tap}].asModel
+		models[\tap]=[0, [0,0], midiControl, 6, "Tap", (strings_:"Tap"), {tapTempo.tap}].asModel
 			.automationActive_(false);
 
 		// mute server
