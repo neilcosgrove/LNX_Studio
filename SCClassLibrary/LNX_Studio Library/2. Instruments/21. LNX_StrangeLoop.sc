@@ -296,6 +296,15 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	}
 
 
+	updateOnSolo{|latency|
+		if (this.isOn) { ^this }; // is on exception, below is done when off
+		sequencer.do(_.clockStop(studio.actualLatency));
+		seqOutBuffer.releaseAll(studio.actualLatency);
+		this.marker_stopPlay;
+		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
+		if (mode===\marker ) { this.marker_stopBuffer(latency); ^this }; // doesn't do anything, release above does
+	}
+
 	bpmChange	{
 		if (mode===\repitch) { newBPM = true; ^this };
 		//if (mode===\marker ) { this.updateVarsMarker; ^this };
@@ -466,15 +475,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		// 18. hold on
 		MVC_PopUpMenu3(gui[\scrollView], models[18], Rect(593, 175, 80, 17), gui[\menuTheme]);
-
-		// \newMarkerLength
-		gui[\newMarkerLength]=MVC_StaticText(gui[\scrollView],"", Rect(703, 107, 42, 16))
-			.label_("Length (n) beats")
-			.font_(Font("Helvetica", 11))
-			.color_(\focus,Color.grey(alpha:0))
-			.color_(\string,Color.white)
-			.color_(\typing,Color.yellow)
-			.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 		// piano roll
 		sequencer.createWidgets(gui[\scrollView],Rect(3,220,567, 340)

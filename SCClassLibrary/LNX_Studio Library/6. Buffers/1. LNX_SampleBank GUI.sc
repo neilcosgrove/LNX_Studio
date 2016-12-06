@@ -82,19 +82,22 @@
 
 		lastModel=otherModel;
 
-		lastSynth=samples[i].play(loop, this.amp(i).dbamp, this.start(i));
+		lastSynth=samples[i].play(loop, this.amp(i).dbamp, this.start(i), this.end(i));
 
 		// for the gui playback
 		task= Task({
 			var startTime = AppClock.now;
 			var dur = samples[i].duration;
 			var s   = this.start(i);
+			var e   = this.end(i);
 			inf.do{
 				if  ((loop.not)and:{((AppClock.now-startTime)>(dur*(1-s)))}) {
 					otherModel[\pos2].valueAction_(-1,0,true);
 					task.stop;
 				}{
-					otherModel[\pos2].valueAction_((AppClock.now-startTime/dur+s).wrap(0,1));
+					otherModel[\pos2].valueAction_(
+						(AppClock.now-startTime/dur+s).wrap(s,e)
+					);
 				};
 				(1/30).wait;
 			};
@@ -508,7 +511,9 @@
 		// tap tempo
 		var tapTempo = LNX_TapTempo()
 			.tapFunc_{|me, bpm| if (models[\bpm].notNil) { models[\bpm].valueAction_(bpm.round(0.1)) } }
-			.firstTapFunc_{|me| if (this.notEmpty) {this.play(i)} };
+			.firstTapFunc_{|me|
+				if (this.notEmpty) {this.play(i, this.loop(i).isTrue)}
+			};
 
 		mvcWindow = window;
 		if (window.isKindOf(MVC_Window)) { window=window.view };
@@ -725,7 +730,7 @@
 			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
-			.action_{	 if (this.notEmpty) {this.play(i)} };
+			.action_{	 if (this.notEmpty) {this.play(i, this.loop(i).isTrue)} };
 
 		// stop
 		gui[\stop] = MVC_OnOffView(gui[\scrollView],Rect(12+23, 145+30, 20, 20),"stop")
@@ -1326,7 +1331,9 @@
 			// .label_("BPM");
 
 		// tap button
-		MVC_FlatButton(gui[\scrollView], Rect(655, 115, 33, 18),"Tap").action_{ tapTempo.tap };
+		MVC_FlatButton(gui[\scrollView], Rect(655, 115, 33, 18),"Tap").downAction_{
+				tapTempo.tap;
+			};
 
 		gui[\bpm]=MVC_NumberBox(gui[\scrollView],models[\bpm], Rect(602, 146, 42, 16))
 			.resoultion_(25)

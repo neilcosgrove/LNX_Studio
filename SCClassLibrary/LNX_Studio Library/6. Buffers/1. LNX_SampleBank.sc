@@ -102,7 +102,7 @@ LNX_SampleBank{
 		metaModel[\workingDur     ] = [];							// and their durations
 		metaModel[\firstMarker    ] = 0;							// and their durations *** (used for gui numbers)
 
-		metaModel[\bpm     ]     	= \bpm.asModel;                 // the bpm
+		metaModel[\bpm     ]     	= ControlSpec(0, 999, default: 120).asModel; // the bpm
 		metaModel[\length  ]		= \length.asModel;				// the length of the loop in beats
 
 		// network stuff

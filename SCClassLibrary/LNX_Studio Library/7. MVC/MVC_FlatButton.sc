@@ -9,6 +9,8 @@ MVC_FlatButton : MVC_View {
 	var <>shadow=false;
 	var <>insetBy=0;
 
+	var <>downAction;
+
 	// set your defaults
 	initView{
 		// [ 0:onBG, 1:offBG, 2:onOffText, 3:onBGUnen, 4:offBUnen, 5:onOffTextUnen ]
@@ -139,6 +141,8 @@ MVC_FlatButton : MVC_View {
 			buttonPressed=buttonNumber;
 
 			clicks=clickCount;
+
+			downAction.value;
 
 			if (modifiers.asBinaryDigits[4]==0) { // check apple not pressed because of drag
 				if (editMode) {
