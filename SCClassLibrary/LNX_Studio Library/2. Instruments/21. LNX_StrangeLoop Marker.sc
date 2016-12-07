@@ -239,12 +239,17 @@ LNX_MarkerEvent {
 			if (p[19]==1) { probability=1 };
 			if ((probability.coin) && (lastMarkerEvent.notEmpty)) {
 				markerEvent = lastMarkerEvent.wrapAt(repeatNo);	// repeat
-				repeatNo = repeatNo + 1;		// inc number of repeats
-				rate		= (p[12]+p[13]+(repeatNo*p[16])).midiratio.round(0.0000000001).clip(0,100000);
-				amp         = (vel/127)*(p[17]**repeatNo);
+				repeatNo 	= repeatNo + 1;						// inc number of repeats
+				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
+				repeatRate	= repeatRate + p[16];
+				amp         = (vel/127) * repeatAmp;
+				repeatAmp	= repeatAmp * p[17];
+
 			}{
 				repeatNo = 0;					// don't repeat
 				lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent).keep(p[20].asInt);
+				repeatRate=0;
+				repeatAmp=1;
 			};
 
 			noteOnNodes[note] =
@@ -345,6 +350,8 @@ LNX_MarkerEvent {
 	marker_stopPlay{
 		lastMarkerEvent = [];
 		repeatNo        = 0;
+		repeatRate 		= 0;
+		repeatAmp		= 1;
 	}
 
 }

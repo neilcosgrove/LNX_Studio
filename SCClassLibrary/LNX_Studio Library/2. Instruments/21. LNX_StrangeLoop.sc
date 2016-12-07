@@ -21,6 +21,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <sampleBank,		<webBrowser, 	<relaunch = false,	<newBPM = false;
 	var <mode = \marker,	<markerSeq,		<lastMarkerEvent,	<repeatNo=0;
 	var <allMakerEvents,    <noteOnNodes,	<sequencer,			<seqOutBuffer;
+	var <repeatRate=0,		<repeatAmp=1;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -192,7 +193,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 19. freeze
-			[0, \switch, (label_:"Freeze"), midiControl, 19, "Freeze",
+			[0, \switch, midiControl, 19, "Freeze",
 				{|me,val,latency,send|
 					this.setPVPModel(19,val,latency,send);
 			}],
@@ -488,13 +489,23 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_MyKnob3(models[19]); // this is fake, without it automation doesn't works. needs fixing
 
 		// freeze button
-		gui[\freezeButton] = MVC_FlatButton(gui[\scrollView], Rect(595, 267, 43, 18),"Freeze")
+		gui[\freezeButton] = MVC_FlatButton(gui[\scrollView], Rect(590, 267, 50, 20),"Freeze")
+			.rounded_(true)
+			.font_(Font("Helvetica",12,true))
+			.color_(\up,Color(50/77,61/77,1))
+			.color_(\down,Color(1,1,1,0.88)/4)
 			.downAction_{
 				models[19].valueAction_(1,nil,true,false)
 			}
 			.upAction_{
 				models[19].valueAction_(0,nil,true,false)
 			};
+
+		MVC_PipeLampView(gui[\scrollView],models[19], Rect(650,270,11,11))
+			//.insetBy_(1)
+			.border_(true)
+			.mouseWorks_(true)
+			.color_(\on,Color.green);
 
 		MVC_FuncAdaptor(models[19]).func_{|me,val| gui[\freezeButton].down_(val.isTrue) };
 
@@ -530,7 +541,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				);
 
 		// import button
-		MVC_FlatButton(gui[\scrollView], Rect(245, 213, 43, 18),"Import")
+		MVC_FlatButton(gui[\scrollView], Rect(242, 213, 49, 20),"Import")
+			.rounded_(true)
+			.font_(Font("Helvetica",12,true))
+			.color_(\up,Color(50/77,61/77,1))
+			.color_(\down,Color(1,1,1,0.88)/4)
 			.action_{
 				this.marker_Import;
 			};

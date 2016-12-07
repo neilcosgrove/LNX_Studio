@@ -1340,7 +1340,11 @@
 			// .label_("BPM");
 
 			// tap button
-			MVC_FlatButton(gui[\scrollView], Rect(728, 106, 33, 18),"Tap").downAction_{ tapTempo.tap };
+			MVC_FlatButton(gui[\scrollView], Rect(728, 106, 33, 18),"Tap").downAction_{ tapTempo.tap }
+				.rounded_(true)
+				.font_(Font("Helvetica",12,true))
+				.color_(\up,Color(50/77,61/77,1))
+				.color_(\down,Color(1,1,1,0.88)/4);
 
 			gui[\bpm]=MVC_NumberBox(gui[\scrollView],models[\bpm], Rect(674, 107, 42, 16))
 				.resoultion_(25)
