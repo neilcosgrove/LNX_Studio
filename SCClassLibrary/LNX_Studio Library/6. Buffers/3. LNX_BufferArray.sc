@@ -99,28 +99,15 @@ LNX_BufferArray {
 		}.play(server,fadeTime:0);
 	}
 
-	playMono { arg loop = false, amp = 1, start=0, end=1;
-
-		// ^{|mul=1| var player;
-		// 	player = PlayBuf.ar(1,bufnum,BufRateScale.kr(bufnum),
-		// 		startPos: numFrames*start,
-		// 	loop: loop.binaryValue);
-		// 	loop.not.if(FreeSelfWhenDone.kr(player));
-		// 	[player * mul].dup;
-		// }.play(server,fadeTime:0, args:[\mul:mul]);
-
-
-		[loop,start, end].postln;
-
+	playMono {|loop = false, amp = 1, start=0, end=1|
 		if (loop) {
-
 			^{|mul=1, start=0, end=1|
 				var player;
 				var index  = Integrator.ar(BufRateScale.ir(bufnum).asAudio);
 				index = (start*numFrames)  + index.wrap(0, (end-start)*numFrames); // this does the looping
 				player = BufRd.ar(1, [bufnum,bufnum], index, loop:0); // mono, might need to be leaked
 				//loop.not.if(FreeSelfWhenDone.kr(player));
-				[player * mul].dup;
+				player * mul;
 			}.play(server,fadeTime:0, args:[\mul:amp,\start:start,\end:end]);
 		}{
 			^{|mul=1, start=0, end=1|
@@ -129,26 +116,31 @@ LNX_BufferArray {
 				index = (start*numFrames)  + index.clip(0, (end-start)*numFrames); // this does the looping
 				player = BufRd.ar(1, [bufnum,bufnum], index, loop:0); // mono, might need to be leaked
 				loop.not.if(FreeSelfWhenDone.kr(player));
-				[player * mul].dup;
+				player * mul;
 			}.play(server,fadeTime:0, args:[\mul:amp,\start:start,\end:end]);
-
-
 		};
-
-
 	}
 
-	playStereo { arg loop = false, mul = 1, start=0, end=1;
-		^{|mul=1|  var player;
-			player = [PlayBuf.ar(1,bufnum,BufRateScale.kr(bufnum),
-				startPos: numFrames*start,
-				loop: loop.binaryValue)
-				, PlayBuf.ar(1,bufnum+1,BufRateScale.kr(bufnum),
-				startPos: numFrames*start,
-				loop: loop.binaryValue)];
-			loop.not.if(FreeSelfWhenDone.kr(player));
-			player * mul;
-		}.play(server,fadeTime:0, args:[\mul:mul]);
+	playStereo {|loop = false, amp = 1, start=0, end=1|
+		if (loop) {
+			^{|mul=1, start=0, end=1|
+				var player;
+				var index  = Integrator.ar(BufRateScale.ir(bufnum).asAudio);
+				index = (start*numFrames)  + index.wrap(0, (end-start)*numFrames); // this does the looping
+				player = BufRd.ar(1, [bufnum,bufnum+1], index, loop:0); // mono, might need to be leaked
+				//loop.not.if(FreeSelfWhenDone.kr(player));
+				player * mul;
+			}.play(server,fadeTime:0, args:[\mul:amp,\start:start,\end:end]);
+		}{
+			^{|mul=1, start=0, end=1|
+				var player;
+				var index  = Integrator.ar(BufRateScale.ir(bufnum).asAudio);
+				index = (start*numFrames)  + index.clip(0, (end-start)*numFrames); // this does the looping
+				player = BufRd.ar(1, [bufnum,bufnum+1], index, loop:0); // mono, might need to be leaked
+				loop.not.if(FreeSelfWhenDone.kr(player));
+				player * mul;
+			}.play(server,fadeTime:0, args:[\mul:amp,\start:start,\end:end]);
+		};
 	}
 
 }

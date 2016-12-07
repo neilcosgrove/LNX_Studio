@@ -88,9 +88,9 @@
 		task= Task({
 			var startTime = AppClock.now;
 			var dur = samples[i].duration;
-			var s   = this.start(i);
-			var e   = this.end(i);
 			inf.do{
+				var s   = this.start(i);
+				var e   = this.end(i);
 				if  ((loop.not)and:{((AppClock.now-startTime)>(dur*(1-s)))}) {
 					otherModel[\pos2].valueAction_(-1,0,true);
 					task.stop;
@@ -513,6 +513,9 @@
 			.tapFunc_{|me, bpm| if (models[\bpm].notNil) { models[\bpm].valueAction_(bpm.round(0.1)) } }
 			.firstTapFunc_{|me|
 				if (this.notEmpty) {this.play(i, this.loop(i).isTrue)}
+			}
+			.stopFunc_{|me|
+				if (this.notEmpty) { this.stop }
 			};
 
 		mvcWindow = window;
@@ -1214,8 +1217,14 @@
 					moveIDX=0;
 					if (x<0) { moveIDX = -1 * ((x).abs/40+0.25) };
 					if (x>w) { moveIDX = 1 * ((x-w).abs/40+0.25) };
-					if (editMode==0) {models[\start].valueAction_(index,0,true)};
-					if (editMode==1) {models[\end  ].valueAction_(index,0,true)};
+					if (editMode==0) {
+						models[\start].valueAction_(index,0,true);
+						if (lastSynth.notNil) { lastSynth.set(\start,index) };
+					};
+					if (editMode==1) {
+						models[\end  ].valueAction_(index,0,true);
+						if (lastSynth.notNil) { lastSynth.set(\end,index) };
+					};
 					if (editMode==3) {
 						// this needs networking
 						models[\markers][markerIndex] = index;
@@ -1315,7 +1324,7 @@
 				.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 			// follow
-			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(663, 144, 50, 20),"Follow", follow)
+			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(611, 139, 50, 20),"Follow", follow)
 				.rounded_(true)
 				.color_(\on,Color(0.5,1,0.5,0.88))
 				.color_(\off,Color(1,1,1,0.88)/4);
@@ -1330,42 +1339,37 @@
 			// gui[\knobTheme1])
 			// .label_("BPM");
 
-		// tap button
-		MVC_FlatButton(gui[\scrollView], Rect(655, 115, 33, 18),"Tap").downAction_{
-				tapTempo.tap;
-			};
+			// tap button
+			MVC_FlatButton(gui[\scrollView], Rect(728, 106, 33, 18),"Tap").downAction_{ tapTempo.tap };
 
-		gui[\bpm]=MVC_NumberBox(gui[\scrollView],models[\bpm], Rect(602, 146, 42, 16))
-			.resoultion_(25)
-			.rounded_(true)
-			.visualRound_(0.01)
-			.label_("BPM")
-			.font_(Font("Helvetica", 11))
-			.color_(\focus,Color.grey(alpha:0))
-			.color_(\string,Color.white)
-			.color_(\typing,Color.yellow)
-			.color_(\background,Color(46/77,46/79,72/145)/1.5);
+			gui[\bpm]=MVC_NumberBox(gui[\scrollView],models[\bpm], Rect(674, 107, 42, 16))
+				.resoultion_(25)
+				.rounded_(true)
+				.visualRound_(0.01)
+				.label_("BPM")
+				.font_(Font("Helvetica", 11))
+				.color_(\focus,Color.grey(alpha:0))
+				.color_(\string,Color.white)
+				.color_(\typing,Color.yellow)
+				.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 			// the sample loop
 			gui[\loop]= MVC_OnOffView(gui[\scrollView], models[\loop],
-										Rect(726, 144, 46, 20),"Loop")
+										Rect(697, 140, 46, 20),"Loop")
 				.rounded_(true)
 				.color_(\on,Color(50/77,61/77,1))
 				.color_(\off,Color(1,1,1,0.88)/4);
 
 			// sampleRate
-			gui[\sampleRate] = MVC_StaticText( gui[\scrollView], Rect(322,196,65,18),
-										gui[\infoTheme])
+			gui[\sampleRate] = MVC_StaticText( gui[\scrollView], Rect(322,196,65,18), gui[\infoTheme])
 				.label_("Sample Rate:");
 
 			// duration
-			gui[\duration] = MVC_StaticText( gui[\scrollView], Rect(477,196,65,18),
-										gui[\infoTheme])
+			gui[\duration] = MVC_StaticText( gui[\scrollView], Rect(477,196,65,18), gui[\infoTheme])
 				.label_("Duration:");
 
 			//numChannels
-			gui[\numChannels] = MVC_StaticText( gui[\scrollView], Rect(144,196,65,18),
-										gui[\infoTheme])
+			gui[\numChannels] = MVC_StaticText( gui[\scrollView], Rect(144,196,65,18), gui[\infoTheme])
 				.label_("Num Channels:");
 
 			if ((this.notEmpty) and:{ buffer.isLoaded}) {

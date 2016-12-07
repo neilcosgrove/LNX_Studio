@@ -12,8 +12,9 @@
 // BUGS: !!!
 //
 // focus is lost when adding samples now
-// also funcs called a lot when selecting sample
-//  entering numbers via keyboard to tempo doesn't update LNX_InstrumentTemplate:bpmChange
+// also funcs called a lot when selecting sample // done
+//  entering numbers via keyboard to tempo doesn't update LNX_InstrumentTemplate:bpmChange // done i think
+//
 
 LNX_StrangeLoop : LNX_InstrumentTemplate {
 
@@ -25,7 +26,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
 
-	*studioName		 {^"Strange Loop"}
+	*studioName		 {^"StRAnGE loOp"}
 	*sortOrder		 {^1.5}
 	*isVisible		 {^true}
 	isInstrument	 {^true}
@@ -179,8 +180,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 					this.setPVPModel(17,val,latency,send);
 			}],
 
-			// 18. hold on
-			[1, \switch,  (items_:["Sequncer","Play Loop"]), midiControl, 18, "Hold On",
+			// 18. play back mode
+			[1, \switch,  (items_:["Sequncer","Play Loop"]), midiControl, 18, "Play back mode",
 				{|me,val,latency,send|
 					this.setPVPModel(18,val,latency,send);
 					if (val==0) {
@@ -188,6 +189,18 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 					}{
 						seqOutBuffer.releaseAll(latency ? studio.actualLatency)
 					};
+			}],
+
+			// 19. freeze
+			[0, \switch, (label_:"Freeze"), midiControl, 19, "Freeze",
+				{|me,val,latency,send|
+					this.setPVPModel(19,val,latency,send);
+			}],
+
+			// 20. memory 1-8
+			[1, [1,8,\linear,1],  (label_:"Memory"), midiControl, 20, "Memory",
+				{|me,val,latency,send|
+					this.setPVPModel(20,val,latency,send);
 			}],
 
 
@@ -215,6 +228,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	iInitVars{
 		// user content !!!!!!!
 		sampleBank = LNX_SampleBank(server,apiID:((id++"_url_").asSymbol))
+				.defaultLoop_(1)
 				.selectedAction_{|bank,val,send=true,update=true|
 					if (update) {models[11].valueAction_(val,nil,true)};
 					if (mode===\marker ) { this.marker_update(\selectFunc) };
@@ -456,7 +470,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.items_(sampleBank.names);
 
 		// 12. transpose
-		MVC_MyKnob3(gui[\scrollView], models[12], Rect(605, 218, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+		MVC_MyKnob3(gui[\scrollView], models[12], Rect(605, 218, 28, 28), gui[\knobTheme1]).zeroValue_(0)
+			.resoultion_(5);
 
 		// 13. fine
 		MVC_MyKnob3(gui[\scrollView], models[13], Rect(667, 218, 28, 28), gui[\knobTheme1]).zeroValue_(0);
@@ -464,17 +479,39 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		// 14. fold/wrap
 		MVC_PopUpMenu3(gui[\scrollView], models[14], Rect(686, 175, 80, 17), gui[\menuTheme]);
 
+		// 18. play back mode
+		MVC_PopUpMenu3(gui[\scrollView], models[18], Rect(593, 175, 80, 17), gui[\menuTheme]);
+
+		// *****************
+
+		// 19. freeze
+		MVC_MyKnob3(models[19]); // this is fake, without it automation doesn't works. needs fixing
+
+		// freeze button
+		gui[\freezeButton] = MVC_FlatButton(gui[\scrollView], Rect(595, 267, 43, 18),"Freeze")
+			.downAction_{
+				models[19].valueAction_(1,nil,true,false)
+			}
+			.upAction_{
+				models[19].valueAction_(0,nil,true,false)
+			};
+
+		MVC_FuncAdaptor(models[19]).func_{|me,val| gui[\freezeButton].down_(val.isTrue) };
+
+		// 20. memory
+		MVC_MyKnob3(gui[\scrollView], models[20], Rect(605, 308, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+
 		// 15. repeat prob
-		MVC_MyKnob3(gui[\scrollView], models[15], Rect(605, 286, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+		MVC_MyKnob3(gui[\scrollView], models[15], Rect(665, 308, 28, 28), gui[\knobTheme1]).zeroValue_(0);
 
 		// 16. repeat trans
-		MVC_MyKnob3(gui[\scrollView], models[16], Rect(667, 286, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+		MVC_MyKnob3(gui[\scrollView], models[16], Rect(605, 373, 28, 28), gui[\knobTheme1]).zeroValue_(0)
+			.resoultion_(5);
 
 		// 17. repeat amp
-		MVC_MyKnob3(gui[\scrollView], models[17], Rect(725, 286, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+		MVC_MyKnob3(gui[\scrollView], models[17], Rect(665, 373, 28, 28), gui[\knobTheme1]).zeroValue_(0);
 
-		// 18. hold on
-		MVC_PopUpMenu3(gui[\scrollView], models[18], Rect(593, 175, 80, 17), gui[\menuTheme]);
+		// *****************
 
 		// piano roll
 		sequencer.createWidgets(gui[\scrollView],Rect(3,220,567, 340)
@@ -493,7 +530,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				);
 
 		// import button
-		MVC_FlatButton(gui[\scrollView], Rect(600, 340, 43, 18),"Import")
+		MVC_FlatButton(gui[\scrollView], Rect(245, 213, 43, 18),"Import")
 			.action_{
 				this.marker_Import;
 			};

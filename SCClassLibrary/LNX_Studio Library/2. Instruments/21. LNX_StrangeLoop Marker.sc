@@ -4,6 +4,10 @@
 
 // +++ proll + dark patches + marker metadata ie default, clip or wrap,  rev
 // space bar is playing wrong sample on load
+// lazy pRoll marker // it already is
+// payback loops when start & end change
+// loop true is default // done
+// freeze button
 
 LNX_MarkerEvent {
 	var <>markerNo, <>deltaBeats, <>offset, <>startFrame, <>durFrame;
@@ -21,6 +25,7 @@ LNX_MarkerEvent {
 	marker_initVars{
 		markerSeq = [];
 		allMakerEvents = [];
+		lastMarkerEvent = [];
 	}
 
 	// sample length is updated when bpm>0 and start or end markers are changed
@@ -121,11 +126,14 @@ LNX_MarkerEvent {
 
 		// beat repeat
 		if  (markerEvent.notNil) {
-			if (((p[15]/100).coin) && (markerEvent.notNil)) {
-				markerEvent = lastMarkerEvent;	// repeat
+			var probability = p[15]/100;
+			if (p[19]==1) { probability=1 };
+			if ((probability.coin) && (lastMarkerEvent.notEmpty)) {
+				markerEvent = lastMarkerEvent.wrapAt(repeatNo);	// repeat
 				repeatNo = repeatNo + 1;		// inc number of repeats
 			}{
 				repeatNo = 0;					// don't repeat
+				lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent).keep(p[20].asInt);
 			};
 		};
 
@@ -144,7 +152,7 @@ LNX_MarkerEvent {
 				nil;
 			}.sched(markerEvent.offset * absTime3);
 
-			lastMarkerEvent = markerEvent;
+
 		};
 
 	}
@@ -207,6 +215,7 @@ LNX_MarkerEvent {
 		if (this.isOff)   { ^this }; // instrument is off exception
 
 		if (pipe.isNoteOn ) {
+			var probability;
 			var note		= pipe.note.asInt;
 			var vel			= pipe.velocity;
 			var latency     = pipe.latency;
@@ -226,20 +235,23 @@ LNX_MarkerEvent {
 			};
 
 			// beat repeat
-			if (((p[15]/100).coin) && (markerEvent.notNil)) {
-				markerEvent = lastMarkerEvent;	// repeat
+			probability = p[15]/100;
+			if (p[19]==1) { probability=1 };
+			if ((probability.coin) && (lastMarkerEvent.notEmpty)) {
+				markerEvent = lastMarkerEvent.wrapAt(repeatNo);	// repeat
 				repeatNo = repeatNo + 1;		// inc number of repeats
 				rate		= (p[12]+p[13]+(repeatNo*p[16])).midiratio.round(0.0000000001).clip(0,100000);
 				amp         = (vel/127)*(p[17]**repeatNo);
 			}{
 				repeatNo = 0;					// don't repeat
+				lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent).keep(p[20].asInt);
 			};
 
 			noteOnNodes[note] =
 			  this.marker_playBufferMIDI(
 				bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency
 			);
-			lastMarkerEvent = markerEvent;
+
 		};
 
 	}
@@ -331,7 +343,7 @@ LNX_MarkerEvent {
 	}
 
 	marker_stopPlay{
-		lastMarkerEvent = nil;
+		lastMarkerEvent = [];
 		repeatNo        = 0;
 	}
 

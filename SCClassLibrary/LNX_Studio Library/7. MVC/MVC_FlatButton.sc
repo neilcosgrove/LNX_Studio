@@ -10,6 +10,7 @@ MVC_FlatButton : MVC_View {
 	var <>insetBy=0;
 
 	var <>downAction;
+	var <>upAction;
 
 	// set your defaults
 	initView{
@@ -183,6 +184,9 @@ MVC_FlatButton : MVC_View {
 		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
 			MVC_LazyRefresh.mouseUp;
+
+			upAction.value;
+
 			if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}and:{evaluateAction}and:{editMode.not}) {
 				down=false;
 				this.viewDoValueAction_((value+1).asInt.wrap(0,strings.size-1),nil,true,false);

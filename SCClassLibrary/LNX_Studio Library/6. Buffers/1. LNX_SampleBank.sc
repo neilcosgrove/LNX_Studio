@@ -50,6 +50,8 @@ LNX_SampleBank{
 
 	var <>finishedLoadingFunc;
 
+	var <>defaultLoop = 0;
+
 	// init the class
 	*initClass {
 		sampleBanks=Set[];
@@ -89,7 +91,7 @@ LNX_SampleBank{
 		metaModel[\name    ] 		=        "".asModel;            // rename sample
 		metaModel[\pitch   ] 		=     \midi.asModel;            // nearest pitch
 		metaModel[\amp     ] 		=      \db6.asModel;            // need to change loading
-		metaModel[\loop    ] 		=   \switch.asModel;            // loop sample
+		metaModel[\loop    ] 		=   \switch.asModel.value_(defaultLoop);	// loop sample
 		metaModel[\start   ] 		= \unipolar.asModel;            // start frame
 		metaModel[\end     ] 		= \unipolar.asModel.value_(1);  // end frame (1 is end of sample)
 		metaModel[\active  ] 		=   \switch.asModel.value_(1);  // on/off (mute)
@@ -116,6 +118,8 @@ LNX_SampleBank{
 
 		otherModel[\pos]  = \bipolar.asModel.value_(-1); // -1 is not playing
 		otherModel[\pos2] = \bipolar.asModel.value_(-1); // -1 is not playing
+
+
 
 		metaModels = metaModels.add(metaModel);
 		otherModels=otherModels.add(otherModel);
