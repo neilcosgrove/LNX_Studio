@@ -1,27 +1,68 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LNX_StrangeLoop //
 ////////////////////
-// Possible modes are...
-//	  repitch : sample rate is changed to fit loop length
-//	  marker  : sample rate is fixed and event happen on markers. clip or fold to extend.
-//    grain   : grains are streched to fit loop length & Grain events happen on markers
-//
-// Think about...
-//    clock offset start, one shot, zeroX, tap bpm, stopping sampleRefresh when not following
-//
-// BUGS: !!!
-//
-// focus is lost when adding samples now
-// also funcs called a lot when selecting sample // done
-//  entering numbers via keyboard to tempo doesn't update LNX_InstrumentTemplate:bpmChange // done i think
-//
+/*
+Possible playback modes are...
+	repitch : sample rate is changed to fit loop length
+	marker  : sample rate is fixed and events happen on markers. clip or fold to extend.
+	grain   : grains are streched to fit loop length & Grain events happen on markers
+
+To do / Think about...
+----------------------
+reverse button
+beat repeat based on fixed frame rather than events
+	seperate from event based
+	both can't happen at the same time & neither can stop the other
+	has repeat%, freeze, memory, trans & amp
+
+	repeat remains on chance?
+
+	starts every (n) beat - range and quant i.e [2-8 every 2] = (2,4,6,8) // maybe only offset
+	repeat length (n) beat - range and quant i.e [2-8 every 2] = (2,4,6,8)
+
+new sample length (n) beats (mono/stereo)
+record audio - many sources (level in) (overdub,replace)
+	transfer data from server to sclang via a temp file
+save names in cashe / dialog ?
+playback bpm [div 2] [*2] buttons
+quantise options
+grains
+clock offset start
+one shot
+zeroX
+where does sample metadata sit
+proll has dark patches for out of range
+marker metadata ie default
+markers can clip, wrap or rev
+markers have colour
+this might need a buffer and a voicer
+attack decay envelope
+
+BUGS: !!!
+---------
+aliasing when scrolling
+focus is lost when adding samples now
+space bar is playing wrong sample on load
+still release problems when swapping over from hold or stopping
+
+Done
+----
+tap bpm
+stopping sampleRefresh when not following
+also funcs called a lot when selecting sample
+entering numbers via keyboard to tempo doesn't update LNX_InstrumentTemplate:bpmChange
+lazy pRoll marker
+loop true is default
+freeze button
+
+*/
 
 LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	var <sampleBank,		<webBrowser, 	<relaunch = false,	<newBPM = false;
 	var <mode = \marker,	<markerSeq,		<lastMarkerEvent,	<repeatNo=0;
 	var <allMakerEvents,    <noteOnNodes,	<sequencer,			<seqOutBuffer;
-	var <repeatRate=0,		<repeatAmp=1;
+	var <repeatMode,		<repeatRate=0,	<repeatAmp=1;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -33,7 +74,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	isInstrument	 {^true}
 	canBeSequenced	 {^true}
 	isMixerInstrument{^true}
-	mixerColor		 {^Color(0.75,0.75,1,0.4)} // colour in mixer
+	mixerColor		 {^Color(1,0.5,1,0.4)} // colour in mixer
 	hasLevelsOut	 {^true}
 	peakModel   	 {^models[6]}
 	volumeModel 	 {^models[2]}
@@ -176,7 +217,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 17. repeat amp
-			[1, [0,1],  (label_:"R Amp", numberFunc_:\float2), midiControl, 17, "R Amp",
+			[1, [0,1],  (label_:"R Decay", numberFunc_:\float2), midiControl, 17, "R Decay",
 				{|me,val,latency,send|
 					this.setPVPModel(17,val,latency,send);
 			}],
@@ -204,6 +245,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 					this.setPVPModel(20,val,latency,send);
 			}],
 
+			// 21. reverse
+			[0, \switch, midiControl, 21, "Rev",
+				{|me,val,latency,send|
+					this.setPVPModel(21,val,latency,send);
+			}],
 
 		].generateAllModels;
 
@@ -287,9 +333,17 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	// clock in, select mode
 	clockIn3{|instBeat,absTime3,latency,beat|
-		if (p[18].isFalse) { sequencer.do(_.clockIn3(beat,absTime,latency,beat)) };
-		if (mode===\repitch) { this.pitch_clockIn3 (instBeat,absTime3,latency,beat); ^this };
-		if (mode===\marker ) { this.marker_clockIn3(instBeat,absTime3,latency,beat); ^this };
+
+		if (mode===\repitch) {
+			this.pitch_clockIn3 (instBeat,absTime3,latency,beat);
+			if (p[18].isFalse) { sequencer.do(_.clockIn3(beat,absTime,latency,beat)) }; // i want pRoll 2nd for repeat reasons
+			^this
+		};
+		if (mode===\marker ) {
+			this.marker_clockIn3(instBeat,absTime3,latency,beat);
+			if (p[18].isFalse) { sequencer.do(_.clockIn3(beat,absTime,latency,beat)) };
+			^this
+		};
 
 	}
 
@@ -405,7 +459,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	// GUI ////////////////////////////////////////////////////////////////////////////////////////////
 
-	*thisWidth  {^800}
+	*thisWidth  {^870}
 	*thisHeight {^600}
 
 	createWindow{|bounds|
@@ -485,6 +539,32 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		// *****************
 
+		// 21. rev
+		MVC_MyKnob3(models[21]); // this is fake, without it automation doesn't works. needs fixing
+
+		// rev button
+		gui[\revButton] = MVC_FlatButton(gui[\scrollView], Rect(715, 267, 40, 20),"Rev")
+			.rounded_(true)
+			.font_(Font("Helvetica",12,true))
+			.color_(\up,Color(50/77,61/77,1))
+			.color_(\down,Color(1,1,1,0.88)/4)
+			.downAction_{
+				models[21].valueAction_(1,nil,true,false)
+			}
+			.upAction_{
+				models[21].valueAction_(0,nil,true,false)
+			};
+
+		MVC_PipeLampView(gui[\scrollView],models[21], Rect(679+15,270,12,12))
+			.doLazyRefresh_(false)
+			.border_(true)
+			.mouseWorks_(true)
+			.color_(\on,Color(50/77,61/77,1));
+
+		MVC_FuncAdaptor(models[21]).func_{|me,val| gui[\revButton].down_(val.isTrue) };
+
+		// *****************
+
 		// 19. freeze
 		MVC_MyKnob3(models[19]); // this is fake, without it automation doesn't works. needs fixing
 
@@ -501,11 +581,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				models[19].valueAction_(0,nil,true,false)
 			};
 
-		MVC_PipeLampView(gui[\scrollView],models[19], Rect(650,270,11,11))
-			//.insetBy_(1)
+		MVC_PipeLampView(gui[\scrollView],models[19], Rect(649,270,12,12))
+			.doLazyRefresh_(false)
 			.border_(true)
 			.mouseWorks_(true)
-			.color_(\on,Color.green);
+			.color_(\on,Color(50/77,61/77,1));
 
 		MVC_FuncAdaptor(models[19]).func_{|me,val| gui[\freezeButton].down_(val.isTrue) };
 
@@ -516,11 +596,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_MyKnob3(gui[\scrollView], models[15], Rect(665, 308, 28, 28), gui[\knobTheme1]).zeroValue_(0);
 
 		// 16. repeat trans
-		MVC_MyKnob3(gui[\scrollView], models[16], Rect(605, 373, 28, 28), gui[\knobTheme1]).zeroValue_(0)
+		MVC_MyKnob3(gui[\scrollView], models[16], Rect(725, 308, 28, 28), gui[\knobTheme1]).zeroValue_(0)
 			.resoultion_(5);
 
 		// 17. repeat amp
-		MVC_MyKnob3(gui[\scrollView], models[17], Rect(665, 373, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+		MVC_MyKnob3(gui[\scrollView], models[17], Rect(785, 308, 28, 28), gui[\knobTheme1]).zeroValue_(0);
 
 		// *****************
 

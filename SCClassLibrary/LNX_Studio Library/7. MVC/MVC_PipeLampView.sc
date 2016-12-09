@@ -22,7 +22,7 @@ MVC_PipeLampView : MVC_View {
 
 	var <notesOn, <>border=false, <>mouseWorks=false, <down=false, <>insetBy=0;
 
-	var lazyRefresh;
+	var lazyRefresh, <>doLazyRefresh=true;
 
 	// set your defaults
 	initView{
@@ -181,6 +181,6 @@ MVC_PipeLampView : MVC_View {
 	viewFree{ lazyRefresh.free }
 
 	// only refresh at a frame rate
-	lazyRefresh{ lazyRefresh.lazyRefresh }
+	lazyRefresh{ if (doLazyRefresh) {lazyRefresh.lazyRefresh} { this.refresh } }
 
 }

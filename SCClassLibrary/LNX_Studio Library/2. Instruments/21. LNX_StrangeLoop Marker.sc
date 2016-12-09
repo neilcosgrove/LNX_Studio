@@ -2,13 +2,6 @@
 // Marker mode  //
 // ************ //
 
-// +++ proll + dark patches + marker metadata ie default, clip or wrap,  rev
-// space bar is playing wrong sample on load
-// lazy pRoll marker // it already is
-// payback loops when start & end change
-// loop true is default // done
-// freeze button
-
 LNX_MarkerEvent {
 	var <>markerNo, <>deltaBeats, <>offset, <>startFrame, <>durFrame;
 	*new     {|markerNo, deltaBeats, offset, startFrame, durFrame|
@@ -23,9 +16,9 @@ LNX_MarkerEvent {
 + LNX_StrangeLoop {
 
 	marker_initVars{
-		markerSeq = [];
-		allMakerEvents = [];
-		lastMarkerEvent = [];
+		markerSeq		= []; // marker seq for playback loop
+		allMakerEvents	= []; // all makers for pRoll sequencer
+		lastMarkerEvent	= []; // previous marker event for freeze memory
 	}
 
 	// sample length is updated when bpm>0 and start or end markers are changed
@@ -38,11 +31,10 @@ LNX_MarkerEvent {
 		if (bpm<=0) { ^this }; 								// no bpm set exception
 		startRatio	= sampleBank.actualStart(sampleIndex);	// start pos ratio
 		endRatio    = sampleBank.actualEnd  (sampleIndex);	// end   pos ratio
-		duration    = sampleBank.duration   (sampleIndex);
-		length      = (endRatio - startRatio) * duration * bpm / 60 * 8;
+		duration    = sampleBank.duration   (sampleIndex);	// dur in sec(s)
+		length      = (endRatio - startRatio) * duration * bpm / 60 * 8; // formula for length of loops in beats
 		length      = length.round(1).asInt;				// do we want to quant this more than 1?
-
-		sampleBank.length_(sampleIndex,length);
+		sampleBank.length_(sampleIndex,length);				// set length
 	}
 
 	// make the basic playback sequence and all marker events
@@ -56,7 +48,7 @@ LNX_MarkerEvent {
 		startRatio	= sampleBank.actualStart(sampleIndex);	// start pos ratio
 		endRatio    = sampleBank.actualEnd  (sampleIndex);	// end   pos ratio
 		durRatio    = endRatio - startRatio;				// dur ratio
-		length 		= sampleBank.length(sampleIndex).asInt;
+		length 		= sampleBank.length(sampleIndex).asInt;	// length of loop in beats
 		length3		= length * 3;							// this is length of loop in beats on clock3
 		numFrames	= sampleBank.numFrames(sampleIndex);	// total number of frames in sample
 		markerSeq	= nil ! length3; // now i need to put the markers into this seq, clock dur split up into beats.
@@ -85,29 +77,26 @@ LNX_MarkerEvent {
 
 	// import play loop seq into the piano roll
 	marker_Import{
-		var length, length3;
-		var sampleIndex=p[11];
-
+		var length, length3, sampleIndex=p[11];				// sample index
 		if (sampleBank[sampleIndex].isNil) { ^this }; 		// no samples loaded in bank exception
 
-		length  = sampleBank.length(sampleIndex).asInt;
-		length3 = length * 3;
+		length  = sampleBank.length(sampleIndex).asInt;		// length of loop in beats
+		length3 = length * 3;								// and 83 for midi clock in3
+		models[18].valueAction_(0,nil,true);				// swap to sequencer mode
+		sequencer.netClear; 								// clear the pRoll, this not networked
+		sequencer.netDur_(length);							// set the lengths the same
 
-		models[18].valueAction_(0,nil,true);
-
-		sequencer.netClear; // this not networked
-		sequencer.netDur_(length);
-
+		// for all events
 		allMakerEvents.do{|marker,j|
-			var nextMarker = allMakerEvents[j+1];
+			var nextMarker = allMakerEvents[j+1];			// the next marker so we work out duration
 			var nextTime;
-			var thisTime = ((marker.deltaBeats) + (marker.deltaBeats))/6;
+			var thisTime = ((marker.deltaBeats) + (marker.deltaBeats))/6; 				// this beat
 			if (nextMarker.notNil) {
-				nextTime = ((nextMarker.deltaBeats) + (nextMarker.deltaBeats))/6;
+				nextTime = ((nextMarker.deltaBeats) + (nextMarker.deltaBeats))/6; 		// next beat is either marker
 			}{
-				nextTime = length;
+				nextTime = length;														// or the length of the loop
 			};
-			sequencer.addNote(marker.markerNo, thisTime, nextTime-thisTime , 100/127);
+			sequencer.addNote(marker.markerNo, thisTime, nextTime-thisTime , 0.7874);	// add to pRoll (0.7874 =100/127)
 		}
 
 	}
@@ -124,34 +113,48 @@ LNX_MarkerEvent {
 		length3     = sampleBank.length(sampleIndex).asInt * 3; // this is length of loop in beats on clock3
 		markerEvent = markerSeq.wrapAt(instBeat3); // midi in might be out of range so wrap. maybe return nil?
 
-		// beat repeat
-		if  (markerEvent.notNil) {
-			var probability = p[15]/100;
-			if (p[19]==1) { probability=1 };
-			if ((probability.coin) && (lastMarkerEvent.notEmpty)) {
-				markerEvent = lastMarkerEvent.wrapAt(repeatNo);	// repeat
-				repeatNo = repeatNo + 1;		// inc number of repeats
-			}{
-				repeatNo = 0;					// don't repeat
-				lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent).keep(p[20].asInt);
-			};
-		};
-
 		// launch at start pos  [ or relaunch sample if needed** no relaunch yet]
 		if (markerEvent.notNil) {
-			var sample      = sampleBank[sampleIndex];
-			var rate		= (p[12]+p[13]+(repeatNo*p[16])).midiratio.round(0.0000000001).clip(0,100000);
-			var amp         = p[17]**repeatNo;
-			var clipMode    = p[14];
+			var sample      = sampleBank[sampleIndex];				// the sample
+			var rate		= (p[12]+p[13]).midiratio.round(0.0000000001).clip(0,100000);
+			var amp         = 0.7874;								// 100/127 - amp in pRoll
+			var clipMode    = p[14];								// clip, wrap or fold
 			var bufferL		= sample.buffer.bufnum(0);          	// this only comes from LNX_BufferArray
 			var bufferR		= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
+
+			var probability = p[15]/100;							// beat repeat
+			if (p[19]==1) { probability=1 };
+
+			// repeat mode fixed frame will only happen here
+			// and if on should stop pipeIn from working
+
+			// event repeat
+			if ((probability.coin) && (lastMarkerEvent.notEmpty) && (repeatMode!=\frame)) {
+				repeatMode  = \event;
+				markerEvent = lastMarkerEvent.wrapAt(repeatNo);		// repeat
+				repeatNo 	= repeatNo + 1;							// inc number of repeats
+				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
+				repeatRate	= repeatRate + p[16];
+				amp         = (100/127) * repeatAmp;
+				repeatAmp	= repeatAmp * p[17];
+
+			}{
+				if (repeatMode == \event) {
+					repeatMode  = nil;
+					repeatNo	= 0; // reset all vars
+					repeatRate	= 0;
+					repeatAmp	= 1;
+				};
+			};
+
+			if (repeatMode.isNil) { lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent) }; // add last event
+			lastMarkerEvent = lastMarkerEvent.keep(p[20].asInt); // memory of length p[20]
 
 			{
 				this.marker_playBuffer(
 					bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
 				nil;
 			}.sched(markerEvent.offset * absTime3);
-
 
 		};
 
@@ -189,19 +192,18 @@ LNX_MarkerEvent {
 
 	// change playback rate
 	marker_changeRate{|latency|
-		var rate = (p[12]+p[13]).midiratio.round(0.0000000001);
+/*		var rate = (p[12]+p[13]).midiratio.round(0.0000000001); // this is changed by repeat *** !!!!
 		(noteOnNodes++node).select(_.notNil).do{|node|
 			server.sendBundle(latency +! syncDelay, [\n_set, node, \rate, rate]);
-		};
+		};*/
 	}
 
-	// this might need a buffer and a voicer
-
-	// still release problems when swapping over from hold or stopping
+	// both midi in & pRoll seq destinations
 	marker_pipeIn{|pipe|
 
 		if (sampleBank[p[11]].isNil) { ^this }; // no sample exception
 
+		// note OFF
 		if (pipe.isNoteOff) {
 			var note    = pipe.note.asInt;
 			var latency = pipe.latency;
@@ -214,6 +216,7 @@ LNX_MarkerEvent {
 		if (p[18].isTrue) { ^this }; // hold on exception
 		if (this.isOff)   { ^this }; // instrument is off exception
 
+		// note ON (with midi max number of usable markers is 0-127)
 		if (pipe.isNoteOn ) {
 			var probability;
 			var note		= pipe.note.asInt;
@@ -234,23 +237,27 @@ LNX_MarkerEvent {
 				server.sendBundle(latency +! syncDelay, ["/n_set", noteOnNodes[note], \gate, 0])
 			};
 
-			// beat repeat
-			probability = p[15]/100;
-			if (p[19]==1) { probability=1 };
-			if ((probability.coin) && (lastMarkerEvent.notEmpty)) {
+			// beat repeat (event)
+			if (p[19]==1) { probability = 1 } { probability = p[15]/100 };
+			if ((probability.coin) && (lastMarkerEvent.notEmpty)  && (repeatMode!=\frame)) {
+				repeatMode  = \event;
 				markerEvent = lastMarkerEvent.wrapAt(repeatNo);	// repeat
 				repeatNo 	= repeatNo + 1;						// inc number of repeats
 				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
 				repeatRate	= repeatRate + p[16];
 				amp         = (vel/127) * repeatAmp;
 				repeatAmp	= repeatAmp * p[17];
-
 			}{
-				repeatNo = 0;					// don't repeat
-				lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent).keep(p[20].asInt);
-				repeatRate=0;
-				repeatAmp=1;
+				if (repeatMode == \event) {
+					repeatMode  = nil;
+					repeatNo	= 0; // reset all vars
+					repeatRate	= 0;
+					repeatAmp	= 1;
+				};
 			};
+
+			if (repeatMode.isNil) { lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent) }; // add last event
+			lastMarkerEvent = lastMarkerEvent.keep(p[20].asInt); // memory of length p[20]
 
 			noteOnNodes[note] =
 			  this.marker_playBufferMIDI(
@@ -263,12 +270,10 @@ LNX_MarkerEvent {
 
 	// play a buffer for play loop mode
 	marker_playBuffer{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,clipMode,amp,latency|
-
 		this.marker_stopBuffer(latency);
-
 		node = server.nextNodeID;
-
-		server.sendBundle(latency +! syncDelay, ["/s_new", \SLoopMarker, node, 0, instGroupID,
+		server.sendBundle(latency +! syncDelay,
+			["/s_new", p[21].isTrue.if(\SLoopMarkerRev,\SLoopMarker), node, 0, instGroupID,
 			\outputChannels,	this.instGroupChannel,
 			\id,				id,
 			\amp,				amp,
@@ -285,8 +290,8 @@ LNX_MarkerEvent {
 	// play a buffer for sequencer mode
 	marker_playBufferMIDI{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,clipMode,amp,latency|
 		var node = server.nextNodeID;
-
-		server.sendBundle(latency +! syncDelay, ["/s_new", \SLoopMarker, node, 0, instGroupID,
+		server.sendBundle(latency +! syncDelay,
+			["/s_new", p[21].isTrue.if(\SLoopMarkerRev,\SLoopMarker), node, 0, instGroupID,
 			\outputChannels,	this.instGroupChannel,
 			\id,				id,
 			\amp,				amp,
@@ -298,27 +303,42 @@ LNX_MarkerEvent {
 			\attackLevel:		attackLevel,
 			\clipMode:			clipMode
 		]);
-
 		^node; // for noteOn noteOff
-
 	}
 
 	*marker_initUGens{|server|
 
 		SynthDef("SLoopMarker",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
 				gate=1,attackLevel=1, clipMode=0, id=0, amp=1|
-			var signal;
-			var index  = Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio);
+			var signal, index;
 
-			index = startFrame +
-				Select.ar(clipMode,[ index.clip(0,durFrame) , index.fold(0,durFrame) , index.wrap(0,durFrame) ]);
+			index  = Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio);
+			index  = startFrame + Select.ar(clipMode,
+						[ index.clip(0,durFrame) , index.fold(0,durFrame) , index.wrap(0,durFrame) ]);
 
-			signal = BufRd.ar(1, [bufnumL,bufnumR], index, loop:0); // mono, might need to be leaked
+			signal = BufRd.ar(1, [bufnumL,bufnumR], index, loop:0); // might need to be leaked
 			signal = signal * EnvGen.ar(Env.new([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,amp,doneAction:2);
 
 			DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0
 			OffsetOut.ar(outputChannels,signal);			 // now send out
+			SendReply.kr(Impulse.kr(20), '/sIdx', [index], id); // send sample index back to client
 
+		}).send(server);
+
+
+		SynthDef("SLoopMarkerRev",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
+				gate=1,attackLevel=1, clipMode=0, id=0, amp=1|
+			var signal, index;
+
+			index  = Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio);
+			index  = startFrame + durFrame - Select.ar(clipMode,
+						[ index.clip(0,durFrame) , index.fold(0,durFrame) , index.wrap(0,durFrame) ]);
+
+			signal = BufRd.ar(1, [bufnumL,bufnumR], index, loop:0); // might need to be leaked
+			signal = signal * EnvGen.ar(Env.new([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,amp,doneAction:2);
+
+			DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0
+			OffsetOut.ar(outputChannels,signal);			 // now send out
 			SendReply.kr(Impulse.kr(20), '/sIdx', [index], id); // send sample index back to client
 
 		}).send(server);
@@ -348,6 +368,7 @@ LNX_MarkerEvent {
 	}
 
 	marker_stopPlay{
+		repeatMode		= nil;
 		lastMarkerEvent = [];
 		repeatNo        = 0;
 		repeatRate 		= 0;
