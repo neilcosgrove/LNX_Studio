@@ -40,6 +40,7 @@ attack decay envelope
 
 BUGS: !!!
 ---------
+need to put latency sync in
 aliasing when scrolling
 focus is lost when adding samples now
 space bar is playing wrong sample on load
@@ -233,7 +234,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 					};
 			}],
 
-			// 19. freeze
+			// 19. event freeze
 			[0, \switch, midiControl, 19, "Freeze",
 				{|me,val,latency,send|
 					this.setPVPModel(19,val,latency,send);
@@ -249,6 +250,24 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[0, \switch, midiControl, 21, "Rev",
 				{|me,val,latency,send|
 					this.setPVPModel(21,val,latency,send);
+			}],
+
+			// 22. frame freeze
+			[0, \switch, midiControl, 22, "Frame",
+				{|me,val,latency,send|
+					this.setPVPModel(22,val,latency,send);
+			}],
+
+			// 23. frame length 1-32
+			[4, [1,32,\linear,1],  (label_:"Length"), midiControl, 23, "Length",
+				{|me,val,latency,send|
+					this.setPVPModel(23,val,latency,send);
+			}],
+
+			// 24. repeat prob
+			[0, [0,100,\lin,0.1,0,"%"],  (label_:"Repeat", numberFunc_:\float1), midiControl, 24, "Repeat",
+				{|me,val,latency,send|
+					this.setPVPModel(24,val,latency,send);
 			}],
 
 		].generateAllModels;
@@ -537,33 +556,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		// 18. play back mode
 		MVC_PopUpMenu3(gui[\scrollView], models[18], Rect(593, 175, 80, 17), gui[\menuTheme]);
 
-		// *****************
-
-		// 21. rev
-		MVC_MyKnob3(models[21]); // this is fake, without it automation doesn't works. needs fixing
-
-		// rev button
-		gui[\revButton] = MVC_FlatButton(gui[\scrollView], Rect(715, 267, 40, 20),"Rev")
-			.rounded_(true)
-			.font_(Font("Helvetica",12,true))
-			.color_(\up,Color(50/77,61/77,1))
-			.color_(\down,Color(1,1,1,0.88)/4)
-			.downAction_{
-				models[21].valueAction_(1,nil,true,false)
-			}
-			.upAction_{
-				models[21].valueAction_(0,nil,true,false)
-			};
-
-		MVC_PipeLampView(gui[\scrollView],models[21], Rect(679+15,270,12,12))
-			.doLazyRefresh_(false)
-			.border_(true)
-			.mouseWorks_(true)
-			.color_(\on,Color(50/77,61/77,1));
-
-		MVC_FuncAdaptor(models[21]).func_{|me,val| gui[\revButton].down_(val.isTrue) };
-
-		// *****************
+		// ***************** EVENT
 
 		// 19. freeze
 		MVC_MyKnob3(models[19]); // this is fake, without it automation doesn't works. needs fixing
@@ -601,6 +594,66 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		// 17. repeat amp
 		MVC_MyKnob3(gui[\scrollView], models[17], Rect(785, 308, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+
+		// ***************** REVERSE
+
+		// 21. rev
+		MVC_MyKnob3(models[21]); // this is fake, without it automation doesn't works. needs fixing
+
+		// rev button
+		gui[\revButton] = MVC_FlatButton(gui[\scrollView], Rect(715, 267, 40, 20),"Rev")
+			.rounded_(true)
+			.font_(Font("Helvetica",12,true))
+			.color_(\up,Color(50/77,61/77,1))
+			.color_(\down,Color(1,1,1,0.88)/4)
+			.downAction_{
+				models[21].valueAction_(1,nil,true,false)
+			}
+			.upAction_{
+				models[21].valueAction_(0,nil,true,false)
+			};
+
+		MVC_PipeLampView(gui[\scrollView],models[21], Rect(679+15,270,12,12))
+			.doLazyRefresh_(false)
+			.border_(true)
+			.mouseWorks_(true)
+			.color_(\on,Color(50/77,61/77,1));
+
+		MVC_FuncAdaptor(models[21]).func_{|me,val| gui[\revButton].down_(val.isTrue) };
+
+		// ***************** FRAME
+
+		// 22. frame freeze
+		MVC_MyKnob3(models[22]); // this is fake, without it automation doesn't works. needs fixing
+
+		// frame button
+		gui[\frameButton] = MVC_FlatButton(gui[\scrollView], Rect(590, 360, 50, 20),"Frame")
+			.rounded_(true)
+			.font_(Font("Helvetica",12,true))
+			.color_(\up,Color(50/77,61/77,1))
+			.color_(\down,Color(1,1,1,0.88)/4)
+			.downAction_{
+				models[22].valueAction_(1,nil,true,false)
+			}
+			.upAction_{
+				models[22].valueAction_(0,nil,true,false)
+			};
+
+		MVC_PipeLampView(gui[\scrollView],models[22], Rect(649,360,12,12))
+			.doLazyRefresh_(false)
+			.border_(true)
+			.mouseWorks_(true)
+			.color_(\on,Color(50/77,61/77,1));
+
+		MVC_FuncAdaptor(models[22]).func_{|me,val| gui[\frameButton].down_(val.isTrue) };
+
+		// 23. frame length
+		MVC_MyKnob3(gui[\scrollView], models[23], Rect(605, 404, 28, 28), gui[\knobTheme1]);
+
+		// 24. repeat prob
+		MVC_MyKnob3(gui[\scrollView], models[24], Rect(665, 468, 28, 28), gui[\knobTheme1]);
+
+
 
 		// *****************
 

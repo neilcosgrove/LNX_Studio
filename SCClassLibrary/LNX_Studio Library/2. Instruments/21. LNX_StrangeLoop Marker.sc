@@ -101,8 +101,24 @@ LNX_MarkerEvent {
 
 	}
 
-	// marker clock in mode
-	marker_clockIn3{|instBeat3,absTime3,latency,beat3|
+	stopAudio{|latency|
+		seqOutBuffer.releaseAll(studio.actualLatency);
+		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
+		if (mode===\marker ) { this.marker_stopBuffer(latency); ^this };
+	}
+
+
+/*	stopPlayLoop{
+
+		this.marker_stopBuffer(latency);
+	}
+	*/
+
+
+	// older
+
+/*	// marker clock in mode
+	marker_clockIn2{|instBeat3,absTime3,latency,beat3|
 		var length3, markerEvent, instBeat;
 		var sampleIndex=p[11];						  // sample used in bank
 
@@ -124,9 +140,6 @@ LNX_MarkerEvent {
 
 			var probability = p[15]/100;							// beat repeat
 			if (p[19]==1) { probability=1 };
-
-			// repeat mode fixed frame will only happen here
-			// and if on should stop pipeIn from working
 
 			// event repeat
 			if ((probability.coin) && (lastMarkerEvent.notEmpty) && (repeatMode!=\frame)) {
@@ -153,6 +166,103 @@ LNX_MarkerEvent {
 			{
 				this.marker_playBuffer(
 					bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
+				nil;
+			}.sched(markerEvent.offset * absTime3);
+
+		};
+
+	}*/
+
+
+	// marker clock in mode (new)
+	marker_clockIn3{|instBeat3,absTime3,latency,beat3|
+		var length3, markerEvent, instBeat;
+		var sampleIndex=p[11];						  // sample used in bank
+		var frameProb	= p[24]/100;				  // frame beat repeat
+		var rate		= (p[12]+p[13]).midiratio.round(0.0000000001).clip(0,100000);
+		var amp         = 0.7874;					  // 100/127 - amp in pRoll
+
+		if (this.isOff   ) { ^this };                 // inst is off exception
+
+		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
+
+		length3     = sampleBank.length(sampleIndex).asInt * 3; // this is length of loop in beats on clock3
+		markerEvent = markerSeq.wrapAt(instBeat3);   // midi in might be out of range so wrap. maybe return nil?
+
+		// frame freeze (beat repeat)
+		if (p[22]==1) { frameProb = 1 };
+
+		if ((instBeat3%(3*(p[23].asInt)))==0) {
+			if ((frameProb.coin) && (lastMarkerEvent.notEmpty) && (repeatMode!=\event)) {
+
+				if (repeatMode.isNil) {
+
+				};// 1st time
+
+				repeatMode  = \frame;
+
+				if (repeatNo==0) { this.stopAudio(latency) };
+
+				markerEvent = lastMarkerEvent.wrapAt(repeatNo);		// repeat
+				repeatNo 	= repeatNo + 1;							// inc number of repeats
+				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
+				repeatRate	= repeatRate + p[16];
+				amp         = (100/127) * repeatAmp;
+				repeatAmp	= repeatAmp * p[17];
+
+			}{
+				if (repeatMode==\frame) {
+					repeatMode  = nil;
+					repeatNo	= 0; // reset all vars
+					repeatRate	= 0;
+					repeatAmp	= 1;
+					//if (repeatNo==0) { this.stopAudio(latency) };
+				};
+
+				if (p[18].isFalse) { ^this };	// no hold exception
+			};
+		}{
+			if (repeatMode==\frame) { ^this };	// drop out if in frame repeat mode
+			if (p[18].isFalse) { ^this };		// no hold exception
+
+		};
+
+		// launch at start pos  [ or relaunch sample if needed** no relaunch yet]
+		if (markerEvent.notNil) {
+			var sample      = sampleBank[sampleIndex];				// the sample
+
+			var clipMode    = p[14];								// clip, wrap or fold
+			var bufferL		= sample.buffer.bufnum(0);          	// this only comes from LNX_BufferArray
+			var bufferR		= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
+			var probability = p[15]/100;							// event beat repeat
+
+			// event freeze (beat repeat)
+			if (p[19]==1) { probability = 1 };
+			if ((probability.coin) && (lastMarkerEvent.notEmpty) && (repeatMode!=\frame)) {
+				repeatMode  = \event;
+				markerEvent = lastMarkerEvent.wrapAt(repeatNo);		// repeat
+				repeatNo 	= repeatNo + 1;							// inc number of repeats
+				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
+				repeatRate	= repeatRate + p[16];
+				amp         = (100/127) * repeatAmp;
+				repeatAmp	= repeatAmp * p[17];
+
+			}{
+				if (repeatMode == \event) {
+					repeatMode  = nil;
+					repeatNo	= 0; // reset all vars
+					repeatRate	= 0;
+					repeatAmp	= 1;
+				};
+			};
+
+			if (repeatMode.isNil) { lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent) }; // add last event
+			lastMarkerEvent = lastMarkerEvent.keep(p[20].asInt); // memory of length p[20]
+
+			{
+				this.marker_playBuffer(
+					bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
+
 				nil;
 			}.sched(markerEvent.offset * absTime3);
 
@@ -213,8 +323,9 @@ LNX_MarkerEvent {
 			noteOnNodes[note] = nil;
 		};
 
-		if (p[18].isTrue) { ^this }; // hold on exception
-		if (this.isOff)   { ^this }; // instrument is off exception
+		if (p[18].isTrue) 		{ ^this }; // hold on exception
+		if (this.isOff)   		{ ^this }; // instrument is off exception
+		if (repeatMode==\frame) { ^this }; // in frame repeat mode exception. noteOn does not work here
 
 		// note ON (with midi max number of usable markers is 0-127)
 		if (pipe.isNoteOn ) {
@@ -263,6 +374,8 @@ LNX_MarkerEvent {
 			  this.marker_playBufferMIDI(
 				bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency
 			);
+
+			this.marker_stopPlayBuffer(latency);
 
 		};
 
@@ -361,10 +474,15 @@ LNX_MarkerEvent {
 		noteOnNodes.do{|node,j|
 			if (node.notNil) {
 				node.postln;
+				thisProcess.dumpBackTrace;
 				server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]);
 				noteOnNodes[j]=nil;
 			};
 		}
+	}
+
+	marker_stopPlayBuffer{|latency|
+		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]) };
 	}
 
 	marker_stopPlay{
