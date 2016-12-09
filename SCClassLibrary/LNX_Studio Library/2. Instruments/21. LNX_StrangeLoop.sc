@@ -61,7 +61,7 @@ freeze button
 LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	var <sampleBank,		<webBrowser, 	<relaunch = false,	<newBPM = false;
-	var <mode = \marker,	<markerSeq,		<lastMarkerEvent,	<repeatNo=0;
+	var <mode = \marker,	<markerSeq,		<lastMarkerEvent,	<lastMarkerEvent2, <repeatNo=0;
 	var <allMakerEvents,    <noteOnNodes,	<sequencer,			<seqOutBuffer;
 	var <repeatMode,		<repeatRate=0,	<repeatAmp=1;
 
@@ -217,7 +217,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 					this.setPVPModel(16,val,latency,send);
 			}],
 
-			// 17. repeat amp
+			// 17. repeat decay
 			[1, [0,1],  (label_:"R Decay", numberFunc_:\float2), midiControl, 17, "R Decay",
 				{|me,val,latency,send|
 					this.setPVPModel(17,val,latency,send);
@@ -268,6 +268,24 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[0, [0,100,\lin,0.1,0,"%"],  (label_:"Repeat", numberFunc_:\float1), midiControl, 24, "Repeat",
 				{|me,val,latency,send|
 					this.setPVPModel(24,val,latency,send);
+			}],
+
+			// 25. memory 1-8
+			[1, [1,8,\linear,1],  (label_:"Memory"), midiControl, 25, "Memory",
+				{|me,val,latency,send|
+					this.setPVPModel(25,val,latency,send);
+			}],
+
+			// 26. repeat transpose  -48 to 48
+			[0, [-48,48,\linear,1],  (label_:"R Trans"), midiControl, 26, "R Trans",
+				{|me,val,latency,send|
+					this.setPVPModel(26,val,latency,send);
+			}],
+
+			// 27. repeat decay
+			[1, [0,1],  (label_:"R Decay", numberFunc_:\float2), midiControl, 27, "R Decay",
+				{|me,val,latency,send|
+					this.setPVPModel(27,val,latency,send);
 			}],
 
 		].generateAllModels;
@@ -653,7 +671,15 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		// 24. repeat prob
 		MVC_MyKnob3(gui[\scrollView], models[24], Rect(665, 468, 28, 28), gui[\knobTheme1]);
 
+		// 25. memory
+		MVC_MyKnob3(gui[\scrollView], models[25], Rect(605, 468, 28, 28), gui[\knobTheme1]);
 
+		// 26. repeat trans
+		MVC_MyKnob3(gui[\scrollView], models[26], Rect(725, 468, 28, 28), gui[\knobTheme1])
+			.resoultion_(5);
+
+		// 27. repeat amp
+		MVC_MyKnob3(gui[\scrollView], models[27], Rect(785, 468, 28, 28), gui[\knobTheme1]);
 
 		// *****************
 

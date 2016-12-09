@@ -19,6 +19,7 @@ LNX_MarkerEvent {
 		markerSeq		= []; // marker seq for playback loop
 		allMakerEvents	= []; // all makers for pRoll sequencer
 		lastMarkerEvent	= []; // previous marker event for freeze memory
+		lastMarkerEvent2 = [];
 	}
 
 	// sample length is updated when bpm>0 and start or end markers are changed
@@ -193,7 +194,7 @@ LNX_MarkerEvent {
 		if (p[22]==1) { frameProb = 1 };
 
 		if ((instBeat3%(3*(p[23].asInt)))==0) {
-			if ((frameProb.coin) && (lastMarkerEvent.notEmpty) && (repeatMode!=\event)) {
+			if ((frameProb.coin) && (lastMarkerEvent2.notEmpty) && (repeatMode!=\event)) {
 
 				if (repeatMode.isNil) {
 
@@ -203,12 +204,12 @@ LNX_MarkerEvent {
 
 				if (repeatNo==0) { this.stopAudio(latency) };
 
-				markerEvent = lastMarkerEvent.wrapAt(repeatNo);		// repeat
+				markerEvent = lastMarkerEvent2.wrapAt(repeatNo);		// repeat
 				repeatNo 	= repeatNo + 1;							// inc number of repeats
 				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
-				repeatRate	= repeatRate + p[16];
+				repeatRate	= repeatRate + p[26];
 				amp         = (100/127) * repeatAmp;
-				repeatAmp	= repeatAmp * p[17];
+				repeatAmp	= repeatAmp * p[27];
 
 			}{
 				if (repeatMode==\frame) {
@@ -258,6 +259,9 @@ LNX_MarkerEvent {
 
 			if (repeatMode.isNil) { lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent) }; // add last event
 			lastMarkerEvent = lastMarkerEvent.keep(p[20].asInt); // memory of length p[20]
+
+			if (repeatMode.isNil) { lastMarkerEvent2 = lastMarkerEvent2.insert(0,markerEvent) }; // add last event
+			lastMarkerEvent2 = lastMarkerEvent2.keep(p[25].asInt); // memory of length p[20]
 
 			{
 				this.marker_playBuffer(
@@ -369,6 +373,9 @@ LNX_MarkerEvent {
 
 			if (repeatMode.isNil) { lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent) }; // add last event
 			lastMarkerEvent = lastMarkerEvent.keep(p[20].asInt); // memory of length p[20]
+
+			if (repeatMode.isNil) { lastMarkerEvent2 = lastMarkerEvent2.insert(0,markerEvent) }; // add last event
+			lastMarkerEvent2 = lastMarkerEvent2.keep(p[25].asInt); // memory of length p[20]
 
 			noteOnNodes[note] =
 			  this.marker_playBufferMIDI(
@@ -488,6 +495,7 @@ LNX_MarkerEvent {
 	marker_stopPlay{
 		repeatMode		= nil;
 		lastMarkerEvent = [];
+		lastMarkerEvent2 = [];
 		repeatNo        = 0;
 		repeatRate 		= 0;
 		repeatAmp		= 1;
