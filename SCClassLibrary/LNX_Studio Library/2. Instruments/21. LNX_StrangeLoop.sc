@@ -63,7 +63,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <sampleBank,		<webBrowser, 	<relaunch = false,	<newBPM = false;
 	var <mode = \marker,	<markerSeq,		<lastMarkerEvent,	<lastMarkerEvent2, <repeatNo=0;
 	var <allMakerEvents,    <noteOnNodes,	<sequencer,			<seqOutBuffer;
-	var <repeatMode,		<repeatRate=0,	<repeatAmp=1;
+	var <repeatMode,		<repeatRate=0,	<repeatAmp=1,		<repeatStart=0;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -75,7 +75,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	isInstrument	 {^true}
 	canBeSequenced	 {^true}
 	isMixerInstrument{^true}
-	mixerColor		 {^Color(1,0.5,1,0.4)} // colour in mixer
+	mixerColor		 {^Color(0,0.1,0.1,0.4)} // colour in mixer
 	hasLevelsOut	 {^true}
 	peakModel   	 {^models[6]}
 	volumeModel 	 {^models[2]}
@@ -259,7 +259,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 23. frame length 1-32
-			[4, [1,32,\linear,1],  (label_:"Length"), midiControl, 23, "Length",
+			[4, [1,16,\linear,1],  (label_:"Length"), midiControl, 23, "Length",
 				{|me,val,latency,send|
 					this.setPVPModel(23,val,latency,send);
 			}],
@@ -286,6 +286,12 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[1, [0,1],  (label_:"R Decay", numberFunc_:\float2), midiControl, 27, "R Decay",
 				{|me,val,latency,send|
 					this.setPVPModel(27,val,latency,send);
+			}],
+
+			// 28. frame size
+			[4, [1,16,\linear,1],  (label_:"Frame"), midiControl, 23, "Frame",
+				{|me,val,latency,send|
+					this.setPVPModel(28,val,latency,send);
 			}],
 
 		].generateAllModels;
@@ -500,7 +506,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	*thisHeight {^600}
 
 	createWindow{|bounds|
-		this.createTemplateWindow(bounds,Color(0.15,0.15,0.15));
+		this.createTemplateWindow(bounds,Color.black);
 	}
 
 	// create all the GUI widgets while attaching them to models
@@ -509,19 +515,19 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		gui[\knobTheme1]=(	\labelFont_   : Font("Helvetica",12),
 						\numberFont_	: Font("Helvetica",12),
 						\numberWidth_ : 0,
-						\colors_      : (\on : Color(0.66,0.66,1),
+						\colors_      : (\on : Color(50/77,61/77,1),
 									   \numberDown : Color(0.66,0.66,1)/4),
 						\resoultion_	: 1.5 );
 
 		gui[\scrollViewOuter] = MVC_RoundedComView(window,
 									Rect(11,11,thisWidth-22,thisHeight-22-1))
-			.color_(\background,Color(59/77,59/77,59/77))
-			.color_(\border, Color(6/11,42/83,29/65))
+			.color_(\background,Color.new255(122,132,132))
+			.color_(\border, Color.new255(122,132,132)/2)
 			.resize_(5);
 
 		gui[\scrollView] = MVC_CompositeView(gui[\scrollViewOuter] ,
 				Rect(0,0,thisWidth-22,thisHeight-22-1))
-			.color_(\background,Color(6/11,42/83,29/65))
+			.color_(\background,Color.new255(122,132,132))
 			.hasBorder_(false)
 			.autoScrolls_(false)
 			.hasHorizontalScroller_(false)
@@ -665,8 +671,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		MVC_FuncAdaptor(models[22]).func_{|me,val| gui[\frameButton].down_(val.isTrue) };
 
+		// 28. frame size
+		MVC_MyKnob3(gui[\scrollView], models[28], Rect(605, 404, 28, 28), gui[\knobTheme1]);
+
 		// 23. frame length
-		MVC_MyKnob3(gui[\scrollView], models[23], Rect(605, 404, 28, 28), gui[\knobTheme1]);
+		MVC_MyKnob3(gui[\scrollView], models[23], Rect(665, 404, 28, 28), gui[\knobTheme1]);
 
 		// 24. repeat prob
 		MVC_MyKnob3(gui[\scrollView], models[24], Rect(665, 468, 28, 28), gui[\knobTheme1]);
@@ -686,13 +695,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		// piano roll
 		sequencer.createWidgets(gui[\scrollView],Rect(3,220,567, 340)
 				,(\selectRect:Color.white,
-				 \background: Color(0.22, 0.22, 0.25),
+				 \background: Color(0.22, 0.22, 0.25)*0.66,
 				 \velocityBG: Color(0.22, 0.22, 0.25),
-				 \buttons:    Color(0.5,0.5,1),
+				 \buttons:    Color(50/77,61/77,1),
 				 \boxes:	  Color(0.1, 0.05, 0, 0.5),
-				 \noteBG:     Color(0.5,0.5,1),
-				 \noteBGS:    Color(0.5,0.5,1)*1.5,
-				 \velocity:   Color(0.5,0.5,1),
+				 \noteBG:     Color(50/77,61/77,1),
+				 \noteBGS:    Color(50/77,61/77,1)*1.5,
+				 \velocity:   Color(50/77,61/77,1),
 				 \noteBS:     Color.black,
 				 \velocitySel:Color(0.5,0.5,1)*1.5
 				),

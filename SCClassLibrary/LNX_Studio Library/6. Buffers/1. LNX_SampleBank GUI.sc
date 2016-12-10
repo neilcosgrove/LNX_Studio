@@ -1326,7 +1326,7 @@
 			// follow
 			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(611, 139, 50, 20),"Follow", follow)
 				.rounded_(true)
-				.color_(\on,Color(0.5,1,0.5,0.88))
+				.color_(\on,Color(50/77,61/77,1))
 				.color_(\off,Color(1,1,1,0.88)/4);
 
 			// the sample amp
