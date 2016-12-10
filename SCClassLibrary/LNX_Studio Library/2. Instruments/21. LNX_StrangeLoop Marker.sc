@@ -126,24 +126,45 @@ LNX_MarkerEvent {
 		// frame freeze (beat repeat)
 		if (p[22]==1) { frameProb = 1 };
 
-		if ( (repeatNo==0) && (instBeat3%(3*(p[28].asInt)))==0) {
+		// 1st frame trigger
+		if ( (repeatNo==0) && ((instBeat3 + (p[29].asInt*3))%(3*(p[28].asInt)))==0) {
 			doFrame=true;
 			repeatStart = instBeat3; // what beat do we start repeating on
-		}; // 1st beat
+		};
 
-		if ( (repeatNo>0) && ((instBeat3 - repeatStart) %(3*(p[23].asInt)))==0) { doFrame=true }; // 2nd+ beats
+		// 2nd+ frame triggers
+		if ( (repeatNo>0) && ((instBeat3 - repeatStart) %(3*(p[23].asInt)))==0) {
+			doFrame=true;
+			if (p[30]>0) { // 0 is inf max
+				if (repeatNo>=p[30]) {
+					doFrame=false;
+					repeatMode  = nil; // reset all vars
+					repeatNo	= 0;
+					repeatRate	= 0;
+					repeatAmp	= 1;
+					repeatStart = 0;
+					models[22].lazyValueAction_(0,latency,true); // turn off
+				};
+			};// max
+		};
+
+		if (markerEvent.notNil) {
+
+			if (repeatMode.isNil) { lastMarkerEvent2 = lastMarkerEvent2.insert(0,markerEvent) }; // add last event
+			lastMarkerEvent2 = lastMarkerEvent2.keep(p[25].asInt); // memory of length p[20]
+
+		};
 
 		if (doFrame) {
 			if ((frameProb.coin) && (lastMarkerEvent2.notEmpty) && (repeatMode!=\event)) {
 				repeatMode  = \frame;
 				if (repeatNo==0) { this.stopAudio(latency) };
-
 				markerEvent = lastMarkerEvent2.wrapAt(repeatNo);		// repeat
 				repeatNo 	= repeatNo + 1;							// inc number of repeats
-				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
 				repeatRate	= repeatRate + p[26];
-				amp         = (100/127) * repeatAmp;
+				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
 				repeatAmp	= repeatAmp * p[27];
+				amp         = (100/127) * repeatAmp;
 			}{
 				if (repeatMode==\frame) {
 					repeatMode  = nil; // reset all vars
@@ -162,13 +183,12 @@ LNX_MarkerEvent {
 		// also launch at start pos  [ or relaunch sample if needed** no relaunch yet]
 		if (markerEvent.notNil) {
 			var sample      = sampleBank[sampleIndex];				// the sample
-
 			var clipMode    = p[14];								// clip, wrap or fold
 			var bufferL		= sample.buffer.bufnum(0);          	// this only comes from LNX_BufferArray
 			var bufferR		= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
 			var probability = p[15]/100;							// event beat repeat
 
-			// event freeze (beat repeat)
+			// EVENT freeze (beat repeat)
 			if (p[19]==1) { probability = 1 };
 			if ((probability.coin) && (lastMarkerEvent.notEmpty) && (repeatMode!=\frame)) {
 				repeatMode  = \event;
@@ -192,8 +212,7 @@ LNX_MarkerEvent {
 			if (repeatMode.isNil) { lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent) }; // add last event
 			lastMarkerEvent = lastMarkerEvent.keep(p[20].asInt); // memory of length p[20]
 
-			if (repeatMode.isNil) { lastMarkerEvent2 = lastMarkerEvent2.insert(0,markerEvent) }; // add last event
-			lastMarkerEvent2 = lastMarkerEvent2.keep(p[25].asInt); // memory of length p[20]
+
 
 			{
 				this.marker_playBuffer(

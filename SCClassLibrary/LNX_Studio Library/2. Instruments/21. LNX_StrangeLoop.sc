@@ -186,14 +186,14 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 12. transpose  -48 to 48
-			[0, [-48,48,\linear,1],  (label_:"Transpose"), midiControl, 12, "Transpose",
+			[0, [-48,48,\linear,1],  (label_:"Transpose", numberFunc_:\intSign), midiControl, 12, "Transpose",
 				{|me,val,latency,send|
 					this.setPVPModel(12,val,latency,send);
 					if (mode===\marker) { this.marker_changeRate };
 			}],
 
 			// 13. fine  -1 to 1
-			[0, [-1,1],  (label_:"Fine"), midiControl, 13, "Fine",
+			[0, [-1,1],  (label_:"Fine", numberFunc_:\float2Sign), midiControl, 13, "Fine",
 				{|me,val,latency,send|
 					this.setPVPModel(13,val,latency,send);
 					if (mode===\marker) { this.marker_changeRate };
@@ -212,13 +212,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 16. repeat transpose  -48 to 48
-			[0, [-48,48,\linear,1],  (label_:"R Trans"), midiControl, 16, "R Trans",
+			[0, [-48,48,\linear,1],  (label_:"Trans", numberFunc_:\intSign), midiControl, 16, "R Trans",
 				{|me,val,latency,send|
 					this.setPVPModel(16,val,latency,send);
 			}],
 
 			// 17. repeat decay
-			[1, [0,1],  (label_:"R Decay", numberFunc_:\float2), midiControl, 17, "R Decay",
+			[1, [0,1],  (label_:"Decay", numberFunc_:\float2), midiControl, 17, "R Decay",
 				{|me,val,latency,send|
 					this.setPVPModel(17,val,latency,send);
 			}],
@@ -241,7 +241,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 20. memory 1-8
-			[1, [1,8,\linear,1],  (label_:"Memory"), midiControl, 20, "Memory",
+			[1, [1,8,\linear,1],  (label_:"Memory", numberFunc_:\int), midiControl, 20, "Memory",
 				{|me,val,latency,send|
 					this.setPVPModel(20,val,latency,send);
 			}],
@@ -259,7 +259,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 23. frame length 1-32
-			[4, [1,16,\linear,1],  (label_:"Length"), midiControl, 23, "Length",
+			[4, [1,16,\linear,1],  (label_:"Frame", numberFunc_:\int), midiControl, 23, "Frame",
 				{|me,val,latency,send|
 					this.setPVPModel(23,val,latency,send);
 			}],
@@ -271,27 +271,41 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 25. memory 1-8
-			[1, [1,8,\linear,1],  (label_:"Memory"), midiControl, 25, "Memory",
+			[1, [1,8,\linear,1],  (label_:"Memory", numberFunc_:\int), midiControl, 25, "Memory",
 				{|me,val,latency,send|
 					this.setPVPModel(25,val,latency,send);
 			}],
 
 			// 26. repeat transpose  -48 to 48
-			[0, [-48,48,\linear,1],  (label_:"R Trans"), midiControl, 26, "R Trans",
+			[0, [-48,48,\linear,1],  (label_:"Trans", numberFunc_:\intSign), midiControl, 26, "R Trans",
 				{|me,val,latency,send|
 					this.setPVPModel(26,val,latency,send);
 			}],
 
 			// 27. repeat decay
-			[1, [0,1],  (label_:"R Decay", numberFunc_:\float2), midiControl, 27, "R Decay",
+			[1, [0,1],  (label_:"Decay", numberFunc_:\float2), midiControl, 27, "R Decay",
 				{|me,val,latency,send|
 					this.setPVPModel(27,val,latency,send);
 			}],
 
-			// 28. frame size
-			[4, [1,16,\linear,1],  (label_:"Frame"), midiControl, 23, "Frame",
+			// 28. frame Start
+			[4, [1,16,\linear,1],  (label_:"Start", numberFunc_:\int), midiControl, 28, "Start",
 				{|me,val,latency,send|
 					this.setPVPModel(28,val,latency,send);
+
+					models[29].controlSpec_( [0,val-1,\linear,1] );
+			}],
+
+			// 29. frame offset
+			[0, [0,15,\linear,1],  (label_:"Offset", numberFunc_:\int), midiControl, 29, "Offset",
+				{|me,val,latency,send|
+					this.setPVPModel(29,val,latency,send);
+			}],
+
+			// 30. max
+			[0, [0,128,\linear,1],  (label_:"Max", numberFunc_:\int), midiControl, 29, "Max",
+				{|me,val,latency,send|
+					this.setPVPModel(30,val,latency,send);
 			}],
 
 		].generateAllModels;
@@ -568,17 +582,17 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.items_(sampleBank.names);
 
 		// 12. transpose
-		MVC_MyKnob3(gui[\scrollView], models[12], Rect(605, 218, 28, 28), gui[\knobTheme1]).zeroValue_(0)
+		MVC_MyKnob3(gui[\scrollView], models[12], Rect(605, 200, 28, 28), gui[\knobTheme1]).zeroValue_(0)
 			.resoultion_(5);
 
 		// 13. fine
-		MVC_MyKnob3(gui[\scrollView], models[13], Rect(667, 218, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+		MVC_MyKnob3(gui[\scrollView], models[13], Rect(667, 200, 28, 28), gui[\knobTheme1]).zeroValue_(0);
 
 		// 14. fold/wrap
-		MVC_PopUpMenu3(gui[\scrollView], models[14], Rect(686, 175, 80, 17), gui[\menuTheme]);
+		MVC_PopUpMenu3(gui[\scrollView], models[14], Rect(686, 260, 80, 17), gui[\menuTheme]);
 
 		// 18. play back mode
-		MVC_PopUpMenu3(gui[\scrollView], models[18], Rect(593, 175, 80, 17), gui[\menuTheme]);
+		MVC_PopUpMenu3(gui[\scrollView], models[18], Rect(593, 260, 80, 17), gui[\menuTheme]);
 
 		// ***************** EVENT
 
@@ -586,7 +600,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_MyKnob3(models[19]); // this is fake, without it automation doesn't works. needs fixing
 
 		// freeze button
-		gui[\freezeButton] = MVC_FlatButton(gui[\scrollView], Rect(590, 267, 50, 20),"Freeze")
+		gui[\freezeButton] = MVC_FlatButton(gui[\scrollView], Rect(590, 360, 50, 20),"Freeze")
 			.rounded_(true)
 			.font_(Font("Helvetica",12,true))
 			.color_(\up,Color(50/77,61/77,1))
@@ -598,7 +612,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				models[19].valueAction_(0,nil,true,false)
 			};
 
-		MVC_PipeLampView(gui[\scrollView],models[19], Rect(649,270,12,12))
+		MVC_PipeLampView(gui[\scrollView],models[19], Rect(646,364,12,12))
 			.doLazyRefresh_(false)
 			.border_(true)
 			.mouseWorks_(true)
@@ -607,17 +621,18 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_FuncAdaptor(models[19]).func_{|me,val| gui[\freezeButton].down_(val.isTrue) };
 
 		// 20. memory
-		MVC_MyKnob3(gui[\scrollView], models[20], Rect(605, 308, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+		MVC_MyKnob3(gui[\scrollView], models[20], Rect(665, 308, 28, 28), gui[\knobTheme1]);
 
 		// 15. repeat prob
-		MVC_MyKnob3(gui[\scrollView], models[15], Rect(665, 308, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+		MVC_MyKnob3(gui[\scrollView], models[15], Rect(605, 308, 28, 28), gui[\knobTheme1]);
 
 		// 16. repeat trans
-		MVC_MyKnob3(gui[\scrollView], models[16], Rect(725, 308, 28, 28), gui[\knobTheme1]).zeroValue_(0)
+		MVC_MyKnob3(gui[\scrollView], models[16], Rect(725, 308, 28, 28), gui[\knobTheme1])
+			.zeroValue_(0)
 			.resoultion_(5);
 
 		// 17. repeat amp
-		MVC_MyKnob3(gui[\scrollView], models[17], Rect(785, 308, 28, 28), gui[\knobTheme1]).zeroValue_(0);
+		MVC_MyKnob3(gui[\scrollView], models[17], Rect(785, 308, 28, 28), gui[\knobTheme1]);
 
 		// ***************** REVERSE
 
@@ -625,7 +640,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_MyKnob3(models[21]); // this is fake, without it automation doesn't works. needs fixing
 
 		// rev button
-		gui[\revButton] = MVC_FlatButton(gui[\scrollView], Rect(715, 267, 40, 20),"Rev")
+		gui[\revButton] = MVC_FlatButton(gui[\scrollView], Rect(676, 360, 40, 20),"Rev")
 			.rounded_(true)
 			.font_(Font("Helvetica",12,true))
 			.color_(\up,Color(50/77,61/77,1))
@@ -637,7 +652,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				models[21].valueAction_(0,nil,true,false)
 			};
 
-		MVC_PipeLampView(gui[\scrollView],models[21], Rect(679+15,270,12,12))
+		MVC_PipeLampView(gui[\scrollView],models[21], Rect(724,364,12,12))
 			.doLazyRefresh_(false)
 			.border_(true)
 			.mouseWorks_(true)
@@ -651,7 +666,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_MyKnob3(models[22]); // this is fake, without it automation doesn't works. needs fixing
 
 		// frame button
-		gui[\frameButton] = MVC_FlatButton(gui[\scrollView], Rect(590, 360, 50, 20),"Frame")
+		gui[\frameButton] = MVC_FlatButton(gui[\scrollView], Rect(774, 360, 50, 20),"Frame")
 			.rounded_(true)
 			.font_(Font("Helvetica",12,true))
 			.color_(\up,Color(50/77,61/77,1))
@@ -663,7 +678,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				models[22].valueAction_(0,nil,true,false)
 			};
 
-		MVC_PipeLampView(gui[\scrollView],models[22], Rect(649,360,12,12))
+		MVC_PipeLampView(gui[\scrollView],models[22], Rect(754,364,12,12))
 			.doLazyRefresh_(false)
 			.border_(true)
 			.mouseWorks_(true)
@@ -671,20 +686,27 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		MVC_FuncAdaptor(models[22]).func_{|me,val| gui[\frameButton].down_(val.isTrue) };
 
-		// 28. frame size
+		// 28. frame start
 		MVC_MyKnob3(gui[\scrollView], models[28], Rect(605, 404, 28, 28), gui[\knobTheme1]);
 
+		// 29. frame offset
+		MVC_MyKnob3(gui[\scrollView], models[29], Rect(665, 404, 28, 28), gui[\knobTheme1]);
+
 		// 23. frame length
-		MVC_MyKnob3(gui[\scrollView], models[23], Rect(665, 404, 28, 28), gui[\knobTheme1]);
+		MVC_MyKnob3(gui[\scrollView], models[23], Rect(725, 404, 28, 28), gui[\knobTheme1]);
+
+		// 30. max
+		MVC_MyKnob3(gui[\scrollView], models[30], Rect(785, 404, 28, 28), gui[\knobTheme1]);
 
 		// 24. repeat prob
-		MVC_MyKnob3(gui[\scrollView], models[24], Rect(665, 468, 28, 28), gui[\knobTheme1]);
+		MVC_MyKnob3(gui[\scrollView], models[24], Rect(605, 468, 28, 28), gui[\knobTheme1]);
 
 		// 25. memory
-		MVC_MyKnob3(gui[\scrollView], models[25], Rect(605, 468, 28, 28), gui[\knobTheme1]);
+		MVC_MyKnob3(gui[\scrollView], models[25], Rect(665, 468, 28, 28), gui[\knobTheme1]);
 
 		// 26. repeat trans
 		MVC_MyKnob3(gui[\scrollView], models[26], Rect(725, 468, 28, 28), gui[\knobTheme1])
+			.zeroValue_(0)
 			.resoultion_(5);
 
 		// 27. repeat amp

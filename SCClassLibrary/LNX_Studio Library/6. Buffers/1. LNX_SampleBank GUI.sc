@@ -1330,7 +1330,7 @@
 				.color_(\off,Color(1,1,1,0.88)/4);
 
 			// the sample amp
-			gui[\amp] = MVC_MyKnob3(gui[\scrollView], models[\amp], Rect(722, 218, 28, 28),
+			gui[\amp] = MVC_MyKnob3(gui[\scrollView], models[\amp], Rect(722, 200, 28, 28),
 				gui[\knobTheme1])
 				.label_("Amp");
 
