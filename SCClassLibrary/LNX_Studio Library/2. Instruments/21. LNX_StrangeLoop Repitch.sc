@@ -5,7 +5,7 @@
 + LNX_StrangeLoop {
 
 	// repitch mode
-	clockInRepitch{|instBeat,absTime3,latency,beat|
+	pitch_clockIn3{|instBeat,absTime3,latency,beat|
 		var length;
 		var sampleIndex=p[11];						  // sample used in bank
 		if (this.isOff) { ^this };                    // inst is off exception
@@ -38,7 +38,7 @@
 			offset 			= durFrame * (beat % length) / length;	 // offset in frames
 			attackLevel     = relaunch.if(0,1);						 // fade in if relaunched else no attack
 
-			this.playBuffeRepitch(bufferL,bufferR,rate,startFrame+offset,durFrame,attackLevel,latency); // play sample
+			this.pitch_playBuffer(bufferL,bufferR,rate,startFrame+offset,durFrame,attackLevel,latency); // play sample
 
 			relaunch= false; newBPM = false; // stop next stage from happening next time
 			^this;
@@ -62,7 +62,7 @@
 	}
 
 	// sample bank has changed...so do this
-	updateRepitch{|model|
+	pitch_update{|model|
 		var sampleIndex=sampleBank.selectedSampleNo;  // sample used in bank
 		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
 		//model.postln;
@@ -80,7 +80,7 @@
 	}
 
 	// play a buffer
-	playBuffeRepitch{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,latency|
+	pitch_playBuffer{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,latency|
 
 		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_free", node] )};
 		node = server.nextNodeID;
@@ -97,7 +97,7 @@
 
 	}
 
-	*initUGensRepitch{|server|
+	*pitch_initUGens{|server|
 
 		SynthDef("SLoopRepitch",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
 				gate=1,attackLevel=1|
@@ -114,7 +114,7 @@
 	}
 
 	// stop playing buffer
-	stopBufferRepitch{|latency|
+	pitch_stopBuffer{|latency|
 		if (node.notNil) {
 			server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0])
 			//server.sendBundle(latency +! syncDelay, ["/n_free", node] )

@@ -48,6 +48,10 @@ LNX_SampleBank{
 		<>itemAction,	<>loadedAction,		<>selectedAction,
 		<>selectMeFunc,	<>metaDataUpdateFunc;
 
+	var <>finishedLoadingFunc;
+
+	var <>defaultLoop = 0;
+
 	// init the class
 	*initClass {
 		sampleBanks=Set[];
@@ -87,7 +91,7 @@ LNX_SampleBank{
 		metaModel[\name    ] 		=        "".asModel;            // rename sample
 		metaModel[\pitch   ] 		=     \midi.asModel;            // nearest pitch
 		metaModel[\amp     ] 		=      \db6.asModel;            // need to change loading
-		metaModel[\loop    ] 		=   \switch.asModel;            // loop sample
+		metaModel[\loop    ] 		=   \switch.asModel.value_(defaultLoop);	// loop sample
 		metaModel[\start   ] 		= \unipolar.asModel;            // start frame
 		metaModel[\end     ] 		= \unipolar.asModel.value_(1);  // end frame (1 is end of sample)
 		metaModel[\active  ] 		=   \switch.asModel.value_(1);  // on/off (mute)
@@ -98,21 +102,24 @@ LNX_SampleBank{
 		metaModel[\disabledMarkers] = [];							// all markers <=start || >=end (not saved)
 		metaModel[\workingMarkers ] = [];							// start ++ enabledMarkers ++ end
 		metaModel[\workingDur     ] = [];							// and their durations
-		metaModel[\firstMarker    ] = 0;							// and their durations
+		metaModel[\firstMarker    ] = 0;							// and their durations *** (used for gui numbers)
 
-		metaModel[\bpm     ]     	= \bpm.asModel;                 // the bpm
+		metaModel[\bpm     ]     	= ControlSpec(0, 999, default: 120).asModel; // the bpm
 		metaModel[\length  ]		= \length.asModel;				// the length of the loop in beats
 
 		// network stuff
 		#[\pitch,\amp,\loop,\start,\end,\active,\velocity,\bpm,\length].do{|key|
 			metaModel[key].action_{|me,val,latency,send,toggle|
-				this.setModelVP(this.geti(metaModel),key,val,latency,send);
+
 				if ((key===\start)|| (key===\end)) { this.updateMarkers(this.geti(metaModel)) }; // this will sort as well
+				this.setModelVP(this.geti(metaModel),key,val,latency,send);
 			}
 		};
 
 		otherModel[\pos]  = \bipolar.asModel.value_(-1); // -1 is not playing
 		otherModel[\pos2] = \bipolar.asModel.value_(-1); // -1 is not playing
+
+
 
 		metaModels = metaModels.add(metaModel);
 		otherModels=otherModels.add(otherModel);
@@ -239,6 +246,7 @@ LNX_SampleBank{
 		var markers = metaModels[j][\markers];
 		var start   = this.actualStart(i);
 		var end     = this.actualEnd(i);
+
 		markers     					= markers.sort;
 		metaModels[j][\markers]         = markers;
 		enabled							= markers.select{|marker| (marker> start) && (marker< end) };
@@ -656,7 +664,6 @@ LNX_SampleBank{
 				if (key==\markers) {
 					var size = l.popI;                       // no of markers
 					metaModel[key] = l.popNF(size);          // now pop them all
-					this.updateMarkers(i);
 				}{
 					if (masterMeta[key].isFloat) {           // if master is float
 						metaModel[key].value_(l.popF);      // pop a float
@@ -671,6 +678,8 @@ LNX_SampleBank{
 			};
 		};
 
+		this.updateMarkers(i); // this must be after above so all info is loaded 1st
+
 		// recursive add each buffer to reduce load on cpu
 		{
 			if (freed.not) {
@@ -683,8 +692,8 @@ LNX_SampleBank{
 						};
 					}.defer; // add one by one
 				}{
-					this.finishedLoading; // notLoading so can play now
 					selectedSampleNo=0;  // what about loading???
+					this.finishedLoading; // notLoading so can play now
 					this.updateGUI(updateBank);	 // and update GUI
 				};
 			};
@@ -695,6 +704,7 @@ LNX_SampleBank{
 	// this sampleBank has now finished loading
 	finishedLoading{
 		isLoading=false;
+		finishedLoadingFunc.value(this);
 		if (sampleBanks.select(_.isLoading).isEmpty) {
 			if (waitingToEmptyTrash) {
 				LNX_BufferProxy.emptyTrash; // after everything has loaded and we need to empty

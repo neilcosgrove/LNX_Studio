@@ -354,6 +354,15 @@ gives min, max, averages and total
 
 + Number {
 
+// pseudo random coin, provide your own seed each time
+// how can we use seeds to make similar but different?
+// you migth use hash coin like this
+// probRatio.hashCoin(beat); // samll difference in probRatio will have similar result but small diff
+// or
+// probRatio.hashCoin(beat*probRatio); // samll difference in probRatio will not have similar result i.e big diff
+
+	hashCoin{|hash,precision=1000000| ^(this>(hash.hash%precision/precision))}
+
 	++ {|item| ^this.asString++item }
 
 	mapVelocityToRange{|val,range,low,hi|

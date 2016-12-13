@@ -15,10 +15,10 @@
 	isOpen{ ^((window.notNil)and:{window.isClosed.not}) }
 
 	// select the sample in this gui
-	selectSample{|i,focus=false,send=true|
+	selectSample{|i,focus=false,send=true,update=true|
 		i=i.clip(0,samples.size-1);
 		selectedSampleNo=i;
-		selectedAction.value(this,selectedSampleNo,send);
+		selectedAction.value(this,selectedSampleNo,send,update);
 		// + update gui
 		guiList.do{|gui,j|
 			if (i==j) {
@@ -41,10 +41,10 @@
 	}
 
 	// used to update the selected sample in GSRhythm
-	updateSelectedSample{|i|
+	updateSelectedSample{|i,update=true|
 		i=i.clip(0,samples.size-1);
 		selectedSampleNo=i;
-		selectedAction.value(this,selectedSampleNo);
+		if (update) { selectedAction.value(this,selectedSampleNo) };
 	}
 
 	// used to update the sample name list in GSRhythm
@@ -82,19 +82,22 @@
 
 		lastModel=otherModel;
 
-		lastSynth=samples[i].play(loop, this.amp(i).dbamp, this.start(i));
+		lastSynth=samples[i].play(loop, this.amp(i).dbamp, this.start(i), this.end(i));
 
 		// for the gui playback
 		task= Task({
 			var startTime = AppClock.now;
 			var dur = samples[i].duration;
-			var s   = this.start(i);
 			inf.do{
+				var s   = this.start(i);
+				var e   = this.end(i);
 				if  ((loop.not)and:{((AppClock.now-startTime)>(dur*(1-s)))}) {
 					otherModel[\pos2].valueAction_(-1,0,true);
 					task.stop;
 				}{
-					otherModel[\pos2].valueAction_((AppClock.now-startTime/dur+s).wrap(0,1));
+					otherModel[\pos2].valueAction_(
+						(AppClock.now-startTime/dur+s).wrap(s,e)
+					);
 				};
 				(1/30).wait;
 			};
@@ -424,10 +427,10 @@
 	}
 
 	// select sample
-	allInterfacesSelect{|i,send=false|
-		this.selectSample(i,send);
-		this.updateSelectedSample(i);
-		selectSampleFuncs.do{|func| func.value(i) };	// this is a problem
+	allInterfacesSelect{|i,send=false,update=true|
+		this.selectSample(i,false,send,update);
+		this.updateSelectedSample(i,update:false);
+		selectSampleFuncs.do{|func| func.value(i,update:false) };	// this is a problem
 	}
 
 
@@ -504,6 +507,16 @@
 				gui[\posWaveView].refresh;
 			};
 		};
+
+		// tap tempo
+		var tapTempo = LNX_TapTempo()
+			.tapFunc_{|me, bpm| if (models[\bpm].notNil) { models[\bpm].valueAction_(bpm.round(0.1)) } }
+			.firstTapFunc_{|me|
+				if (this.notEmpty) {this.play(i, this.loop(i).isTrue)}
+			}
+			.stopFunc_{|me|
+				if (this.notEmpty) { this.stop }
+			};
 
 		mvcWindow = window;
 		if (window.isKindOf(MVC_Window)) { window=window.view };
@@ -596,14 +609,16 @@
 		};
 
 		// select sample from within this method (there is 1 @ the bottom for outside this method
-		selectSampleFunc={|j|
+		selectSampleFunc={|j,update=true|
 			i=(j.asInt).wrap(0,samples.size-1);
 			setVarsFunc.value;
 			setModelsFunc.value;
 			gui[\sampleView].refresh;
 			gui[\posWaveView].refresh;
-			this.selectSample(i,true);
-			this.updateSelectedSample(i);
+			if (update) {
+				this.selectSample(i,true);
+				this.updateSelectedSample(i);
+			};
 		};
 
 		selectSampleFuncs = selectSampleFuncs.add(selectSampleFunc);
@@ -718,7 +733,7 @@
 			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
-			.action_{	 if (this.notEmpty) {this.play(i)} };
+			.action_{	 if (this.notEmpty) {this.play(i, this.loop(i).isTrue)} };
 
 		// stop
 		gui[\stop] = MVC_OnOffView(gui[\scrollView],Rect(12+23, 145+30, 20, 20),"stop")
@@ -1202,8 +1217,14 @@
 					moveIDX=0;
 					if (x<0) { moveIDX = -1 * ((x).abs/40+0.25) };
 					if (x>w) { moveIDX = 1 * ((x-w).abs/40+0.25) };
-					if (editMode==0) {models[\start].valueAction_(index,0,true)};
-					if (editMode==1) {models[\end  ].valueAction_(index,0,true)};
+					if (editMode==0) {
+						models[\start].valueAction_(index,0,true);
+						if (lastSynth.notNil) { lastSynth.set(\start,index) };
+					};
+					if (editMode==1) {
+						models[\end  ].valueAction_(index,0,true);
+						if (lastSynth.notNil) { lastSynth.set(\end,index) };
+					};
 					if (editMode==3) {
 						// this needs networking
 						models[\markers][markerIndex] = index;
@@ -1303,13 +1324,13 @@
 				.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 			// follow
-			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(663, 144, 50, 20),"Follow", follow)
+			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(611, 139, 50, 20),"Follow", follow)
 				.rounded_(true)
-				.color_(\on,Color(0.5,1,0.5,0.88))
+				.color_(\on,Color(50/77,61/77,1))
 				.color_(\off,Color(1,1,1,0.88)/4);
 
 			// the sample amp
-			gui[\amp] = MVC_MyKnob3(gui[\scrollView], models[\amp], Rect(722, 218, 28, 28),
+			gui[\amp] = MVC_MyKnob3(gui[\scrollView], models[\amp], Rect(722, 200, 28, 28),
 				gui[\knobTheme1])
 				.label_("Amp");
 
@@ -1318,38 +1339,41 @@
 			// gui[\knobTheme1])
 			// .label_("BPM");
 
+			// tap button
+			MVC_FlatButton(gui[\scrollView], Rect(728, 106, 33, 18),"Tap").downAction_{ tapTempo.tap }
+				.rounded_(true)
+				.font_(Font("Helvetica",12,true))
+				.color_(\up,Color(50/77,61/77,1))
+				.color_(\down,Color(1,1,1,0.88)/4);
 
-		gui[\bpm]=MVC_NumberBox(gui[\scrollView],models[\bpm], Rect(602, 146, 42, 16))
-			.resoultion_(25)
-			.rounded_(true)
-			.visualRound_(0.01)
-			.label_("BPM")
-			.font_(Font("Helvetica", 11))
-			.color_(\focus,Color.grey(alpha:0))
-			.color_(\string,Color.white)
-			.color_(\typing,Color.yellow)
-			.color_(\background,Color(46/77,46/79,72/145)/1.5);
+			gui[\bpm]=MVC_NumberBox(gui[\scrollView],models[\bpm], Rect(674, 107, 42, 16))
+				.resoultion_(25)
+				.rounded_(true)
+				.visualRound_(0.01)
+				.label_("BPM")
+				.font_(Font("Helvetica", 11))
+				.color_(\focus,Color.grey(alpha:0))
+				.color_(\string,Color.white)
+				.color_(\typing,Color.yellow)
+				.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 			// the sample loop
 			gui[\loop]= MVC_OnOffView(gui[\scrollView], models[\loop],
-										Rect(726, 144, 46, 20),"Loop")
+										Rect(697, 140, 46, 20),"Loop")
 				.rounded_(true)
 				.color_(\on,Color(50/77,61/77,1))
 				.color_(\off,Color(1,1,1,0.88)/4);
 
 			// sampleRate
-			gui[\sampleRate] = MVC_StaticText( gui[\scrollView], Rect(322,196,65,18),
-										gui[\infoTheme])
+			gui[\sampleRate] = MVC_StaticText( gui[\scrollView], Rect(322,196,65,18), gui[\infoTheme])
 				.label_("Sample Rate:");
 
 			// duration
-			gui[\duration] = MVC_StaticText( gui[\scrollView], Rect(477,196,65,18),
-										gui[\infoTheme])
+			gui[\duration] = MVC_StaticText( gui[\scrollView], Rect(477,196,65,18), gui[\infoTheme])
 				.label_("Duration:");
 
 			//numChannels
-			gui[\numChannels] = MVC_StaticText( gui[\scrollView], Rect(144,196,65,18),
-										gui[\infoTheme])
+			gui[\numChannels] = MVC_StaticText( gui[\scrollView], Rect(144,196,65,18), gui[\infoTheme])
 				.label_("Num Channels:");
 
 			if ((this.notEmpty) and:{ buffer.isLoaded}) {

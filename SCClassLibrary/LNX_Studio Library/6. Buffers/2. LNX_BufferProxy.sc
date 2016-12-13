@@ -275,9 +275,9 @@ LNX_BufferProxy {
 	}
 
 	// play this buffer
-	play {|loop = false, mul = 1, offset = 0|
+	play{|loop = false, mul = 1, start = 0, end=1|
 		if (buffer.notNil) {
-			^buffer.play(loop,mul,offset);
+			^buffer.play(loop,mul,start,end);
 		}{
 			^nil
 		}
@@ -290,10 +290,10 @@ LNX_BufferProxy {
 	}
 
 	bufnum		{ ^buffer.notNil.if{buffer.bufnum} }
-	numFrames		{ ^buffer.notNil.if{buffer.numFrames} }
+	numFrames	{ ^buffer.notNil.if{buffer.numFrames} }
 	numChannels	{ ^buffer.notNil.if{buffer.numChannels} }
-	sampleRate    { ^buffer.notNil.if{buffer.sampleRate} }
-	duration      { ^buffer.notNil.if{buffer.duration} }
+	sampleRate	{ ^buffer.notNil.if{buffer.sampleRate} }
+	duration	{ ^buffer.notNil.if{buffer.duration} }
 
 	// has this been freed
 	isFree{^free}
