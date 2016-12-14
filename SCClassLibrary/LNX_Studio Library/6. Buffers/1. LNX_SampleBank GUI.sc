@@ -983,12 +983,13 @@
 							Color(0.7,0.8,1,0.8).set;
 
 							channelsToDraw.do{|channelNo|
-								var h4, h3;
+								var h4, h3, visDiff;
 								h4 = h2 / channelsToDraw;
 								if (channelsToDraw==2) { h3 = h2 * ( (channelNo==0).if(0.5,1.5)) }{ h3 = h2 };
-								visualOffset =  (o * size).round(w2*2).asInt; // *2 because w/2 in below do
+								visualOffset = (o * size).round(w2*2); // *2 because w/2 in below do
 
 								Pen.moveTo(2@((sampleData.atInt(visualOffset, numChannels, channelNo) )*h4+h3));
+
 								(w/2).asInt.do{|i|
 									i=i*2;
 									Pen.lineTo((i+2)@((
@@ -998,10 +999,9 @@
 									)*h4+h3));
 								};
 								Pen.stroke;
-
 							};
-						};
 
+						};
 					};
 
 					Color.white.set;

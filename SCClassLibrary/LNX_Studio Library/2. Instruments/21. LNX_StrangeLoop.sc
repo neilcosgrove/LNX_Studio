@@ -9,6 +9,7 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
+what if each marker could snd out its own midi
 reverse button
 beat repeat based on fixed frame rather than events
 	seperate from event based
@@ -292,8 +293,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[4, [1,16,\linear,1],  (label_:"Start", numberFunc_:\int), midiControl, 28, "Start",
 				{|me,val,latency,send|
 					this.setPVPModel(28,val,latency,send);
-
-					models[29].controlSpec_( [0,val-1,\linear,1] );
+					{ models[29].controlSpec_( [0,val-1,\linear,1] )}.defer;
 			}],
 
 			// 29. frame offset
@@ -303,7 +303,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 30. max
-			[0, [0,128,\linear,1],  (label_:"Max", numberFunc_:\int), midiControl, 29, "Max",
+			[0, [0,128,\linear,1],  (label_:"Max", numberFunc_:\int), midiControl, 30, "Max",
 				{|me,val,latency,send|
 					this.setPVPModel(30,val,latency,send);
 			}],
@@ -596,6 +596,25 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		// ***************** EVENT
 
+		MVC_TabbedView(gui[\scrollView],Rect(580, 290, 250, 92), 0@0)
+			.labels_([""])
+			.tabWidth_([80])
+			.tabCurve_(4)
+			.labelColors_([Color(0,0,0,0.3)])
+			.unfocusedColors_([Color(0,0,0,0.3)])
+			.backgrounds_([Color(0,0,0,0.3)])
+			.tabHeight_(32);
+
+		MVC_TabbedView(gui[\scrollView],Rect(580, 356, 250, 155), 170@0)
+			.tabPosition_('top')
+			.labels_([""])
+			.tabWidth_([80])
+			.tabCurve_(4)
+			.labelColors_([Color(0,0,0,0.3)])
+			.unfocusedColors_([Color(0,0,0,0.3)])
+			.backgrounds_([Color(0,0,0,0.3)])
+			.tabHeight_(32);
+
 		// 19. freeze
 		MVC_MyKnob3(models[19]); // this is fake, without it automation doesn't works. needs fixing
 
@@ -739,6 +758,17 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.action_{
 				this.marker_Import;
 			};
+
+
+		// the preset interface
+		presetView=MVC_PresetMenuInterface(gui[\scrollView],605@520,100,
+				Color(0.8,0.8,1)/1.6,
+				Color(0.7,0.7,1)/3,
+				Color(0.7,0.7,1)/1.5,
+				Color(0.77,1,1),
+				Color.black
+			);
+		this.attachActionsToPresetGUI;
 
 	}
 

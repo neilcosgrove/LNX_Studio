@@ -212,11 +212,11 @@ LNX_MarkerEvent {
 			if (repeatMode.isNil) { lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent) }; // add last event
 			lastMarkerEvent = lastMarkerEvent.keep(p[20].asInt); // memory of length p[20]
 
-
-
 			{
-				this.marker_playBuffer(
-					bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
+				if (this.isOn) {
+					this.marker_playBuffer(
+						bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
+				};
 				nil;
 			}.sched(markerEvent.offset * absTime3);
 
