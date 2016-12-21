@@ -180,11 +180,22 @@ MVC_NumberBox : MVC_View {
 	// make the view cyan / magenta for midiLearn active
 	midiLearn_{|bool|
 		midiLearn=bool;
-		if (view.notClosed) {
-			view.background_(colors[bool.if(\midiLearn,enabled.if(
-											\background,\backgroundDisabled))]);
+		if (thisThread.clock==SystemClock) {
+			{
+				if (view.notClosed) {
+					view.background_(colors[bool.if(\midiLearn,enabled.if(
+						\background,\backgroundDisabled))]);
+				};
+				labelGUI.do(_.refresh);
+			}.defer;
+		}{
+			if (view.notClosed) {
+				view.background_(colors[bool.if(\midiLearn,enabled.if(
+					\background,\backgroundDisabled))]);
+			};
+			labelGUI.do(_.refresh);
 		};
-		labelGUI.do(_.refresh);
+
 	}
 
 	// deactivate midi learn from this item

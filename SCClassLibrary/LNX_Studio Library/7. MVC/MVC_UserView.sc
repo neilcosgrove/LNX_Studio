@@ -168,7 +168,11 @@ MVC_UserView{
 			if ( (parent.isKindOf(MVC_TabView))and:{parent.isVisible.not} ) {^this };
 			parentViews.do{|view| if (view.isVisible.not) { ^this }};
 			// now refresh
-			view.refresh;
+			if (thisThread.clock==SystemClock) {
+				{view.refresh}.defer;
+			}{
+				view.refresh;
+			};
 			MVC_LazyRefresh.incRefresh;
 		}
 	}
