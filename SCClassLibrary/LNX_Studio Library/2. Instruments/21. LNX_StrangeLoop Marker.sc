@@ -110,16 +110,16 @@ LNX_MarkerEvent {
 
 	// marker clock in mode (new)
 	marker_clockIn3{|instBeat3,absTime3,latency,beat3|
-		var length3, markerEvent, instBeat;
-		var sampleIndex = p[11];					  // sample used in bank
-		var frameProb	= p[24]/100;				  // frame beat repeat
-		var rate		= (p[12]+p[13]).midiratio.round(0.0000000001).clip(0,100000);
-		var amp         = 0.7874;					  // 100/127 - amp in pRoll
-		var doFrame     = false;
+		var length3, markerEvent, instBeat, frameProb, rate,  amp, doFrame, sampleIndex;
 
-		if (this.isOff) { ^this };					  // inst is off exception
-		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
+		if (this.isOff) { ^this };						// inst is off exception
+		sampleIndex = p[11];					  		// sample used in bank
+		if (sampleBank[sampleIndex].isNil) { ^this };	// no samples loaded in bank exception
 
+		frameProb	= p[24]/100;				  // frame beat repeat
+		rate		= (p[12]+p[13]).midiratio.round(0.0000000001).clip(0,100000);
+		amp         = 0.7874;					  // 100/127 - amp in pRoll
+		doFrame     = false;
 		length3     = sampleBank.length(sampleIndex).asInt * 3; // this is length of loop in beats on clock3
 		markerEvent = markerSeq.wrapAt(instBeat3);   // midi in might be out of range so wrap. maybe return nil?
 
@@ -148,7 +148,7 @@ LNX_MarkerEvent {
 			};// max
 		};
 
-		if (markerEvent.notNil) {
+		if (markerEvent.notNil && (p[18].isTrue) ) {
 
 			if (repeatMode.isNil) { lastMarkerEvent2 = lastMarkerEvent2.insert(0,markerEvent) }; // add last event
 			lastMarkerEvent2 = lastMarkerEvent2.keep(p[25].asInt); // memory of length p[20]
@@ -188,24 +188,24 @@ LNX_MarkerEvent {
 			var bufferR		= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
 			var probability = p[15]/100;							// event beat repeat
 
-			// EVENT freeze (beat repeat)
+			// WHY IS THIS vvvv HERE?
+
+			// EVENT freeze (beat repeat), triggered by PlayLoop
 			if (p[19]==1) { probability = 1 };
 			if ((probability.coin) && (lastMarkerEvent.notEmpty) && (repeatMode!=\frame)) {
 				repeatMode  = \event;
-				markerEvent = lastMarkerEvent.wrapAt(repeatNo);		// repeat
-				repeatNo 	= repeatNo + 1;							// inc number of repeats
-				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
-				repeatRate	= repeatRate + p[16];
-				amp         = (100/127) * repeatAmp;
-				repeatAmp	= repeatAmp * p[17];
-
+				markerEvent = lastMarkerEvent.wrapAt(repeatNoE);		// repeat
+				repeatNoE 	= repeatNoE + 1;							// inc number of repeats
+				rate		= (p[12]+p[13]+repeatRateE).midiratio.round(0.0000000001).clip(0,100000);
+				repeatRateE	= repeatRateE + p[16];
+				amp         = (100/127) * repeatAmpE;
+				repeatAmpE	= repeatAmpE * p[17];
 			}{
 				if (repeatMode == \event) {
 					repeatMode  = nil; // reset all vars
-					repeatNo	= 0;
-					repeatRate	= 0;
-					repeatAmp	= 1;
-					repeatStart = 0;
+					repeatNoE	= 0;
+					repeatRateE	= 0;
+					repeatAmpE	= 1;
 				};
 			};
 
@@ -307,18 +307,17 @@ LNX_MarkerEvent {
 			if ((probability.coin) && (lastMarkerEvent.notEmpty)  && (repeatMode!=\frame)) {
 				repeatMode  = \event;
 				markerEvent = lastMarkerEvent.wrapAt(repeatNo);	// repeat
-				repeatNo 	= repeatNo + 1;						// inc number of repeats
-				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
-				repeatRate	= repeatRate + p[16];
-				amp         = (vel/127) * repeatAmp;
-				repeatAmp	= repeatAmp * p[17];
+				repeatNoE 	= repeatNoE + 1;						// inc number of repeats
+				rate		= (p[12]+p[13]+repeatRateE).midiratio.round(0.0000000001).clip(0,100000);
+				repeatRateE	= repeatRateE + p[16];
+				amp         = (vel/127) * repeatAmpE;
+				repeatAmpE	= repeatAmpE * p[17];
 			}{
 				if (repeatMode == \event) {
-					repeatMode  = nil;
-					repeatNo	= 0; // reset all vars
-					repeatRate	= 0;
-					repeatAmp	= 1;
-					repeatStart = 0;
+					repeatMode   = nil;
+					repeatNoE	 = 0; // reset all vars
+					repeatRateE	 = 0;
+					repeatAmpE	 = 1;
 				};
 			};
 

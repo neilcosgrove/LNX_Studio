@@ -62,9 +62,13 @@ freeze button
 LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	var <sampleBank,		<webBrowser, 	<relaunch = false,	<newBPM = false;
-	var <mode = \marker,	<markerSeq,		<lastMarkerEvent,	<lastMarkerEvent2, <repeatNo=0;
+	var <mode = \marker,	<markerSeq,		<lastMarkerEvent,	<lastMarkerEvent2;
 	var <allMakerEvents,    <noteOnNodes,	<sequencer,			<seqOutBuffer;
-	var <repeatMode,		<repeatRate=0,	<repeatAmp=1,		<repeatStart=0;
+	var <repeatMode;
+
+	var <repeatNo=0,		<repeatRate=0,	<repeatAmp=1,		<repeatStart=0;
+	var <repeatNoE=0,		<repeatRateE=0,	<repeatAmpE=1;
+
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
