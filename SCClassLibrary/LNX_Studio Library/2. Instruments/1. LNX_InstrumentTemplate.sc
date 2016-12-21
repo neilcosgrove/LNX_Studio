@@ -442,7 +442,6 @@ LNX_InstrumentTemplate {
 		nameModel.free;
 		instNoModel.free;
 		models.do(_.free);
-		fxFakeOnOffModel.free;
 		tasks.do(_.stop);
 		this.freeEQ;
 
