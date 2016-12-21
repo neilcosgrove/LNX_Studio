@@ -97,7 +97,11 @@ LNX_VolcaBeats : LNX_InstrumentTemplate {
 
 	// clock in //////////////////////////////
 
-	clockIn {|beat,latency| sequencers.do(_.clockIn(beat,latency)) }
+	clockIn{|beat,latency|
+		var updateFunc = sequencers.collect(_.clockIn(beat,latency));
+		// this optimisation updates pos but only defers once for all channels.
+		{ updateFunc.do(_.value) }.defer(latency); // too many defers make Qt gui slow on MacOS.
+	}
 
 	// reset sequencers posViews
 	clockStop { sequencers.do(_.clockStop(studio.actualLatency)) }

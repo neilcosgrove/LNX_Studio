@@ -1816,11 +1816,17 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 
 	//clockIn is the clock pulse, with the current song pointer in beats
 	clockIn{|beat,latency|
+		var updateFunc=	nil ! 6;
+
 		sequencers[0..5].do{|seq,n|
 			if ((((n>=3)and:{n<=5})and:{p[60].isTrue}).not) {
-				seq.clockIn(beat,latency);
+				updateFunc[n] = seq.clockIn(beat,latency);
 			};
 		};
+
+		// the optimisation updates pos but only defers once for all channels.
+		{ updateFunc.do(_.value) }.defer(latency); // too many defers make Qt gui slow on MacOS.
+
 		if (node.notNil) { server.sendBundle(latency +! syncDelay,
 			[\n_set, node, \clockIn, beat]) };
 		if (this.isRecording) { {recordIndex=beat;nil}.sched(latency) };

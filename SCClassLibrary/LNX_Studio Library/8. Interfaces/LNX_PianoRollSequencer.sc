@@ -1037,6 +1037,8 @@ LNX_PianoRollSequencer{
 			notesOff[beat]=nil;
 		};
 
+		//score.notes.size.post; " ".post;
+
 		// go through the score
 		score.notes.do{|note|
 
@@ -1081,7 +1083,9 @@ LNX_PianoRollSequencer{
 			}
 		};
 
-		{this.pos_(now/speed/3)}.defer(latency); // update the gui pos
+		// {this.pos_(now/speed/3)}.defer(latency); // update the gui pos
+		// the below optimisation updates pos but doesn't defer. too many defers make Qt gui slow on MacOS.
+		this.pos_( (now - (latency/absTime/3) / speed) % (score.dur3)  /3); // update the gui pos
 
 	}
 

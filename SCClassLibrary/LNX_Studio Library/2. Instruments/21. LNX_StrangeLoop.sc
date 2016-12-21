@@ -397,12 +397,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		if (mode===\repitch) {
 			this.pitch_clockIn3 (instBeat,absTime3,latency,beat);
-			if (p[18].isFalse) { sequencer.do(_.clockIn3(beat,absTime,latency,beat)) }; // i want pRoll 2nd for repeat reasons
+			if (p[18].isFalse) { sequencer.clockIn3(beat,absTime,latency,beat) }; // i want pRoll 2nd for repeat reasons
 			^this
 		};
+
 		if (mode===\marker ) {
 			this.marker_clockIn3(instBeat,absTime3,latency,beat);
-			if (p[18].isFalse) { sequencer.do(_.clockIn3(beat,absTime,latency,beat)) };
+			if (p[18].isFalse) { sequencer.clockIn3(beat,absTime,latency,beat) };
 			^this
 		};
 

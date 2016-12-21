@@ -175,12 +175,14 @@ a.a.touch(0);
 	}
 
 	// the slower clock
-	clockIn {|index,latency|
-		arpegSequencer.clockIn(index,studio.actualLatency);
+	clockIn{|index,latency|
+		var updateFunc = arpegSequencer.clockIn(index,studio.actualLatency);
+		// the optimisation updates pos but only defers once for all channels.
+		{ updateFunc.value }.defer(latency); // too many defers make Qt gui slow on MacOS.
 	}
 
 	// midi clock in (this is at MIDIClock rate)
-	clockIn3 {|beat,absTime,latency,absBeat|
+	clockIn3{|beat,absTime,latency,absBeat|
 		 sequencer.clockIn3(beat,absTime,studio.actualLatency,absBeat) }
 
 	// reset sequencers posViews

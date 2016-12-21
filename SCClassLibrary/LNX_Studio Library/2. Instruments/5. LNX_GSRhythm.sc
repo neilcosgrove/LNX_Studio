@@ -537,15 +537,20 @@ LNX_GSRhythm : LNX_InstrumentTemplate {
 	//// midi players & uGens //////////////////////////
 
 	// noteOn
-	noteOn	{|note, vel, latency|
+	noteOn{|note, vel, latency|
 		if ((note<p[7])or:{note>p[8]}) {^nil}; // drop out if out of midi range
 		this.bang((note-36).asInt.wrap(0,7),vel/127,latency);
 	}
 
 	/// midi clock in
-	clockIn {|beat,latency|
-		modSequencers.do(_.clockIn(beat,latency)); // mod comes 1st
-		sequencers.do(_.clockIn(beat,latency));	 // the bundles are then made here
+	clockIn{|beat,latency|
+		var updateFunc=	(
+			modSequencers.collect(_.clockIn(beat,latency)) // mod comes 1st
+			++
+			sequencers.collect(_.clockIn(beat,latency))	 // the bundles are then made here
+		);
+		// this optimisation updates pos but only defers once for all channels.
+		{ updateFunc.do(_.value) }.defer(latency); // too many defers make Qt gui slow on MacOS.
 
 		// then play the bundles so choke has a chance to work on the other channels
 		voicer.playAll(latency +! syncDelay, {|channel,velocity|

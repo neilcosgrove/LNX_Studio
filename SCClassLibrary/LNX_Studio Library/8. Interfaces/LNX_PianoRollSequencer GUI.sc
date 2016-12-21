@@ -532,10 +532,9 @@
 		.clearOnRefresh_(true)
 		.onClose_{ lastVisibleRect=nil }
 		.drawFunc_{|me|
-
 			var visibleOrigin, svb, voT, voB;
 			visibleOrigin=gui[\scrollView].visibleOrigin;
-			svb=me.bounds;
+			svb = me.bounds;
 			voT = visibleOrigin.y;
 			voB = voT+svb.height;
 			Pen.use{
