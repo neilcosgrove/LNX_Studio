@@ -66,11 +66,7 @@ MVC_LazyRefresh{
 													// if time since last refresh is > frame duration
             lastTime=now;						    // so last time becomes now
 			nextTime=nil;						    // nothing is now scheduled for the future
-			if (thisThread.clock==SystemClock) {    // do i need to defer to the AppClock ?
-                {refreshFunc.value}.defer;          // defer the refresh func
-			}{
-				refreshFunc.value;			        //  call the refresh func now
-			};
+			refreshFunc.deferIfNeeded;				// call refreshFunc, defer if needed
         }{									        // else time since last refresh is < frame dur
 			if (nextTime.isNil) {				    // if there isn't a refresh coming up
 				nextTime=lastTime+(((globalFPS?fps)*rateAdjust).reciprocal);
@@ -102,12 +98,7 @@ MVC_LazyRefresh{
 					}.defer(j/((globalFPS ? fps)*rateAdjust*(model.noDependants))); // spread over frame
 				};
 			}{
-				// the below optimisation only defers when needed. too many defers make Qt gui slow on MacOS.
-				if (thisThread.clock==SystemClock) {    // do i need to defer to the AppClock ?
-                	{model.dependants.do{|view| view.value_(model.value)};}.defer;
-				}{
-					model.dependants.do{|view| view.value_(model.value)};
-				};
+				{ model.dependants.do{|view| view.value_(model.value)} }.deferIfNeeded;
 			};
 		}{
 			if (nextTime.isNil) {

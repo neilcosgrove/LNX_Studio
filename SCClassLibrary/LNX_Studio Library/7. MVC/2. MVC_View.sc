@@ -282,15 +282,8 @@ MVC_View {
 	// make the view cyan / magenta for midiLearn active
 	midiLearn_{|bool|
 		midiLearn=bool;
-		if (thisThread.clock==SystemClock) {    // do i need to defer to the AppClock ?
-			{
-				this.refresh;
-				labelGUI.do(_.refresh);
-			}.defer;
-		}{
-			this.refresh;
-			labelGUI.do(_.refresh);
-		};
+		this.refresh;
+		labelGUI.do(_.refresh);
 	}
 
 	// toggle the midi mode

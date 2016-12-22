@@ -47,17 +47,11 @@
 	refresh{|calcNoteRects=true, refreshVel=true|
 		if (gui[\notes].notNil) {
 			if (calcNoteRects) {this.calcNoteRects}; // calc rects 1st, then draw
-			if (thisThread.clock==SystemClock) {
-				{
-					lastVisibleRect=nil;
-					gui[\notes].refresh;
-					if (refreshVel) { gui[\vel].refresh };
-				}.defer;
-			}{
+			{
 				lastVisibleRect=nil;
 				gui[\notes].refresh;
 				if (refreshVel) { gui[\vel].refresh };
-			};
+			}.deferIfNeeded;
 		}
 	}
 

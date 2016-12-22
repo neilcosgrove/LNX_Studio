@@ -157,16 +157,18 @@ MVC_Model {
 		dependants.add(dependant);
 		noDependants=dependants.size;
 		// update dependant
-		dependant.string_(string)
+		{
+			dependant.string_(string)
 			.enabled_(enabled)
 			.midiLearn_(midiLearn)
 			.hasMIDIcontrol_(hasMIDIcontrol);
-		if (inheritSpec) { dependant.controlSpec_(controlSpec) };
-		themeMethods.pairsDo{|method,args|
-			if (dependant.respondsTo(method)) { dependant.perform(method,args) };
-		};
-		dependant.value_(value);
-		if (dependant.respondsTo(\maxStringSize_)) { dependant.maxStringSize_(maxStringSize) } ;
+			if (inheritSpec) { dependant.controlSpec_(controlSpec) };
+			themeMethods.pairsDo{|method,args|
+				if (dependant.respondsTo(method)) { dependant.perform(method,args) };
+			};
+			dependant.value_(value);
+			if (dependant.respondsTo(\maxStringSize_)) { dependant.maxStringSize_(maxStringSize) } ;
+		}.deferIfNeeded;
 	}
 
 	// remove a gui item from the model
