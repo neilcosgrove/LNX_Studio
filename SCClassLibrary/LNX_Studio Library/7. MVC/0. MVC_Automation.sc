@@ -923,9 +923,12 @@ MVC_Automation {
 			};
 
 		gui[\graph] = MVC_UserView(gui[\window], Rect(10, 120, 468+71, 280+15) )
-
 		// 0.0625 is max resoultion we would need when drawing
-
+		.mouseWheelAction_{|me,x,y,modifiers, dx, dy|
+			var move = (dx.abs * 0.0066 / (models[\zoom].value));
+			if (dx<0) { models[\offset].valueAction_(models[\offset].value + move) };
+			if (dx>0) { models[\offset].valueAction_(models[\offset].value - move) };
+		}
 		.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 			mouseUp = false;
 			if (gui[\automation].notNil) {
