@@ -2,7 +2,7 @@
 // Marker mode  //
 // ************ //
 
-// BUG: Freeze memory isn't working when >1
+// BUG: Event freeze memory isn't working when >1
 
 LNX_MarkerEvent {
 	var <>markerNo, <>deltaBeats, <>offset, <>startFrame, <>durFrame;
@@ -308,7 +308,7 @@ LNX_MarkerEvent {
 			if (p[19]==1) { probability = 1 } { probability = p[15]/100 };
 			if ((probability.coin) && (lastMarkerEvent.notEmpty)  && (repeatMode!=\frame)) {
 				repeatMode  = \event;
-				markerEvent = lastMarkerEvent.wrapAt(repeatNo);	// repeat
+				markerEvent = lastMarkerEvent.wrapAt(repeatNoE);	// repeat
 				repeatNoE 	= repeatNoE + 1;						// inc number of repeats
 				rate		= (p[12]+p[13]+repeatRateE).midiratio.round(0.0000000001).clip(0,100000);
 				repeatRateE	= repeatRateE + p[16];
@@ -432,8 +432,6 @@ LNX_MarkerEvent {
 		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]) };
 		noteOnNodes.do{|node,j|
 			if (node.notNil) {
-				node.postln;
-				thisProcess.dumpBackTrace;
 				server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]);
 				noteOnNodes[j]=nil;
 			};
