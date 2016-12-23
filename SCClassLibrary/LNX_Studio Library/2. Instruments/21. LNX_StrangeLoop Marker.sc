@@ -2,6 +2,8 @@
 // Marker mode  //
 // ************ //
 
+// BUG: Freeze memory isn't working when >1
+
 LNX_MarkerEvent {
 	var <>markerNo, <>deltaBeats, <>offset, <>startFrame, <>durFrame;
 	*new     {|markerNo, deltaBeats, offset, startFrame, durFrame|

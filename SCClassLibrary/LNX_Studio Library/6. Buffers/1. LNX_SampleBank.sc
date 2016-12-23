@@ -316,7 +316,7 @@ LNX_SampleBank{
 		id          = UniqueID.next; // each sampleBank has a UniqueID
 		server      = argServer;
 		api         = LNX_API.newTemp(this, apiID,
-						#[\netAddURL, \netRemove, \netSwap, \netSetModelVP] );
+						#[\netAddURL, \netRemove, \netSwap, \netSetModelVP, \netNewBuffer] );
 		sampleBanks = sampleBanks.add(this);        // add this to the list of all banks
 		this.initVars;                              // init the lists / arrays
 		if (path.isString) { this.loadFile(path) }; // load
@@ -515,6 +515,60 @@ LNX_SampleBank{
 		}; // end.if paths.size
 	}
 
+
+
+
+
+
+
+
+
+	// new empty buffer ////////////////////////////////////////////////////////////////////////////
+/*
+	a.a.sampleBank.guiNewBuffer
+*/
+
+	guiNewBuffer{|frames=44100, channels=2, sampleRate=44100, select=true|
+		api.groupCmdOD(\netNewBuffer, frames, channels, sampleRate, select, network.thisUser.id);
+	}
+
+	netNewBuffer{|frames, channels, sampleRate, select, uid|
+		// make onComplete Func
+		var action = {|buf|
+			var i = samples.indexOf(buf); // index of sample loaded
+			{
+				this.updateMarkers(i); // MAKE MARKERS
+				this.selectSample(i,true,false,true);
+			}.defer;   // will this work with many users?
+		};
+		this.newBuffer(frames.asInt, channels.asInt, sampleRate.asInt, select.isTrue, action); // now add it
+
+	}
+
+	newBuffer{|frames=44100, channels=2, sampleRate=44100, select=true,action|
+		var buffer, path, metadata, metaModel;
+
+		buffer          = LNX_BufferProxy.new(server, frames, channels, sampleRate, action);
+
+		path            = buffer.path;
+		samples         = samples.add(buffer);
+		metaModel       = this.addMetaModel;
+		metaModel[\name].string_(path.basename);
+
+
+		this.updateList(false,true); // add to list
+		if (select) {
+			this.selectSample(samples.size-1,false,false); // select in...
+			selectMeFunc.value(samples.size-1); // select in...
+		};
+		if (window.notNil) { this.addSampleWidgets(samples.size-1,select)} ; // add the widgets
+	}
+
+
+
+
+
+
 	// URL's //////////////////////////////////////////////////////////////////////////////////
 
 	// add a url buffer (used in LNX_WebBrowser)
@@ -529,33 +583,32 @@ LNX_SampleBank{
 	netAddURL{|url,select=true,uid|
 		// make onComplete Func
 		var action = {|buf|
-			var i = samples.indexOf(buf);
+			var i = samples.indexOf(buf); // index of sample loaded
 			if (uid.asSymbol == network.thisUser.id) {
-				if (LNX_WebBrowser.preview.isTrue) {
-					this.play(i);
-				}; // play when finished downloading
+				if (LNX_WebBrowser.preview.isTrue) { this.play(i) }; // play when finished downloading
+
+				// can this be removed??
 				{
 					this.updateMarkers(i); // MAKE MARKERS
-					selectMeFunc.value(i);
+					selectMeFunc.value(i); // select the sample
 					// used only in scCode at mo
-					if (window2.notNil) {
-						selectSampleFuncs.do{|func| func.value(selectedSampleNo) }
-					};
+					if (window2.notNil) { selectSampleFuncs.do{|func| func.value(selectedSampleNo) } };
 				}.defer;  // will this work with many users?
+
+
 			};
+			// this appears like i'm doing this twice? why?
 			{
 				this.updateMarkers(i); // MAKE MARKERS
 				this.selectSample(i,false,false);
 				// used only in scCode at mo
-				if (window2.notNil) {
-					selectSampleFuncs.do{|func| func.value(selectedSampleNo) }
-				};
+				if (window2.notNil) { selectSampleFuncs.do{|func| func.value(selectedSampleNo) } };
 			}.defer;   // will this work with many users?
 		};
 		this.addURL(url.asString,action,select.isTrue); // now add it
 	}
 
-	// add a url as a buffer. We maybe offline or it may not exist or not be in the cashe
+	// add a url as a buffer. We maybe offline or it may not exist or not be in the cache
 	addURL{|url,action,select=true,updateBank=true|  // select sample
 
 		var buffer, path, metadata, metaModel, alreadyExists=false;

@@ -9,18 +9,9 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
+when you enter your bpm with keyboard length should change
+new sample default is current song bpm
 what if each marker could snd out its own midi
-reverse button
-beat repeat based on fixed frame rather than events
-	seperate from event based
-	both can't happen at the same time & neither can stop the other
-	has repeat%, freeze, memory, trans & amp
-
-	repeat remains on chance?
-
-	starts every (n) beat - range and quant i.e [2-8 every 2] = (2,4,6,8) // maybe only offset
-	repeat length (n) beat - range and quant i.e [2-8 every 2] = (2,4,6,8)
-
 new sample length (n) beats (mono/stereo)
 record audio - many sources (level in) (overdub,replace)
 	transfer data from server to sclang via a temp file
@@ -49,6 +40,7 @@ still release problems when swapping over from hold or stopping
 
 Done
 ----
+reverse button
 tap bpm
 stopping sampleRefresh when not following
 also funcs called a lot when selecting sample
@@ -56,6 +48,13 @@ entering numbers via keyboard to tempo doesn't update LNX_InstrumentTemplate:bpm
 lazy pRoll marker
 loop true is default
 freeze button
+beat repeat based on fixed frame rather than events
+	seperate from event based
+	both can't happen at the same time & neither can stop the other
+	has repeat%, freeze, memory, trans & amp
+	repeat remains on chance?
+	starts every (n) beat - range and quant i.e [2-8 every 2] = (2,4,6,8) // maybe only offset
+	repeat length (n) beat - range and quant i.e [2-8 every 2] = (2,4,6,8)
 
 */
 
