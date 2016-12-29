@@ -1536,7 +1536,11 @@
 				gui[\posWaveView].refresh;
 			};
 
-		} ];
+		},
+
+		gui; // gui accessed in strangeLoop
+
+		];
 
 	}
 }

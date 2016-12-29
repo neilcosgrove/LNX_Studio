@@ -9,6 +9,7 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
+syncDelay
 when you enter your bpm with keyboard length should change
 new sample default is current song bpm
 what if each marker could snd out its own midi
@@ -21,7 +22,7 @@ quantise options
 grains
 clock offset start
 one shot
-zeroX
+zeroX or peak
 where does sample metadata sit
 proll has dark patches for out of range
 marker metadata ie default
@@ -60,7 +61,7 @@ beat repeat based on fixed frame rather than events
 
 LNX_StrangeLoop : LNX_InstrumentTemplate {
 
-	var <sampleBank,		<webBrowser, 	<relaunch = false,	<newBPM = false;
+	var <sampleBank,		<sampleBankGUI,	<webBrowser, 		<relaunch = false,	<newBPM = false;
 	var <mode = \marker,	<markerSeq,		<lastMarkerEvent,	<lastMarkerEvent2;
 	var <allMakerEvents,    <noteOnNodes,	<sequencer,			<seqOutBuffer;
 	var <repeatMode;
@@ -492,6 +493,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		sampleBank.free;
 		webBrowser.free;
 		sequencer.free;
+		sampleBankGUI = nil;
 		{LNX_SampleBank.emptyTrash}.defer(1); // empty trash 1 seconds later
 	}
 
@@ -518,6 +520,16 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	// clear the sequencer
 	clearSequencer{ sequencer.clear }
 
+	/////////////////////////////////////////////////////////////////////////////////////////////
+
+	// make a new buffer
+	guiNewBuffer{
+		var numFrames, length = (sampleBankGUI[\length].value); // length is from gui widget
+		if (length<=0) { length = 32 };							// if zero use 32
+		numFrames = length * 3 * (studio.absTime) * 44100;		// work that out in frames
+		sampleBank.guiNewBuffer(numFrames, length:length);		// make a new buffer in the bank
+	}
+
 	// GUI ////////////////////////////////////////////////////////////////////////////////////////////
 
 	*thisWidth  {^870}
@@ -531,14 +543,16 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	createWidgets{
 
 		gui[\knobTheme1]=(	\labelFont_   : Font("Helvetica",12),
-						\numberFont_	: Font("Helvetica",12),
-						\numberWidth_ : 0,
-						\colors_      : (\on : Color(50/77,61/77,1),
-									   \numberDown : Color(0.66,0.66,1)/4),
-						\resoultion_	: 1.5 );
+							\numberFont_  : Font("Helvetica",12),
+							\numberWidth_ : 0,
+							\colors_      : (\on : Color(50/77,61/77,1), \numberDown : Color(0.66,0.66,1)/4),
+							\resoultion_  : 1.5 );
 
-		gui[\scrollViewOuter] = MVC_RoundedComView(window,
-									Rect(11,11,thisWidth-22,thisHeight-22-1))
+		gui[\flatButton]=(	\rounded_: true,
+							\font_:	  Font("Helvetica",12,true),
+							\colors_:  ( \up: Color(50/77,61/77,1), \down: Color(1,1,1,0.88)/4 ) );
+
+		gui[\scrollViewOuter] = MVC_RoundedComView(window, Rect(11,11,thisWidth-22,thisHeight-22-1))
 			.color_(\background,Color.new255(122,132,132))
 			.color_(\border, Color.new255(122,132,132)/2)
 			.resize_(5);
@@ -553,8 +567,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.autohidesScrollers_(false);
 
 		// the list scroll view
-		gui[\sampleListCompositeView] = MVC_RoundedScrollView(gui[\scrollView],
-				Rect(583, 40, 150, 41))
+		gui[\sampleListCompositeView] = MVC_RoundedScrollView(gui[\scrollView], Rect(583, 40, 150, 41))
 			.width_(3.5)
 			.hasBorder_(true)
 			.hasVerticalScroller_(true)
@@ -571,7 +584,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		sampleBank.window2_(gui[\sampleListCompositeView]);
 
 		// the sample editor
-		sampleBank.openMetadataEditor(
+		sampleBankGUI = sampleBank.openMetadataEditor(
 			gui[\scrollView],
 			0,
 			true,
@@ -579,7 +592,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			(border2: Color(59/108,65/103,505/692), border1: Color(0,1/103,9/77)),
 			0,
 			interface:\strangeLoop
-		);
+		)[3];
 
 		// 11. sample
 		MVC_PopUpMenu3(gui[\scrollView], models[11], Rect(583, 14, 112, 17), gui[\menuTheme  ])
@@ -623,17 +636,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_MyKnob3(models[19]); // this is fake, without it automation doesn't works. needs fixing
 
 		// freeze button
-		gui[\freezeButton] = MVC_FlatButton(gui[\scrollView], Rect(590, 360, 50, 20),"Freeze")
-			.rounded_(true)
-			.font_(Font("Helvetica",12,true))
-			.color_(\up,Color(50/77,61/77,1))
-			.color_(\down,Color(1,1,1,0.88)/4)
-			.downAction_{
-				models[19].valueAction_(1,nil,true,false)
-			}
-			.upAction_{
-				models[19].valueAction_(0,nil,true,false)
-			};
+		gui[\freezeButton] = MVC_FlatButton(gui[\scrollView], Rect(590, 360, 50, 20),"Freeze", gui[\flatButton])
+			.downAction_{ models[19].valueAction_(1,nil,true,false) }
+			.upAction_{ models[19].valueAction_(0,nil,true,false) };
 
 		MVC_PipeLampView(gui[\scrollView],models[19], Rect(646,364,12,12))
 			.doLazyRefresh_(false)
@@ -663,17 +668,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_MyKnob3(models[21]); // this is fake, without it automation doesn't works. needs fixing
 
 		// rev button
-		gui[\revButton] = MVC_FlatButton(gui[\scrollView], Rect(676, 360, 40, 20),"Rev")
-			.rounded_(true)
-			.font_(Font("Helvetica",12,true))
-			.color_(\up,Color(50/77,61/77,1))
-			.color_(\down,Color(1,1,1,0.88)/4)
-			.downAction_{
-				models[21].valueAction_(1,nil,true,false)
-			}
-			.upAction_{
-				models[21].valueAction_(0,nil,true,false)
-			};
+		gui[\revButton] = MVC_FlatButton(gui[\scrollView], Rect(676, 360, 40, 20),"Rev", gui[\flatButton])
+			.downAction_{ models[21].valueAction_(1,nil,true,false) }
+			.upAction_{ models[21].valueAction_(0,nil,true,false) };
 
 		MVC_PipeLampView(gui[\scrollView],models[21], Rect(724,364,12,12))
 			.doLazyRefresh_(false)
@@ -689,11 +686,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_MyKnob3(models[22]); // this is fake, without it automation doesn't works. needs fixing
 
 		// frame button
-		gui[\frameButton] = MVC_FlatButton(gui[\scrollView], Rect(774, 360, 50, 20),"Frame")
-			.rounded_(true)
-			.font_(Font("Helvetica",12,true))
-			.color_(\up,Color(50/77,61/77,1))
-			.color_(\down,Color(1,1,1,0.88)/4)
+		gui[\frameButton] = MVC_FlatButton(gui[\scrollView], Rect(774, 360, 50, 20), "Frame", gui[\flatButton])
 			.downAction_{
 				models[22].valueAction_(1,nil,true,false)
 			}
@@ -754,15 +747,12 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				);
 
 		// import button
-		MVC_FlatButton(gui[\scrollView], Rect(242, 213, 49, 20),"Import")
-			.rounded_(true)
-			.font_(Font("Helvetica",12,true))
-			.color_(\up,Color(50/77,61/77,1))
-			.color_(\down,Color(1,1,1,0.88)/4)
-			.action_{
-				this.marker_Import;
-			};
+		MVC_FlatButton(gui[\scrollView], Rect(242, 213, 49, 20), "Import", gui[\flatButton])
+			.action_{this.marker_Import };
 
+		// new button
+		MVC_FlatButton(gui[\scrollView], Rect(768, 104, 40, 20), "New", gui[\flatButton])
+			.action_{ this.guiNewBuffer };
 
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],605@520,100,

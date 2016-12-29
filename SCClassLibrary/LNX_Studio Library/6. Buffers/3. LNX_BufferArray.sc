@@ -9,8 +9,8 @@ LNX_BufferArray {
 
 	// new empty /////////
 
-	*new{|server, frames, channels, sampleRate, action|
-		^super.new.initNew(server, frames, channels, sampleRate, action)
+	*new{|server, numFrames, numChannels, sampleRate, action|
+		^super.new.initNew(server, numFrames, numChannels, sampleRate, action)
 	}
 
 	initNew{|server, argFrames, argChannels, argSampleRate, action|
@@ -41,7 +41,7 @@ LNX_BufferArray {
 		numChannels.do{|i|
 			buffers = buffers.add(
 
-				Buffer.alloc(server, numFrames, numChannels,{|buf|
+				Buffer.alloc(server, numFrames, 1,{|buf|
 					done[i] = 0; // when sum of done is zero, all buffers have been allocated
 					if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
 				}, bufnum+i);

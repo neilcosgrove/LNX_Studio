@@ -42,14 +42,16 @@ LNX_BufferProxy {
 
 	// a new blank buffer /////////////////////////////////////////////////////
 
-	*new{|server, frames, channels, sampleRate, action|
-		^super.new.initNew(server, frames, channels, sampleRate, action)
+	*new{|server, numFrames, numChannels, sampleRate, action|
+		^super.new.initNew(server, numFrames, numChannels, sampleRate, action)
 	}
 
-	initNew{|argServer, frames, channels, sampleRate, argAction|
+	initNew{|argServer, numFrames, numChannels, sampleRate, argAction|
 
 		this.initInstance;
 		this.initModels;
+
+		models[\percentageComplete].value_(-3);
 
 		// source is url & make a filename path from the url
 		source = \new;
@@ -61,7 +63,10 @@ LNX_BufferProxy {
 		convertedPath = "";
 		sampleData = [0];
 
-		buffer=LNX_BufferArray.new(server, frames, channels, sampleRate, action: { argAction.value(this) } );
+		paths  = paths.add(path);
+
+		buffer = LNX_BufferArray.new(server, numFrames, numChannels, sampleRate,
+			action: { argAction.value(this) } );
 
 		this.loaded;
 	}
@@ -346,7 +351,6 @@ LNX_BufferProxy {
 		var ifPresent=false, index;
 
 		if (free.not) {
-
 			// only stop the download if not used by others
 			if ((source==\url)and:{download.notNil}) {
 				if (containers.select{|c| c.download==download }.size<=1) {
@@ -366,7 +370,7 @@ LNX_BufferProxy {
 			paths.removeAt(index);
 			containers.removeAt(index);
 			free=true;
-		}
+		};
 	 }
 
 	 // clock safe versions //////////////////////////////////////

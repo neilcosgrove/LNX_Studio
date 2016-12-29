@@ -151,10 +151,8 @@ LNX_MarkerEvent {
 		};
 
 		if (markerEvent.notNil && (p[18].isTrue) ) {
-
 			if (repeatMode.isNil) { lastMarkerEvent2 = lastMarkerEvent2.insert(0,markerEvent) }; // add last event
 			lastMarkerEvent2 = lastMarkerEvent2.keep(p[25].asInt); // memory of length p[20]
-
 		};
 
 		if (doFrame) {
@@ -327,7 +325,7 @@ LNX_MarkerEvent {
 			lastMarkerEvent = lastMarkerEvent.keep(p[20].asInt); // memory of length p[20]
 
 			if (repeatMode.isNil) { lastMarkerEvent2 = lastMarkerEvent2.insert(0,markerEvent) }; // add last event
-			lastMarkerEvent2 = lastMarkerEvent2.keep(p[25].asInt); // memory of length p[20]
+			lastMarkerEvent2 = lastMarkerEvent2.keep(p[25].asInt); // memory of length p[25]
 
 			noteOnNodes[note] =
 			  this.marker_playBufferMIDI(

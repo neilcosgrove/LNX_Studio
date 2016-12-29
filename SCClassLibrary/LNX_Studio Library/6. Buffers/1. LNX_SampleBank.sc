@@ -515,59 +515,46 @@ LNX_SampleBank{
 		}; // end.if paths.size
 	}
 
-
-
-
-
-
-
-
-
 	// new empty buffer ////////////////////////////////////////////////////////////////////////////
-/*
-	a.a.sampleBank.guiNewBuffer
-*/
 
-	guiNewBuffer{|frames=44100, channels=2, sampleRate=44100, select=true|
-		api.groupCmdOD(\netNewBuffer, frames, channels, sampleRate, select, network.thisUser.id);
+	guiNewBuffer{|numFrames=44100, numChannels=2, sampleRate=44100, select=true, length|
+		api.groupCmdOD(\netNewBuffer, numFrames, numChannels, sampleRate, select, length, network.thisUser.id);
 	}
 
-	netNewBuffer{|frames, channels, sampleRate, select, uid|
+	netNewBuffer{|numFrames, numChannels, sampleRate, select, length, uid|
 		// make onComplete Func
 		var action = {|buf|
 			var i = samples.indexOf(buf); // index of sample loaded
 			{
 				this.updateMarkers(i); // MAKE MARKERS
-				this.selectSample(i,true,false,true);
+				this.allInterfacesSelect(i,false,false);
 			}.defer;   // will this work with many users?
 		};
-		this.newBuffer(frames.asInt, channels.asInt, sampleRate.asInt, select.isTrue, action); // now add it
+		this.newBuffer(numFrames.asInt, numChannels.asInt, sampleRate.asInt, select.isTrue, length, action); // now add it
 
 	}
 
-	newBuffer{|frames=44100, channels=2, sampleRate=44100, select=true,action|
+	newBuffer{|numFrames=44100, numChannels=2, sampleRate=44100, select=true, length, action|
 		var buffer, path, metadata, metaModel;
 
-		buffer          = LNX_BufferProxy.new(server, frames, channels, sampleRate, action);
-
+		buffer          = LNX_BufferProxy.new(server, numFrames, numChannels, sampleRate, action);
 		path            = buffer.path;
 		samples         = samples.add(buffer);
 		metaModel       = this.addMetaModel;
 		metaModel[\name].string_(path.basename);
-
+		metaModel[\bpm].value_(studio.bpm);
+		if (length.notNil) { metaModel[\length].value_(length.asInt) };
 
 		this.updateList(false,true); // add to list
-		if (select) {
-			this.selectSample(samples.size-1,false,false); // select in...
-			selectMeFunc.value(samples.size-1); // select in...
-		};
-		if (window.notNil) { this.addSampleWidgets(samples.size-1,select)} ; // add the widgets
+
+		{
+			if (select.isTrue) {
+				this.selectSample(samples.size-1,true,false,true); // select in...
+				selectMeFunc.value(samples.size-1); // select in...
+			};
+			if (window.notNil) { this.addSampleWidgets(samples.size-1,select)} ; // add the widgets
+		}.defer;
 	}
-
-
-
-
-
 
 	// URL's //////////////////////////////////////////////////////////////////////////////////
 
@@ -837,7 +824,7 @@ LNX_SampleBank{
 		sampleBanks.remove(this);
 		if (this.isOpen) { window.parent.close };
 		this.finishedLoading;
-		//gui.postln.do(_.free); // this will cause a crash, should find out why at some point
+		//gui.do(_.free); // this will cause a crash, should find out why at some point
 	}
 
 	// copy buffers
