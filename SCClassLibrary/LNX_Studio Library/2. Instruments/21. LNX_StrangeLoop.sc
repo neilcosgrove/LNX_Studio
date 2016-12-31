@@ -10,6 +10,7 @@ Possible playback modes are...
 To do / Think about...
 ----------------------
 syncDelay
+max is a reset instead
 when you enter your bpm with keyboard length should change
 new sample default is current song bpm
 what if each marker could snd out its own midi
@@ -64,11 +65,10 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <sampleBank,		<sampleBankGUI,	<webBrowser, 		<relaunch = false,	<newBPM = false;
 	var <mode = \marker,	<markerSeq,		<lastMarkerEvent,	<lastMarkerEvent2;
 	var <allMakerEvents,    <noteOnNodes,	<sequencer,			<seqOutBuffer;
-	var <repeatMode;
+	var <repeatMode,		<recordNode;
 
 	var <repeatNo=0,		<repeatRate=0,	<repeatAmp=1,		<repeatStart=0;
 	var <repeatNoE=0,		<repeatRateE=0,	<repeatAmpE=1;
-
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -97,6 +97,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		instrumentHeaderType="SC StrangeLoop Doc";
 		version="v1.0";
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// the models
 	initModel {
@@ -453,6 +455,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	*initUGens{|server|
 		this.pitch_initUGens (server);
 		this.marker_initUGens(server);
+		this.record_initUGens(server);
 	}
 
 	// mixer synth stuFF /////////////////////////////////////////////////////////////////////////////////////////
@@ -520,16 +523,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	// clear the sequencer
 	clearSequencer{ sequencer.clear }
 
-	/////////////////////////////////////////////////////////////////////////////////////////////
-
-	// make a new buffer
-	guiNewBuffer{
-		var numFrames, length = (sampleBankGUI[\length].value); // length is from gui widget
-		if (length<=0) { length = 32 };							// if zero use 32
-		numFrames = length * 3 * (studio.absTime) * 44100;		// work that out in frames
-		sampleBank.guiNewBuffer(numFrames, length:length);		// make a new buffer in the bank
-	}
-
 	// GUI ////////////////////////////////////////////////////////////////////////////////////////////
 
 	*thisWidth  {^870}
@@ -557,8 +550,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.color_(\border, Color.new255(122,132,132)/2)
 			.resize_(5);
 
-		gui[\scrollView] = MVC_CompositeView(gui[\scrollViewOuter] ,
-				Rect(0,0,thisWidth-22,thisHeight-22-1))
+		gui[\scrollView] = MVC_CompositeView(gui[\scrollViewOuter], Rect(0,0,thisWidth-22,thisHeight-22-1))
 			.color_(\background,Color.new255(122,132,132))
 			.hasBorder_(false)
 			.autoScrolls_(false)
@@ -632,9 +624,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.backgrounds_([Color(0,0,0,0.3)])
 			.tabHeight_(32);
 
-		// 19. freeze
-		MVC_MyKnob3(models[19]); // this is fake, without it automation doesn't works. needs fixing
-
 		// freeze button
 		gui[\freezeButton] = MVC_FlatButton(gui[\scrollView], Rect(590, 360, 50, 20),"Freeze", gui[\flatButton])
 			.downAction_{ models[19].valueAction_(1,nil,true,false) }
@@ -664,9 +653,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		// ***************** REVERSE
 
-		// 21. rev
-		MVC_MyKnob3(models[21]); // this is fake, without it automation doesn't works. needs fixing
-
 		// rev button
 		gui[\revButton] = MVC_FlatButton(gui[\scrollView], Rect(676, 360, 40, 20),"Rev", gui[\flatButton])
 			.downAction_{ models[21].valueAction_(1,nil,true,false) }
@@ -682,17 +668,10 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		// ***************** FRAME
 
-		// 22. frame freeze
-		MVC_MyKnob3(models[22]); // this is fake, without it automation doesn't works. needs fixing
-
 		// frame button
 		gui[\frameButton] = MVC_FlatButton(gui[\scrollView], Rect(774, 360, 50, 20), "Frame", gui[\flatButton])
-			.downAction_{
-				models[22].valueAction_(1,nil,true,false)
-			}
-			.upAction_{
-				models[22].valueAction_(0,nil,true,false)
-			};
+			.downAction_{ models[22].valueAction_(1,nil,true,false) }
+			.upAction_{ models[22].valueAction_(0,nil,true,false) };
 
 		MVC_PipeLampView(gui[\scrollView],models[22], Rect(754,364,12,12))
 			.doLazyRefresh_(false)
@@ -754,14 +733,21 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_FlatButton(gui[\scrollView], Rect(768, 104, 40, 20), "New", gui[\flatButton])
 			.action_{ this.guiNewBuffer };
 
+		// record
+		gui[\record]= MVC_OnOffView(gui[\scrollView], Rect(767, 71, 40, 20),"Rec")
+			.action_{|me,val| if (me.value.isTrue) { this.guiRecord } { this.guiStopRecord } }
+			.rounded_(true)
+			.color_(\on,Color(50/77,61/77,1))
+			.color_(\off,Color(1,1,1,0.88)/4);
+
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],605@520,100,
-				Color(0.8,0.8,1)/1.6,
-				Color(0.7,0.7,1)/3,
-				Color(0.7,0.7,1)/1.5,
-				Color(0.77,1,1),
-				Color.black
-			);
+			Color(0.8,0.8,1)/1.6,
+			Color(0.7,0.7,1)/3,
+			Color(0.7,0.7,1)/1.5,
+			Color(0.77,1,1),
+			Color.black
+		);
 		this.attachActionsToPresetGUI;
 
 	}
