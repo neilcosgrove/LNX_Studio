@@ -167,8 +167,7 @@ MVC_UserView{
 			// exceptions
 			if ( (parent.isKindOf(MVC_TabView))and:{parent.isVisible.not} ) {^this };
 			parentViews.do{|view| if (view.isVisible.not) { ^this }};
-			// now refresh
-			view.refresh;
+			{view.refresh}.deferIfNeeded; // now refresh
 			MVC_LazyRefresh.incRefresh;
 		}
 	}

@@ -239,11 +239,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 		models[29].action_{|me,val,latency,send|
 			var newVal = val;
 			if (p[60].isTrue) { newVal = val.nearestInList([1, 32, 92, 166, 224, 255]) };
-			if (thisThread.clock==SystemClock) {
-				if (newVal!=val) { me.value_(newVal) };
-			}{
-				{if (newVal!=val) { me.value_(newVal) }}.defer;
-			};
+			{if (newVal!=val) { me.value_(newVal) }}.deferIfNeeded;
 			this.midiControlVP(12,newVal,latency,send);
 		};
 

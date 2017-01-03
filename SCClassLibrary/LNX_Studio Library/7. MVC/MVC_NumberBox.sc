@@ -182,7 +182,7 @@ MVC_NumberBox : MVC_View {
 		midiLearn=bool;
 		if (view.notClosed) {
 			view.background_(colors[bool.if(\midiLearn,enabled.if(
-											\background,\backgroundDisabled))]);
+				\background,\backgroundDisabled))]);
 		};
 		labelGUI.do(_.refresh);
 	}

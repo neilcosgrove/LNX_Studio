@@ -40,14 +40,45 @@ LNX_BufferProxy {
 
 	}
 
+	// a new blank buffer /////////////////////////////////////////////////////
+
+	*new{|server, numFrames, numChannels, sampleRate, action|
+		^super.new.initNew(server, numFrames, numChannels, sampleRate, action)
+	}
+
+	initNew{|argServer, numFrames, numChannels, sampleRate, argAction|
+
+		this.initInstance;
+		this.initModels;
+
+		models[\percentageComplete].value_(-3);
+
+		// source is url & make a filename path from the url
+		source = \new;
+		server = argServer ? Server.default;
+		url    = "";
+		path   = "";
+		dir    = "";
+		name   = "empty";
+		convertedPath = "";
+		sampleData = [0];
+
+		paths  = paths.add(path);
+
+		buffer = LNX_BufferArray.new(server, numFrames, numChannels, sampleRate,
+			action: { argAction.value(this) } );
+
+		this.loaded;
+	}
+
 	// from a URL /////////////////////////////////////////////////////////////
 
 	isURL{ ^source === \url }
 
-	*url {|server,url,action,replace| ^super.new.initURL(server,url,action,replace) }
+	*url{|server,url,action,replace| ^super.new.initURL(server,url,action,replace) }
 
 	// this only inits a url, the loading is done in init called at the bottom
-	initURL {|argServer, argURL, argCompletionFunc, replace=false|
+	initURL{|argServer, argURL, argCompletionFunc, replace=false|
 
 		this.initInstance;
 		this.initModels;
@@ -196,7 +227,7 @@ LNX_BufferProxy {
 
 	*read {|server,path,action| ^super.new.initRead(server,path,action) }
 
-	initRead { |argServer, argPath, argAction|
+	initRead{ |argServer, argPath, argAction|
 		source = \file;
 		this.initInstance;
 		this.initModels;
@@ -210,7 +241,7 @@ LNX_BufferProxy {
 	isLoaded{ ^buffer.isNil.not }
 
 	// where as this is an instance method and loads just one buffer
-	init {|argServer, argPath, argAction|
+	init{|argServer, argPath, argAction|
 
 		var ifPresentIndex=false;
 
@@ -320,7 +351,6 @@ LNX_BufferProxy {
 		var ifPresent=false, index;
 
 		if (free.not) {
-
 			// only stop the download if not used by others
 			if ((source==\url)and:{download.notNil}) {
 				if (containers.select{|c| c.download==download }.size<=1) {
@@ -340,7 +370,7 @@ LNX_BufferProxy {
 			paths.removeAt(index);
 			containers.removeAt(index);
 			free=true;
-		}
+		};
 	 }
 
 	 // clock safe versions //////////////////////////////////////

@@ -25,7 +25,7 @@ MVC_LazyRefresh{
 
     classvar <>globalFPS, <refreshCount=0, <lastRefreshCount=0, <task, <taskRate=1, <rateAdjust=1;
 
-    var <>refreshFunc, <>fps=20, lastTime=0, nextTime, <>model, <>spread=false;
+    var <>refreshFunc, <>fps=20, lastTime=0, nextTime, <>model, <>spread=false; // do not use spread any more.
 
 	// all views add 1 to the refreshCount when they are refreshed
 	*incRefresh{ refreshCount = refreshCount + 1 }
@@ -66,11 +66,7 @@ MVC_LazyRefresh{
 													// if time since last refresh is > frame duration
             lastTime=now;						    // so last time becomes now
 			nextTime=nil;						    // nothing is now scheduled for the future
-			if (thisThread.clock==SystemClock) {    // do i need to defer to the AppClock ?
-                {refreshFunc.value}.defer;          // defer the refresh func
-			}{
-				refreshFunc.value;			        //  call the refresh func now
-			};
+			refreshFunc.deferIfNeeded;				// call refreshFunc, defer if needed
         }{									        // else time since last refresh is < frame dur
 			if (nextTime.isNil) {				    // if there isn't a refresh coming up
 				nextTime=lastTime+(((globalFPS?fps)*rateAdjust).reciprocal);
@@ -89,6 +85,7 @@ MVC_LazyRefresh{
 	lazyValueRefresh{
 		var now;
 		// spread is causing a nil error with model when song closes. and this doesn't stop it...
+		// also spread causes extra defers when we don't need them. bad for Qt
 		// if (model.isNil) {^this};
 		now=SystemClock.seconds;
 		if ((now-lastTime)>(((globalFPS ? fps)*rateAdjust).reciprocal)) {
@@ -101,7 +98,7 @@ MVC_LazyRefresh{
 					}.defer(j/((globalFPS ? fps)*rateAdjust*(model.noDependants))); // spread over frame
 				};
 			}{
-				{model.dependants.do{|view| view.value_(model.value)};}.defer;
+				{ model.dependants.do{|view| view.value_(model.value)} }.deferIfNeeded;
 			};
 		}{
 			if (nextTime.isNil) {

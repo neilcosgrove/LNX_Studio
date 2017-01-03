@@ -219,7 +219,7 @@ MVC_StepSequencer {
 	}
 
 	//clockIn is the clock pulse, with the current song pointer in beats
-	clockIn   {|beat,latency|
+	clockIn{|beat,latency|
 
 		var vel, absPos, pos, speed;
 		var interp, nextVel, iVel, intN;
@@ -277,7 +277,9 @@ MVC_StepSequencer {
 				if (vel>0) { this.bang(vel,latency,absPos,beatNo,dur,pos) }; // bang it
 			};
 
-			{models[\pos].lazyValue_(pos,false)}.defer(latency);
+			// the below optimisation updates pos but doesn't defer. too many defers make Qt gui slow on MacOS.
+			// {models[\pos].lazyValue_(pos,false)}.defer(latency);
+			^{models[\pos].lazyValue_(pos,false)}; // return funcs so they can be called within the same defer
 		};
 
 	}

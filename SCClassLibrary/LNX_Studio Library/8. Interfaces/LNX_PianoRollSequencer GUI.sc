@@ -47,17 +47,11 @@
 	refresh{|calcNoteRects=true, refreshVel=true|
 		if (gui[\notes].notNil) {
 			if (calcNoteRects) {this.calcNoteRects}; // calc rects 1st, then draw
-			if (thisThread.clock==SystemClock) {
-				{
-					lastVisibleRect=nil;
-					gui[\notes].refresh;
-					if (refreshVel) { gui[\vel].refresh };
-				}.defer;
-			}{
+			{
 				lastVisibleRect=nil;
 				gui[\notes].refresh;
 				if (refreshVel) { gui[\vel].refresh };
-			};
+			}.deferIfNeeded;
 		}
 	}
 
@@ -532,10 +526,9 @@
 		.clearOnRefresh_(true)
 		.onClose_{ lastVisibleRect=nil }
 		.drawFunc_{|me|
-
 			var visibleOrigin, svb, voT, voB;
 			visibleOrigin=gui[\scrollView].visibleOrigin;
-			svb=me.bounds;
+			svb = me.bounds;
 			voT = visibleOrigin.y;
 			voB = voT+svb.height;
 			Pen.use{

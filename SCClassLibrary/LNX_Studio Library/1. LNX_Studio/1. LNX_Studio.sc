@@ -418,25 +418,21 @@ LNX_Studio {
 			out=LeakDC.ar(out);
 			out=out * (preAmp.dbamp);
 			out=Limiter.ar(out,0.99, 0.001);
-
-			SendPeakRMS.kr(out[0], 20, 1.5, "/peakOutL");
-			SendPeakRMS.kr(out[1], 20, 1.5, "/peakOutR");
-
+			SendPeakRMS.kr(out, 20, 1.5, "/peakOut");
 			ReplaceOut.ar(channel,out);	// replace
 		}).send(server);
 
 		// SynthDef out instOut, does levels, pan & send
 
-		SynthDef("LNX_InstOut", {|inChannel=0, outChannel=0, id=0, amp=1, pan=0, sendAmp=0,
-								sendChannel=0|
+		SynthDef("LNX_InstOut", {|inChannel=0, outChannel=0, id=0, amp=1, pan=0, sendAmp=0, sendChannel=0|
 			var leftPan, rightPan;
 			var out  = In.ar(inChannel, 2);    // signal in
 			leftPan  = (pan*2-1).clip(-1,1);   // left pos
 			rightPan = (pan*2+1).clip(-1,1);   // right pos
 			out      = LinPan2.ar(out[0], leftPan) + LinPan2.ar(out[1], rightPan); // pan
 			out      = out * amp;                                 // apply amp
-			SendPeakRMS.kr(out[0], 20, 1.5, "/instPeakOutL", id); // left meter
-			SendPeakRMS.kr(out[1], 20, 1.5, "/instPeakOutR", id); // right meter
+			SendPeakRMS.kr(out, 20, 1.5, "/instPeakOut", id); // left meter
+			//SendPeakRMS.kr(out[1], 20, 1.5, "/instPeakOutR", id); // right meter
 			Out.ar(outChannel,out);                               // now send out
 			out = out*sendAmp;                                    // apply send amp
 			Out.ar(sendChannel,out);                          	  // and send to fxs
@@ -467,19 +463,16 @@ LNX_Studio {
 
 		OSCFunc({|msg|
 			models[\peakOutL].lazyValueAction_(msg[3]*(models[\volume].value.dbamp),0);
-		}, '/peakOutL');
+			models[\peakOutR].lazyValueAction_(msg[5]*(models[\volume].value.dbamp),0);
+		}, '/peakOut');
 
 		OSCFunc({|msg|
-			models[\peakOutR].lazyValueAction_(msg[3]*(models[\volume].value.dbamp),0);
-		}, '/peakOutR');
-
-		OSCFunc({|msg|
-			if (insts[msg[2]].notNil) { insts[msg[2]].peakOutLeft_(msg[3]) }
-		}, '/instPeakOutL');
-
-		OSCFunc({|msg|
-			if (insts[msg[2]].notNil) { insts[msg[2]].peakOutRight_(msg[3]) }
-		}, '/instPeakOutR');
+			var inst = insts[msg[2]];
+			if (inst.notNil) {
+				inst.peakOutLeft_ (msg[3]);
+				inst.peakOutRight_(msg[5]);
+			};
+		}, '/instPeakOut');
 
 		OSCFunc({|msg|
 			if (insts[msg[2]].notNil) { insts[msg[2]].lfo_(msg[3],msg[5]) }

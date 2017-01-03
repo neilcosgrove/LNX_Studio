@@ -7,6 +7,52 @@ LNX_BufferArray {
 
 	var <buffers, <numChannels, <numFrames, <sampleRate, <duration, <sampleData;
 
+	// new empty /////////
+
+	*new{|server, numFrames, numChannels, sampleRate, action|
+		^super.new.initNew(server, numFrames, numChannels, sampleRate, action)
+	}
+
+	initNew{|server, argFrames, argChannels, argSampleRate, action|
+
+		var bufnum;
+		var soundFile = SoundFile();
+		var done;
+
+		//soundFile.numFrames_(argFrames);
+		soundFile.numChannels_(argChannels);
+		soundFile.sampleRate_(argSampleRate);
+		//soundFile.duration_(argFrames / argSampleRate);
+
+		//numFrames   = soundFile.numFrames;
+		numFrames   = argFrames;
+		numChannels = soundFile.numChannels;
+		sampleRate  = soundFile.sampleRate;
+		//duration    = soundFile.duration;
+		duration	= argFrames / argSampleRate;
+
+		sampleData  = FloatArray.fill(numFrames*numChannels,0); // causes lates with large samples
+
+		bufnum = server.bufferAllocator.alloc(numChannels); // make sure buffers are adj
+
+		done = 1 ! numChannels; // reverse of normal 0 = done
+
+		// maybe action should only call after all have loaded
+		numChannels.do{|i|
+			buffers = buffers.add(
+
+				Buffer.alloc(server, numFrames, 1,{|buf|
+					done[i] = 0; // when sum of done is zero, all buffers have been allocated
+					if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
+				}, bufnum+i);
+
+			)
+		};
+
+	}
+
+	// new from file ///////
+
 	*read {|server,path,action| ^super.new.init(server,path,action) }
 
 	init{ |server, path, action|

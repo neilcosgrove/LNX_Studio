@@ -280,7 +280,7 @@
 			tasks[\time]=Task({
 				loop {
 					1.wait;
-					{models[\time].valueAction_(models[\time].value+1)}.defer;
+					models[\time].valueAction_(models[\time].value+1);
 				};
 			},AppClock).start; // problems with SystemClock at moment
 		}{

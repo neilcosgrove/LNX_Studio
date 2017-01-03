@@ -99,7 +99,18 @@ messures each iteration
 gives min, max, averages and total
 */
 
++ Nil { deferIfNeeded{} } // sometimes lazyRefresh doesn't have a func
+
 + Function {
+
+	// similar to defer but less testing
+	deferIfNeeded{
+		if (this.canCallOS) { // same as... if (thisThread.clock==SystemClock) {
+			this.value
+		}{
+			AppClock.sched(0, { this.value; nil })
+		}
+	}
 
 	benchMark{|n=10,print=true|
 		var dt;
