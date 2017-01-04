@@ -70,6 +70,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <repeatNo=0,		<repeatRate=0,	<repeatAmp=1,		<repeatStart=0;
 	var <repeatNoE=0,		<repeatRateE=0,	<repeatAmpE=1;
 
+	var <guiModeModel;
+
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
 	}
@@ -296,6 +298,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		randomExclusion=[0,1,10];
 		autoExclusion=[];
 
+
+		guiModeModel = [0,[0,2,\lin,1,1]].asModel;
 	}
 
 	updateGUI{|tempP|
@@ -603,9 +607,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.downAction_{ models[19].valueAction_(1,nil,true,false) }
 			.upAction_{ models[19].valueAction_(0,nil,true,false) };
 
-		MVC_PipeLampView(gui[\scrollView],models[19], Rect(643,363,14,14))
+		gui[\eventLamp] = MVC_PipeLampView(gui[\scrollView],models[19], Rect(643,363,14,14))
 			.doLazyRefresh_(false)
 			.border_(true)
+			.insetBy2_(1)
+			.border2_(true)
 			.mouseWorks_(true)
 			.color_(\on,Color(50/77,61/77,1));
 
@@ -647,9 +653,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.downAction_{ models[22].valueAction_(1,nil,true,false) }
 			.upAction_{ models[22].valueAction_(0,nil,true,false) };
 
-		MVC_PipeLampView(gui[\scrollView],models[22], Rect(755,363,14,14))
+		gui[\frameLamp] = MVC_PipeLampView(gui[\scrollView],models[22], Rect(755,363,14,14))
 			.doLazyRefresh_(false)
 			.border_(true)
+			.insetBy2_(1)
+			.border2_(true)
 			.mouseWorks_(true)
 			.color_(\on,Color(50/77,61/77,1));
 
@@ -736,6 +744,33 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		);
 		this.attachActionsToPresetGUI;
 
+		///// highlight which repeat mode is used
+
+		MVC_FuncAdaptor(guiModeModel).func_{|me,val|
+			if (val==0) {
+				gui[\frameLamp].color_(\border,Color.black);
+				gui[\eventLamp].color_(\border,Color.black);
+			};
+			if (val==1) {
+				gui[\frameLamp].color_(\border,Color.white);
+				gui[\eventLamp].color_(\border,Color.black);
+			};
+			if (val==2) {
+				gui[\frameLamp].color_(\border,Color.black);
+				gui[\eventLamp].color_(\border,Color.white);
+			};
+		};
+
 	}
+
+	// highlight in gui which repeat mode is used
+	guiHighlight{|mode, latency|
+		{
+			if (mode.isNil)	   { guiModeModel.lazyValueAction_(0) };
+			if (mode===\frame) { guiModeModel.lazyValueAction_(1) };
+			if (mode===\event) { guiModeModel.lazyValueAction_(2) };
+		}.defer(latency);
+	}
+
 
 } // end ////////////////////////////////////

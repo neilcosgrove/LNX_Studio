@@ -118,6 +118,8 @@ LNX_MarkerEvent {
 		sampleIndex = p[11];					  		// sample used in bank
 		if (sampleBank[sampleIndex].isNil) { ^this };	// no samples loaded in bank exception
 
+		if ( (instBeat3%3)==0) { this.guiHighlight(repeatMode, latency) };
+
 		frameProb	= p[24]/100;				  // frame beat repeat
 		rate		= (p[12]+p[13]).midiratio.round(0.0000000001).clip(0,100000);
 		amp         = 0.7874;					  // 100/127 - amp in pRoll
@@ -190,8 +192,6 @@ LNX_MarkerEvent {
 			var bufferL		= sample.buffer.bufnum(0);          	// this only comes from LNX_BufferArray
 			var bufferR		= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
 			var probability = p[15]/100;							// event beat repeat
-
-			// WHY IS THIS vvvv HERE?
 
 			// EVENT freeze (beat repeat), triggered by PlayLoop
 			if (p[19]==1) { probability = 1 };
