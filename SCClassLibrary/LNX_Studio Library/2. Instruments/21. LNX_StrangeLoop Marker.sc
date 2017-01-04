@@ -112,7 +112,7 @@ LNX_MarkerEvent {
 
 	// marker clock in mode (new)
 	marker_clockIn3{|instBeat3,absTime3,latency,beat3|
-		var length3, markerEvent, instBeat, frameProb, rate,  amp, doFrame, sampleIndex;
+		var length3, markerEvent, instBeat, frameProb, rate,  amp, doFrame, sampleIndex, addMarker=false;
 
 		if (this.isOff) { ^this };						// inst is off exception
 		sampleIndex = p[11];					  		// sample used in bank
@@ -129,29 +129,33 @@ LNX_MarkerEvent {
 		if (p[22]==1) { frameProb = 1 };
 
 		// 1st frame trigger
-		if ( (repeatNo==0) && ((instBeat3 + (p[29].asInt*3))%(3*(p[28].asInt)))==0) {
+		if ( (repeatNo==0) && ( ( (instBeat3 - (p[29].asInt*3)) % (p[28].asInt*3) ) == 0 ) ) {
+
 			doFrame=true;
 			repeatStart = instBeat3; // what beat do we start repeating on
+			addMarker=true;
 		};
 
 		// 2nd+ frame triggers
-		if ( (repeatNo>0) && ((instBeat3 - repeatStart) %(3*(p[23].asInt)))==0) {
+		if ( (repeatNo>0) && ( ( (instBeat3 - repeatStart) % (p[23].asInt*3) ) == 0  ) ) {
+			var reset = p[30];
+			if (reset>129) { reset = inf };
 			doFrame=true;
-			if (p[30]>0) { // 0 is inf max
-				if (repeatNo>=p[30]) {
-					doFrame=false;
-					repeatMode  = nil; // reset all vars
-					repeatNo	= 0;
-					repeatRate	= 0;
-					repeatAmp	= 1;
-					repeatStart = 0;
-					models[22].lazyValueAction_(0,latency,true); // turn off
-				};
-			};// max
+			if (repeatNo>=reset) {
+				// reset these vars
+				repeatNo	= 0;
+				repeatRate	= 0;
+				repeatAmp	= 1;
+				// if reset mode & not latch then reset these vars too...
+				if (p[31].isFalse) { doFrame = false; repeatMode  = nil };
+			};
+
 		};
 
 		if (markerEvent.notNil && (p[18].isTrue) ) {
-			if (repeatMode.isNil) { lastMarkerEvent2 = lastMarkerEvent2.insert(0,markerEvent) }; // add last event
+			if (repeatMode.isNil || addMarker) {
+				lastMarkerEvent2 = lastMarkerEvent2.insert(0,markerEvent)
+			}; // add last event
 			lastMarkerEvent2 = lastMarkerEvent2.keep(p[25].asInt); // memory of length p[20]
 		};
 

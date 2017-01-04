@@ -308,10 +308,17 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 					this.setPVPModel(29,val,latency,send);
 			}],
 
-			// 30. max
-			[0, [0,128,\linear,1],  (label_:"Max", numberFunc_:\int), midiControl, 30, "Max",
+			// 30. reset
+			[129, [1,129,\linear,1], midiControl, 30, "Reset",
+				(label_:"Reset", numberFunc_:{|n| (n==129).if("inf",n.asInt.asString)}),
 				{|me,val,latency,send|
 					this.setPVPModel(30,val,latency,send);
+			}],
+
+			// 31. reset latch
+			[1, \switch, midiControl, 31, "Latch",
+				{|me,val,latency,send|
+					this.setPVPModel(31,val,latency,send);
 			}],
 
 		].generateAllModels;
@@ -399,13 +406,17 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		if (mode===\repitch) {
 			this.pitch_clockIn3 (instBeat,absTime3,latency,beat);
-			if (p[18].isFalse) { sequencer.clockIn3(beat,absTime,latency,beat) }; // i want pRoll 2nd for repeat reasons
+			//if (p[18].isFalse) { sequencer.clockIn3(beat,absTime,latency,beat) }; // i want pRoll 2nd for repeat reasons
 			^this
 		};
 
 		if (mode===\marker ) {
-			this.marker_clockIn3(instBeat,absTime3,latency,beat);
+
+			this.marker_clockIn3(instBeat,absTime3,latency,beat); // SHOULD BE BELOW SEQ BUT CAUSE HELD MARKERS
+
 			if (p[18].isFalse) { sequencer.clockIn3(beat,absTime,latency,beat) };
+
+
 			^this
 		};
 
@@ -629,7 +640,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.downAction_{ models[19].valueAction_(1,nil,true,false) }
 			.upAction_{ models[19].valueAction_(0,nil,true,false) };
 
-		MVC_PipeLampView(gui[\scrollView],models[19], Rect(646,364,12,12))
+		MVC_PipeLampView(gui[\scrollView],models[19], Rect(643,363,14,14))
 			.doLazyRefresh_(false)
 			.border_(true)
 			.mouseWorks_(true)
@@ -658,7 +669,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.downAction_{ models[21].valueAction_(1,nil,true,false) }
 			.upAction_{ models[21].valueAction_(0,nil,true,false) };
 
-		MVC_PipeLampView(gui[\scrollView],models[21], Rect(724,364,12,12))
+		MVC_PipeLampView(gui[\scrollView],models[21], Rect(723,363,14,14))
 			.doLazyRefresh_(false)
 			.border_(true)
 			.mouseWorks_(true)
@@ -673,7 +684,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.downAction_{ models[22].valueAction_(1,nil,true,false) }
 			.upAction_{ models[22].valueAction_(0,nil,true,false) };
 
-		MVC_PipeLampView(gui[\scrollView],models[22], Rect(754,364,12,12))
+		MVC_PipeLampView(gui[\scrollView],models[22], Rect(755,363,14,14))
 			.doLazyRefresh_(false)
 			.border_(true)
 			.mouseWorks_(true)
@@ -706,6 +717,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		// 27. repeat amp
 		MVC_MyKnob3(gui[\scrollView], models[27], Rect(785, 468, 28, 28), gui[\knobTheme1]);
+
+		// 31. reset latch
+		MVC_OnOffView(gui[\scrollView], models[31], Rect(790, 520, 40, 20))
+			.strings_(["Reset","Latch"])
+			.rounded_(true)
+			.color_(\on,Color(50/77,61/77,1))
+			.color_(\off,Color(1,1,1,0.88)/4);
 
 		// *****************
 
@@ -741,7 +759,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.color_(\off,Color(1,1,1,0.88)/4);
 
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(gui[\scrollView],605@520,100,
+		presetView=MVC_PresetMenuInterface(gui[\scrollView],580@520,100,
 			Color(0.8,0.8,1)/1.6,
 			Color(0.7,0.7,1)/3,
 			Color(0.7,0.7,1)/1.5,
