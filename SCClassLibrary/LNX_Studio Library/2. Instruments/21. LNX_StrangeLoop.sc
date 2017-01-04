@@ -656,30 +656,30 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_FuncAdaptor(models[22]).func_{|me,val| gui[\frameButton].down_(val.isTrue) };
 
 		// 28. frame start
-		MVC_MyKnob3(gui[\scrollView], models[28], Rect(605, 404, 28, 28), gui[\knobTheme1]);
+		MVC_MyKnob3(gui[\scrollView], models[28], Rect(605, 468, 28, 28), gui[\knobTheme1]);
 
 		// 29. frame offset
-		MVC_MyKnob3(gui[\scrollView], models[29], Rect(665, 404, 28, 28), gui[\knobTheme1]);
+		MVC_MyKnob3(gui[\scrollView], models[29], Rect(665, 468, 28, 28), gui[\knobTheme1]);
 
 		// 23. frame length
-		MVC_MyKnob3(gui[\scrollView], models[23], Rect(725, 404, 28, 28), gui[\knobTheme1]);
+		MVC_MyKnob3(gui[\scrollView], models[23], Rect(725, 468, 28, 28), gui[\knobTheme1]);
 
 		// 30. reset / latch
-		gui[\latchReset] = MVC_MyKnob3(gui[\scrollView], models[30], Rect(785, 404, 28, 28), gui[\knobTheme1]);
+		gui[\latchReset] = MVC_MyKnob3(gui[\scrollView], models[30], Rect(785, 468, 28, 28), gui[\knobTheme1]);
 
 		// 24. repeat prob
-		MVC_MyKnob3(gui[\scrollView], models[24], Rect(605, 468, 28, 28), gui[\knobTheme1]);
+		MVC_MyKnob3(gui[\scrollView], models[24], Rect(605, 405, 28, 28), gui[\knobTheme1]);
 
 		// 25. memory
-		MVC_MyKnob3(gui[\scrollView], models[25], Rect(665, 468, 28, 28), gui[\knobTheme1]);
+		MVC_MyKnob3(gui[\scrollView], models[25], Rect(665, 405, 28, 28), gui[\knobTheme1]);
 
 		// 26. repeat trans
-		MVC_MyKnob3(gui[\scrollView], models[26], Rect(725, 468, 28, 28), gui[\knobTheme1])
+		MVC_MyKnob3(gui[\scrollView], models[26], Rect(725, 405, 28, 28), gui[\knobTheme1])
 			.zeroValue_(0)
 			.resoultion_(5);
 
 		// 27. repeat amp
-		MVC_MyKnob3(gui[\scrollView], models[27], Rect(785, 468, 28, 28), gui[\knobTheme1]);
+		MVC_MyKnob3(gui[\scrollView], models[27], Rect(785, 405, 28, 28), gui[\knobTheme1]);
 
 		// 31. reset latch
 		MVC_OnOffView(gui[\scrollView], models[31], Rect(790, 520, 40, 20))
