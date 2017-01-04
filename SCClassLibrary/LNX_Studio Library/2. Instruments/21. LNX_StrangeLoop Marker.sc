@@ -130,7 +130,6 @@ LNX_MarkerEvent {
 
 		// 1st frame trigger
 		if ( (repeatNo==0) && ( ( (instBeat3 - (p[29].asInt*3)) % (p[28].asInt*3) ) == 0 ) ) {
-
 			doFrame=true;
 			repeatStart = instBeat3; // what beat do we start repeating on
 			addMarker=true;
@@ -149,21 +148,21 @@ LNX_MarkerEvent {
 				// if reset mode & not latch then reset these vars too...
 				if (p[31].isFalse) { doFrame = false; repeatMode  = nil };
 			};
-
 		};
 
 		if (markerEvent.notNil && (p[18].isTrue) ) {
 			if (repeatMode.isNil || addMarker) {
 				lastMarkerEvent2 = lastMarkerEvent2.insert(0,markerEvent)
 			}; // add last event
-			lastMarkerEvent2 = lastMarkerEvent2.keep(p[25].asInt); // memory of length p[20]
+			lastMarkerEvent2 = lastMarkerEvent2.keep(8); // memory of length p[20]
 		};
 
+		// frame has been triggered above
 		if (doFrame) {
 			if ((frameProb.coin) && (lastMarkerEvent2.notEmpty) && (repeatMode!=\event)) {
 				repeatMode  = \frame;
 				if (repeatNo==0) { this.stopAudio(latency) };
-				markerEvent = lastMarkerEvent2.wrapAt(repeatNo);		// repeat
+				markerEvent = lastMarkerEvent2.keep(p[25].asInt).wrapAt(repeatNo);		// repeat
 				repeatNo 	= repeatNo + 1;							// inc number of repeats
 				repeatRate	= repeatRate + p[26];
 				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
@@ -214,7 +213,7 @@ LNX_MarkerEvent {
 			};
 
 			if (repeatMode.isNil) { lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent) }; // add last event
-			lastMarkerEvent = lastMarkerEvent.keep(p[20].asInt); // memory of length p[20]
+			lastMarkerEvent = lastMarkerEvent.keep(8); // memory of length p[20]
 
 			{
 				if (this.isOn) {
@@ -310,7 +309,7 @@ LNX_MarkerEvent {
 			if (p[19]==1) { probability = 1 } { probability = p[15]/100 };
 			if ((probability.coin) && (lastMarkerEvent.notEmpty)  && (repeatMode!=\frame)) {
 				repeatMode  = \event;
-				markerEvent = lastMarkerEvent.wrapAt(repeatNoE);	// repeat
+				markerEvent = lastMarkerEvent.keep(p[20].asInt).wrapAt(repeatNoE);	// repeat
 				repeatNoE 	= repeatNoE + 1;						// inc number of repeats
 				rate		= (p[12]+p[13]+repeatRateE).midiratio.round(0.0000000001).clip(0,100000);
 				repeatRateE	= repeatRateE + p[16];
@@ -326,10 +325,10 @@ LNX_MarkerEvent {
 			};
 
 			if (repeatMode.isNil) { lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent) }; // add last event
-			lastMarkerEvent = lastMarkerEvent.keep(p[20].asInt); // memory of length p[20]
+			lastMarkerEvent = lastMarkerEvent.keep(8); // memory of length p[20]
 
 			if (repeatMode.isNil) { lastMarkerEvent2 = lastMarkerEvent2.insert(0,markerEvent) }; // add last event
-			lastMarkerEvent2 = lastMarkerEvent2.keep(p[25].asInt); // memory of length p[25]
+			lastMarkerEvent2 = lastMarkerEvent2.keep(8); // memory of length p[25]
 
 			noteOnNodes[note] =
 			  this.marker_playBufferMIDI(

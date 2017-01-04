@@ -208,27 +208,19 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 			// 14. clip, fold or wrap
 			[0, [0,2,\linear,1],  (items_:["Clip","Fold","Wrap"]), midiControl, 14, "Fold/Wrap",
-				{|me,val,latency,send|
-					this.setPVPModel(14,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(14,val,latency,send) }],
 
 			// 15. repeat prob
 			[0, [0,100,\lin,0.1,0,"%"],  (label_:"Repeat", numberFunc_:\float1), midiControl, 15, "Repeat",
-				{|me,val,latency,send|
-					this.setPVPModel(15,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(15,val,latency,send) }],
 
 			// 16. repeat transpose  -48 to 48
 			[0, [-48,48,\linear,1],  (label_:"Trans", numberFunc_:\intSign), midiControl, 16, "R Trans",
-				{|me,val,latency,send|
-					this.setPVPModel(16,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(16,val,latency,send) }],
 
 			// 17. repeat decay
 			[1, [0,1],  (label_:"Decay", numberFunc_:\float2), midiControl, 17, "R Decay",
-				{|me,val,latency,send|
-					this.setPVPModel(17,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(17,val,latency,send) }],
 
 			// 18. play back mode
 			[1, \switch,  (items_:["Sequncer","Play Loop"]), midiControl, 18, "Play back mode",
@@ -243,57 +235,39 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 			// 19. event freeze
 			[0, \switch, midiControl, 19, "Freeze",
-				{|me,val,latency,send|
-					this.setPVPModel(19,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(19,val,latency,send) }],
 
 			// 20. memory 1-8
 			[1, [1,8,\linear,1],  (label_:"Memory", numberFunc_:\int), midiControl, 20, "Memory",
-				{|me,val,latency,send|
-					this.setPVPModel(20,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(20,val,latency,send) }],
 
 			// 21. reverse
 			[0, \switch, midiControl, 21, "Rev",
-				{|me,val,latency,send|
-					this.setPVPModel(21,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(21,val,latency,send) }],
 
 			// 22. frame freeze
 			[0, \switch, midiControl, 22, "Frame",
-				{|me,val,latency,send|
-					this.setPVPModel(22,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(22,val,latency,send) }],
 
 			// 23. frame length 1-32
 			[4, [1,16,\linear,1],  (label_:"Frame", numberFunc_:\int), midiControl, 23, "Frame",
-				{|me,val,latency,send|
-					this.setPVPModel(23,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(23,val,latency,send) }],
 
 			// 24. repeat prob
 			[0, [0,100,\lin,0.1,0,"%"],  (label_:"Repeat", numberFunc_:\float1), midiControl, 24, "Repeat",
-				{|me,val,latency,send|
-					this.setPVPModel(24,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(24,val,latency,send) }],
 
 			// 25. memory 1-8
 			[1, [1,8,\linear,1],  (label_:"Memory", numberFunc_:\int), midiControl, 25, "Memory",
-				{|me,val,latency,send|
-					this.setPVPModel(25,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(25,val,latency,send) }],
 
 			// 26. repeat transpose  -48 to 48
 			[0, [-48,48,\linear,1],  (label_:"Trans", numberFunc_:\intSign), midiControl, 26, "R Trans",
-				{|me,val,latency,send|
-					this.setPVPModel(26,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(26,val,latency,send) }],
 
 			// 27. repeat decay
 			[1, [0,1],  (label_:"Decay", numberFunc_:\float2), midiControl, 27, "R Decay",
-				{|me,val,latency,send|
-					this.setPVPModel(27,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(27,val,latency,send) }],
 
 			// 28. frame Start
 			[4, [1,16,\linear,1],  (label_:"Start", numberFunc_:\int), midiControl, 28, "Start",
@@ -304,22 +278,16 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 			// 29. frame offset
 			[0, [0,15,\linear,1],  (label_:"Offset", numberFunc_:\int), midiControl, 29, "Offset",
-				{|me,val,latency,send|
-					this.setPVPModel(29,val,latency,send);
-			}],
+				{|me,val,latency,send| this.setPVPModel(29,val,latency,send) }],
 
-			// 30. reset
-			[129, [1,129,\linear,1], midiControl, 30, "Reset",
-				(label_:"Reset", numberFunc_:{|n| (n==129).if("inf",n.asInt.asString)}),
-				{|me,val,latency,send|
-					this.setPVPModel(30,val,latency,send);
-			}],
+			// 30. reset / latch
+			[129, [1,129,\linear,1], midiControl, 30, "Reset & Latch",
+				(label_:"Latch", numberFunc_:{|n| (n==129).if("inf",n.asInt.asString)}),
+				{|me,val,latency,send| this.setPVPModel(30,val,latency,send) }],
 
-			// 31. reset latch
-			[1, \switch, midiControl, 31, "Latch",
-				{|me,val,latency,send|
-					this.setPVPModel(31,val,latency,send);
-			}],
+			// 31. reset latch Mode
+			[1, \switch, midiControl, 31, "Reset Mode",
+				{|me,val,latency,send| this.setPVPModel(31,val,latency,send) }],
 
 		].generateAllModels;
 
@@ -411,12 +379,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		};
 
 		if (mode===\marker ) {
-
 			this.marker_clockIn3(instBeat,absTime3,latency,beat); // SHOULD BE BELOW SEQ BUT CAUSE HELD MARKERS
-
 			if (p[18].isFalse) { sequencer.clockIn3(beat,absTime,latency,beat) };
-
-
 			^this
 		};
 
@@ -438,7 +402,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
 		if (mode===\marker ) { this.marker_stopBuffer(latency); ^this };
 	}
-
 
 	updateOnSolo{|latency|
 		if (this.isOn) { ^this }; // is on exception, below is done when off
@@ -701,8 +664,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		// 23. frame length
 		MVC_MyKnob3(gui[\scrollView], models[23], Rect(725, 404, 28, 28), gui[\knobTheme1]);
 
-		// 30. max
-		MVC_MyKnob3(gui[\scrollView], models[30], Rect(785, 404, 28, 28), gui[\knobTheme1]);
+		// 30. reset / latch
+		gui[\latchReset] = MVC_MyKnob3(gui[\scrollView], models[30], Rect(785, 404, 28, 28), gui[\knobTheme1]);
 
 		// 24. repeat prob
 		MVC_MyKnob3(gui[\scrollView], models[24], Rect(605, 468, 28, 28), gui[\knobTheme1]);
@@ -724,6 +687,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.rounded_(true)
 			.color_(\on,Color(50/77,61/77,1))
 			.color_(\off,Color(1,1,1,0.88)/4);
+
+		MVC_FuncAdaptor(models[31]).func_{|me,val|
+			{gui[\latchReset].label_( val.isTrue.if("Latch","Reset") )} .deferIfNeeded
+		};
+
 
 		// *****************
 

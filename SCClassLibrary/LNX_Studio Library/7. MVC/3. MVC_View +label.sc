@@ -154,8 +154,10 @@
 	// change the label
 	label_{|argLabel|
 		if (argLabel.isString) { label=[argLabel] } { label=argLabel };
-		if (view.notClosed) {
-			this.createLabel;
+		if (labelGUI.notNil) {
+			this.labelRefresh
+		}{
+			if (view.notClosed) { this.createLabel }
 		}
 	}
 
