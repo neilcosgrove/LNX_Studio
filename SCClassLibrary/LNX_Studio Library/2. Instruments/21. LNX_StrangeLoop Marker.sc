@@ -197,7 +197,7 @@ LNX_MarkerEvent {
 			if (p[19]==1) { probability = 1 };
 			if ((probability.coin) && (lastMarkerEvent.notEmpty) && (repeatMode!=\frame)) {
 				repeatMode  = \event;
-				markerEvent = lastMarkerEvent.wrapAt(repeatNoE);		// repeat
+				markerEvent = lastMarkerEvent.keep(p[20].asInt).wrapAt(repeatNoE);	// repeat
 				repeatNoE 	= repeatNoE + 1;							// inc number of repeats
 				rate		= (p[12]+p[13]+repeatRateE).midiratio.round(0.0000000001).clip(0,100000);
 				repeatRateE	= repeatRateE + p[16];
