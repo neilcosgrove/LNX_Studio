@@ -68,9 +68,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <repeatMode,		<recordNode;
 
 	var <repeatNo=0,		<repeatRate=0,	<repeatAmp=1,		<repeatStart=0;
-	var <repeatNoE=0,		<repeatRateE=0,	<repeatAmpE=1;
+	var <repeatNoE=0,		<repeatRateE=0,	<repeatAmpE=1,		<rateAdj=1;
 
-	var <guiModeModel;
+	var <guiModeModel,		<previousMode;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -765,12 +765,14 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	// highlight in gui which repeat mode is used
 	guiHighlight{|mode, latency|
-		{
-			if (mode.isNil)	   { guiModeModel.lazyValueAction_(0) };
-			if (mode===\frame) { guiModeModel.lazyValueAction_(1) };
-			if (mode===\event) { guiModeModel.lazyValueAction_(2) };
-		}.defer(latency);
+		if (mode!=previousMode) {
+			{
+				if (mode.isNil)	   { guiModeModel.lazyValueAction_(0) };
+				if (mode===\frame) { guiModeModel.lazyValueAction_(1) };
+				if (mode===\event) { guiModeModel.lazyValueAction_(2) };
+			}.defer(latency);
+		};
+		previousMode = mode;
 	}
-
 
 } // end ////////////////////////////////////

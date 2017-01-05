@@ -159,17 +159,18 @@ LNX_MarkerEvent {
 			lastMarkerEvent2 = lastMarkerEvent2.keep(8); // memory of length p[20]
 		};
 
-		// frame has been triggered above
+		// *** FRAME *** freeze has been triggered above
 		if (doFrame) {
 			if ((frameProb.coin) && (lastMarkerEvent2.notEmpty) && (repeatMode!=\event)) {
 				repeatMode  = \frame;
 				if (repeatNo==0) { this.stopAudio(latency) };
 				markerEvent = lastMarkerEvent2.keep(p[25].asInt).wrapAt(repeatNo);		// repeat
 				repeatNo 	= repeatNo + 1;							// inc number of repeats
-				repeatRate	= repeatRate + p[26];
 				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
-				repeatAmp	= repeatAmp * p[27];
+				repeatRate	= repeatRate + p[26];
 				amp         = (100/127) * repeatAmp;
+				repeatAmp	= repeatAmp * p[27];
+
 			}{
 				if (repeatMode==\frame) {
 					repeatMode  = nil; // reset all vars
@@ -193,7 +194,7 @@ LNX_MarkerEvent {
 			var bufferR		= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
 			var probability = p[15]/100;							// event beat repeat
 
-			// EVENT freeze (beat repeat), triggered by PlayLoop
+			// *** EVENT *** freeze (beat repeat), triggered by PlayLoop
 			if (p[19]==1) { probability = 1 };
 			if ((probability.coin) && (lastMarkerEvent.notEmpty) && (repeatMode!=\frame)) {
 				repeatMode  = \event;
@@ -257,14 +258,6 @@ LNX_MarkerEvent {
 		};
 	}
 
-	// change playback rate
-	marker_changeRate{|latency|
-/*		var rate = (p[12]+p[13]).midiratio.round(0.0000000001); // this is changed by repeat *** !!!!
-		(noteOnNodes++node).select(_.notNil).do{|node|
-			server.sendBundle(latency +! syncDelay, [\n_set, node, \rate, rate]);
-		};*/
-	}
-
 	// both midi in & pRoll seq destinations
 	marker_pipeIn{|pipe|
 
@@ -305,7 +298,7 @@ LNX_MarkerEvent {
 				server.sendBundle(latency +! syncDelay, ["/n_set", noteOnNodes[note], \gate, 0])
 			};
 
-			// beat repeat (event)
+			// *** EVENT *** freeze repeat
 			if (p[19]==1) { probability = 1 } { probability = p[15]/100 };
 			if ((probability.coin) && (lastMarkerEvent.notEmpty)  && (repeatMode!=\frame)) {
 				repeatMode  = \event;
@@ -416,6 +409,14 @@ LNX_MarkerEvent {
 
 		}).send(server);
 
+	}
+
+		// change playback rate
+	marker_changeRate{|latency|
+/*		var rate = (p[12]+p[13]).midiratio.round(0.0000000001); // this is changed by repeat *** !!!!
+		(noteOnNodes++node).select(_.notNil).do{|node|
+			server.sendBundle(latency +! syncDelay, [\n_set, node, \rate, rate]);
+		};*/
 	}
 
 	// index of playback, returned from the server
