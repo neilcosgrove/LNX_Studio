@@ -104,7 +104,7 @@ b.free;
 		SynthDef("SLoopRecordStereo",{|inputChannels=0, bufnumL=0, bufnumR=1, id=0, rate=1, gate=1, startFrame=0, durFrame=44100|
 			var index  = startFrame + Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame);
 			var slope  = Slope.ar(index);
-			var signal = In.ar(inputChannels,2)  * (slope>0);
+			var signal = In.ar(inputChannels,2) * (slope>0);
 
 			BufWr.ar(signal[0], bufnumL, index, loop:0);
 			BufWr.ar(signal[1], bufnumR, index, loop:0);

@@ -154,11 +154,17 @@
 	// change the label
 	label_{|argLabel|
 		if (argLabel.isString) { label=[argLabel] } { label=argLabel };
+		if (view.notClosed) { this.createLabel };
+	}
+
+	// if i change the above method label_ to this then preference labels disapear
+	changeLabel_{|argLabel|
+		if (argLabel.isString) { label=[argLabel] } { label=argLabel };
 		if (labelGUI.notNil) {
 			this.labelRefresh
 		}{
 			if (view.notClosed) { this.createLabel }
-		}
+		};
 	}
 
 	// do you want the label to have a shadow

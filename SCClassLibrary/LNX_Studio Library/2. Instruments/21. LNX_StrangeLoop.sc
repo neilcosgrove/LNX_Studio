@@ -284,7 +284,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 			// 30. reset / latch
 			[129, [1,129,\linear,1], midiControl, 30, "Reset & Latch",
-				(label_:"Latch", numberFunc_:{|n| (n==129).if("inf",n.asInt.asString)}),
+				(label_:" Latch ", numberFunc_:{|n| (n==129).if("inf",n.asInt.asString)}),
 				{|me,val,latency,send| this.setPVPModel(30,val,latency,send) }],
 
 			// 31. reset latch Mode
@@ -697,7 +697,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.color_(\off,Color(1,1,1,0.88)/4);
 
 		MVC_FuncAdaptor(models[31]).func_{|me,val|
-			{gui[\latchReset].label_( val.isTrue.if("Latch","Reset") )} .deferIfNeeded
+			{gui[\latchReset].changeLabel_( val.isTrue.if("Latch","Reset") )} .deferIfNeeded
 		};
 
 
