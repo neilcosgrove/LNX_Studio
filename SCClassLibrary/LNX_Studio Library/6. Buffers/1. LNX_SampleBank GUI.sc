@@ -988,13 +988,13 @@
 								if (channelsToDraw==2) { h3 = h2 * ( (channelNo==0).if(0.5,1.5)) }{ h3 = h2 };
 								visualOffset = (o * size).round(w2*2); // *2 because w/2 in below do
 
-								Pen.moveTo(2@((sampleData.atInt(visualOffset, numChannels, channelNo) )*h4+h3));
+								Pen.moveTo(2@((sampleData.atInt(visualOffset.asInt, numChannels, channelNo) )*h4+h3));
 
 								(w/2).asInt.do{|i|
 									i=i*2;
 									Pen.lineTo((i+2)@((
 										sampleData.atInt(
-											( i * w2 ) + visualOffset, numChannels, channelNo
+											(( i * w2 ) + visualOffset).asInt, numChannels, channelNo
 										)
 									)*h4+h3));
 								};
@@ -1551,7 +1551,7 @@
 
 	// integer index into a flat multichannel FloatArray
 	atInt{|index, numChannels=1, channel=0|
-		^ this.clipAt( index * numChannels + channel + numChannels);
+		^ this.clipAt( index * numChannels + channel);
 	}
 
 	// simple linear interpolation into a flat multichannel FloatArray

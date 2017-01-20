@@ -4,23 +4,55 @@
 
 + LNX_StrangeLoop {
 
-
 	/////////////////////////////////////////////////////////////////////////////////////////////
 
 	// make a new buffer
 	guiNewBuffer{
-		var numFrames, length = (sampleBankGUI[\length].value); // length is from gui widget
-		if (length<=0) { length = 32 };							// if zero use 32
-		numFrames = length * 3 * (studio.absTime) * 44100;		// work that out in frames
-		sampleBank.guiNewBuffer(numFrames, length:length);		// make a new buffer in the bank
+		var numFrames;
+		var sampleRate = studio.server.sampleRate;
+		var length     = (sampleBankGUI[\length].value); 					// length is from gui widget
+
+		if (length<=0) { length = 32 };										// if zero use 32
+		numFrames = length * 3 * (studio.absTime) * (sampleRate);			// work that out in frames
+		sampleBank.guiNewBuffer(numFrames, 2, sampleRate, length:length);	// make a new buffer in the bank
 	}
 
 	// recording ///////////////////////////////////////////////////////////////////////////////////////////
 
+	// gui has pressed record
 	guiRecord{
+		if (sampleBank[p[11]].isNil) { this.guiNewBuffer };
+		cueRecord = true;
+	}
+
+	// from clockIn3
+	record_ClockIn3{|instBeat,absTime3,latency,beat|
+		var length;
+		if (cueRecord.not) {^this};					// recording not cued exception
+
+		length = (sampleBankGUI[\length].value);	// length is from gui widget
+		if (length<=0) { length = 32 };				// else 32
+
+		if ((instBeat%(length*3))==0) {				// if at beginning of bar
+			cueRecord = false;						// turn of cue
+			this.record(latency);					// start recording
+			^this;
+		};
+
+		// flash record button for user feedback
+		if ((instBeat%(12))==0) {
+			{gui[\record].color_(\on,Color(50/77,61/77,1) / (instBeat.div(12).even.if(1,2))) }.deferIfNeeded
+		};
+
+	}
+
+	record{|latency|
 		var sample, bufferL, bufferR, numFrames,  startFrame, endFrame, durFrame;
 		var sampleIndex = p[11];					  	// sample used in bank
-		if (sampleBank[sampleIndex].isNil) { gui[\record].value_(0); ^this };	// no samples loaded in bank exception
+		if (sampleBank[sampleIndex].isNil) {
+			{gui[\record].value_(0)}.deferIfNeeded;
+			^this
+		};	// no samples loaded in bank exception
 
 		sample		= sampleBank[sampleIndex];							// the sample
 		bufferL		= sample.buffer.bufnum(0);          				// this only comes from LNX_BufferArray
@@ -31,7 +63,7 @@
 		durFrame	= endFrame - startFrame;			 				// frames playing for
 
 		if (bufferR.notNil) {
-			var recordNode	= this.record_Buffer(0, bufferL, bufferR, 1, startFrame, durFrame);
+			var recordNode	= this.record_Buffer(0, bufferL, bufferR, 1, startFrame, durFrame, latency);
 			var node		= Node.basicNew(server, recordNode);
 			var watcher		= NodeWatcher.register(node);
 
@@ -40,8 +72,16 @@
 					node.removeDependant(func);
 					"END".postln;
 
-					// path = PathName.tmp ++ this.hash.asString;
+					{
+						gui[\record]
+							.value_(0)
+							.color_(\on,Color(50/77,61/77,1));
+					}.deferIfNeeded;
 
+
+					// ##### only if save do we copy to a true stereo buffer and then save!!!!
+
+					// path = PathName.tmp ++ this.hash.asString;
 /*
 s.boot;
 b = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01.wav");
@@ -49,23 +89,28 @@ b = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01.wav");
 b.loadToFloatArray(action: { arg array; a = array; {a.plot;}.defer; "done".postln;});
 b.free;
 */
+/*
 
-/*					// now save to temp so it can be loaded into lang
-					sampleBank.sample(0).buffer.buffers[0].write( ("~/Desktop/"++"temp.aiff").standardizePath,
+					Used this to transfer to Client
+
+sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
+{array.plot;}.defer;
+"done".postln;
+});
+*/
+					// now save to temp so it can be loaded into lang
+					sample.buffer.buffers[0].write( ("~/Desktop/"++"temp.aiff").standardizePath,
 						completionMessage:{
 						"SAVED".postln;
 
-					} );*/
-
-					sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
-						{array.plot;}.defer;
-						"done".postln;
-
-					});
-
+					} );
 
 				};
 			};
+
+			{
+				gui[\record].color_(\on,Color(1,0.25,0.25));
+			}.deferIfNeeded;
 
 			node.addDependant(func);
 
@@ -78,6 +123,10 @@ b.free;
 
 	guiStopRecord{
 		"Stopped...".postln;
+		cueRecord = false;
+		{
+			gui[\record].color_(\on,Color(1,0.5,0.5));
+		}.deferIfNeeded;
 
 	}
 
@@ -130,7 +179,5 @@ b.free;
 	// 	}).send(server);
 	//
 	// }
-
-
 
 }

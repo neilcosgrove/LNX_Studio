@@ -70,7 +70,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <repeatNo=0,		<repeatRate=0,	<repeatAmp=1,		<repeatStart=0;
 	var <repeatNoE=0,		<repeatRateE=0,	<repeatAmpE=1;
 
-	var <guiModeModel,		<previousMode,	<currentRateAdj=1;
+	var <guiModeModel,		<previousMode,	<currentRateAdj=1,  <cueRecord=false;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -376,8 +376,10 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	// clock in, select mode
 	clockIn3{|instBeat,absTime3,latency,beat|
 
+		this.record_ClockIn3(instBeat,absTime3,latency,beat);
+
 		if (mode===\repitch) {
-			this.pitch_clockIn3 (instBeat,absTime3,latency,beat);
+			this.pitch_clockIn3(instBeat,absTime3,latency,beat);
 			//if (p[18].isFalse) { sequencer.clockIn3(beat,absTime,latency,beat) }; // i want pRoll 2nd for repeat reasons
 			^this
 		};
