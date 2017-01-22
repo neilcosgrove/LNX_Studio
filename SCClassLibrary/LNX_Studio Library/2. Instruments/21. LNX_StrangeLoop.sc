@@ -209,7 +209,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 14. clip, fold or wrap
-			[0, [0,2,\linear,1],  (items_:["Clip","Fold","Wrap"]), midiControl, 14, "Fold/Wrap",
+			[1, [0,2,\linear,1],  (items_:["Clip","Fold","Wrap"]), midiControl, 14, "Fold/Wrap",
 				{|me,val,latency,send| this.setPVPModel(14,val,latency,send) }],
 
 			// 15. repeat prob

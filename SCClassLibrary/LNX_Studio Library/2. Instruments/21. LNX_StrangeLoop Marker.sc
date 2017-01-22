@@ -389,6 +389,7 @@ LNX_MarkerEvent {
 						[ index.clip(0,durFrame) , index.fold(0,durFrame) , index.wrap(0,durFrame) ]);
 
 			signal = BufRd.ar(1, [bufnumL,bufnumR], index, loop:0); // might need to be leaked
+			signal = LeakDC.ar(signal);
 			signal = signal * EnvGen.ar(Env.new([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,amp,doneAction:2);
 
 			DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0
@@ -407,6 +408,7 @@ LNX_MarkerEvent {
 						[ index.clip(0,durFrame) , index.fold(0,durFrame) , index.wrap(0,durFrame) ]);
 
 			signal = BufRd.ar(1, [bufnumL,bufnumR], index, loop:0); // might need to be leaked
+			signal = LeakDC.ar(signal);
 			signal = signal * EnvGen.ar(Env.new([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,amp,doneAction:2);
 
 			DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0

@@ -7,7 +7,7 @@
 
 LNX_BufferProxy {
 
-	classvar <cashePath, <>verbose=false, <userPath, <trash;
+	classvar <cashePath, <>verbose=false, <userPath, <tempPath, <trash;
 
 	classvar <containers, <paths, tempPaths, <>rebootFunc;
 
@@ -25,8 +25,10 @@ LNX_BufferProxy {
 		trash=[];
 
 		userPath = cashePath +/+ "file";
+		tempPath = cashePath +/+ "temp";
 
 		if (userPath.pathExists(false).not) { userPath.makeDir }; // make the dir
+		if (tempPath.pathExists(false).not) { tempPath.makeDir }; // make the dir
 
 		[
 			"LNX_Studio Local Sound Folder",

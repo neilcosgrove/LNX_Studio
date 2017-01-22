@@ -7,6 +7,8 @@ LNX_BufferArray {
 
 	var <buffers, <numChannels, <numFrames, <sampleRate, <duration, <sampleData;
 
+	var <multiChannelBuffer, <tempPath;
+
 	// new empty /////////
 
 	*new{|server, numFrames, numChannels, sampleRate, action|
@@ -18,6 +20,8 @@ LNX_BufferArray {
 		var bufnum;
 		var soundFile = SoundFile();
 		var done;
+
+		tempPath = (Date.getDate.stamp) + (this.hash.asString) ++ ".aiff";
 
 		//soundFile.numFrames_(argFrames);
 		soundFile.numChannels_(argChannels);
@@ -33,7 +37,7 @@ LNX_BufferArray {
 
 		sampleData  = FloatArray.fill(numFrames*numChannels,0); // causes lates with large samples
 
-		bufnum = server.bufferAllocator.alloc(numChannels); // make sure buffers are adj
+		bufnum = server.bufferAllocator.alloc(numChannels+1); // make sure buffers are adj
 
 		done = 1 ! numChannels; // reverse of normal 0 = done
 
@@ -49,6 +53,29 @@ LNX_BufferArray {
 			)
 		};
 
+		// for saving and loading with sLoop
+		multiChannelBuffer = Buffer.alloc(server, numFrames, numChannels ,{|buf|
+			//done[i] = 0; // when sum of done is zero, all buffers have been allocated
+			//if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
+		}, bufnum+numChannels);
+
+	}
+
+	updateSampleData{|path|
+		var soundFile = SoundFile();
+
+		soundFile.openRead(path.standardizePath); // why does only standardizePath work?
+
+		// numChannels = soundFile.numChannels;
+		// numFrames   = soundFile.numFrames;
+		// sampleRate  = soundFile.sampleRate;
+		// duration    = soundFile.duration;
+
+		[numFrames, numChannels, sampleRate].postln;
+
+		sampleData  = FloatArray.fill(numFrames*numChannels,0); // causes lates with large samples
+
+		soundFile.readData(sampleData); // fast but causes lates
 	}
 
 	// new from file ///////
@@ -125,6 +152,7 @@ LNX_BufferArray {
 
 	free{
 		buffers.asSet.do(_.free);
+		multiChannelBuffer.free;
 		sampleData = nil;
 	}
 

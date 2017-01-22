@@ -21,6 +21,9 @@
 
 	// gui has pressed record
 	guiRecord{
+
+		// i need to make multi if doesn't already exist
+
 		if (sampleBank[p[11]].isNil) { this.guiNewBuffer };
 		cueRecord = true;
 	}
@@ -47,7 +50,7 @@
 	}
 
 	record{|latency|
-		var sample, bufferL, bufferR, numFrames,  startFrame, endFrame, durFrame;
+		var sample, bufferL, bufferR, multiBuffer, numFrames,  startFrame, endFrame, durFrame;
 		var sampleIndex = p[11];					  	// sample used in bank
 		if (sampleBank[sampleIndex].isNil) {
 			{gui[\record].value_(0)}.deferIfNeeded;
@@ -57,30 +60,44 @@
 		sample		= sampleBank[sampleIndex];							// the sample
 		bufferL		= sample.buffer.bufnum(0);          				// this only comes from LNX_BufferArray
 		bufferR		= sample.buffer.bufnum(1); 							// this only comes from LNX_BufferArray
+		multiBuffer = sample.buffer.multiChannelBuffer.bufnum;			// the multi channel buffer only used to save & > SClang
 		numFrames	= sampleBank.numFrames  (sampleIndex); 				// total number of frames in sample
 		startFrame	= sampleBank.actualStart(sampleIndex) * numFrames;	// start pos frame
 		endFrame	= sampleBank.actualEnd  (sampleIndex) * numFrames;	// end pos frame
 		durFrame	= endFrame - startFrame;			 				// frames playing for
 
 		if (bufferR.notNil) {
-			var recordNode	= this.record_Buffer(0, bufferL, bufferR, 1, startFrame, durFrame, latency);
+			var tempPath;
+			var recordNode	= this.record_Buffer(0, bufferL, bufferR, multiBuffer, 1, startFrame, durFrame, latency);
 			var node		= Node.basicNew(server, recordNode);
 			var watcher		= NodeWatcher.register(node);
-
-			var func = {|changer,message|
+			var func 		= {|changer,message|
 				if (message==\n_end) {
 					node.removeDependant(func);
 					"END".postln;
 
-					{
-						gui[\record]
-							.value_(0)
-							.color_(\on,Color(50/77,61/77,1));
-					}.deferIfNeeded;
+					{ gui[\record].value_(0).color_(\on,Color(50/77,61/77,1)) }.deferIfNeeded;
 
+					// Buffer
 
+					// do i need a new buffer everytime so old isn't recorded over while played and recorded
+
+					// DC is a problem
+
+					// do a wet/dry mix
+					// overdub or mix
+
+					// we need to swap out the mono buffers on new recording
+
+					// i can copy channels either so the only way...
+					// record -> stereo buffer -> save to temp -> load as 2 mono files
+					// after if need to save, move temp file or save again
+
+					// or generate both stereo & 2 mono buffers and record both at same time in ugen
+
+					// but what if the server restarts you loose info
+					// also want to avoid cpu spikes copying info
 					// ##### only if save do we copy to a true stereo buffer and then save!!!!
-
 					// path = PathName.tmp ++ this.hash.asString;
 /*
 s.boot;
@@ -88,6 +105,10 @@ b = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01.wav");
 // same as Buffer.plot
 b.loadToFloatArray(action: { arg array; a = array; {a.plot;}.defer; "done".postln;});
 b.free;
+
+a.a.sampleBank[0].buffer.multiChannelBuffer;
+a.a.sampleBank[0].buffer.buffers;
+
 */
 /*
 
@@ -98,22 +119,27 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 "done".postln;
 });
 */
-					// now save to temp so it can be loaded into lang
-					sample.buffer.buffers[0].write( ("~/Desktop/"++"temp.aiff").standardizePath,
-						completionMessage:{
-						"SAVED".postln;
 
-					} );
+
+					// now save to temp so it can be loaded into lang
+
+
+					tempPath = (LNX_BufferProxy.tempPath) +/+ (sample.buffer.tempPath);
+
+					sample.buffer.multiChannelBuffer.write(tempPath.standardizePath, completionMessage:{
+						"SAVED".postln;
+						{
+							sample.buffer.updateSampleData(tempPath);
+							{sampleBankGUI.sampleView.refresh}.defer(0.25);
+						}.defer(0.25)
+					});
 
 				};
 			};
 
-			{
-				gui[\record].color_(\on,Color(1,0.25,0.25));
-			}.deferIfNeeded;
-
 			node.addDependant(func);
 
+			{ gui[\record].color_(\on,Color(1,0.25,0.25)) }.deferIfNeeded;
 
 		};
 
@@ -124,15 +150,11 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 	guiStopRecord{
 		"Stopped...".postln;
 		cueRecord = false;
-		{
-			gui[\record].color_(\on,Color(1,0.5,0.5));
-		}.deferIfNeeded;
-
+		{ gui[\record].color_(\on,Color(1,0.5,0.5)) }.deferIfNeeded;
 	}
 
-
 	// play a buffer for sequencer mode
-	record_Buffer{|inputChannels, bufnumL, bufnumR, rate, startFrame, durFrame, latency|
+	record_Buffer{|inputChannels, bufnumL, bufnumR, multiBuffer, rate, startFrame, durFrame, latency|
 		var node = server.nextNodeID;
 		server.sendBundle(latency +! syncDelay,
 			["/s_new", \SLoopRecordStereo, node, 0, studio.groups[\channelOut].nodeID,
@@ -140,6 +162,7 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 			\id,			id,
 			\bufnumL,		bufnumL,
 			\bufnumR,		bufnumR,
+			\multiBuffer,	multiBuffer,
 			\startFrame,	startFrame,
 			\durFrame:		durFrame,
 			\rate,			rate,
@@ -147,22 +170,21 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 		^node; // for stop record
 	}
 
-
 	*record_initUGens{|server|
 		// we can add to side group to record
-		SynthDef("SLoopRecordStereo",{|inputChannels=0, bufnumL=0, bufnumR=1, id=0, rate=1, gate=1, startFrame=0, durFrame=44100|
+		SynthDef("SLoopRecordStereo",{|inputChannels=0, bufnumL=0, bufnumR=1, multiBuffer=1, id=0, rate=1, gate=1, startFrame=0, durFrame=44100|
 			var index  = startFrame + Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame);
 			var slope  = Slope.ar(index);
 			var signal = In.ar(inputChannels,2) * (slope>0);
 
-			BufWr.ar(signal[0], bufnumL, index, loop:0);
-			BufWr.ar(signal[1], bufnumR, index, loop:0);
+			BufWr.ar(signal[0], bufnumL, index, loop:0);	// left
+			BufWr.ar(signal[1], bufnumR, index, loop:0);	// right
+			BufWr.ar(signal, multiBuffer, index, loop:0);	// and stereo
 
 			DetectSilence.ar(slope, doneAction:2); // ends when index slope = 0
 
 		}).send(server);
 	}
-
 
 	// *pitch_initUGens{|server|
 	//
