@@ -3,11 +3,20 @@
 
 LNX_BufferArray {
 
+	classvar <emptyMono, <emptyStereo;
+
 	var <>verbose=false;
-
 	var <buffers, <numChannels, <numFrames, <sampleRate, <duration, <sampleData;
+	var <multiChannelBuffer, <recordBuffers, <tempPath;
 
-	var <multiChannelBuffer, <tempPath;
+	//
+
+	*serverReboot{|server|
+		var bufnum = server.bufferAllocator.alloc(2); // make 2 buffers
+		emptyMono = Buffer.alloc(server, 1, 1, {}, bufnum);
+		emptyStereo = Buffer.alloc(server, 1, 2, {}, bufnum+1);
+	}
+
 
 	// new empty /////////
 
@@ -37,14 +46,16 @@ LNX_BufferArray {
 
 		sampleData  = FloatArray.fill(numFrames*numChannels,0); // causes lates with large samples
 
-		bufnum = server.bufferAllocator.alloc(numChannels+1); // make sure buffers are adj
+		bufnum = server.bufferAllocator.alloc(numChannels*2+1); // make sure buffers are adj
 
-		done = 1 ! numChannels; // reverse of normal 0 = done
+		done = 1 ! (numChannels*2+1); // reverse of normal 0 = done
+
+		// JUST MAKE IT WORK AND OPTIMISE after
 
 		// maybe action should only call after all have loaded
+		buffers = [];
 		numChannels.do{|i|
 			buffers = buffers.add(
-
 				Buffer.alloc(server, numFrames, 1,{|buf|
 					done[i] = 0; // when sum of done is zero, all buffers have been allocated
 					if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
@@ -53,12 +64,54 @@ LNX_BufferArray {
 			)
 		};
 
-		// for saving and loading with sLoop
-		multiChannelBuffer = Buffer.alloc(server, numFrames, numChannels ,{|buf|
-			//done[i] = 0; // when sum of done is zero, all buffers have been allocated
-			//if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
-		}, bufnum+numChannels);
+		// for recording only
+		recordBuffers = [];
+		numChannels.do{|i|
+			recordBuffers = recordBuffers.add(
+				Buffer.alloc(server, numFrames, 1,{|buf|
+					done[numChannels+i] = 0; // when sum of done is zero, all buffers have been allocated
+					if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
+				}, bufnum+numChannels+i);
 
+			)
+		};
+
+		// for saving and loading with sLoop. I ONLY EVER NEED 1 OF THESE so make in initNew
+		multiChannelBuffer = Buffer.alloc(server, numFrames, numChannels ,{|buf|
+			done[numChannels*2] = 0; // when sum of done is zero, all buffers have been allocated
+			if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
+		}, bufnum+(numChannels*2)+1);
+
+
+	}
+
+	// alloc buffers for recording
+	nextRecord{|server,action|
+		var bufnum = server.bufferAllocator.alloc(numChannels+1); // make sure buffers are adj
+		var done;
+
+		done = 1 ! numChannels; // reverse of normal 0 = done
+
+		// for recording only
+		recordBuffers = [];
+		numChannels.do{|i|
+			recordBuffers = recordBuffers.add(
+				Buffer.alloc(server, numFrames, 1,{|buf|
+					done[i] = 0; // when sum of done is zero, all buffers have been allocated
+					if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
+				}, bufnum+i);
+
+			)
+		};
+
+
+	}
+
+	// finish by swapping out and freeing old buffers
+	cleanupRecord{
+		if (buffers != recordBuffers) { buffers.do(_.free); "Free".postln };
+		buffers = recordBuffers;
+		recordBuffers = nil;
 	}
 
 	updateSampleData{|path|
@@ -78,7 +131,7 @@ LNX_BufferArray {
 		soundFile.readData(sampleData); // fast but causes lates
 	}
 
-	// new from file ///////
+	// new from file ///////////////////////////////////////////////////////////////////////////////////////////
 
 	*read {|server,path,action| ^super.new.init(server,path,action) }
 
@@ -121,7 +174,7 @@ LNX_BufferArray {
 					if (done.sum==0) {action.value(this)}
 				}, bufnum+i );
 
-//				// slow but causes less lates
+//				// slow but causes less lates and also unpredicable read fails
 //				Buffer.readChannelByChunk (server, path,0, -1, 0, false, [i], bufnum+i , {|buf|
 //					done[i] = 0; // when sum of done is zero, all buffers have loaded
 //					if (done.sum==0) {action.value(this)}

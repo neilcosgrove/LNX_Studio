@@ -24,7 +24,11 @@
 
 		// i need to make multi if doesn't already exist
 
-		if (sampleBank[p[11]].isNil) { this.guiNewBuffer };
+		if (sampleBank[p[11]].isNil) {
+			this.guiNewBuffer
+		}{
+			sampleBank[p[11]].buffer.nextRecord(studio.server,{});
+		};
 		cueRecord = true;
 	}
 
@@ -58,8 +62,8 @@
 		};	// no samples loaded in bank exception
 
 		sample		= sampleBank[sampleIndex];							// the sample
-		bufferL		= sample.buffer.bufnum(0);          				// this only comes from LNX_BufferArray
-		bufferR		= sample.buffer.bufnum(1); 							// this only comes from LNX_BufferArray
+		bufferL		= sample.buffer.recordBuffers[0].bufnum;          	// this only comes from LNX_BufferArray
+		bufferR		= sample.buffer.recordBuffers[1].bufnum; 			// this only comes from LNX_BufferArray
 		multiBuffer = sample.buffer.multiChannelBuffer.bufnum;			// the multi channel buffer only used to save & > SClang
 		numFrames	= sampleBank.numFrames  (sampleIndex); 				// total number of frames in sample
 		startFrame	= sampleBank.actualStart(sampleIndex) * numFrames;	// start pos frame
@@ -80,6 +84,12 @@
 
 					// Buffer
 
+					//************************************************************************************
+					//
+					// COPYING NEW BUFFERS ACROSS SAMPLEBANKS DELETES THE CASHE FOLDER !!!!!!!!!!!!!!!!!!!
+					//
+					//************************************************************************************
+
 					// do i need a new buffer everytime so old isn't recorded over while played and recorded
 
 					// DC is a problem
@@ -88,6 +98,7 @@
 					// overdub or mix
 
 					// we need to swap out the mono buffers on new recording
+					// empty temp
 
 					// i can copy channels either so the only way...
 					// record -> stereo buffer -> save to temp -> load as 2 mono files
@@ -99,6 +110,8 @@
 					// also want to avoid cpu spikes copying info
 					// ##### only if save do we copy to a true stereo buffer and then save!!!!
 					// path = PathName.tmp ++ this.hash.asString;
+
+					// also problem with 2nd new sample and correct marker playback..
 /*
 s.boot;
 b = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01.wav");
@@ -121,6 +134,7 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 */
 
 
+
 					// now save to temp so it can be loaded into lang
 
 
@@ -133,6 +147,10 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 							{sampleBankGUI.sampleView.refresh}.defer(0.25);
 						}.defer(0.25)
 					});
+
+					sample.buffer.cleanupRecord;
+
+					// update synth
 
 				};
 			};
