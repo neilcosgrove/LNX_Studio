@@ -192,8 +192,8 @@ LNX_MarkerEvent {
 		if (markerEvent.notNil) {
 			var sample      = sampleBank[sampleIndex];				// the sample
 			var clipMode    = p[14];								// clip, wrap or fold
-			var bufferL		= sample.buffer.bufnum(0);          	// this only comes from LNX_BufferArray
-			var bufferR		= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
+			var bufferL		= sample.buffer.bufnumPlayback(0);          	// this only comes from LNX_BufferArray
+			var bufferR		= sample.buffer.bufnumPlayback(1) ? bufferL; 	// this only comes from LNX_BufferArray
 			var probability = p[15]/100;							// event beat repeat
 
 			// *** EVENT *** freeze (beat repeat), triggered by PlayLoop
@@ -294,8 +294,8 @@ LNX_MarkerEvent {
 			var rateAdj		= 1;
 			var amp         = vel/127;
 			var clipMode    = p[14];
-			var bufferL		= sample.buffer.bufnum(0);          	// this only comes from LNX_BufferArray
-			var bufferR		= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
+			var bufferL		= sample.buffer.bufnumPlayback(0);          	// this only comes from LNX_BufferArray
+			var bufferR		= sample.buffer.bufnumPlayback(1) ? bufferL; 	// this only comes from LNX_BufferArray
 			if (markerEvent.isNil) { ^this }; // no marker event exception
 
 			// incase already playing ??
@@ -426,6 +426,14 @@ LNX_MarkerEvent {
 			server.sendBundle(latency +! syncDelay, [\n_set, node, \rate, rate]);
 		};
 	}
+
+	// change playback rate
+	marker_changeBuffers{|bufnumL,bufnumR,latency|
+		(noteOnNodes++node).select(_.notNil).do{|node|
+			server.sendBundle(latency +! syncDelay, [\n_set, node, \bufnumL, bufnumL, \bufnumR, bufnumR]);
+		};
+	}
+
 
 	// index of playback, returned from the server
 	sIdx_in_{|index|

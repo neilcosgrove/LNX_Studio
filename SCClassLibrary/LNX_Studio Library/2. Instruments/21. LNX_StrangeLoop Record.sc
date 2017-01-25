@@ -2,6 +2,64 @@
 // Record mode  //
 // ************ //
 
+// Buffer
+
+//************************************************************************************
+//
+// COPYING NEW BUFFERS ACROSS SAMPLEBANKS DELETES THE CASHE FOLDER !!!!!!!!!!!!!!!!!!!
+//
+//************************************************************************************
+
+// do i need a new buffer everytime so old isn't recorded over while played and recorded
+
+// how does this play out
+//     server restart, saving songs, network
+
+
+// do a wet/dry mix
+// overdub or mix
+
+// we need to swap out the mono buffers on new recording
+// empty temp folder
+
+// i can copy channels either so the only way...
+// record -> stereo buffer -> save to temp -> load as 2 mono files
+// after if need to save, move temp file or save again
+
+// or generate both stereo & 2 mono buffers and record both at same time in ugen
+
+// but what if the server restarts you loose info
+// also want to avoid cpu spikes copying info
+// ##### only if save do we copy to a true stereo buffer and then save!!!!
+// path = PathName.tmp ++ this.hash.asString;
+
+// also problem with 2nd new sample and correct marker playback..
+/*
+s.boot;
+b = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01.wav");
+// same as Buffer.plot
+b.loadToFloatArray(action: { arg array; a = array; {a.plot;}.defer; "done".postln;});
+b.free;
+
+a.a.sampleBank[0].buffer.multiChannelBuffer;
+a.a.sampleBank[0].buffer.buffers;
+
+*/
+/*
+
+Used this to transfer to Client
+
+sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
+{array.plot;}.defer;
+"done".postln;
+});
+*/
+
+/* DONE
+// DC is a problem
+
+*/
+
 + LNX_StrangeLoop {
 
 	/////////////////////////////////////////////////////////////////////////////////////////////
@@ -12,7 +70,7 @@
 		var sampleRate = studio.server.sampleRate;
 		var length     = (sampleBankGUI[\length].value); 					// length is from gui widget
 
-		if (length<=0) { length = 32 };										// if zero use 32
+		if (length<=0) { length = 64 };										// if zero use 64
 		numFrames = length * 3 * (studio.absTime) * (sampleRate);			// work that out in frames
 		sampleBank.guiNewBuffer(numFrames, 2, sampleRate, length:length);	// make a new buffer in the bank
 	}
@@ -21,8 +79,8 @@
 
 	// gui has pressed record
 	guiRecord{
-
 		// i need to make multi if doesn't already exist
+		// what about samples for net or local ?
 
 		if (sampleBank[p[11]].isNil) {
 			this.guiNewBuffer
@@ -35,10 +93,11 @@
 	// from clockIn3
 	record_ClockIn3{|instBeat,absTime3,latency,beat|
 		var length;
+
 		if (cueRecord.not) {^this};					// recording not cued exception
 
 		length = (sampleBankGUI[\length].value);	// length is from gui widget
-		if (length<=0) { length = 32 };				// else 32
+		if (length<=0) { length = 64 };				// else 64
 
 		if ((instBeat%(length*3))==0) {				// if at beginning of bar
 			cueRecord = false;						// turn of cue
@@ -82,62 +141,7 @@
 
 					{ gui[\record].value_(0).color_(\on,Color(50/77,61/77,1)) }.deferIfNeeded;
 
-					// Buffer
-
-					//************************************************************************************
-					//
-					// COPYING NEW BUFFERS ACROSS SAMPLEBANKS DELETES THE CASHE FOLDER !!!!!!!!!!!!!!!!!!!
-					//
-					//************************************************************************************
-
-					// do i need a new buffer everytime so old isn't recorded over while played and recorded
-
-					// DC is a problem
-
-					// do a wet/dry mix
-					// overdub or mix
-
-					// we need to swap out the mono buffers on new recording
-					// empty temp
-
-					// i can copy channels either so the only way...
-					// record -> stereo buffer -> save to temp -> load as 2 mono files
-					// after if need to save, move temp file or save again
-
-					// or generate both stereo & 2 mono buffers and record both at same time in ugen
-
-					// but what if the server restarts you loose info
-					// also want to avoid cpu spikes copying info
-					// ##### only if save do we copy to a true stereo buffer and then save!!!!
-					// path = PathName.tmp ++ this.hash.asString;
-
-					// also problem with 2nd new sample and correct marker playback..
-/*
-s.boot;
-b = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01.wav");
-// same as Buffer.plot
-b.loadToFloatArray(action: { arg array; a = array; {a.plot;}.defer; "done".postln;});
-b.free;
-
-a.a.sampleBank[0].buffer.multiChannelBuffer;
-a.a.sampleBank[0].buffer.buffers;
-
-*/
-/*
-
-					Used this to transfer to Client
-
-sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
-{array.plot;}.defer;
-"done".postln;
-});
-*/
-
-
-
 					// now save to temp so it can be loaded into lang
-
-
 					tempPath = (LNX_BufferProxy.tempPath) +/+ (sample.buffer.tempPath);
 
 					sample.buffer.multiChannelBuffer.write(tempPath.standardizePath, completionMessage:{
@@ -148,9 +152,10 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 						}.defer(0.25)
 					});
 
-					sample.buffer.cleanupRecord;
+					sample.buffer.cleanupRecord(latency); // update & free buffers no longer used
 
-					// update synth
+					this.marker_changeBuffers( sample.bufnum(0), sample.bufnum(1) ,latency); // update synth with new buffer numbers
+
 
 				};
 			};
@@ -190,7 +195,9 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 
 	*record_initUGens{|server|
 		// we can add to side group to record
-		SynthDef("SLoopRecordStereo",{|inputChannels=0, bufnumL=0, bufnumR=1, multiBuffer=1, id=0, rate=1, gate=1, startFrame=0, durFrame=44100|
+		SynthDef("SLoopRecordStereo",{|inputChannels=0, bufnumL=0, bufnumR=1, multiBuffer=1,
+										id=0, rate=1, gate=1, startFrame=0, durFrame=44100|
+
 			var index  = startFrame + Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame);
 			var slope  = Slope.ar(index);
 			var signal = In.ar(inputChannels,2) * (slope>0);
@@ -203,21 +210,5 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 
 		}).send(server);
 	}
-
-	// *pitch_initUGens{|server|
-	//
-	// 	SynthDef("SLoopRepitch",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
-	// 		gate=1,attackLevel=1|
-	//
-	// 		var index  = startFrame + Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame);
-	// 		var signal = BufRd.ar(1, [bufnumL,bufnumR], index ,loop:0); // mono, might need to be leaked
-	// 		signal = signal * EnvGen.ar(Env.new([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,doneAction:2);
-	//
-	// 		DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0
-	// 		OffsetOut.ar(outputChannels,signal);			 // now send out
-	//
-	// 	}).send(server);
-	//
-	// }
 
 }

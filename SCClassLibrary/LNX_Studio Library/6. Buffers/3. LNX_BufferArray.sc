@@ -8,51 +8,43 @@ LNX_BufferArray {
 	var <>verbose=false;
 	var <buffers, <numChannels, <numFrames, <sampleRate, <duration, <sampleData;
 	var <multiChannelBuffer, <recordBuffers, <tempPath;
+	var <playbackBuffers;
 
 	//
 
 	*serverReboot{|server|
-		var bufnum = server.bufferAllocator.alloc(2); // make 2 buffers
-		emptyMono = Buffer.alloc(server, 1, 1, {}, bufnum);
+		var bufnum  = server.bufferAllocator.alloc(2); // make 2 buffers
+		emptyMono   = Buffer.alloc(server, 1, 1, {}, bufnum);
 		emptyStereo = Buffer.alloc(server, 1, 2, {}, bufnum+1);
 	}
 
-
-	// new empty /////////
+	// new empty for support with sLoop /////////
 
 	*new{|server, numFrames, numChannels, sampleRate, action|
 		^super.new.initNew(server, numFrames, numChannels, sampleRate, action)
 	}
 
 	initNew{|server, argFrames, argChannels, argSampleRate, action|
-
-		var bufnum;
+		var bufnum, done;
 		var soundFile = SoundFile();
-		var done;
 
-		tempPath = (Date.getDate.stamp) + (this.hash.asString) ++ ".aiff";
-
-		//soundFile.numFrames_(argFrames);
 		soundFile.numChannels_(argChannels);
 		soundFile.sampleRate_(argSampleRate);
-		//soundFile.duration_(argFrames / argSampleRate);
 
-		//numFrames   = soundFile.numFrames;
+		tempPath    = (Date.getDate.stamp) + (this.hash.asString) ++ ".aiff";
 		numFrames   = argFrames;
 		numChannels = soundFile.numChannels;
 		sampleRate  = soundFile.sampleRate;
-		//duration    = soundFile.duration;
 		duration	= argFrames / argSampleRate;
-
 		sampleData  = FloatArray.fill(numFrames*numChannels,0); // causes lates with large samples
 
-		bufnum = server.bufferAllocator.alloc(numChannels*2+1); // make sure buffers are adj
+		done   = 1 ! (numChannels+1); // reverse of normal 0 = done
 
-		done = 1 ! (numChannels*2+1); // reverse of normal 0 = done
-
-		// JUST MAKE IT WORK AND OPTIMISE after
+		// easy way to reduce num of samples needed.
+		playbackBuffers = [emptyMono, emptyMono];
 
 		// maybe action should only call after all have loaded
+		bufnum = server.bufferAllocator.alloc(numChannels); // make sure buffers are adj
 		buffers = [];
 		numChannels.do{|i|
 			buffers = buffers.add(
@@ -60,37 +52,36 @@ LNX_BufferArray {
 					done[i] = 0; // when sum of done is zero, all buffers have been allocated
 					if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
 				}, bufnum+i);
-
 			)
 		};
 
-		// for recording only
-		recordBuffers = [];
-		numChannels.do{|i|
-			recordBuffers = recordBuffers.add(
-				Buffer.alloc(server, numFrames, 1,{|buf|
-					done[numChannels+i] = 0; // when sum of done is zero, all buffers have been allocated
-					if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
-				}, bufnum+numChannels+i);
+		recordBuffers = buffers; // 1st time round the same
 
-			)
-		};
-
-		// for saving and loading with sLoop. I ONLY EVER NEED 1 OF THESE so make in initNew
+		// for saving and loading only. I ONLY EVER NEED 1 OF THESE so make in initNew
+		bufnum = server.bufferAllocator.alloc(1); // make sure buffers are adj
 		multiChannelBuffer = Buffer.alloc(server, numFrames, numChannels ,{|buf|
-			done[numChannels*2] = 0; // when sum of done is zero, all buffers have been allocated
+			done[numChannels] = 0; // when sum of done is zero, all buffers have been allocated
 			if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
-		}, bufnum+(numChannels*2)+1);
-
+		}, bufnum);
 
 	}
+
+	/*
+	Make interface for these methods in LNX_BufferProxy
+	so I can do testing and state changes in the Proxy
+
+	nextRecord
+	cleanupRecord
+	updateSampleData
+
+	also sort of naming, loadng, saving, copying etc...
+
+	*/
 
 	// alloc buffers for recording
 	nextRecord{|server,action|
 		var bufnum = server.bufferAllocator.alloc(numChannels+1); // make sure buffers are adj
-		var done;
-
-		done = 1 ! numChannels; // reverse of normal 0 = done
+		var done   = 1 ! numChannels; // reverse of normal 0 = done
 
 		// for recording only
 		recordBuffers = [];
@@ -100,17 +91,15 @@ LNX_BufferArray {
 					done[i] = 0; // when sum of done is zero, all buffers have been allocated
 					if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
 				}, bufnum+i);
-
 			)
 		};
-
-
 	}
 
 	// finish by swapping out and freeing old buffers
-	cleanupRecord{
-		if (buffers != recordBuffers) { buffers.do(_.free); "Free".postln };
+	cleanupRecord{|latency|
+		if (buffers != recordBuffers) { buffers.do{|b| b.freeWithLatency(latency)}; "Free".postln };
 		buffers = recordBuffers;
+		playbackBuffers = recordBuffers;
 		recordBuffers = nil;
 	}
 
@@ -118,11 +107,6 @@ LNX_BufferArray {
 		var soundFile = SoundFile();
 
 		soundFile.openRead(path.standardizePath); // why does only standardizePath work?
-
-		// numChannels = soundFile.numChannels;
-		// numFrames   = soundFile.numFrames;
-		// sampleRate  = soundFile.sampleRate;
-		// duration    = soundFile.duration;
 
 		[numFrames, numChannels, sampleRate].postln;
 
@@ -201,7 +185,10 @@ LNX_BufferArray {
 	getWithRef{|idx,action,ref1,ref2,channel|
 		buffers[channel].getWithRef(idx,action,ref1,ref2)
 	}
+
 	bufnum {|i=0| if (buffers[i].notNil) {^buffers[i].bufnum }{^nil} }
+
+	bufnumPlayback{|i=0| if (playbackBuffers[i].notNil) {^playbackBuffers[i].bufnum }{^nil} }
 
 	free{
 		buffers.asSet.do(_.free);
@@ -374,6 +361,14 @@ Buffer.readChannelByChunk(s,"/Users/neilcosgrove/Desktop/acid tracks/walking fro
 
 	}
 
+}
+
+//
+
++ Buffer{
+	freeWithLatency{|latency,completionMessage|
+		server.listSendBundle(latency, [this.freeMsg(completionMessage)] )
+	}
 }
 
 

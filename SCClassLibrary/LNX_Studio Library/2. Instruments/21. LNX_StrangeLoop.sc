@@ -11,7 +11,7 @@ To do / Think about...
 ----------------------
 syncDelay
 max is a reset instead
-when you enter your bpm with keyboard length should change
+when you enter your bpm with keyboard, length should change
 new sample default is current song bpm
 what if each marker could snd out its own midi
 new sample length (n) beats (mono/stereo)
@@ -251,7 +251,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[0, \switch, midiControl, 22, "Frame",
 				{|me,val,latency,send| this.setPVPModel(22,val,latency,send) }],
 
-			// 23. frame length 1-32
+			// 23. frame length 1-16
 			[4, [1,16,\linear,1],  (label_:"Frame", numberFunc_:\int), midiControl, 23, "Frame",
 				{|me,val,latency,send| this.setPVPModel(23,val,latency,send) }],
 
