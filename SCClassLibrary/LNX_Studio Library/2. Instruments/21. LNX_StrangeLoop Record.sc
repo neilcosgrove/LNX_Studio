@@ -85,7 +85,7 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 		if (sampleBank[p[11]].isNil) {
 			this.guiNewBuffer
 		}{
-			sampleBank[p[11]].buffer.nextRecord(studio.server,{});
+			sampleBank[p[11]].nextRecord(studio.server,{});
 		};
 		cueRecord = true;
 	}
@@ -121,16 +121,16 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 		};	// no samples loaded in bank exception
 
 		sample		= sampleBank[sampleIndex];							// the sample
-		bufferL		= sample.buffer.recordBuffers[0].bufnum;          	// this only comes from LNX_BufferArray
-		bufferR		= sample.buffer.recordBuffers[1].bufnum; 			// this only comes from LNX_BufferArray
-		multiBuffer = sample.buffer.multiChannelBuffer.bufnum;			// the multi channel buffer only used to save & > SClang
+		bufferL		= sample.recordBuffers[0].bufnum;          	// this only comes from LNX_BufferArray
+		bufferR		= sample.recordBuffers[1].bufnum; 			// this only comes from LNX_BufferArray
+		multiBuffer = sample.multiChannelBuffer.bufnum;			// multi channel buffer only used to save & > SClang
 		numFrames	= sampleBank.numFrames  (sampleIndex); 				// total number of frames in sample
 		startFrame	= sampleBank.actualStart(sampleIndex) * numFrames;	// start pos frame
 		endFrame	= sampleBank.actualEnd  (sampleIndex) * numFrames;	// end pos frame
 		durFrame	= endFrame - startFrame;			 				// frames playing for
 
 		if (bufferR.notNil) {
-			var tempPath;
+			var path;
 			var recordNode	= this.record_Buffer(0, bufferL, bufferR, multiBuffer, 1, startFrame, durFrame, latency);
 			var node		= Node.basicNew(server, recordNode);
 			var watcher		= NodeWatcher.register(node);
@@ -142,20 +142,20 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 					{ gui[\record].value_(0).color_(\on,Color(50/77,61/77,1)) }.deferIfNeeded;
 
 					// now save to temp so it can be loaded into lang
-					tempPath = (LNX_BufferProxy.tempPath) +/+ (sample.buffer.tempPath);
+					path = (LNX_BufferProxy.tempFolder) +/+ (sample.path);
 
-					sample.buffer.multiChannelBuffer.write(tempPath.standardizePath, completionMessage:{
+					sample.multiChannelBuffer.write(path.standardizePath, completionMessage:{
 						"SAVED".postln;
 						{
-							sample.buffer.updateSampleData(tempPath);
+							sample.updateSampleData(path);
 							{sampleBankGUI.sampleView.refresh}.defer(0.25);
 						}.defer(0.25)
 					});
 
-					sample.buffer.cleanupRecord(latency); // update & free buffers no longer used
+					sample.cleanupRecord(latency); // update & free buffers no longer used
 
-					this.marker_changeBuffers( sample.bufnum(0), sample.bufnum(1) ,latency); // update synth with new buffer numbers
-
+					// update synth with new buffer numbers
+					this.marker_changeBuffers( sample.bufnum(0), sample.bufnum(1) ,latency);
 
 				};
 			};

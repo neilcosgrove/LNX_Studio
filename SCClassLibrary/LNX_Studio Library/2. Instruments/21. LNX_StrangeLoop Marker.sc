@@ -192,8 +192,8 @@ LNX_MarkerEvent {
 		if (markerEvent.notNil) {
 			var sample      = sampleBank[sampleIndex];				// the sample
 			var clipMode    = p[14];								// clip, wrap or fold
-			var bufferL		= sample.buffer.bufnumPlayback(0);          	// this only comes from LNX_BufferArray
-			var bufferR		= sample.buffer.bufnumPlayback(1) ? bufferL; 	// this only comes from LNX_BufferArray
+			var bufferL		= sample.bufnumPlayback(0);          	// this only comes from LNX_BufferArray
+			var bufferR		= sample.bufnumPlayback(1) ? bufferL; 	// this only comes from LNX_BufferArray
 			var probability = p[15]/100;							// event beat repeat
 
 			// *** EVENT *** freeze (beat repeat), triggered by PlayLoop
@@ -294,8 +294,8 @@ LNX_MarkerEvent {
 			var rateAdj		= 1;
 			var amp         = vel/127;
 			var clipMode    = p[14];
-			var bufferL		= sample.buffer.bufnumPlayback(0);          	// this only comes from LNX_BufferArray
-			var bufferR		= sample.buffer.bufnumPlayback(1) ? bufferL; 	// this only comes from LNX_BufferArray
+			var bufferL		= sample.bufnumPlayback(0);          	// this only comes from LNX_BufferArray
+			var bufferR		= sample.bufnumPlayback(1) ? bufferL; 	// this only comes from LNX_BufferArray
 			if (markerEvent.isNil) { ^this }; // no marker event exception
 
 			// incase already playing ??

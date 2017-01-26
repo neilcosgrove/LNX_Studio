@@ -7,7 +7,7 @@
 
 LNX_BufferProxy {
 
-	classvar <cashePath, <>verbose=false, <userPath, <tempPath, <trash;
+	classvar <cashePath, <>verbose=false, <userFolder, <tempFolder, <trash;
 
 	classvar <containers, <paths, tempPaths, <>rebootFunc;
 
@@ -24,11 +24,11 @@ LNX_BufferProxy {
 		paths=[];
 		trash=[];
 
-		userPath = cashePath +/+ "file";
-		tempPath = cashePath +/+ "temp";
+		userFolder = cashePath +/+ "file"; // shoudl rename this user folder
+		tempFolder = cashePath +/+ "temp"; // should renamr this temp folder
 
-		if (userPath.pathExists(false).not) { userPath.makeDir }; // make the dir
-		if (tempPath.pathExists(false).not) { tempPath.makeDir }; // make the dir
+		if (userFolder.pathExists(false).not) { userFolder.makeDir }; // make the dir
+		if (tempFolder.pathExists(false).not) { tempFolder.makeDir }; // make the dir
 
 		[
 			"LNX_Studio Local Sound Folder",
@@ -38,7 +38,7 @@ LNX_BufferProxy {
 			"will be available in LNX_Studio.",
 			"If you wish to use this content in a collaboration make sure all users",
 			"have the same content in this folder."
-		].saveList(userPath+/+"READ ME.txt");
+		].saveList(userFolder+/+"READ ME.txt");
 
 	}
 
@@ -53,25 +53,34 @@ LNX_BufferProxy {
 		this.initInstance;
 		this.initModels;
 
-		models[\percentageComplete].value_(-3);
+		models[\percentageComplete].value_(-3); // finished loading
 
 		// source is url & make a filename path from the url
 		source = \new;
 		server = argServer ? Server.default;
-		url    = "";
-		path   = "";
-		dir    = "";
-		name   = "empty";
+		path   = (Date.getDate.stamp) + (this.hash.asString) ++ ".aiff";
+		url    = "temp://"++path;
+		dir    = path.dirname;
+		name   = path.basename;
 		convertedPath = "";
 		sampleData = [0];
 
-		paths  = paths.add(path);
+		paths  = paths.add(path); // for loading on reboot (to check)
 
-		buffer = LNX_BufferArray.new(server, numFrames, numChannels, sampleRate,
-			action: { argAction.value(this) } );
+		buffer = LNX_BufferArray(server, path, numFrames, numChannels, sampleRate, {
+			argAction.value(this)
+		});
 
 		this.loaded;
 	}
+
+	nextRecord{|server, action|	buffer.nextRecord(server, action) } // alloc buffers for recording
+	cleanupRecord{|latency|		buffer.cleanupRecord(latency) } 	// finish by swapping out and freeing old buffers
+	updateSampleData{|path|		buffer.updateSampleData(path) } 	// update sampleData with the soundfile at path
+
+	recordBuffers{ ^buffer.recordBuffers }
+	multiChannelBuffer{ ^buffer.multiChannelBuffer }
+	bufnumPlayback{|i| ^buffer.bufnumPlayback(i)}
 
 	// from a URL /////////////////////////////////////////////////////////////
 
@@ -412,7 +421,7 @@ LNX_BufferProxy {
 	}
 
 	*fetchUserContent{|action|
-		FolderContents.fetchFolderContents(userPath,inf,{|contents|
+		FolderContents.fetchFolderContents(userFolder,inf,{|contents|
 				action.value(contents.select(_.isLNXSoundFile));
 		});
 	}
@@ -441,7 +450,7 @@ LNX_BufferProxy {
 	/////////////////////////
 
 	*nonUserContent{
-		var tempString = (userPath++"/").toLower;
+		var tempString = (userFolder++"/").toLower;
 		^(cashePath++"/").folderContents(0).select{|f| f.toLower!=tempString};
 	}
 
@@ -466,11 +475,11 @@ LNX_BufferProxy {
 	///////////////////
 
 	*userContent{
-		^userPath.folderContents.select(_.isLNXSoundFile)
+		^userFolder.folderContents.select(_.isLNXSoundFile)
 	}
 
 	*easyUserContent{
-		var size=userPath.size- ("file".size);
+		var size=userFolder.size- ("file".size);
 		^this.userContent.collect{|s|
 			s = s[size..].split;
 			s[0] = s[0] ++ ":/";

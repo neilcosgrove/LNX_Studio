@@ -7,7 +7,7 @@ LNX_BufferArray {
 
 	var <>verbose=false;
 	var <buffers, <numChannels, <numFrames, <sampleRate, <duration, <sampleData;
-	var <multiChannelBuffer, <recordBuffers, <tempPath;
+	var <multiChannelBuffer, <recordBuffers, <path;
 	var <playbackBuffers;
 
 	//
@@ -20,18 +20,18 @@ LNX_BufferArray {
 
 	// new empty for support with sLoop /////////
 
-	*new{|server, numFrames, numChannels, sampleRate, action|
-		^super.new.initNew(server, numFrames, numChannels, sampleRate, action)
+	*new{|server, path, numFrames, numChannels, sampleRate, action|
+		^super.new.initNew(server, path, numFrames, numChannels, sampleRate, action)
 	}
 
-	initNew{|server, argFrames, argChannels, argSampleRate, action|
+	initNew{|server, argPath, argFrames, argChannels, argSampleRate, action|
 		var bufnum, done;
 		var soundFile = SoundFile();
 
 		soundFile.numChannels_(argChannels);
 		soundFile.sampleRate_(argSampleRate);
 
-		tempPath    = (Date.getDate.stamp) + (this.hash.asString) ++ ".aiff";
+		path	    = argPath;
 		numFrames   = argFrames;
 		numChannels = soundFile.numChannels;
 		sampleRate  = soundFile.sampleRate;
@@ -66,20 +66,8 @@ LNX_BufferArray {
 
 	}
 
-	/*
-	Make interface for these methods in LNX_BufferProxy
-	so I can do testing and state changes in the Proxy
-
-	nextRecord
-	cleanupRecord
-	updateSampleData
-
-	also sort of naming, loadng, saving, copying etc...
-
-	*/
-
 	// alloc buffers for recording
-	nextRecord{|server,action|
+	nextRecord{|server, action|
 		var bufnum = server.bufferAllocator.alloc(numChannels+1); // make sure buffers are adj
 		var done   = 1 ! numChannels; // reverse of normal 0 = done
 
@@ -103,6 +91,7 @@ LNX_BufferArray {
 		recordBuffers = nil;
 	}
 
+	// update sampleData with the soundfile at path
 	updateSampleData{|path|
 		var soundFile = SoundFile();
 
@@ -167,6 +156,8 @@ LNX_BufferArray {
 
 			)
 		};
+
+		playbackBuffers = buffers;
 
 	}
 

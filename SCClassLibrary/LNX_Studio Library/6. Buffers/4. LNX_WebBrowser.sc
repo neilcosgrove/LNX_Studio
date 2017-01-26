@@ -227,7 +227,7 @@ LNX_WebBrowser{
 						this.showCasheHTML("LNX_Studio");
 						window.name_("Cashe");
 					} {"http://***LNX_OpenLocalFilesFolder.mp3"} {
-						(LNX_BufferProxy.userPath+/+"READ ME.txt").revealInFinder;
+						(LNX_BufferProxy.userFolder+/+"READ ME.txt").revealInFinder;
 					} {"http://***LNX_Refresh.mp3"} {
 						this.class.refreshUserFiles(action:{
 							this.showCasheHTML("LNX_Studio");
