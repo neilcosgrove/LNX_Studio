@@ -62,7 +62,7 @@ LNX_BufferProxy {
 		url    = "temp://"++path;
 		dir    = path.dirname;
 		name   = path.basename;
-		convertedPath = "";
+		convertedPath = tempFolder +/+ path;
 		sampleData = [0];
 
 		paths  = paths.add(path); // for loading on reboot (to check)
@@ -181,6 +181,8 @@ LNX_BufferProxy {
 	}
 
 	// this is a class method to load all buffers
+
+	// this might double client buffers on reboot!!!!
 	*recursiveLoad{|i|
 		var ifPresentIndex, buf;
 		if (i<containers.size) {

@@ -39,6 +39,7 @@ aliasing when scrolling
 focus is lost when adding samples now
 space bar is playing wrong sample on load
 still release problems when swapping over from hold or stopping
+loading a buffer from a file that doesn't exist
 
 Done
 ----
@@ -730,11 +731,15 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.action_{ this.guiNewBuffer };
 
 		// record
-		gui[\record]= MVC_OnOffView(gui[\scrollView], Rect(767, 71, 40, 20),"Rec")
+		gui[\record]= MVC_OnOffView(gui[\scrollView], Rect(767, 139, 40, 20),"Rec")
 			.action_{|me,val| if (me.value.isTrue) { this.guiRecord } { this.guiStopRecord } }
 			.rounded_(true)
 			.color_(\on,Color(50/77,61/77,1))
 			.color_(\off,Color(1,1,1,0.88)/4);
+
+		// save button
+		MVC_FlatButton(gui[\scrollView], Rect(767, 71, 40, 20), "Save", gui[\flatButton])
+			.action_{this.guiSaveBuffer };
 
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],580@520,100,

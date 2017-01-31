@@ -60,6 +60,27 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 
 */
 
+// SEND ?
+
+/*
+SO what next? --> now saves & loads to disk via url
+
+// stop record on url for the moment
+
+\new saves and reloads as \url. i now can record over temp. reload as \new
+
+when a song is saved all \new have the option to be saved as a \url \file?
+
+when a \url is loaded can we record over it into a \new (uses temp) ?
+	what options on saving here?
+
+and what if not recorded yet so file doesn't exist yet
+
+exclude temp from file dialog
+
+*/
+
+
 + LNX_StrangeLoop {
 
 	/////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,6 +96,112 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 		sampleBank.guiNewBuffer(numFrames, 2, sampleRate, length:length);	// make a new buffer in the bank
 	}
 
+	// who will this work?
+	guiSaveBuffer{
+		var buffer = sampleBank[p[11]];
+		if (buffer.isNil) { "No buffer to save".warn; ^this };
+		if (buffer.source==\url) { "Sample is already saved as a local file".warn; ^this };
+		if (buffer.convertedPath.pathExists!=\file) { "Temporary file doesn't exist".warn; ^this };
+
+		if (buffer.source==\new) {
+			var window, scrollView, class, saveList, filename, studioName;
+
+			var path = "LNX_Songs" +/+ (studio.name) +/+ (this.instNo+1) ++ "." ++ (this.name)
+						++ "(" ++ (p[11]+1) ++ ")" + (Date.getDate.stamp) ++ ".aiff";
+
+			filename = path.removeExtension;
+
+			"Save new buffer".postln;
+			"===============".postln;
+			path.postln;
+			("file://" ++ path).postln;
+			(LNX_BufferProxy.userFolder +/+ path).postln;
+			(LNX_BufferProxy.userFolder +/+ path).pathExists.postln;
+			buffer.convertedPath.postln;
+			buffer.convertedPath.pathExists.postln;
+
+			// use moveTo
+
+			// update LNX_BufferProxy:paths and LNX_BufferArray: various
+			// also update source
+			// update gui
+			// also any other buffer which uses this
+
+			// fix no file on load
+			// what if buffer saved but song isn't? sample is missing from original as well
+			// or any other that refered to it
+
+			// maybe you can't save temp files as part of a song?
+
+			// make a dialog here.
+
+			window = MVC_ModalWindow(this.window, 600@90, (
+				background:		Color.new255(122,132,132),
+				border2:		Color.new255(122,132,132)/2,
+				border1:		Color.black
+			));
+			scrollView = window.scrollView;
+
+			// text field for the instrument / filename
+			MVC_Text(scrollView,Rect(10,21,548,16))
+				.string_(filename)
+				.label_("Save buffer as...")
+				.labelShadow_(false)
+				.shadow_(false)
+				.canEdit_(true)
+				.hasBorder_(true)
+				.enterStopsEditing_(false)
+				.color_(\label,Color.black)
+				.color_(\edit,Color.white)
+				.color_(\cursor,Color.orange)
+				.color_(\editBackground,Color(0,0,0,0.44))
+				.color_(\background,Color(0,0,0,0.44))
+				.color_(\focus,Color(0,0,0,0.1))
+				.font_(Font.new("Helvetica", 13,true))
+				.stringAction_{|me,string|
+					filename=string;
+
+					// .filenameSafe
+					// .isFileSafe
+
+					me.string_(filename);
+
+					(LNX_BufferProxy.userFolder +/+ filename++".aiff").postln;
+					(LNX_BufferProxy.userFolder +/+ filename++".aiff").pathExists.postln;
+				}
+				.enterKeyAction_{|me,string|
+					filename=string;
+					me.string_(filename);
+					window.close;
+					{
+					//	this.saveInstToLibrary(class, saveList, filename, studioName)
+					}.defer(0.1);
+				}
+				.focus.startEditing;
+
+			// Cancel
+			MVC_OnOffView(scrollView,Rect(130-11-60+405, 55-11, 55, 20),"Cancel")
+				.rounded_(true)
+				.color_(\on,Color(1,1,1,0.5))
+				.color_(\off,Color(1,1,1,0.5))
+				.action_{	 window.close };
+
+			// Ok
+			MVC_OnOffView(scrollView,Rect(130-11+405, 55-11, 50, 20),"Ok")
+				.rounded_(true)
+				.color_(\on,Color(1,1,1,0.5))
+				.color_(\off,Color(1,1,1,0.5))
+				.action_{
+					window.close;
+					{
+						//this.saveInstToLibrary(class, saveList, filename, studioName)
+					}.defer(0.1);
+				};
+
+
+		};
+	}
+
 	// recording ///////////////////////////////////////////////////////////////////////////////////////////
 
 	// gui has pressed record
@@ -85,6 +212,11 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 		if (sampleBank[p[11]].isNil) {
 			this.guiNewBuffer
 		}{
+			if (sampleBank[p[11]].source==\url) {
+				"Sample is a url and recording not supported yet".warn;
+				{ gui[\record].value_(0).color_(\on,Color(1,0.5,0.5)) }.deferIfNeeded;
+				^this;
+			};
 			sampleBank[p[11]].nextRecord(studio.server,{});
 		};
 		cueRecord = true;
@@ -121,9 +253,9 @@ sampleBank.sample(0).buffer.buffers[0].loadToFloatArray(action: { arg array;
 		};	// no samples loaded in bank exception
 
 		sample		= sampleBank[sampleIndex];							// the sample
-		bufferL		= sample.recordBuffers[0].bufnum;          	// this only comes from LNX_BufferArray
-		bufferR		= sample.recordBuffers[1].bufnum; 			// this only comes from LNX_BufferArray
-		multiBuffer = sample.multiChannelBuffer.bufnum;			// multi channel buffer only used to save & > SClang
+		bufferL		= sample.recordBuffers[0].bufnum;          			// this only comes from LNX_BufferArray
+		bufferR		= sample.recordBuffers[1].bufnum; 					// this only comes from LNX_BufferArray
+		multiBuffer = sample.multiChannelBuffer.bufnum;					// multi channel buffer only used to save & > SClang
 		numFrames	= sampleBank.numFrames  (sampleIndex); 				// total number of frames in sample
 		startFrame	= sampleBank.actualStart(sampleIndex) * numFrames;	// start pos frame
 		endFrame	= sampleBank.actualEnd  (sampleIndex) * numFrames;	// end pos frame
