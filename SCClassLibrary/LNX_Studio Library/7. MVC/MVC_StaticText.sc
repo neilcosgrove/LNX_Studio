@@ -84,19 +84,13 @@ MVC_StaticText : MVC_View {
 	}
 
 	// calculate the size of all characters and intergate
-	// in future it might be better to split string in 2 at cursor and have 2 widths instead
 	calcCharSizes{
 		if (clipChars||canEdit) {
 			charSizes=[];
-			string.do{|c|
-				if (c.isSpace) {
-					// temp fix to help make space more accurate
-					charSizes=charSizes.add(".".asString.bounds(font).width*1.2);
-				}{
-					charSizes=charSizes.add(c.asString.bounds(font).width);
-				}
+			string.size.do{|c|
+				charSizes=charSizes.add(string[0..c].asString.bounds(font).width);
 			};
-			charSizesIntegral = charSizes.integrate;
+			charSizesIntegral = charSizes;
 		};
 		this.makeClipString;
 	}
@@ -266,7 +260,8 @@ MVC_StaticText : MVC_View {
 					if (editing&&cursorFlash) {
 						case {cursor.isNil} { // cursor auto at end
 							var x = (([0]++charSizesIntegral)?0).last;
-							if (align=='left') { x=x+3 };							if (align=='center') {
+							if (align=='left') { x=x+1 };
+							if (align=='center') {
 								x= (w - (charSizesIntegral.last?0))/2 + x;
 							};
 							Pen.smoothing_(false);
@@ -275,7 +270,7 @@ MVC_StaticText : MVC_View {
 							Pen.stroke;
 						} {cursor.isNumber} { // cursor pos as index, 0 is before 1st char
 							var x = ((([0]++charSizesIntegral)[cursor])?0);
-							if (align=='left') { x=x+3 };
+							if (align=='left') { x=x+1 };
 							if (align=='center') {
 								if (clipChars && (clipString.size!=string.size)) {
 									x=x;
