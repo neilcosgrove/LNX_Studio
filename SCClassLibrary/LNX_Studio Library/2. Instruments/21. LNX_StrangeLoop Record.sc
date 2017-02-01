@@ -80,6 +80,37 @@ exclude temp from file dialog
 
 */
 
+/*
+
+
+/*
+
+"Save new buffer".postln;
+"===============".postln;
+path.postln;
+("file://" ++ path).postln;
+(LNX_BufferProxy.userFolder +/+ path).postln;
+(LNX_BufferProxy.userFolder +/+ path).pathExists.postln;
+buffer.convertedPath.postln;
+buffer.convertedPath.pathExists.postln;*/
+
+// use moveTo
+
+// update LNX_BufferProxy:paths and LNX_BufferArray: various
+// also update source
+// update gui
+// also any other buffer which uses this
+
+// fix no file on load
+// what if buffer saved but song isn't? sample is missing from original as well
+// or any other that refered to it
+
+// maybe you can't save temp files as part of a song?
+
+// make a dialog here.
+
+*/
+
 
 + LNX_StrangeLoop {
 
@@ -98,42 +129,20 @@ exclude temp from file dialog
 
 	// who will this work?
 	guiSaveBuffer{
-		var buffer = sampleBank[p[11]];
+		var guiTextField, buffer = sampleBank[p[11]];
 		if (buffer.isNil) { "No buffer to save".warn; ^this };
 		if (buffer.source==\url) { "Sample is already saved as a local file".warn; ^this };
 		if (buffer.convertedPath.pathExists!=\file) { "Temporary file doesn't exist".warn; ^this };
 
 		if (buffer.source==\new) {
-			var window, scrollView, class, saveList, filename, studioName;
+			var window, scrollView, filename;
 
 			var path = "LNX_Songs" +/+ (studio.name) +/+ (this.instNo+1) ++ "." ++ (this.name)
 						++ "(" ++ (p[11]+1) ++ ")" + (Date.getDate.stamp) ++ ".aiff";
 
+			path = path.replace(":",""); // remove any :
+
 			filename = path.removeExtension;
-
-			"Save new buffer".postln;
-			"===============".postln;
-			path.postln;
-			("file://" ++ path).postln;
-			(LNX_BufferProxy.userFolder +/+ path).postln;
-			(LNX_BufferProxy.userFolder +/+ path).pathExists.postln;
-			buffer.convertedPath.postln;
-			buffer.convertedPath.pathExists.postln;
-
-			// use moveTo
-
-			// update LNX_BufferProxy:paths and LNX_BufferArray: various
-			// also update source
-			// update gui
-			// also any other buffer which uses this
-
-			// fix no file on load
-			// what if buffer saved but song isn't? sample is missing from original as well
-			// or any other that refered to it
-
-			// maybe you can't save temp files as part of a song?
-
-			// make a dialog here.
 
 			window = MVC_ModalWindow(this.window, 600@90, (
 				background:		Color.new255(122,132,132),
@@ -143,7 +152,7 @@ exclude temp from file dialog
 			scrollView = window.scrollView;
 
 			// text field for the instrument / filename
-			MVC_Text(scrollView,Rect(10,21,548,16))
+			guiTextField = MVC_Text(scrollView,Rect(10,21,548,16))
 				.string_(filename)
 				.label_("Save buffer as...")
 				.labelShadow_(false)
@@ -159,24 +168,10 @@ exclude temp from file dialog
 				.color_(\focus,Color(0,0,0,0.1))
 				.font_(Font.new("Helvetica", 13,true))
 				.stringAction_{|me,string|
-					filename=string;
-
-					// .filenameSafe
-					// .isFileSafe
-
-					me.string_(filename);
-
-					(LNX_BufferProxy.userFolder +/+ filename++".aiff").postln;
-					(LNX_BufferProxy.userFolder +/+ filename++".aiff").pathExists.postln;
+					string=string.replace(":","");
+					me.string_(string);
 				}
-				.enterKeyAction_{|me,string|
-					filename=string;
-					me.string_(filename);
-					window.close;
-					{
-					//	this.saveInstToLibrary(class, saveList, filename, studioName)
-					}.defer(0.1);
-				}
+				.enterKeyAction_{|me,filename| this.updateTempToLocalFile(buffer, filename, {window.close})}
 				.focus.startEditing;
 
 			// Cancel
@@ -184,23 +179,36 @@ exclude temp from file dialog
 				.rounded_(true)
 				.color_(\on,Color(1,1,1,0.5))
 				.color_(\off,Color(1,1,1,0.5))
-				.action_{	 window.close };
+				.action_{ window.close };
 
 			// Ok
 			MVC_OnOffView(scrollView,Rect(130-11+405, 55-11, 50, 20),"Ok")
 				.rounded_(true)
 				.color_(\on,Color(1,1,1,0.5))
 				.color_(\off,Color(1,1,1,0.5))
-				.action_{
-					window.close;
-					{
-						//this.saveInstToLibrary(class, saveList, filename, studioName)
-					}.defer(0.1);
-				};
-
+				.action_{ this.updateTempToLocalFile(buffer, guiTextField.string, { window.close }) };
 
 		};
 	}
+
+	// the copy has already happened by here
+	updateTempToLocalFile{|buffer, filename, func|
+		filename = (LNX_BufferProxy.userFolder +/+ filename++".aiff");
+
+		if ( PathName(filename).fileNameWithoutExtension.size==0)	{         "No Filename".warn; ^this };
+		if (filename.pathExists) 									{ "File already exists".warn; ^this };
+		if (filename.contains("//")) 								{        "Bad filename".warn; ^this };
+
+		// we could use sfcovert here instead of copyTo and use many different sound formats eg.mp3
+		if (buffer.convertedPath.copyFile(filename, silent:true)){
+			buffer.convertedPath.removeFile(toTrash:false, ask:false, silent:true);
+			func.value;
+		}{
+			"Bad filename".warn;
+		};
+
+	}
+
 
 	// recording ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -269,7 +277,7 @@ exclude temp from file dialog
 			var func 		= {|changer,message|
 				if (message==\n_end) {
 					node.removeDependant(func);
-					"END".postln;
+					//"END".postln;
 
 					{ gui[\record].value_(0).color_(\on,Color(50/77,61/77,1)) }.deferIfNeeded;
 
@@ -277,7 +285,7 @@ exclude temp from file dialog
 					path = (LNX_BufferProxy.tempFolder) +/+ (sample.path);
 
 					sample.multiChannelBuffer.write(path.standardizePath, completionMessage:{
-						"SAVED".postln;
+						//"SAVED".postln;
 						{
 							sample.updateSampleData(path);
 							{sampleBankGUI.sampleView.refresh}.defer(0.25);
@@ -298,12 +306,12 @@ exclude temp from file dialog
 
 		};
 
-		"Recording...".postln;
+		//"Recording...".postln;
 
 	}
 
 	guiStopRecord{
-		"Stopped...".postln;
+		//"Stopped...".postln;
 		cueRecord = false;
 		{ gui[\record].color_(\on,Color(1,0.5,0.5)) }.deferIfNeeded;
 	}
