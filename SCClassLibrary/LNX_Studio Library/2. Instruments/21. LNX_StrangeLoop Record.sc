@@ -109,6 +109,8 @@ buffer.convertedPath.pathExists.postln;*/
 
 // make a dialog here.
 
+// WHEN A SONG IS SAVED and any temp files are left, they are auto saved
+
 */
 
 
@@ -129,16 +131,17 @@ buffer.convertedPath.pathExists.postln;*/
 
 	// who will this work?
 	guiSaveBuffer{
-		var guiTextField, buffer = sampleBank[p[11]];
-		if (buffer.isNil) { "No buffer to save".warn; ^this };
-		if (buffer.source==\url) { "Sample is already saved as a local file".warn; ^this };
-		if (buffer.convertedPath.pathExists!=\file) { "Temporary file doesn't exist".warn; ^this };
+		var guiTextField, index=p[11], buffer = sampleBank[index];
+
+		if (buffer.isNil) { "No buffer to save".warn; ^this };										// no buffer exception
+		if (buffer.source==\url) { "Sample is already saved as a local file".warn; ^this };         // already saved exception
+		if (buffer.convertedPath.pathExists!=\file) { "Temporary file doesn't exist".warn; ^this }; // no file exception
 
 		if (buffer.source==\new) {
 			var window, scrollView, filename;
 
 			var path = "LNX_Songs" +/+ (studio.name) +/+ (this.instNo+1) ++ "." ++ (this.name)
-						++ "(" ++ (p[11]+1) ++ ")" + (Date.getDate.stamp) ++ ".aiff";
+						++ "(" ++ (p[11]+1) ++ ")" + (Date.getDate.stamp) ++ ".aiff"; 			// sugggested name
 
 			path = path.replace(":",""); // remove any :
 
@@ -152,63 +155,49 @@ buffer.convertedPath.pathExists.postln;*/
 			scrollView = window.scrollView;
 
 			// text field for the instrument / filename
-			guiTextField = MVC_Text(scrollView,Rect(10,21,548,16))
-				.string_(filename)
+			guiTextField = MVC_Text(scrollView, Rect(10,21,548,16), gui[\textTheme1])
 				.label_("Save buffer as...")
-				.labelShadow_(false)
-				.shadow_(false)
-				.canEdit_(true)
-				.hasBorder_(true)
-				.enterStopsEditing_(false)
-				.color_(\label,Color.black)
-				.color_(\edit,Color.white)
-				.color_(\cursor,Color.orange)
-				.color_(\editBackground,Color(0,0,0,0.44))
-				.color_(\background,Color(0,0,0,0.44))
-				.color_(\focus,Color(0,0,0,0.1))
-				.font_(Font.new("Helvetica", 13,true))
+				.string_(filename)
 				.stringAction_{|me,string|
-					string=string.replace(":","");
+				string=string.replace(":",""); // don't allow user to type :
 					me.string_(string);
 				}
-				.enterKeyAction_{|me,filename| this.updateTempToLocalFile(buffer, filename, {window.close})}
+				.enterKeyAction_{|me,filename| this.updateTempToLocalFile(index, buffer, filename, {window.close})}
 				.focus.startEditing;
 
 			// Cancel
-			MVC_OnOffView(scrollView,Rect(130-11-60+405, 55-11, 55, 20),"Cancel")
-				.rounded_(true)
-				.color_(\on,Color(1,1,1,0.5))
-				.color_(\off,Color(1,1,1,0.5))
+			MVC_OnOffView(scrollView,Rect(464, 44, 55, 20),"Cancel", gui[\onOffTheme1])
 				.action_{ window.close };
 
 			// Ok
-			MVC_OnOffView(scrollView,Rect(130-11+405, 55-11, 50, 20),"Ok")
-				.rounded_(true)
-				.color_(\on,Color(1,1,1,0.5))
-				.color_(\off,Color(1,1,1,0.5))
-				.action_{ this.updateTempToLocalFile(buffer, guiTextField.string, { window.close }) };
+			MVC_OnOffView(scrollView,Rect(524, 44, 50, 20),"Ok", gui[\onOffTheme1])
+				.action_{ this.updateTempToLocalFile(index, buffer, guiTextField.string, { window.close }) };
 
 		};
 	}
 
 	// the copy has already happened by here
-	updateTempToLocalFile{|buffer, filename, func|
-		filename = (LNX_BufferProxy.userFolder +/+ filename++".aiff");
+	updateTempToLocalFile{|index, buffer, path, func|
+		var url= "file://" ++ path ++ ".aiff";
+		path = (LNX_BufferProxy.userFolder +/+ path ++ ".aiff");
 
-		if ( PathName(filename).fileNameWithoutExtension.size==0)	{         "No Filename".warn; ^this };
-		if (filename.pathExists) 									{ "File already exists".warn; ^this };
-		if (filename.contains("//")) 								{        "Bad filename".warn; ^this };
+		if (PathName(path).fileNameWithoutExtension.size==0){         "No Filename".warn; ^this }; // no name exception
+		if (path.pathExists) 								{ "File already exists".warn; ^this }; // already exists exception
+		if (path.contains("//")) 							{        "Bad filename".warn; ^this }; // bad name exception
 
 		// we could use sfcovert here instead of copyTo and use many different sound formats eg.mp3
-		if (buffer.convertedPath.copyFile(filename, silent:true)){
+		if (buffer.convertedPath.copyFile(path, silent:true)){
 			buffer.convertedPath.removeFile(toTrash:false, ask:false, silent:true);
 			func.value;
+			buffer.updateTempToLocalFile(path,url); // filename is now new local filename
+
+			// also update gui
+
 		}{
 			"Bad filename".warn;
 		};
 
 	}
-
 
 	// recording ///////////////////////////////////////////////////////////////////////////////////////////
 

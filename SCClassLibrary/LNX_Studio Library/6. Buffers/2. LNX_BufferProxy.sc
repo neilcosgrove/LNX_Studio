@@ -19,16 +19,18 @@ LNX_BufferProxy {
 	var <models, <sampleData, <resolution=200;
 
 	*initClass {
-		cashePath = "~/".absolutePath +/+ "music/LNX_Studio Sample Cache";
-		containers=[];
-		paths=[];
-		trash=[];
 
-		userFolder = cashePath +/+ "file"; // shoudl rename this user folder
-		tempFolder = cashePath +/+ "temp"; // should renamr this temp folder
+		containers = []; // the list of all LNX_BufferProxy(s) that need reloading on a server reboot
+		paths      = []; // a list of paths already loaded - checked against so a buffer isn't loaded more than once
+		trash      = []; // buffers are initally moved to trash when freed. emptyTrash is called later to really free
+
+		cashePath  = "~/".absolutePath +/+ "music/LNX_Studio Sample Cache";
+		userFolder = cashePath +/+ "file"; // local folder where all user files are
+		tempFolder = cashePath +/+ "temp"; // local folder used as a temp folder
 
 		if (userFolder.pathExists(false).not) { userFolder.makeDir }; // make the dir
 		if (tempFolder.pathExists(false).not) { tempFolder.makeDir }; // make the dir
+
 
 		[
 			"LNX_Studio Local Sound Folder",
@@ -43,6 +45,20 @@ LNX_BufferProxy {
 	}
 
 	// a new blank buffer /////////////////////////////////////////////////////
+
+	// update buffer to a local file with the filename path
+	updateTempToLocalFile{|argPath,argURL|
+		var i    = paths.indexOfString(path);
+		source   = \url;
+		url      = argURL;
+		path     = argPath;
+		paths[i] = path;
+		name     = path.basename;
+		dir      = path.dirname;
+		convertedPath = path;
+
+		buffer.updateTempToLocalFile(path);
+	}
 
 	*new{|server, numFrames, numChannels, sampleRate, action|
 		^super.new.initNew(server, numFrames, numChannels, sampleRate, action)

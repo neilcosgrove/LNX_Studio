@@ -526,6 +526,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 							\font_:	  Font("Helvetica",12,true),
 							\colors_:  ( \up: Color(50/77,61/77,1), \down: Color(1,1,1,0.88)/4 ) );
 
+		gui[\onOffTheme1] = ( \rounded_: true, \colors_: ( \on: Color(1,1,1,0.5), \off: Color(1,1,1,0.5)));
+
+		gui[\textTheme1]= (	labelShadow_: false, shadow_:false, canEdit_:true, hasBorder_:true, enterStopsEditing_:false,
+							\font_:	  Font("Helvetica", 13,true),
+							\colors_:  ( \label:Color.black, \edit:Color.white, \editBackground:Color(0,0,0,0.44),
+										\cursor:Color.orange, \focus:Color(0,0,0,0.1),  \background:Color(0,0,0,0.44) ));
+
 		gui[\scrollViewOuter] = MVC_RoundedComView(window, Rect(11,11,thisWidth-22,thisHeight-22-1))
 			.color_(\background,Color.new255(122,132,132))
 			.color_(\border, Color.new255(122,132,132)/2)

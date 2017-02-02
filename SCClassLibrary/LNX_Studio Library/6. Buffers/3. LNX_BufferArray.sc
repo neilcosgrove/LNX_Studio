@@ -104,6 +104,13 @@ LNX_BufferArray {
 		soundFile.readData(sampleData); // fast but causes lates
 	}
 
+
+	// update buffer to a local file with the filename path ////////////////////////////////////////////////////
+
+	updateTempToLocalFile{|argPath|
+		path = argPath;
+	}
+
 	// new from file ///////////////////////////////////////////////////////////////////////////////////////////
 
 	*read {|server,path,action| ^super.new.init(server,path,action) }
