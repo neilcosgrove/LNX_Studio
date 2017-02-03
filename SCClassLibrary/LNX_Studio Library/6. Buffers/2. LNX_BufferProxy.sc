@@ -77,7 +77,12 @@ LNX_BufferProxy {
 	}
 
 	nextRecord{|server, action|	buffer.nextRecord(server, action) } // alloc buffers for recording
-	cleanupRecord{|latency|		buffer.cleanupRecord(latency) } 	// finish by swapping out and freeing old buffers
+	cleanupRecord{|latency|
+		source = \temp; // buffer now temp
+		buffer.cleanupRecord(latency);
+
+	} 	// finish by swapping out and freeing old buffers
+
 	updateSampleData{|path|		buffer.updateSampleData(path) } 	// update sampleData with the soundfile at path
 
 	recordBuffers{ ^buffer.recordBuffers }

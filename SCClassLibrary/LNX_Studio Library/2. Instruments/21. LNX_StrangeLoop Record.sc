@@ -129,7 +129,7 @@ buffer.convertedPath.pathExists.postln;*/
 		sampleBank.guiNewBuffer(numFrames, 2, sampleRate, length:length);	// make a new buffer in the bank
 	}
 
-	// who will this work?
+	// gui save button pressed
 	guiSaveBuffer{
 		var guiTextField, index=p[11], buffer = sampleBank[index];
 
@@ -137,10 +137,10 @@ buffer.convertedPath.pathExists.postln;*/
 		if (buffer.source==\url) { "Sample is already saved as a local file".warn; ^this };         // already saved exception
 		if (buffer.convertedPath.pathExists!=\file) { "Temporary file doesn't exist".warn; ^this }; // no file exception
 
-		if (buffer.source==\new) {
+		if ((buffer.source==\new)||(buffer.source==\temp)) {
 			var window, scrollView, filename;
-
-			var path = "LNX_Songs" +/+ (studio.name) +/+ (this.instNo+1) ++ "." ++ (this.name)
+			var songName = (studio.name.size==0).if("LNX_Studio",studio.name);
+			var path= "LNX_Songs" +/+ songName +/+ (this.instNo+1) ++ "." ++ (this.name)
 						++ "(" ++ (p[11]+1) ++ ")" + (Date.getDate.stamp) ++ ".aiff"; 			// sugggested name
 
 			path = path.replace(":",""); // remove any :
@@ -193,6 +193,7 @@ buffer.convertedPath.pathExists.postln;*/
 			buffer.updateTempToLocalFile(path,url); // filename is now new local filename
 			sampleBank.name_(index, name);			// update name in sampleBank
 			sampleBankGUI[\path].string_(url);
+			sampleBankGUI[\sampleView].refresh;
 			// also update gui
 		}{
 			"Bad filename".warn;

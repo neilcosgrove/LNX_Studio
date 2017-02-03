@@ -1077,13 +1077,21 @@
 
 				};
 
+				if (buffer.source==\temp) {
+						Pen.smoothing_(true);
+						Color(1,1,1,0.5).set;
+						Pen.fillRect(Rect(w-33,h-16,33,14));
+						Pen.fillColor_(Color.black);
+						Pen.font_(Font("Helvetica",12,true));
+						Pen.stringLeftJustIn("Temp",Rect(w-33+1,h-16,32,14));
+				};
+
 				if (status!=(-5)) {
 					if (status>=0) {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
-						Pen.stringCenteredIn ("Downloading "++(status.asInt)
-												++"%",Rect(0,0,w,h));
+						Pen.stringCenteredIn ("Downloading "++(status.asInt)++"%",Rect(0,0,w,h));
 					};
 					if (status==(-1)) {
 						Pen.smoothing_(true);
