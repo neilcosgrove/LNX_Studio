@@ -1077,14 +1077,24 @@
 
 				};
 
-				if (buffer.source==\temp) {
-						Pen.smoothing_(true);
-						Color(1,1,1,0.5).set;
-						Pen.fillRect(Rect(w-33,h-16,33,14));
-						Pen.fillColor_(Color.black);
-						Pen.font_(Font("Helvetica",12,true));
-						Pen.stringLeftJustIn("Temp",Rect(w-33+1,h-16,32,14));
+				if (buffer.source===\new) {
+					Pen.smoothing_(true);
+					Color(1,1,1,0.5).set;
+					Pen.fillRect(Rect(w-33,h-16,33,14));
+					Pen.fillColor_(Color.black);
+					Pen.font_(Font("Helvetica",12,true));
+ 					Pen.stringCenteredIn("New",Rect(w-33,h-15,33,14))
 				};
+
+				if (buffer.source===\temp) {
+					Pen.smoothing_(true);
+					Color(1,1,1,0.5).set;
+					Pen.fillRect(Rect(w-33,h-16,33,14));
+					Pen.fillColor_(Color.black);
+					Pen.font_(Font("Helvetica",12,true));
+ 					Pen.stringCenteredIn("Temp",Rect(w-33,h-16,33,14))
+				};
+
 
 				if (status!=(-5)) {
 					if (status>=0) {

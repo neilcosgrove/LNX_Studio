@@ -40,6 +40,7 @@ focus is lost when adding samples now
 space bar is playing wrong sample on load
 still release problems when swapping over from hold or stopping
 loading a buffer from a file that doesn't exist
+deleting all buffers while playing
 
 Done
 ----
