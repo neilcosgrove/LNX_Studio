@@ -179,6 +179,7 @@ buffer.convertedPath.pathExists.postln;*/
 	// the copy has already happened by here
 	updateTempToLocalFile{|index, buffer, path, func|
 		var url= "file://" ++ path ++ ".aiff";
+		var name = path.basename;
 		path = (LNX_BufferProxy.userFolder +/+ path ++ ".aiff");
 
 		if (PathName(path).fileNameWithoutExtension.size==0){         "No Filename".warn; ^this }; // no name exception
@@ -190,12 +191,15 @@ buffer.convertedPath.pathExists.postln;*/
 			buffer.convertedPath.removeFile(toTrash:false, ask:false, silent:true);
 			func.value;
 			buffer.updateTempToLocalFile(path,url); // filename is now new local filename
-
+			sampleBank.name_(index, name);			// update name in sampleBank
+			sampleBankGUI[\path].string_(url);
 			// also update gui
-
 		}{
 			"Bad filename".warn;
 		};
+
+		// this doesn't work for some reason?
+		// buffer.convertedPath.afconvert({"made mp3".postln}, "MPG3", ".mp3");
 
 	}
 

@@ -698,7 +698,10 @@
 			.color_(\string,Color.black)
 			.font_(Font("Helvetica", 10))
 			.mouseDownAction_{ gui[\path].color_(\string,Color.white) }
-			.mouseUpAction_{  gui[\path].color_(\string,Color.black);this.path(i).revealInFinder};
+		.mouseUpAction_{
+			gui[\path].color_(\string,Color.black);
+			this[i].convertedPath.revealInFinder
+		};
 
 		// search the web button
 		if (search) {

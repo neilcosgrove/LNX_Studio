@@ -498,7 +498,7 @@ LNX_SampleBank{
 					if (justSamples.not) {
 						//metadata        = this.addMetadata;  // add the default metadata
 						metaModel       = this.addMetaModel;
-						metaModel[\name].string_( path.split.pop.splitext[0].asString);
+						metaModel[\name].string_(path.split.pop.splitext[0].asString);
 					};
 
 					paths.removeAt(0);

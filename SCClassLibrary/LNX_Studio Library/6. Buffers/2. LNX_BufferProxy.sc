@@ -46,20 +46,6 @@ LNX_BufferProxy {
 
 	// a new blank buffer /////////////////////////////////////////////////////
 
-	// update buffer to a local file with the filename path
-	updateTempToLocalFile{|argPath,argURL|
-		var i    = paths.indexOfString(path);
-		source   = \url;
-		url      = argURL;
-		path     = argPath;
-		paths[i] = path;
-		name     = path.basename;
-		dir      = path.dirname;
-		convertedPath = path;
-
-		buffer.updateTempToLocalFile(path);
-	}
-
 	*new{|server, numFrames, numChannels, sampleRate, action|
 		^super.new.initNew(server, numFrames, numChannels, sampleRate, action)
 	}
@@ -97,6 +83,22 @@ LNX_BufferProxy {
 	recordBuffers{ ^buffer.recordBuffers }
 	multiChannelBuffer{ ^buffer.multiChannelBuffer }
 	bufnumPlayback{|i| ^buffer.bufnumPlayback(i)}
+
+	// new to local url /////////////////////////////////////////////////////
+
+	// update buffer to a local(url) file with the filename path
+	updateTempToLocalFile{|argPath,argURL|
+		var i    = paths.indexOfString(path);
+		source   = \url;
+		url      = argURL;
+		path     = argPath;
+		paths[i] = path;
+		name     = path.basename;
+		dir      = path.dirname;
+		convertedPath = path;
+
+		buffer.updateTempToLocalFile(path);
+	}
 
 	// from a URL /////////////////////////////////////////////////////////////
 
