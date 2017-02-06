@@ -18,7 +18,34 @@ LNX_BufferArray {
 		emptyStereo = Buffer.alloc(server, 1, 2, {}, bufnum+1);
 	}
 
-	// new empty for support with sLoop /////////
+	// missing //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	*missing {|server,path,action| ^super.new.initMissing(server,path,action) }
+
+	initMissing{|server, argPath, action|
+		var soundFile = SoundFile();
+
+		soundFile.numChannels_(2);
+		soundFile.sampleRate_(41100);
+
+		path	    = argPath;
+		numFrames   = 1;
+		numChannels = 2;
+		sampleRate  = 41100;
+		duration	= 1/41100;
+		sampleData  = FloatArray.fill(1,0); // causes lates with large samples
+
+		// easy way to reduce num of samples needed.
+
+		buffers			= [emptyMono, emptyMono];
+		playbackBuffers = [emptyMono, emptyMono];
+		recordBuffers	= [];
+
+		{action.value(this)}.defer(0.01)
+
+	}
+
+	// new empty for support with sLoop /////////////////////////////////////////////////////////////////////////////////
 
 	*new{|server, path, numFrames, numChannels, sampleRate, action|
 		^super.new.initNew(server, path, numFrames, numChannels, sampleRate, action)

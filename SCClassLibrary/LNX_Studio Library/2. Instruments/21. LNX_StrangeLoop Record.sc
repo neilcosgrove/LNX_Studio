@@ -9,6 +9,9 @@
 //************************************************************************************
 
 // types new, file, url & MISSING
+
+// also need for when missing on-line
+
 // 2 synths
 // try OffsetOut.ar(index) -->  Bus.audio(server,2) --> In index
 
@@ -136,15 +139,16 @@ buffer.convertedPath.pathExists.postln;*/
 	guiSaveBuffer{
 		var guiTextField, index=p[11], buffer = sampleBank[index];
 
-		if (buffer.isNil) { "No buffer to save".warn; ^this };										// no buffer exception
-		if (buffer.source==\url) { "Sample is already saved as a local file".warn; ^this };         // already saved exception
-		if (buffer.convertedPath.pathExists!=\file) { "Temporary file doesn't exist".warn; ^this }; // no file exception
+		if (buffer.isNil) { "No buffer to save".warn; ^this };								// no buffer exception
+		if (buffer.source==\url) { "Sample is already saved as a local file".warn; ^this };	// already saved exception
+		if (buffer.convertedPath.pathExists!=\file)
+											{ "Temporary file doesn't exist".warn; ^this }; // no file exception
 
 		if ((buffer.source==\new)||(buffer.source==\temp)) {
 			var window, scrollView, filename;
 			var songName = (studio.name.size==0).if("LNX_Studio",studio.name);
 			var path= "LNX_Songs" +/+ songName +/+ (this.instNo+1) ++ "." ++ (this.name)
-						++ "(" ++ (p[11]+1) ++ ")" + (Date.getDate.stamp) ++ ".aiff"; 			// sugggested name
+						++ "(" ++ (p[11]+1) ++ ")" + (Date.getDate.stamp) ++ ".aiff"; 		// sugggested name
 
 			path = path.replace(":",""); // remove any :
 

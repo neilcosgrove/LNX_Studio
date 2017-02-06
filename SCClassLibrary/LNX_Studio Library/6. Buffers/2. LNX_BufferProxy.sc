@@ -114,6 +114,8 @@ LNX_BufferProxy {
 	// this only inits a url, the loading is done in init called at the bottom
 	initURL{|argServer, argURL, argCompletionFunc, replace=false|
 
+		var isLocal;
+
 		this.initInstance;
 		this.initModels;
 
@@ -121,6 +123,7 @@ LNX_BufferProxy {
 		source = \url;
 		server = argServer ? Server.default;
 		url    = argURL;
+		isLocal= (url[..6]=="file://")||(url[..6]=="temp://");
 		path   = cashePath +/+ url.replace("://","/");
 		path   = path.replace("%20", " ");
 		dir    = path.dirname;
@@ -157,11 +160,19 @@ LNX_BufferProxy {
 				};
 			};
 		}{
-			this.requestDownload(replace);
+
+			if (isLocal) {
+				models[\percentageComplete].value_(-4.5);
+				// it's a missing local file
+				// and stops trying to download it
+			}{
+				// it's a missing on line file
+				this.requestDownload(replace);
+			};
 		};
 
 		// use init to load the path / soundFile
-		this.init( server, path, { completionFunc.value(this) } );
+		this.init( server, path, { completionFunc.value(this) }, isLocal );
 
 	}
 
@@ -277,7 +288,7 @@ LNX_BufferProxy {
 	isLoaded{ ^buffer.isNil.not }
 
 	// where as this is an instance method and loads just one buffer
-	init{|argServer, argPath, argAction|
+	init{|argServer, argPath, argAction, isLocal=false|
 
 		var ifPresentIndex=false;
 
@@ -300,10 +311,21 @@ LNX_BufferProxy {
 
 					if (verbose) { "Loaded: ".post; path.postln }; // useful but annoying
 				}{
-					if (source==\file) {
-						if (verbose) { "Init failed, couldn't find: ".post; path.postln };
+
+					if (isLocal) {
+						buffer=LNX_BufferArray.missing(server, this.actualPath, action: {|buf|
+							argAction.value; // what is this for?
+										// it is only used in recursiveLoad
+						});
+
+						this.loaded;
+
 					}{
-						if (verbose) { "Not found in cashe: ".post; path.postln };
+						if (source==\file) { // this refers to the original samples used in GSR
+							if (verbose) { "Init failed, couldn't find: ".post; path.postln };
+						}{
+							if (verbose) { "Not found in cashe: ".post; path.postln };
+						};
 					};
 				};
 			}{

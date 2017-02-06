@@ -1107,19 +1107,25 @@
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
-						Pen.stringCenteredIn ("Connecting",Rect(0,0,w,h));
+						Pen.stringCenteredIn ("Connecting.",Rect(0,0,w,h));
 					};
 					if (status==(-2)) {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
-						Pen.stringCenteredIn ("Converting",Rect(0,0,w,h));
+						Pen.stringCenteredIn ("Converting.",Rect(0,0,w,h));
 					};
 					if (status==(-4)) {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
 						Pen.stringCenteredIn ("Download Failed.",Rect(0,0,w,h));
+					};
+					if (status==(-4.5)) {
+						Pen.smoothing_(true);
+						Pen.fillColor_(Color.white);
+						Pen.font_(Font("Helvetica",12));
+						Pen.stringCenteredIn ("File Not Found.",Rect(0,0,w,h));
 					};
 				};
 
