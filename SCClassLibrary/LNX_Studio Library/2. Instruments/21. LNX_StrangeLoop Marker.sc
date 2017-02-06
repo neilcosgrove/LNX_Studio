@@ -107,7 +107,6 @@ LNX_MarkerEvent {
 	stopAudio{|latency|
 		seqOutBuffer.releaseAll(studio.actualLatency);
 		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
-		if (mode===\marker ) { this.marker_stopBuffer(latency); ^this };
 	}
 
 	// marker clock in mode (new)
@@ -221,8 +220,8 @@ LNX_MarkerEvent {
 
 			{
 				if (this.isOn) {
-					this.marker_stopBuffer(latency);
-					node = this.marker_playBufferMIDI(
+					// special note of -1
+					this.marker_playBufferMIDI( -1,
 						bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
 					currentRateAdj = rateAdj; // so we can change rate between events with this.marker_changeRate
 				};
@@ -272,10 +271,7 @@ LNX_MarkerEvent {
 		if (pipe.isNoteOff) {
 			var note    = pipe.note.asInt;
 			var latency = pipe.latency;
-			var node    = noteOnNodes[note];
-			if (node.isNil) { ^this }; // no node exception
-			server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]);
-			noteOnNodes[note] = nil;
+			voicer.releaseNote(note, latency +! syncDelay);
 		};
 
 		if (p[18].isTrue) 		{ ^this }; // hold on exception
@@ -298,11 +294,6 @@ LNX_MarkerEvent {
 			var bufferL		= sample.bufnumPlayback(0);          	// this only comes from LNX_BufferArray
 			var bufferR		= sample.bufnumPlayback(1) ? bufferL; 	// this only comes from LNX_BufferArray
 			if (markerEvent.isNil) { ^this }; // no marker event exception
-
-			// incase already playing ??
-			if (noteOnNodes[note].notNil) {
-				server.sendBundle(latency +! syncDelay, ["/n_set", noteOnNodes[note], \gate, 0])
-			};
 
 			// *** EVENT *** freeze repeat
 			if (p[19]==1) { probability = 1 } { probability = p[15]/100 };
@@ -330,22 +321,22 @@ LNX_MarkerEvent {
 			if (repeatMode.isNil) { lastMarkerEvent2 = lastMarkerEvent2.insert(0,markerEvent) }; // add last event
 			lastMarkerEvent2 = lastMarkerEvent2.keep(8); // memory of length p[25]
 
-			noteOnNodes[note] =
-			  this.marker_playBufferMIDI(
+			this.marker_playBufferMIDI(note,
 				bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency
 			);
 			currentRateAdj = rateAdj; // so we can change rate between events with this.marker_changeRate
-			this.marker_stopPlayBuffer(latency);
 
 		};
 
 	}
 
 	// play a buffer for sequencer mode
-	marker_playBufferMIDI{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,clipMode,amp,latency|
-		var node = server.nextNodeID;
+	marker_playBufferMIDI{|note, bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,clipMode,amp,latency|
+
+		var node = voicer.noteOn(note, amp, latency +! syncDelay);//create a voicerNode
+
 		server.sendBundle(latency +! syncDelay,
-			["/s_new", p[21].isTrue.if(\SLoopMarkerRev,\SLoopMarker), node, 0, instGroupID,
+			["/s_new", p[21].isTrue.if(\SLoopMarkerRev,\SLoopMarker), node.node, 0, instGroupID,
 			\outputChannels,	this.instGroupChannel,
 			\id,				id,
 			\amp,				amp,
@@ -357,7 +348,7 @@ LNX_MarkerEvent {
 			\attackLevel:		attackLevel,
 			\clipMode:			clipMode
 		]);
-		^node; // for noteOn noteOff
+
 	}
 
 	*marker_initUGens{|server|
@@ -401,20 +392,31 @@ LNX_MarkerEvent {
 
 	}
 
+	/////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	// change playback rate
 	marker_changeRate{|latency|
 		var rate = (p[12]+p[13]+currentRateAdj).midiratio.round(0.0000000001);
-		(noteOnNodes++node).select(_.notNil).do{|node|
-			server.sendBundle(latency +! syncDelay, [\n_set, node, \rate, rate]);
+		voicer.allNodes.do{|node|
+			server.sendBundle(latency +! syncDelay, [\n_set, node.node, \rate, rate]);
 		};
 	}
 
-	// change playback rate
+	// change buffers
 	marker_changeBuffers{|bufnumL,bufnumR,latency|
-		(noteOnNodes++node).select(_.notNil).do{|node|
-			server.sendBundle(latency +! syncDelay, [\n_set, node, \bufnumL, bufnumL, \bufnumR, bufnumR]);
+		voicer.allNodes.do{|node|
+			server.sendBundle(latency +! syncDelay, [\n_set, node.node, \bufnumL, bufnumL, \bufnumR, bufnumR]);
 		};
 	}
+
+	// called from the models to update synth arguments, generic of above
+	updateSynthArg{|synthArg,argValue,latency|
+		voicer.allNodes.do{|voicerNode|
+			server.sendBundle(latency +! syncDelay,[\n_set, voicerNode.node, synthArg, argValue]);
+		};
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// index of playback, returned from the server
 	sIdx_in_{|index|
@@ -424,40 +426,6 @@ LNX_MarkerEvent {
 		if (sampleBank.otherModels[sampleIndex].notNil) {
 			sampleBank.otherModels[sampleIndex][\pos].lazyValueAction_(index/numFrames);
 		};
-	}
-
-	//////////////////////////////////
-
-	// SHOULD IT BE MONO ? YES - it doesn't make sence to be poly
-
-	// if mono
-	//    lastNode & last timeStamp Delay (latency +! syncDelay)
-
-	// do I really want mono?
-
-	// stopping nodes
-
-	// stop playing buffer ( from marker_clockIn3 ) = Clock
-	marker_stopBuffer{|latency|
-
-		// stops single loop
-		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]) };
-
-		// and stops nodes, because of beat repeat
-		noteOnNodes.do{|node,j|
-			if (node.notNil) {
-				server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]);
-				noteOnNodes[j]=nil;
-			};
-		}
-	}
-
-	// stop playing buffer ( from marker_pipeIn ) = MIDI
-	marker_stopPlayBuffer{|latency|
-
-		// stops single loop
-		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]) };
-
 	}
 
 	/////////////////////////////

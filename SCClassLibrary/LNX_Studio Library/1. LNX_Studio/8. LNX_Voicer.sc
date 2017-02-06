@@ -32,6 +32,8 @@ LNX_Voicer {
 	var <>server, <>poly=8;
 	var <onNodes, <releasedNodes, <>allNodes, <>noteToNode;
 
+	var <>killTime = 0.01;
+
 	*new{|server| ^super.new.init(server) }
 
 	init{|argSever|
@@ -80,7 +82,7 @@ LNX_Voicer {
 		if (allNodes.size>=poly) {
 			notes = (releasedNodes++onNodes).collect(_.note);
 			(allNodes.size+size-poly).do{|i|
-				this.killNote(notes[i],latency);
+				this.killNote(notes[i],latency); // stop previous of this, if any ?
 			};
 		};
 	}
@@ -152,7 +154,7 @@ LNX_Voicer {
 			};
 
 			// kill it
-			server.sendBundle(latency,[\n_set, voicerNode.node, \gate, -1.01]);
+			server.sendBundle(latency,[\n_set, voicerNode.node, \gate, -1 - killTime]);
 
 			onNodes      .remove(voicerNode);
 			releasedNodes.remove(voicerNode);

@@ -66,7 +66,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	var <sampleBank,		<sampleBankGUI,	<webBrowser, 		<relaunch = false,	<newBPM = false;
 	var <mode = \marker,	<markerSeq,		<lastMarkerEvent,	<lastMarkerEvent2;
-	var <allMakerEvents,    <noteOnNodes,	<sequencer,			<seqOutBuffer;
+	var <allMakerEvents,    <sequencer,		<seqOutBuffer;
 	var <repeatMode,		<recordNode;
 
 	var <repeatNo=0,		<repeatRate=0,	<repeatAmp=1,		<repeatStart=0;
@@ -75,6 +75,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <guiModeModel,		<previousMode,	<currentRateAdj=1;
 
 	var <recordBus,			<cueRecord=false;
+
+	var <voicer;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -108,6 +110,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	// the models
 	initModel {
+
+		// poly voicer control, for use with the LNX_PianoRollSequencer
+		voicer=LNX_Voicer(server).poly_(1).killTime_(0.05); // set to mono
 
 		#models,defaults=[
 			// 0.solo
@@ -232,11 +237,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[1, \switch,  (items_:["Sequncer","Play Loop"]), midiControl, 18, "Play back mode",
 				{|me,val,latency,send|
 					this.setPVPModel(18,val,latency,send);
-					if (val==0) {
-						this.marker_stopBuffer(latency ? (studio.latency))
-					}{
-						seqOutBuffer.releaseAll(latency ? studio.actualLatency)
-					};
 			}],
 
 			// 19. event freeze
@@ -349,7 +349,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.pipeOutAction_{|pipe|
 				if (this.isOff.not) {seqOutBuffer.pipeIn(pipe)};
 			}
-			.releaseAllAction_{ seqOutBuffer.releaseAll(studio.actualLatency) }
+			//.releaseAllAction_{ seqOutBuffer.releaseAll(studio.actualLatency) }
+			.releaseAllAction_{ voicer.releaseAllNotes(studio.actualLatency +! syncDelay) }
+
 			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 				//keyboardView.view.keyDownAction.value(me,char, modifiers, unicode, keycode, key)
 			}
@@ -361,8 +363,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			};
 
 		this.marker_initVars;
-
-		noteOnNodes = nil ! 128; // note on events store synth nodes so note off event can release them
 
 	}
 
@@ -398,28 +398,44 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	// and these events need to happen with latency
 
-	clockStop {|latency|
-		sequencer.do(_.clockStop(studio.actualLatency));
-		seqOutBuffer.releaseAll(studio.actualLatency);
+	clockStop{|latency|
+		voicer.killAllNotes(studio.actualLatency +! syncDelay);
+
+		sequencer.do(_.clockStop(studio.actualLatency +! syncDelay));
+
+		seqOutBuffer.releaseAll(studio.actualLatency +! syncDelay);
+
 		this.marker_stopPlay;
 		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
-		if (mode===\marker ) { this.marker_stopBuffer(latency); ^this };
 	}
 
 	clockPause{|latency|
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
+
 		sequencer.do(_.clockPause(studio.actualLatency));
 		seqOutBuffer.releaseAll(studio.actualLatency);
 		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
-		if (mode===\marker ) { this.marker_stopBuffer(latency); ^this };
+	}
+
+	// called from onSolo funcs
+	stopAllNotes{
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
+	}
+
+	stopDSP{
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
+		voicer.killAllNotes(studio.actualLatency +! syncDelay);
 	}
 
 	updateOnSolo{|latency|
 		if (this.isOn) { ^this }; // is on exception, below is done when off
+		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
+
 		sequencer.do(_.clockStop(studio.actualLatency));
 		seqOutBuffer.releaseAll(studio.actualLatency);
 		this.marker_stopPlay;
 		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
-		if (mode===\marker ) { this.marker_stopBuffer(latency); ^this }; // doesn't do anything, release above does
+
 	}
 
 	bpmChange	{
