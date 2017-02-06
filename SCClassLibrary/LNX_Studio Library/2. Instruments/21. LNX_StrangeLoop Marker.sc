@@ -221,7 +221,8 @@ LNX_MarkerEvent {
 
 			{
 				if (this.isOn) {
-					this.marker_playBuffer(
+					this.marker_stopBuffer(latency);
+					node = this.marker_playBufferMIDI(
 						bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
 					currentRateAdj = rateAdj; // so we can change rate between events with this.marker_changeRate
 				};
@@ -340,25 +341,6 @@ LNX_MarkerEvent {
 
 	}
 
-	// play a buffer for play loop mode
-	marker_playBuffer{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,clipMode,amp,latency|
-		this.marker_stopBuffer(latency);
-		node = server.nextNodeID;
-		server.sendBundle(latency +! syncDelay,
-			["/s_new", p[21].isTrue.if(\SLoopMarkerRev,\SLoopMarker), node, 0, instGroupID,
-			\outputChannels,	this.instGroupChannel,
-			\id,				id,
-			\amp,				amp,
-			\bufnumL,			bufnumL,
-			\bufnumR,			bufnumR,
-			\rate,				rate,
-			\startFrame,		startFrame,
-			\durFrame:			durFrame,
-			\attackLevel:		attackLevel,
-			\clipMode:			clipMode
-		]);
-	}
-
 	// play a buffer for sequencer mode
 	marker_playBufferMIDI{|bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,clipMode,amp,latency|
 		var node = server.nextNodeID;
@@ -434,7 +416,6 @@ LNX_MarkerEvent {
 		};
 	}
 
-
 	// index of playback, returned from the server
 	sIdx_in_{|index|
 		var sampleIndex = p[11];
@@ -445,9 +426,24 @@ LNX_MarkerEvent {
 		};
 	}
 
-	// stop playing buffer (this doesn't work)
+	//////////////////////////////////
+
+	// SHOULD IT BE MONO ? YES - it doesn't make sence to be poly
+
+	// if mono
+	//    lastNode & last timeStamp Delay (latency +! syncDelay)
+
+	// do I really want mono?
+
+	// stopping nodes
+
+	// stop playing buffer ( from marker_clockIn3 ) = Clock
 	marker_stopBuffer{|latency|
+
+		// stops single loop
 		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]) };
+
+		// and stops nodes, because of beat repeat
 		noteOnNodes.do{|node,j|
 			if (node.notNil) {
 				server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]);
@@ -456,9 +452,15 @@ LNX_MarkerEvent {
 		}
 	}
 
+	// stop playing buffer ( from marker_pipeIn ) = MIDI
 	marker_stopPlayBuffer{|latency|
+
+		// stops single loop
 		if (node.notNil) { server.sendBundle(latency +! syncDelay, ["/n_set", node, \gate, 0]) };
+
 	}
+
+	/////////////////////////////
 
 	marker_stopPlay{
 		repeatMode		 = nil;

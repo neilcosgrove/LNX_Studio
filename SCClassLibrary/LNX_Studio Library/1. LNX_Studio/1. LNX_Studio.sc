@@ -382,7 +382,7 @@ LNX_Studio {
 		instOutGroup    = Group(eqGroup,\addAfter);         // the inst out group for levels & outs
 		fxGroup         = Group(instOutGroup,\addAfter);    // the effects
 		sideGroup       = Group(fxGroup,\addAfter);			// the effects
-		channelOutGroup = Group.after(sideGroup);             // the channel outputs
+		channelOutGroup = Group.after(sideGroup);           // the channel outputs
 
 		groups = (
 			\lfo:			lfoGroup,

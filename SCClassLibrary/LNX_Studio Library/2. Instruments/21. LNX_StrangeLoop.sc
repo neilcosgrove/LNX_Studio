@@ -761,6 +761,30 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		);
 		this.attachActionsToPresetGUI;
 
+		// MIDI Settings
+ 		MVC_FlatButton(gui[\scrollView],Rect(743, 11, 43, 19),"MIDI")
+			.rounded_(true)
+			.canFocus_(false)
+			.shadow_(true)
+			.color_(\up,  Color(50/77,61/77,1)/2 )
+			.color_(\down,Color(50/77,61/77,1)/2 )
+			.color_(\string,Color.white)
+			.resize_(9)
+			.action_{ this.createMIDIInOutModelWindow(window,
+				colors:(border1:Color(0.1221, 0.0297, 0.0297), border2: Color(0.6 , 0.562, 0.5))
+			) };
+
+		// MIDI Control
+ 		MVC_FlatButton(gui[\scrollView],Rect(792, 11, 43, 19),"Cntrl")
+			.rounded_(true)
+			.canFocus_(false)
+			.shadow_(true)
+			.color_(\up,  Color(50/77,61/77,1)/2 )
+			.color_(\down,Color(50/77,61/77,1)/2 )
+			.color_(\string,Color.white)
+			.resize_(9)
+			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front  };
+
 		///// highlight which repeat mode is used
 
 		MVC_FuncAdaptor(guiModeModel).func_{|me,val|

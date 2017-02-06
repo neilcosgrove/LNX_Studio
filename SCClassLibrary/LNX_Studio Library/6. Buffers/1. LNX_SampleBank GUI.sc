@@ -1095,7 +1095,6 @@
  					Pen.stringCenteredIn("Temp",Rect(w-33,h-16,33,14))
 				};
 
-
 				if (status!=(-5)) {
 					if (status>=0) {
 						Pen.smoothing_(true);
