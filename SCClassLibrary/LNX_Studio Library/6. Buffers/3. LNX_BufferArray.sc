@@ -94,16 +94,10 @@ LNX_BufferArray {
 	// update sampleData with the soundfile at path
 	updateSampleData{|path|
 		var soundFile = SoundFile();
-
 		soundFile.openRead(path.standardizePath); // why does only standardizePath work?
-
-		[numFrames, numChannels, sampleRate].postln;
-
 		sampleData  = FloatArray.fill(numFrames*numChannels,0); // causes lates with large samples
-
 		soundFile.readData(sampleData); // fast but causes lates
 	}
-
 
 	// update buffer to a local file with the filename path ////////////////////////////////////////////////////
 

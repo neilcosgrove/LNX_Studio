@@ -72,7 +72,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <repeatNo=0,		<repeatRate=0,	<repeatAmp=1,		<repeatStart=0;
 	var <repeatNoE=0,		<repeatRateE=0,	<repeatAmpE=1;
 
-	var <guiModeModel,		<previousMode,	<currentRateAdj=1,  <cueRecord=false;
+	var <guiModeModel,		<previousMode,	<currentRateAdj=1;
+
+	var <recordBus,			<cueRecord=false;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)

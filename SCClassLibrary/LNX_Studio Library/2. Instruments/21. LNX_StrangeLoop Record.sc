@@ -2,13 +2,15 @@
 // Record mode  //
 // ************ //
 
-// Buffer
-
 //************************************************************************************
 //
 // COPYING NEW BUFFERS ACROSS SAMPLEBANKS DELETES THE CASHE FOLDER !!!!!!!!!!!!!!!!!!!
 //
 //************************************************************************************
+
+// types new, file, url & MISSING
+// 2 synths
+// try OffsetOut.ar(index) -->  Bus.audio(server,2) --> In index
 
 // do i need a new buffer everytime so old isn't recorded over while played and recorded
 
@@ -87,7 +89,8 @@ exclude temp from file dialog
 
 "Save new buffer".postln;
 "===============".postln;
-path.postln;
+path.
+ln;
 ("file://" ++ path).postln;
 (LNX_BufferProxy.userFolder +/+ path).postln;
 (LNX_BufferProxy.userFolder +/+ path).pathExists.postln;
@@ -182,9 +185,10 @@ buffer.convertedPath.pathExists.postln;*/
 		var name = path.basename;
 		path = (LNX_BufferProxy.userFolder +/+ path ++ ".aiff");
 
-		if (PathName(path).fileNameWithoutExtension.size==0){         "No Filename".warn; ^this }; // no name exception
-		if (path.pathExists) 								{ "File already exists".warn; ^this }; // already exists exception
-		if (path.contains("//")) 							{        "Bad filename".warn; ^this }; // bad name exception
+		if (PathName(path)
+			.fileNameWithoutExtension.size==0)	{         "No Filename".warn; ^this }; // no name exception
+		if (path.pathExists) 					{ "File already exists".warn; ^this }; // already exists exception
+		if (path.contains("//")) 				{        "Bad filename".warn; ^this }; // bad name exception
 
 		// we could use sfcovert here instead of copyTo and use many different sound formats eg.mp3
 		if (buffer.convertedPath.copyFile(path, silent:true)){
@@ -271,7 +275,7 @@ buffer.convertedPath.pathExists.postln;*/
 			var func 		= {|changer,message|
 				if (message==\n_end) {
 					node.removeDependant(func);
-					//"END".postln;
+					recordBus.free;
 
 					{ gui[\record].value_(0).color_(\on,Color(50/77,61/77,1)) }.deferIfNeeded;
 
@@ -279,7 +283,6 @@ buffer.convertedPath.pathExists.postln;*/
 					path = (LNX_BufferProxy.tempFolder) +/+ (sample.path);
 
 					sample.multiChannelBuffer.write(path.standardizePath, completionMessage:{
-						//"SAVED".postln;
 						{
 							sample.updateSampleData(path);
 							{sampleBankGUI.sampleView.refresh}.defer(0.25);
@@ -300,49 +303,63 @@ buffer.convertedPath.pathExists.postln;*/
 
 		};
 
-		//"Recording...".postln;
-
 	}
 
 	guiStopRecord{
-		//"Stopped...".postln;
 		cueRecord = false;
 		{ gui[\record].color_(\on,Color(1,0.5,0.5)) }.deferIfNeeded;
 	}
 
 	// play a buffer for sequencer mode
 	record_Buffer{|inputChannels, bufnumL, bufnumR, multiBuffer, rate, startFrame, durFrame, latency|
-		var node = server.nextNodeID;
+		var indexNode  = server.nextNodeID;
+		var recordNode = server.nextNodeID;
+		recordBus 	   = Bus.audio(server,1);
+
 		server.sendBundle(latency +! syncDelay,
-			["/s_new", \SLoopRecordStereo, node, 0, studio.groups[\channelOut].nodeID,
+			["/s_new", \SLoopRecordStereo, recordNode, 0, studio.groups[\channelOut].nodeID,
 			\inputChannels,	inputChannels,
 			\id,			id,
 			\bufnumL,		bufnumL,
 			\bufnumR,		bufnumR,
 			\multiBuffer,	multiBuffer,
 			\startFrame,	startFrame,
-			\durFrame:		durFrame,
+			\durFrame,		durFrame,
+			\indexBus,		recordBus.index,
 			\rate,			rate,
 		]);
-		^node; // for stop record
+
+		server.sendBundle(latency +! syncDelay,
+			["/s_new", \SLoopRecordIndex, indexNode, 0, studio.groups[\channelOut].nodeID,
+			\bus,			recordBus.index,
+			\rate,			rate,
+		]);
+
+		^recordNode; // for stop record
 	}
 
 	*record_initUGens{|server|
+
+		// index for recoring, OffsetOut gives us the correct index to record at
+		SynthDef("SLoopRecordIndex",{|bus=0,rate=1| OffsetOut.ar(bus,Integrator.ar(rate.asAudio)) }).send(server);
+
 		// we can add to side group to record
 		SynthDef("SLoopRecordStereo",{|inputChannels=0, bufnumL=0, bufnumR=1, multiBuffer=1,
-										id=0, rate=1, gate=1, startFrame=0, durFrame=44100|
-
-			var index  = startFrame + Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame);
-			var slope  = Slope.ar(index);
-			var signal = In.ar(inputChannels,2) * (slope>0);
+										id=0, rate=1, gate=1, startFrame=0, durFrame=44100, indexBus=0|
+			var indexIn = In.ar(indexBus,1); // comes from SynthDef above
+			var index   = startFrame + ( indexIn * BufRateScale.ir(bufnumL)         ).clip(0,durFrame); // real from in
+			var refindex= Integrator.ar((rate    * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame); // fake
+			var slope   = Slope.ar(index);
+			var signal  = In.ar(inputChannels,2) * (slope>0);
 
 			BufWr.ar(signal[0], bufnumL, index, loop:0);	// left
 			BufWr.ar(signal[1], bufnumR, index, loop:0);	// right
 			BufWr.ar(signal, multiBuffer, index, loop:0);	// and stereo
 
-			DetectSilence.ar(slope, doneAction:2); // ends when index slope = 0
+			DetectSilence.ar(Slope.ar(index+refindex), doneAction:3); // ends when index & fake slope = 0
 
 		}).send(server);
+
 	}
 
 }
