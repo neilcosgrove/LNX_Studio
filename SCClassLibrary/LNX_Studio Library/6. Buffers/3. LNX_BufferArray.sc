@@ -18,7 +18,9 @@ LNX_BufferArray {
 		emptyStereo = Buffer.alloc(server, 1, 2, {}, bufnum+1);
 	}
 
-	// missing //////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// missing ///////////////////////////////////////////////////////////////////////////////
+
+	// to include numFrames, numChannels & sampleRate so it can be saved in new file format
 
 	*missing {|server,path,action| ^super.new.initMissing(server,path,action) }
 
@@ -45,7 +47,7 @@ LNX_BufferArray {
 
 	}
 
-	// new empty for support with sLoop /////////////////////////////////////////////////////////////////////////////////
+	// new empty for support with sLoop ////////////////////////////////////////////////
 
 	*new{|server, path, numFrames, numChannels, sampleRate, action|
 		^super.new.initNew(server, path, numFrames, numChannels, sampleRate, action)
@@ -93,6 +95,27 @@ LNX_BufferArray {
 
 	}
 
+	// make a url into a temp
+	makeTemp{|server,argPath|
+		var bufnum;
+		path = argPath;
+		// maybe action should only call after all have loaded
+		bufnum = server.bufferAllocator.alloc(numChannels); // make sure buffers are adj
+		recordBuffers = [];
+		numChannels.do{|i|
+			recordBuffers = buffers.add(
+				Buffer.alloc(server, numFrames, 1,{|buf|
+
+				}, bufnum+i);
+			)
+		};
+		// for saving and loading only. I ONLY EVER NEED 1 OF THESE so make in initNew
+		bufnum = server.bufferAllocator.alloc(1); // make sure buffers are adj
+		multiChannelBuffer = Buffer.alloc(server, numFrames, numChannels ,{|buf|
+
+		}, bufnum);
+	}
+
 	// alloc buffers for recording
 	nextRecord{|server, action|
 		var bufnum = server.bufferAllocator.alloc(numChannels+1); // make sure buffers are adj
@@ -126,13 +149,13 @@ LNX_BufferArray {
 		soundFile.readData(sampleData); // fast but causes lates
 	}
 
-	// update buffer to a local file with the filename path ////////////////////////////////////////////////////
+	// update buffer to a local file with the filename path //////////////////////////////////////
 
 	updateTempToLocalFile{|argPath|
 		path = argPath;
 	}
 
-	// new from file ///////////////////////////////////////////////////////////////////////////////////////////
+	// new from file /////////////////////////////////////////////////////////////////////////////
 
 	*read {|server,path,action| ^super.new.init(server,path,action) }
 
@@ -384,6 +407,7 @@ Buffer.readChannelByChunk(s,"/Users/neilcosgrove/Desktop/acid tracks/walking fro
 
 //
 
+// so buffer still availble until swapped out
 + Buffer{
 	freeWithLatency{|latency,completionMessage|
 		server.listSendBundle(latency, [this.freeMsg(completionMessage)] )

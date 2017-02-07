@@ -706,7 +706,9 @@ gives min, max, averages and total
 
 	popInt{ ^this.pop.asInt    }
 	popI  { ^this.pop.asInt    }
+	popFloat{ ^this.pop.asFloat  }
 	popF  { ^this.pop.asFloat  }
+	popString  { ^this.pop.asString }
 	popS  { ^this.pop.asString }
 
 	popN{|n|

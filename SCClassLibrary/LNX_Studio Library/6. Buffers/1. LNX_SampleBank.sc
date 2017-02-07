@@ -79,7 +79,8 @@ LNX_SampleBank{
 		// metadata & order data saved
 		versionKeys = ();
 		versionKeys[1.1] = #[\active, \amp, \bpm, \end, \loop, \markers, \name, \pitch, \start, \velocity];
-		versionKeys[1.2] = #[\active, \amp, \bpm, \end, \length, \loop, \markers, \name, \pitch, \start, \velocity]
+		versionKeys[1.2] = #[\active, \amp, \bpm, \end, \length, \loop, \markers, \name, \pitch, \start, \velocity];
+		versionKeys[1.3] = #[\active, \amp, \bpm, \end, \length, \loop, \markers, \name, \pitch, \start, \velocity];
 
 	}
 
@@ -534,10 +535,10 @@ LNX_SampleBank{
 
 	}
 
-	newBuffer{|numFrames=44100, numChannels=2, sampleRate=44100, select=true, length, action|
+	newBuffer{|numFrames=44100, numChannels=2, sampleRate=44100, select=true, length, action, argPath|
 		var buffer, path, metadata, metaModel;
 
-		buffer          = LNX_BufferProxy.new(server, numFrames, numChannels, sampleRate, action);
+		buffer          = LNX_BufferProxy.new(server, numFrames, numChannels, sampleRate, action, argPath);
 		path            = buffer.path;
 		samples         = samples.add(buffer);
 		metaModel       = this.addMetaModel;
@@ -635,11 +636,20 @@ LNX_SampleBank{
 	// get the save list from the new style URL SampleBank
 	getSaveListURL{
 		var saveList;
-		saveList=["SC URL Bank Doc v1.2",title.asSymbol,this.size];
+		saveList=["SC URL Bank Doc v1.3",title.asSymbol,this.size];
 
 		samples.do{|sample,i|
-			saveList=saveList.add(samples[i].url);
-			versionKeys[1.2].do{|key|
+			var source = sample.source;
+			// new in 1.3
+			if (source == \url) {
+				saveList = saveList ++ [source]; // url doesn't need all details below
+			}{
+				saveList = saveList ++ [source, sample.numFrames, sample.numChannels, sample.sampleRate,
+					metaModels[i][\length].value];
+			};
+
+			saveList=saveList.add(samples[i].url); // all versions use url's as path finders
+			versionKeys[1.3].do{|key|
 				if (key==\markers) {
 					saveList=saveList.add( metaModels[i][key].size );
 					saveList=saveList++metaModels[i][key];
@@ -666,7 +676,7 @@ LNX_SampleBank{
 		versionString=l.popS;
 		version=versionString.version;
 
-		if (versionString[..14]=="SC URL Bank Doc") {
+		if (versionString.beginsWith("SC URL Bank Doc")) {
 			isLoading=true;
 
 			if (clear) { this.removeAllSamples }; // carefull with this
@@ -686,15 +696,51 @@ LNX_SampleBank{
 	recursiveLoadURL{|n,i,l,version,updateBank=true|
 
 		var metadata, metaModel, keysToUse;
+		var url;
+		var source, numFrames, numChannels, sampleRate, length;
 
-		studio.flashServerIcon; // gui
+		if (version >= 1.3) {
+			source = l.popS.asSymbol;
+			if (source!=\url){
+				numFrames   = l.popInt;
+				numChannels = l.popInt;
+				sampleRate  = l.popInt;
+				length      = l.popF;
+			};
+		}{
+			source=\url; // all old 1.2 format were just url's
+		};
 
-		this.addURL(l.popS,{},false,updateBank); // add this URL
+		url = l.popS;
+
+		if (source==\new) {
+			var path = url[7..];
+			this.newBuffer(numFrames, numChannels, sampleRate, false, length, {}, path); // updateBank?
+		};
+
+		if (source==\temp) {
+			var path = url[7..];
+			var actualPath = LNX_BufferProxy.tempFolder +/+ path;
+			if ((actualPath).isSoundFile) {
+				this.addURL(url,{},false,updateBank); // add this URL
+				samples.last.makeTemp(server,path);
+				// now make this a temp
+			}{
+				// make a new one
+				this.newBuffer(numFrames, numChannels, sampleRate, false, length, {}, path); // updateBank?
+			};
+		};
+
+		if (source==\url) {
+			this.addURL(url,{},false,updateBank); // add this URL
+		};
 
 		metaModel = metaModels.last;  // its the last one added in addURL
 
 		// use version keys to load data
-		if (version <= 1.1) { keysToUse = versionKeys[1.1] } { keysToUse = versionKeys[1.2] };
+		if (version <= 1.1) { keysToUse = versionKeys[1.1] } { keysToUse = versionKeys[version] };
+
+		studio.flashServerIcon; // gui
 
 		// add metadata
 		keysToUse.do{|key|

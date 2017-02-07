@@ -46,11 +46,11 @@ LNX_BufferProxy {
 
 	// a new blank buffer /////////////////////////////////////////////////////
 
-	*new{|server, numFrames, numChannels, sampleRate, action|
-		^super.new.initNew(server, numFrames, numChannels, sampleRate, action)
+	*new{|server, numFrames, numChannels, sampleRate, action, path|
+		^super.new.initNew(server, numFrames, numChannels, sampleRate, action, path)
 	}
 
-	initNew{|argServer, numFrames, numChannels, sampleRate, argAction|
+	initNew{|argServer, numFrames, numChannels, sampleRate, argAction, argPath|
 
 		this.initInstance;
 		this.initModels;
@@ -60,7 +60,7 @@ LNX_BufferProxy {
 		// source is url & make a filename path from the url
 		source = \new;
 		server = argServer ? Server.default;
-		path   = (Date.getDate.stamp) + (this.hash.asString) ++ ".aiff";
+		path   = argPath ?? {(Date.getDate.stamp) + (this.hash.asString) ++ ".aiff"};
 		url    = "temp://"++path;
 		dir    = path.dirname;
 		name   = path.basename;
@@ -76,7 +76,18 @@ LNX_BufferProxy {
 		this.loaded;
 	}
 
+	makeTemp{|server,argPath|
+		source = \temp; // buffer now temp
+		path   = argPath ?? {(Date.getDate.stamp) + (this.hash.asString) ++ ".aiff"};
+		url    = "temp://"++path;
+		dir    = path.dirname;
+		name   = path.basename;
+		convertedPath = tempFolder +/+ path;
+		buffer.makeTemp(server,path);
+	}
+
 	nextRecord{|server, action|	buffer.nextRecord(server, action) } // alloc buffers for recording
+
 	cleanupRecord{|latency|
 		source = \temp; // buffer now temp
 		buffer.cleanupRecord(latency);

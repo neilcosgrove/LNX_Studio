@@ -702,7 +702,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_MyKnob3(gui[\scrollView], models[23], Rect(725, 468, 28, 28), gui[\knobTheme1]);
 
 		// 30. reset / latch
-		gui[\latchReset] = MVC_MyKnob3(gui[\scrollView], models[30], Rect(785, 468, 28, 28), gui[\knobTheme1]);
+		gui[\latchReset] = MVC_MyKnob3(gui[\scrollView], models[30], Rect(785, 468, 28, 28), gui[\knobTheme1])
+			.resoultion_(2);
 
 		// 24. repeat prob
 		MVC_MyKnob3(gui[\scrollView], models[24], Rect(605, 405, 28, 28), gui[\knobTheme1]);
