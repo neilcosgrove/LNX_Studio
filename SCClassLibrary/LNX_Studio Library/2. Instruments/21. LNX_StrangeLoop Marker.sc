@@ -4,6 +4,8 @@
 
 // BUG: Event freeze memory isn't working when >1
 
+// fit pitch to fit
+
 LNX_MarkerEvent {
 	var <>markerNo, <>deltaBeats, <>offset, <>startFrame, <>durFrame;
 	*new     {|markerNo, deltaBeats, offset, startFrame, durFrame|

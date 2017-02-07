@@ -207,14 +207,14 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[0, [-48,48,\linear,1],  (label_:"Transpose", numberFunc_:\intSign), midiControl, 12, "Transpose",
 				{|me,val,latency,send|
 					this.setPVPModel(12,val,latency,send);
-					if (mode===\marker) { this.marker_changeRate };
+					if (mode===\marker) { this.marker_changeRate(latency) };
 			}],
 
 			// 13. fine  -1 to 1
 			[0, [-1,1],  (label_:"Fine", numberFunc_:\float2Sign), midiControl, 13, "Fine",
 				{|me,val,latency,send|
 					this.setPVPModel(13,val,latency,send);
-					if (mode===\marker) { this.marker_changeRate };
+					if (mode===\marker) { this.marker_changeRate(latency) };
 			}],
 
 			// 14. clip, fold or wrap
