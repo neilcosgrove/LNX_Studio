@@ -362,7 +362,7 @@ LNX_RolandJP08 : LNX_InstrumentTemplate {
 	}
 
 /*
-[F0, 41 (Roland SYSEX number), 10 (device ID), 00 (modelID),00,00,1C�(Product code for the JP-08), 12, 03, 00, address MSB, address LSB, value MSB, value LSB, checksum, F7]
+[F0, 41 (Roland SYSEX number), 10 (device ID), 00 (modelID),00,00,1C..(Product code for the JP-08), 12, 03, 00, address MSB, address LSB, value MSB, value LSB, checksum, F7]
 
 checksum for byte @ index 14 is...
 RolandJP08.checkSum(Int8Array[ -16, 65, 16, 0, 0, 0, 28, 18, 3, 0, 1, 18, 15, 13,  78, -9 ][8..13]);
@@ -1254,7 +1254,7 @@ RolandJP08 {
 
 /*
 
-[F0, 41 (Roland SYSEX number), 10 (device ID), 00 (modelID),00,00,1C�(Product code for the JP-08), 12, 03, 00, address MSB, address LSB, value MSB, value LSB, checksum, F7]
+[F0, 41 (Roland SYSEX number), 10 (device ID), 00 (modelID),00,00,1C..(Product code for the JP-08), 12, 03, 00, address MSB, address LSB, value MSB, value LSB, checksum, F7]
 
 the checksum for the byte @ index 14 is...
 

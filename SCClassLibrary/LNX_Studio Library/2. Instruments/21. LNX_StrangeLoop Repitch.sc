@@ -27,8 +27,8 @@
 		if (relaunch or:{beat % length==0}) {
 			var numFrames, bufferL, bufferR, duration, rate, offset, startFrame, endFrame, durFrame, attackLevel;
 			var sample      = sampleBank[sampleIndex];
-			bufferL			= sample.buffer.bufnum(0);          	// this only comes from LNX_BufferArray
-			bufferR			= sample.buffer.bufnum(1) ? bufferL; 	// this only comes from LNX_BufferArray
+			bufferL			= sample.bufnumPlayback(0);          	// this only comes from LNX_BufferArray
+			bufferR			= sample.bufnumPlayback(1) ? bufferL; 	// this only comes from LNX_BufferArray
 			numFrames		= sampleBank.numFrames  (sampleIndex);	// total number of frames in sample
 			startFrame 		= sampleBank.actualStart(sampleIndex) * numFrames;	// start pos frame
 			endFrame		= sampleBank.actualEnd  (sampleIndex) * numFrames;	// end pos frame

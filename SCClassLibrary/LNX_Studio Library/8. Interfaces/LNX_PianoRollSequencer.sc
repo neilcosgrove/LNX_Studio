@@ -551,7 +551,7 @@ LNX_PianoRollSequencer{
 			}].asModel.doAction;
 
 		// model for speed
-		models[\speed] = [3,[0,7,\lin,1], (\items_:["�8","�4","�2"," - ","x2","x4","x8"]),
+		models[\speed] = [3,[0,7,\lin,1], (\items_:["/8","/4","/2"," - ","x2","x4","x8"]),
 			{|me,value|
 				score.speed_(#[8,4,2,1,0.5,0.25,0.125][value]);
 				api.sendVP(\speed,\netSpeed_,value);

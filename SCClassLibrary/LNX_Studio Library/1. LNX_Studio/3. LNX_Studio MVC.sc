@@ -108,8 +108,8 @@
 							);
 							{server.record}.defer(0.1);
 						}{
-							//var dir = LNX_BufferProxy.userPath +/+ "melodrive" +/+ (this.name) ++"_bin" + batchFolder;
-							var dir = LNX_BufferProxy.userPath +/+ "BATCH" +/+ (this.name) ++"_bin" + batchFolder;
+							//var dir = LNX_BufferProxy.userFolder +/+ "melodrive" +/+ (this.name) ++"_bin" + batchFolder;
+							var dir = LNX_BufferProxy.userFolder +/+ "BATCH" +/+ (this.name) ++"_bin" + batchFolder;
 
 							lastBatchFolder = dir;
 

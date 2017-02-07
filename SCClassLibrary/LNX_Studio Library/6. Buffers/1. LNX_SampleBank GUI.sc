@@ -698,7 +698,10 @@
 			.color_(\string,Color.black)
 			.font_(Font("Helvetica", 10))
 			.mouseDownAction_{ gui[\path].color_(\string,Color.white) }
-			.mouseUpAction_{  gui[\path].color_(\string,Color.black);this.path(i).revealInFinder};
+		.mouseUpAction_{
+			gui[\path].color_(\string,Color.black);
+			this[i].convertedPath.revealInFinder
+		};
 
 		// search the web button
 		if (search) {
@@ -988,13 +991,13 @@
 								if (channelsToDraw==2) { h3 = h2 * ( (channelNo==0).if(0.5,1.5)) }{ h3 = h2 };
 								visualOffset = (o * size).round(w2*2); // *2 because w/2 in below do
 
-								Pen.moveTo(2@((sampleData.atInt(visualOffset, numChannels, channelNo) )*h4+h3));
+								Pen.moveTo(2@((sampleData.atInt(visualOffset.asInt, numChannels, channelNo) )*h4+h3));
 
 								(w/2).asInt.do{|i|
 									i=i*2;
 									Pen.lineTo((i+2)@((
 										sampleData.atInt(
-											( i * w2 ) + visualOffset, numChannels, channelNo
+											(( i * w2 ) + visualOffset).asInt, numChannels, channelNo
 										)
 									)*h4+h3));
 								};
@@ -1074,31 +1077,54 @@
 
 				};
 
+				if (buffer.source===\new) {
+					Pen.smoothing_(true);
+					Color(1,1,1,0.5).set;
+					Pen.fillRect(Rect(w-33,h-16,33,14));
+					Pen.fillColor_(Color.black);
+					Pen.font_(Font("Helvetica",12,true));
+ 					Pen.stringCenteredIn("New",Rect(w-33,h-15,33,14))
+				};
+
+				if (buffer.source===\temp) {
+					Pen.smoothing_(true);
+					Color(1,1,1,0.5).set;
+					Pen.fillRect(Rect(w-33,h-16,33,14));
+					Pen.fillColor_(Color.black);
+					Pen.font_(Font("Helvetica",12,true));
+ 					Pen.stringCenteredIn("Temp",Rect(w-33,h-16,33,14))
+				};
+
 				if (status!=(-5)) {
 					if (status>=0) {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
-						Pen.stringCenteredIn ("Downloading "++(status.asInt)
-												++"%",Rect(0,0,w,h));
+						Pen.stringCenteredIn ("Downloading "++(status.asInt)++"%",Rect(0,0,w,h));
 					};
 					if (status==(-1)) {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
-						Pen.stringCenteredIn ("Connecting",Rect(0,0,w,h));
+						Pen.stringCenteredIn ("Connecting.",Rect(0,0,w,h));
 					};
 					if (status==(-2)) {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
-						Pen.stringCenteredIn ("Converting",Rect(0,0,w,h));
+						Pen.stringCenteredIn ("Converting.",Rect(0,0,w,h));
 					};
 					if (status==(-4)) {
 						Pen.smoothing_(true);
 						Pen.fillColor_(Color.white);
 						Pen.font_(Font("Helvetica",12));
 						Pen.stringCenteredIn ("Download Failed.",Rect(0,0,w,h));
+					};
+					if (status==(-4.5)) {
+						Pen.smoothing_(true);
+						Pen.fillColor_(Color.white);
+						Pen.font_(Font("Helvetica",12));
+						Pen.stringCenteredIn ("File Not Found.",Rect(0,0,w,h));
 					};
 				};
 
@@ -1551,7 +1577,7 @@
 
 	// integer index into a flat multichannel FloatArray
 	atInt{|index, numChannels=1, channel=0|
-		^ this.clipAt( index * numChannels + channel + numChannels);
+		^ this.clipAt( index * numChannels + channel);
 	}
 
 	// simple linear interpolation into a flat multichannel FloatArray

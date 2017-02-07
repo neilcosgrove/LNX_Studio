@@ -3,55 +3,136 @@
 
 LNX_BufferArray {
 
+	classvar <emptyMono, <emptyStereo;
+
 	var <>verbose=false;
-
 	var <buffers, <numChannels, <numFrames, <sampleRate, <duration, <sampleData;
+	var <multiChannelBuffer, <recordBuffers, <path;
+	var <playbackBuffers;
 
-	// new empty /////////
+	//
 
-	*new{|server, numFrames, numChannels, sampleRate, action|
-		^super.new.initNew(server, numFrames, numChannels, sampleRate, action)
+	*serverReboot{|server|
+		var bufnum  = server.bufferAllocator.alloc(2); // make 2 buffers
+		emptyMono   = Buffer.alloc(server, 1, 1, {}, bufnum);
+		emptyStereo = Buffer.alloc(server, 1, 2, {}, bufnum+1);
 	}
 
-	initNew{|server, argFrames, argChannels, argSampleRate, action|
+	// missing //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		var bufnum;
+	*missing {|server,path,action| ^super.new.initMissing(server,path,action) }
+
+	initMissing{|server, argPath, action|
 		var soundFile = SoundFile();
-		var done;
 
-		//soundFile.numFrames_(argFrames);
+		soundFile.numChannels_(2);
+		soundFile.sampleRate_(41100);
+
+		path	    = argPath;
+		numFrames   = 1;
+		numChannels = 2;
+		sampleRate  = 41100;
+		duration	= 1/41100;
+		sampleData  = FloatArray.fill(1,0); // causes lates with large samples
+
+		// easy way to reduce num of samples needed.
+
+		buffers			= [emptyMono, emptyMono];
+		playbackBuffers = [emptyMono, emptyMono];
+		recordBuffers	= [];
+
+		{action.value(this)}.defer(0.01)
+
+	}
+
+	// new empty for support with sLoop /////////////////////////////////////////////////////////////////////////////////
+
+	*new{|server, path, numFrames, numChannels, sampleRate, action|
+		^super.new.initNew(server, path, numFrames, numChannels, sampleRate, action)
+	}
+
+	initNew{|server, argPath, argFrames, argChannels, argSampleRate, action|
+		var bufnum, done;
+		var soundFile = SoundFile();
+
 		soundFile.numChannels_(argChannels);
 		soundFile.sampleRate_(argSampleRate);
-		//soundFile.duration_(argFrames / argSampleRate);
 
-		//numFrames   = soundFile.numFrames;
+		path	    = argPath;
 		numFrames   = argFrames;
 		numChannels = soundFile.numChannels;
 		sampleRate  = soundFile.sampleRate;
-		//duration    = soundFile.duration;
 		duration	= argFrames / argSampleRate;
-
 		sampleData  = FloatArray.fill(numFrames*numChannels,0); // causes lates with large samples
 
-		bufnum = server.bufferAllocator.alloc(numChannels); // make sure buffers are adj
+		done   = 1 ! (numChannels+1); // reverse of normal 0 = done
 
-		done = 1 ! numChannels; // reverse of normal 0 = done
+		// easy way to reduce num of samples needed.
+		playbackBuffers = [emptyMono, emptyMono];
 
 		// maybe action should only call after all have loaded
+		bufnum = server.bufferAllocator.alloc(numChannels); // make sure buffers are adj
+		buffers = [];
 		numChannels.do{|i|
 			buffers = buffers.add(
-
 				Buffer.alloc(server, numFrames, 1,{|buf|
 					done[i] = 0; // when sum of done is zero, all buffers have been allocated
 					if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
 				}, bufnum+i);
-
 			)
 		};
 
+		recordBuffers = buffers; // 1st time round the same
+
+		// for saving and loading only. I ONLY EVER NEED 1 OF THESE so make in initNew
+		bufnum = server.bufferAllocator.alloc(1); // make sure buffers are adj
+		multiChannelBuffer = Buffer.alloc(server, numFrames, numChannels ,{|buf|
+			done[numChannels] = 0; // when sum of done is zero, all buffers have been allocated
+			if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
+		}, bufnum);
+
 	}
 
-	// new from file ///////
+	// alloc buffers for recording
+	nextRecord{|server, action|
+		var bufnum = server.bufferAllocator.alloc(numChannels+1); // make sure buffers are adj
+		var done   = 1 ! numChannels; // reverse of normal 0 = done
+
+		// for recording only
+		recordBuffers = [];
+		numChannels.do{|i|
+			recordBuffers = recordBuffers.add(
+				Buffer.alloc(server, numFrames, 1,{|buf|
+					done[i] = 0; // when sum of done is zero, all buffers have been allocated
+					if (done.sum==0) {  {action.value(this)}.defer(0.01) }; // fails without defer
+				}, bufnum+i);
+			)
+		};
+	}
+
+	// finish by swapping out and freeing old buffers
+	cleanupRecord{|latency|
+		if (buffers != recordBuffers) { buffers.do{|b| b.freeWithLatency(latency)}; "Free".postln };
+		buffers = recordBuffers;
+		playbackBuffers = recordBuffers;
+		recordBuffers = nil;
+	}
+
+	// update sampleData with the soundfile at path
+	updateSampleData{|path|
+		var soundFile = SoundFile();
+		soundFile.openRead(path.standardizePath); // why does only standardizePath work?
+		sampleData  = FloatArray.fill(numFrames*numChannels,0); // causes lates with large samples
+		soundFile.readData(sampleData); // fast but causes lates
+	}
+
+	// update buffer to a local file with the filename path ////////////////////////////////////////////////////
+
+	updateTempToLocalFile{|argPath|
+		path = argPath;
+	}
+
+	// new from file ///////////////////////////////////////////////////////////////////////////////////////////
 
 	*read {|server,path,action| ^super.new.init(server,path,action) }
 
@@ -94,7 +175,7 @@ LNX_BufferArray {
 					if (done.sum==0) {action.value(this)}
 				}, bufnum+i );
 
-//				// slow but causes less lates
+//				// slow but causes less lates and also unpredicable read fails
 //				Buffer.readChannelByChunk (server, path,0, -1, 0, false, [i], bufnum+i , {|buf|
 //					done[i] = 0; // when sum of done is zero, all buffers have loaded
 //					if (done.sum==0) {action.value(this)}
@@ -103,6 +184,8 @@ LNX_BufferArray {
 
 			)
 		};
+
+		playbackBuffers = buffers;
 
 	}
 
@@ -121,10 +204,14 @@ LNX_BufferArray {
 	getWithRef{|idx,action,ref1,ref2,channel|
 		buffers[channel].getWithRef(idx,action,ref1,ref2)
 	}
+
 	bufnum {|i=0| if (buffers[i].notNil) {^buffers[i].bufnum }{^nil} }
+
+	bufnumPlayback{|i=0| if (playbackBuffers[i].notNil) {^playbackBuffers[i].bufnum }{^nil} }
 
 	free{
 		buffers.asSet.do(_.free);
+		multiChannelBuffer.free;
 		sampleData = nil;
 	}
 
@@ -293,6 +380,14 @@ Buffer.readChannelByChunk(s,"/Users/neilcosgrove/Desktop/acid tracks/walking fro
 
 	}
 
+}
+
+//
+
++ Buffer{
+	freeWithLatency{|latency,completionMessage|
+		server.listSendBundle(latency, [this.freeMsg(completionMessage)] )
+	}
 }
 
 

@@ -227,7 +227,7 @@ LNX_WebBrowser{
 						this.showCasheHTML("LNX_Studio");
 						window.name_("Cashe");
 					} {"http://***LNX_OpenLocalFilesFolder.mp3"} {
-						(LNX_BufferProxy.userPath+/+"READ ME.txt").revealInFinder;
+						(LNX_BufferProxy.userFolder+/+"READ ME.txt").revealInFinder;
 					} {"http://***LNX_Refresh.mp3"} {
 						this.class.refreshUserFiles(action:{
 							this.showCasheHTML("LNX_Studio");
@@ -639,7 +639,7 @@ LNX_WebBrowser{
 						size,
 						" sounds out of ",
 						cashe.size ,
-						" in the cashe� ",
+						" in the cashe... ",
 				"<a href='http://***LNX_DeleteCashe.mp3'>[Delete all cashe files]</a><br/><br/>",
 							text
 					].join;
@@ -675,7 +675,7 @@ LNX_WebBrowser{
 
 					"The Cashe.<br/>There are ",
 					size,
-					" sounds available in the cashe� ",
+					" sounds available in the cashe... ",
 			"<a href='http://***LNX_DeleteCashe.mp3'>[Delete all cashe files]</a><br/><br/>",
 					text
 
@@ -709,7 +709,7 @@ LNX_WebBrowser{
 					"Local Files.<br/>There are ",
 					//userContent.size ,
 					size,
-					" sounds available in local files� " ++
+					" sounds available in local files... " ++
 				"<a href='http://***LNX_OpenLocalFilesFolder.mp3'>[Open local folder]</a>    ",
 					"<a href='http://***LNX_Refresh.mp3'>[Refresh]</a><br/><br/>",
 					text
@@ -755,7 +755,7 @@ LNX_WebBrowser{
 					size,
 					" sounds out of ",
 					userContent.size ,
-					" in local files� ",
+					" in local files... ",
 				"<a href='http://***LNX_OpenLocalFilesFolder.mp3'>[Open local folder]</a>    ",
 					"<a href='http://***LNX_Refresh.mp3'>[Refresh]</a><br/><br/>",
 					text

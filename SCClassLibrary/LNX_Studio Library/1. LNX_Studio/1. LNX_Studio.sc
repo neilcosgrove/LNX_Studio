@@ -322,6 +322,7 @@ LNX_Studio {
 	// send all the instrument UGens to the server, and other misc stuff
 
 	postBootFuncs{
+
 		{
 
 			if (serverBootNo != LNX_AudioDevices.bootNo) {
@@ -334,6 +335,7 @@ LNX_Studio {
 				//fxBuses to be use properly later
 				((LNX_AudioDevices.numFXBusChannels/2).asInt.collect{ Bus.audio(server,2) });
 
+				LNX_BufferArray.serverReboot(server);// make blank buffers
 				LNX_BufferProxy.serverReboot;		// load bufers
 				this.initUGens;						// send studio SynthDefs (Limiter Out)
 				instTypes.do(_.initUGens(server));  // init all instrument uGens
@@ -384,7 +386,7 @@ LNX_Studio {
 		instOutGroup    = Group(eqGroup,\addAfter);         // the inst out group for levels & outs
 		fxGroup         = Group(instOutGroup,\addAfter);    // the effects
 		sideGroup       = Group(fxGroup,\addAfter);			// the effects
-		channelOutGroup = Group.after(sideGroup);             // the channel outputs
+		channelOutGroup = Group.after(sideGroup);           // the channel outputs
 
 		groups = (
 			\lfo:			lfoGroup,

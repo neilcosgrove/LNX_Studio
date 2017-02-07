@@ -1425,7 +1425,6 @@
 		{
 			//.focusColor_(Color(0.5,0.5,1))
 			gui[\ok].view.canFocus_(true).focus.keyUpAction_{|me,char,mod,uni,keycode,key|
-				[me,char,mod,uni,keycode,key].postln;
 				// return
 				if (key==16777220) { gui[\ok].down_(true); this.doQuit };
 				// escape

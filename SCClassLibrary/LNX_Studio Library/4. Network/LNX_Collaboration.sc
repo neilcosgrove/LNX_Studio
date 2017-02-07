@@ -845,7 +845,7 @@ LNX_Collaboration{
 		// Invite to... text
 		StaticText(window,Rect(284+x-200+6-20,436+y+40,180+20,18))
 			.canFocus_(false)
-			.string_("Invite to a collaboration in�").align_(\right).stringColor_(Color.black)
+			.string_("Invite to a collaboration in..").align_(\right).stringColor_(Color.black)
 			.font_(GUI.font.new("Helvetica",12));
 
 		// location to go on invite

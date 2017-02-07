@@ -20,7 +20,7 @@ MVC_PipeLampView : MVC_View {
 
 	var call=0; // used to tag last update to stop lamp turning off in mid noteOn
 
-	var <notesOn, <>border=false, <>mouseWorks=false, <down=false, <>insetBy=0;
+	var <notesOn, <>border=false, <>mouseWorks=false, <down=false, <>insetBy=0, <>insetBy2=0, <>border2=false;
 
 	var lazyRefresh, <>doLazyRefresh=true;
 
@@ -28,7 +28,7 @@ MVC_PipeLampView : MVC_View {
 	initView{
 		colors=colors++(
 			'background'	: Color.ndcLampBG,
-			'border'		: Color.ndcLampBorder,
+			'border'		: Color.black,
 			'on'			: Color.yellow,
 			'off'			: Color.black
 		);
@@ -48,7 +48,7 @@ MVC_PipeLampView : MVC_View {
 					Pen.smoothing_(true);
 
 					if (border) {
-						Color.black.set;
+						colors[\border].set;
 						Pen.fillOval(Rect(0,0,w,h).insetBy(insetBy))
 					};
 
@@ -68,7 +68,12 @@ MVC_PipeLampView : MVC_View {
 					};
 
 					if (border) {
-						Pen.fillOval(Rect(0,0,w,h).insetBy(insetBy+1.5));
+						Pen.fillOval(Rect(0,0,w,h).insetBy(insetBy+1.5+insetBy2));
+						if (border2) {
+							Color.black.set;
+							Pen.width_(1.5);
+							Pen.strokeOval(Rect(0,0,w,h).insetBy(insetBy+1.5+insetBy2))
+						};
 					}{
 						Pen.fillOval(Rect(0,0,w,h));
 					};

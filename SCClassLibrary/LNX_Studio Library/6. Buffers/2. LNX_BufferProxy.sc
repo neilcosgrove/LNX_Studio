@@ -7,7 +7,7 @@
 
 LNX_BufferProxy {
 
-	classvar <cashePath, <>verbose=false, <userPath, <trash;
+	classvar <cashePath, <>verbose=false, <userFolder, <tempFolder, <trash;
 
 	classvar <containers, <paths, tempPaths, <>rebootFunc;
 
@@ -19,14 +19,18 @@ LNX_BufferProxy {
 	var <models, <sampleData, <resolution=200;
 
 	*initClass {
-		cashePath = "~/".absolutePath +/+ "music/LNX_Studio Sample Cache";
-		containers=[];
-		paths=[];
-		trash=[];
 
-		userPath = cashePath +/+ "file";
+		containers = []; // the list of all LNX_BufferProxy(s) that need reloading on a server reboot
+		paths      = []; // a list of paths already loaded - checked against so a buffer isn't loaded more than once
+		trash      = []; // buffers are initally moved to trash when freed. emptyTrash is called later to really free
 
-		if (userPath.pathExists(false).not) { userPath.makeDir }; // make the dir
+		cashePath  = "~/".absolutePath +/+ "music/LNX_Studio Sample Cache";
+		userFolder = cashePath +/+ "file"; // local folder where all user files are
+		tempFolder = cashePath +/+ "temp"; // local folder used as a temp folder
+
+		if (userFolder.pathExists(false).not) { userFolder.makeDir }; // make the dir
+		if (tempFolder.pathExists(false).not) { tempFolder.makeDir }; // make the dir
+
 
 		[
 			"LNX_Studio Local Sound Folder",
@@ -36,7 +40,7 @@ LNX_BufferProxy {
 			"will be available in LNX_Studio.",
 			"If you wish to use this content in a collaboration make sure all users",
 			"have the same content in this folder."
-		].saveList(userPath+/+"READ ME.txt");
+		].saveList(userFolder+/+"READ ME.txt");
 
 	}
 
@@ -51,24 +55,54 @@ LNX_BufferProxy {
 		this.initInstance;
 		this.initModels;
 
-		models[\percentageComplete].value_(-3);
+		models[\percentageComplete].value_(-3); // finished loading
 
 		// source is url & make a filename path from the url
 		source = \new;
 		server = argServer ? Server.default;
-		url    = "";
-		path   = "";
-		dir    = "";
-		name   = "empty";
-		convertedPath = "";
+		path   = (Date.getDate.stamp) + (this.hash.asString) ++ ".aiff";
+		url    = "temp://"++path;
+		dir    = path.dirname;
+		name   = path.basename;
+		convertedPath = tempFolder +/+ path;
 		sampleData = [0];
 
-		paths  = paths.add(path);
+		paths  = paths.add(path); // for loading on reboot (to check)
 
-		buffer = LNX_BufferArray.new(server, numFrames, numChannels, sampleRate,
-			action: { argAction.value(this) } );
+		buffer = LNX_BufferArray(server, path, numFrames, numChannels, sampleRate, {
+			argAction.value(this)
+		});
 
 		this.loaded;
+	}
+
+	nextRecord{|server, action|	buffer.nextRecord(server, action) } // alloc buffers for recording
+	cleanupRecord{|latency|
+		source = \temp; // buffer now temp
+		buffer.cleanupRecord(latency);
+
+	} 	// finish by swapping out and freeing old buffers
+
+	updateSampleData{|path|		buffer.updateSampleData(path) } 	// update sampleData with the soundfile at path
+
+	recordBuffers{ ^buffer.recordBuffers }
+	multiChannelBuffer{ ^buffer.multiChannelBuffer }
+	bufnumPlayback{|i| ^buffer.bufnumPlayback(i)}
+
+	// new to local url /////////////////////////////////////////////////////
+
+	// update buffer to a local(url) file with the filename path
+	updateTempToLocalFile{|argPath,argURL|
+		var i    = paths.indexOfString(path);
+		source   = \url;
+		url      = argURL;
+		path     = argPath;
+		paths[i] = path;
+		name     = path.basename;
+		dir      = path.dirname;
+		convertedPath = path;
+
+		buffer.updateTempToLocalFile(path);
 	}
 
 	// from a URL /////////////////////////////////////////////////////////////
@@ -80,6 +114,8 @@ LNX_BufferProxy {
 	// this only inits a url, the loading is done in init called at the bottom
 	initURL{|argServer, argURL, argCompletionFunc, replace=false|
 
+		var isLocal;
+
 		this.initInstance;
 		this.initModels;
 
@@ -87,6 +123,7 @@ LNX_BufferProxy {
 		source = \url;
 		server = argServer ? Server.default;
 		url    = argURL;
+		isLocal= (url[..6]=="file://")||(url[..6]=="temp://");
 		path   = cashePath +/+ url.replace("://","/");
 		path   = path.replace("%20", " ");
 		dir    = path.dirname;
@@ -123,11 +160,19 @@ LNX_BufferProxy {
 				};
 			};
 		}{
-			this.requestDownload(replace);
+
+			if (isLocal) {
+				models[\percentageComplete].value_(-4.5);
+				// it's a missing local file
+				// and stops trying to download it
+			}{
+				// it's a missing on line file
+				this.requestDownload(replace);
+			};
 		};
 
 		// use init to load the path / soundFile
-		this.init( server, path, { completionFunc.value(this) } );
+		this.init( server, path, { completionFunc.value(this) }, isLocal );
 
 	}
 
@@ -170,6 +215,8 @@ LNX_BufferProxy {
 	}
 
 	// this is a class method to load all buffers
+
+	// this might double client buffers on reboot!!!!
 	*recursiveLoad{|i|
 		var ifPresentIndex, buf;
 		if (i<containers.size) {
@@ -241,7 +288,7 @@ LNX_BufferProxy {
 	isLoaded{ ^buffer.isNil.not }
 
 	// where as this is an instance method and loads just one buffer
-	init{|argServer, argPath, argAction|
+	init{|argServer, argPath, argAction, isLocal=false|
 
 		var ifPresentIndex=false;
 
@@ -264,10 +311,21 @@ LNX_BufferProxy {
 
 					if (verbose) { "Loaded: ".post; path.postln }; // useful but annoying
 				}{
-					if (source==\file) {
-						if (verbose) { "Init failed, couldn't find: ".post; path.postln };
+
+					if (isLocal) {
+						buffer=LNX_BufferArray.missing(server, this.actualPath, action: {|buf|
+							argAction.value; // what is this for?
+										// it is only used in recursiveLoad
+						});
+
+						this.loaded;
+
 					}{
-						if (verbose) { "Not found in cashe: ".post; path.postln };
+						if (source==\file) { // this refers to the original samples used in GSR
+							if (verbose) { "Init failed, couldn't find: ".post; path.postln };
+						}{
+							if (verbose) { "Not found in cashe: ".post; path.postln };
+						};
 					};
 				};
 			}{
@@ -410,7 +468,7 @@ LNX_BufferProxy {
 	}
 
 	*fetchUserContent{|action|
-		FolderContents.fetchFolderContents(userPath,inf,{|contents|
+		FolderContents.fetchFolderContents(userFolder,inf,{|contents|
 				action.value(contents.select(_.isLNXSoundFile));
 		});
 	}
@@ -439,7 +497,7 @@ LNX_BufferProxy {
 	/////////////////////////
 
 	*nonUserContent{
-		var tempString = (userPath++"/").toLower;
+		var tempString = (userFolder++"/").toLower;
 		^(cashePath++"/").folderContents(0).select{|f| f.toLower!=tempString};
 	}
 
@@ -464,11 +522,11 @@ LNX_BufferProxy {
 	///////////////////
 
 	*userContent{
-		^userPath.folderContents.select(_.isLNXSoundFile)
+		^userFolder.folderContents.select(_.isLNXSoundFile)
 	}
 
 	*easyUserContent{
-		var size=userPath.size- ("file".size);
+		var size=userFolder.size- ("file".size);
 		^this.userContent.collect{|s|
 			s = s[size..].split;
 			s[0] = s[0] ++ ":/";
