@@ -76,16 +76,6 @@ LNX_BufferProxy {
 		this.loaded;
 	}
 
-	makeTemp{|server,argPath|
-		source = \temp; // buffer now temp
-		path   = argPath ?? {(Date.getDate.stamp) + (this.hash.asString) ++ ".aiff"};
-		url    = "temp://"++path;
-		dir    = path.dirname;
-		name   = path.basename;
-		convertedPath = tempFolder +/+ path;
-		buffer.makeTemp(server,path);
-	}
-
 	nextRecord{|server, action|	buffer.nextRecord(server, action) } // alloc buffers for recording
 
 	cleanupRecord{|latency|
@@ -100,11 +90,32 @@ LNX_BufferProxy {
 	multiChannelBuffer{ ^buffer.multiChannelBuffer }
 	bufnumPlayback{|i| ^buffer.bufnumPlayback(i)}
 
-	// new to local url /////////////////////////////////////////////////////
+	// change buffer types /////////////////////////////////////////////////////
 
-	// update buffer to a local(url) file with the filename path
+	// change a url to temp (used after loading because url is used to load sample)
+	makeTemp{|server,argPath|
+		source = \temp; // buffer now temp
+		path   = argPath ?? {(Date.getDate.stamp) + (this.hash.asString) ++ ".aiff"};
+		url    = "temp://"++path;
+		dir    = path.dirname;
+		name   = path.basename;
+		convertedPath = tempFolder +/+ path;
+		path   = convertedPath;
+
+		buffer.makeTemp(server,convertedPath);
+	}
+
+	// upgrde a temp buffer to a local(url) file with the filename path
 	updateTempToLocalFile{|argPath,argURL|
 		var i    = paths.indexOfString(path);
+
+		if (i.isNil) {
+			"Save failed, this shouldn't have happened".warn;
+			[i,path,argPath,argURL].postln;
+			paths.postList;
+			^this;
+		};
+
 		source   = \url;
 		url      = argURL;
 		path     = argPath;

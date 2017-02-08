@@ -95,7 +95,7 @@ LNX_BufferArray {
 
 	}
 
-	// make a url into a temp
+	// make a url into a temp (used when loading)
 	makeTemp{|server,argPath|
 		var bufnum;
 		path = argPath;
