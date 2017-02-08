@@ -156,6 +156,7 @@ MVC_TabbedView {
 		view.action_{|me|
 				value=me.value;
 				action.value(me);
+				view.views[value].refresh;
 			}
 			.onClose_{ onClose.value(this) }
 			.value_(value);
