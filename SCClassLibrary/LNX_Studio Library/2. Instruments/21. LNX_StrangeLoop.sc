@@ -207,14 +207,14 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[0, [-48,48,\linear,1],  (label_:"Transpose", numberFunc_:\intSign), midiControl, 12, "Transpose",
 				{|me,val,latency,send|
 					this.setPVPModel(12,val,latency,send);
-					if (mode===\marker) { this.marker_changeRate };
+					if (mode===\marker) { this.marker_changeRate(latency) };
 			}],
 
 			// 13. fine  -1 to 1
 			[0, [-1,1],  (label_:"Fine", numberFunc_:\float2Sign), midiControl, 13, "Fine",
 				{|me,val,latency,send|
 					this.setPVPModel(13,val,latency,send);
-					if (mode===\marker) { this.marker_changeRate };
+					if (mode===\marker) { this.marker_changeRate(latency) };
 			}],
 
 			// 14. clip, fold or wrap
@@ -702,7 +702,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_MyKnob3(gui[\scrollView], models[23], Rect(725, 468, 28, 28), gui[\knobTheme1]);
 
 		// 30. reset / latch
-		gui[\latchReset] = MVC_MyKnob3(gui[\scrollView], models[30], Rect(785, 468, 28, 28), gui[\knobTheme1]);
+		gui[\latchReset] = MVC_MyKnob3(gui[\scrollView], models[30], Rect(785, 468, 28, 28), gui[\knobTheme1])
+			.resoultion_(2);
 
 		// 24. repeat prob
 		MVC_MyKnob3(gui[\scrollView], models[24], Rect(605, 405, 28, 28), gui[\knobTheme1]);
