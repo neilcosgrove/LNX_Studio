@@ -18,7 +18,7 @@ LNX_A2M : LNX_InstrumentTemplate {
 	isInstrument	{^true}						// does this need to be true?
 	isMIDI			{^true}						// has midi out
 	canBeSequenced	{^false}					// doesn't have a sequencer
-	mixerColor{^Color(0.75,0.75,1,0.4)} 		// colour in mixer
+	mixerColor{^Color(0.65,0.65,1,0.4)*0.9} 	// colour in mixer
 	onColor			{^Color(0.5,0.7,1)}			// Mixer on button colour
 	alwaysOnModel	{^models[4]}				// always on model
 	alwaysOn		{^models[4].isTrue}			// am i? used by melody maker to change onOff widgets

@@ -94,6 +94,7 @@ LNX_StartUp {
 	*osxStartUp{
 		hasWindowMenus = false;
 		Server.quitAll;
+		"scsynth".killApp;
 		studio = LNX_Studio(Server.local); 	// start the studio, use local server
 //		studio = LNX_Studio(Server.internal); // start the studio, use internal server
 		LNX_AppMenus.studio_(studio); // so menus can access studio
