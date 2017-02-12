@@ -390,7 +390,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		if (mode===\marker ) {
 			this.marker_clockIn3(instBeat,absTime3,latency,beat); // SHOULD BE BELOW SEQ BUT CAUSE HELD MARKERS
-			if (p[18].isFalse) { sequencer.clockIn3(beat,absTime,latency,beat) };
+			if (p[18].isFalse) { sequencer.clockIn3(instBeat,absTime,latency,beat) };
 			^this
 		};
 
