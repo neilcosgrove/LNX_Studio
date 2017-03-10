@@ -221,7 +221,7 @@
 					Rect(bounds.left, bounds.top-6+1, 60, 16))
 					.items_(["Edit","-","Copy","Paste",
 							"Select All","-","Quantise","-","Delete",
-							"-","Fit to window","Exit Full Screen"])
+							"-", "Import MIDI File", "Export MIDI File", "-", "Fit to window","Exit Full Screen"])
 					.color_(\background,colors[\boxes])
 					.color_(\string,Color.white)
 					.canFocus_(false)
@@ -233,8 +233,9 @@
 							{ 4} {this.guiSelectAll }
 							{ 6} {this.quantise(notesSelected) }
 							{ 8} {this.guiDelete }
-							{ 10} {this.fitToWindow }
-							{ 11} {
+							{10} {Dialog.openPanel({|path| this.importMIDIFile(path) })}
+							{13} {this.fitToWindow }
+							{14} {
 								if (gui2.isNil) {
 									this.guiFullScreen;
 								}{
@@ -255,6 +256,7 @@
 				gui[\menu]=MVC_PopUpMenu3(window,
 					Rect(bounds.left, bounds.top-6+1, 60, 16))
 					.items_(["Copy","Paste","Select All","-","Quantise","-","Delete",
+							"-", "Import MIDI File", "Export MIDI File",
 							"-","Fit to window","Full Screen"])
 					.color_(\background,colors[\boxes])
 					.color_(\string,Color.white)
@@ -269,8 +271,10 @@
 							{ 2} {this.guiSelectAll }
 							{ 4} {this.quantise(notesSelected) }
 							{ 6} {this.guiDelete }
-							{ 8} {this.fitToWindow }
-							{ 9} {
+							{ 8} {Dialog.openPanel({|path| this.importMIDIFile(path) })}
+							{ 9} {"To do".warn}
+							{11} {this.fitToWindow }
+							{12} {
 								if (gui2.isNil) {
 									this.guiFullScreen;
 								}{
@@ -773,56 +777,9 @@
 		(View.currentDrag.isArray)and:{View.currentDrag[0].isString}
 	}
 
-	/*
-	f = SimpleMIDIFile.read("/Users/neilcosgrove/Desktop/xmas/wonderful_christmas_time.mid");
-	f.tempoMap
-	f = SimpleMIDIFile.read("/Users/neilcosgrove/Desktop/xmas/chords.mid");
-	f.usedTracks.collect{|t| t.asString ++"."+  f.trackName(t).stripRTF };
-
-	*/
-
 	.receiveDragHandler_{
-		var file;
-		var tempoAdjust=24;
-		// is the 1st item a string?
 		if ((View.currentDrag.isArray)and:{View.currentDrag[0].isString}) {
-			// try opening path as a midi file
-			{file = SimpleMIDIFile.read( View.currentDrag[0] ) }.try;
-			if (file.notNil) {
-
-				// make a window
-				var win=MVC_Window("Import track")
-					.setInnerExtent(200,320)
-					.color_(\background, Color.grey(0.2))
-					.alwaysOnTop_(true)
-					.create;
-
-				// and show which tracks we can import
-				MVC_ListView2(win,Rect(10,10,180,275))
-					.items_(file.usedTracks.collect{|t|
-						t.asString ++"."+  (file.trackName(t)?"").stripRTF })
-					.actions_(\upDoubleClickAction,{|me|
-						file.asNoteDicts(track:(file.usedTracks[me.value])).collect{|note|
-							[note[\note],
-							note[\absTime]/tempoAdjust,
-							note[\dur]/tempoAdjust,
-							note[\velo]/127]
-						}.do{|note|
-							this.addNote(*note);
-						};
-						win.close;
-					});
-
-				// scale the tempo by this
-				MVC_NumberBox(win,Rect(110,291,50,18))
-					.orientation_(\horizontal)
-					.labelShadow_(false)
-					.label_("Scale tempo")
-					.value_(tempoAdjust)
-					.action_{|me|
-						tempoAdjust=me.value;
-					};
-			};
+			this.importMIDIFile(View.currentDrag[0])
 		}
 	};
 
@@ -933,6 +890,57 @@
 		};
 
         lazyRefresh.refreshFunc_{ if (gui.notNil) { gui[\notesPosAndMouse].refresh } };
+
+	}
+
+
+	/*
+	f = SimpleMIDIFile.read("/Users/neilcosgrove/Desktop/xmas/wonderful_christmas_time.mid");
+	f.tempoMap
+	f = SimpleMIDIFile.read("/Users/neilcosgrove/Desktop/xmas/chords.mid");
+	f.usedTracks.collect{|t| t.asString ++"."+  f.trackName(t).stripRTF };
+
+	*/
+
+	importMIDIFile{|path|
+
+		var file;
+		var tempoAdjust=24;
+
+		// try opening path as a midi file
+		{file = SimpleMIDIFile.read( path ) }.try;
+		if (file.notNil) {
+
+			// make a window
+			var win=MVC_Window("Import track")
+				.setInnerExtent(200,320)
+				.color_(\background, Color.grey(0.2))
+				.alwaysOnTop_(true)
+				.create;
+
+			// and show which tracks we can import
+			MVC_ListView2(win,Rect(10,10,180,275))
+				.items_(file.usedTracks.collect{|t| t.asString ++"."+  (file.trackName(t)?"").stripRTF })
+			.actions_(\upDoubleClickAction,{|me|
+				file.asNoteDicts(track:(file.usedTracks[me.value])).collect{|note|
+					[note[\note],
+						note[\absTime]/tempoAdjust,
+						note[\dur]/tempoAdjust,
+						note[\velo]/127]
+				}.do{|note|
+					this.addNote(*note);
+				};
+				win.close;
+			});
+
+			// scale the tempo by this
+			MVC_NumberBox(win,Rect(110,291,50,18))
+				.orientation_(\horizontal)
+				.labelShadow_(false)
+				.label_("Scale tempo")
+				.value_(tempoAdjust)
+				.action_{|me| tempoAdjust=me.value };
+		};
 
 	}
 
