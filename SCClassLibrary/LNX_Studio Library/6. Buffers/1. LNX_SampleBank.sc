@@ -120,8 +120,6 @@ LNX_SampleBank{
 		otherModel[\pos]  = \bipolar.asModel.value_(-1); // -1 is not playing
 		otherModel[\pos2] = \bipolar.asModel.value_(-1); // -1 is not playing
 
-
-
 		metaModels = metaModels.add(metaModel);
 		otherModels=otherModels.add(otherModel);
 
@@ -350,6 +348,12 @@ LNX_SampleBank{
 		selectSampleFuncs=Set[]; // select sample func for each gui
 	}
 
+	// has temp files that might need saving
+	hasTempFiles{ ^samples.select{|buf| buf.source==\temp}.size>0}
+
+	// the temp files
+	tempFiles{ ^samples.select{|buf| buf.source==\temp}	}
+
 	////////////// load ///////////////////
 
 	// load a bank only from a dialog, clears what was there previously
@@ -517,6 +521,23 @@ LNX_SampleBank{
 	}
 
 	// new empty buffer ////////////////////////////////////////////////////////////////////////////
+
+	// not networked
+	revertTempToNew{|index|
+		var buffer		= this[index];
+		var server		= buffer.server;
+		var numFrames	= buffer.buffer.numFrames;
+		var numChannels = buffer.buffer.numChannels;
+		var sampleRate	= buffer.buffer.sampleRate;
+		var newBuffer   = LNX_BufferProxy(server, numFrames, numChannels, sampleRate, {});
+		var path		= newBuffer.path;
+		var metaModel   = this.metaModel(index);
+		samples[index]	= newBuffer;
+		metaModel[\name].string_(path.basename);
+
+		if (selectedSampleNo == index) { this.allInterfacesSelect(index,false,false) };
+
+	}
 
 	guiNewBuffer{|numFrames=44100, numChannels=2, sampleRate=44100, select=true, length|
 		api.groupCmdOD(\netNewBuffer, numFrames, numChannels, sampleRate, select, length, network.thisUser.id);

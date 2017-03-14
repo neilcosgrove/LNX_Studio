@@ -6,6 +6,8 @@
 
 // fit pitch to fit
 
+// is there a way to play other samples so we can swap out while playing a loop
+
 LNX_MarkerEvent {
 	var <>markerNo, <>deltaBeats, <>offset, <>startFrame, <>durFrame;
 	*new     {|markerNo, deltaBeats, offset, startFrame, durFrame|

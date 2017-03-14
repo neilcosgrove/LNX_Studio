@@ -9,14 +9,13 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
+low & high pass
+rand or rev on pRoll, what about poly?
+use the same sample more than once in bank
 syncDelay
-max is a reset instead
 when you enter your bpm with keyboard, length should change
-new sample default is current song bpm
-what if each marker could snd out its own midi
-new sample length (n) beats (mono/stereo)
+new sample (mono/stereo)
 record audio - many sources (level in) (overdub,replace)
-	transfer data from server to sclang via a temp file
 save names in cashe / dialog ?
 playback bpm [div 2] [*2] buttons
 quantise options
@@ -27,19 +26,13 @@ zeroX or peak
 where does sample metadata sit
 proll has dark patches for out of range
 marker metadata ie default
-markers can clip, wrap or rev
-markers have colour
-this might need a buffer and a voicer
 attack decay envelope
 
 BUGS: !!!
 ---------
 need to put latency sync in
-aliasing when scrolling
 focus is lost when adding samples now
 space bar is playing wrong sample on load
-still release problems when swapping over from hold or stopping
-loading a buffer from a file that doesn't exist
 deleting all buffers while playing
 
 Done
@@ -73,10 +66,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <repeatNoE=0,		<repeatRateE=0,	<repeatAmpE=1;
 
 	var <guiModeModel,		<previousMode,	<currentRateAdj=1;
-
-	var <recordBus,			<cueRecord=false;
-
-	var <voicer;
+	var <voicer,			<recordBus,		<cueRecord=false;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -99,6 +89,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	sendChModel 	 {^models[7]}
 	sendAmpModel	 {^models[8]}
 	syncModel   	 {^models[10]}
+
+	// a list of sample banks that could have samples that need saving
+	saveBanks{^[sampleBank]}
 
 	header {
 		// define your document header details
@@ -197,9 +190,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				{|me,val,latency,send|
 					this.setPVPModel(11,val,latency,send);
 					relaunch = true;
-
 					// i still need this below...
-
 					sampleBank.allInterfacesSelect(val,false);
 			}],
 
@@ -351,7 +342,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}
 			//.releaseAllAction_{ seqOutBuffer.releaseAll(studio.actualLatency) }
 			.releaseAllAction_{ voicer.releaseAllNotes(studio.actualLatency +! syncDelay) }
-
 			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 				//keyboardView.view.keyDownAction.value(me,char, modifiers, unicode, keycode, key)
 			}
@@ -384,7 +374,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		if (mode===\repitch) {
 			this.pitch_clockIn3(instBeat,absTime3,latency,beat);
-			//if (p[18].isFalse) { sequencer.clockIn3(beat,absTime,latency,beat) }; // i want pRoll 2nd for repeat reasons
 			^this
 		};
 
@@ -397,23 +386,19 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	}
 
 	// and these events need to happen with latency
-
 	clockStop{|latency|
-		voicer.killAllNotes(studio.actualLatency +! syncDelay);
-
-		sequencer.do(_.clockStop(studio.actualLatency +! syncDelay));
-
-		seqOutBuffer.releaseAll(studio.actualLatency +! syncDelay);
+		voicer.killAllNotes     (studio.actualLatency +! syncDelay);
+		sequencer.do(_.clockStop(studio.actualLatency));
+		seqOutBuffer.releaseAll (studio.actualLatency); // with syncDelay ? to check
 
 		this.marker_stopPlay;
 		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
 	}
 
 	clockPause{|latency|
-		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
-
+		voicer.releaseAllNotes   (studio.actualLatency +! syncDelay);
 		sequencer.do(_.clockPause(studio.actualLatency));
-		seqOutBuffer.releaseAll(studio.actualLatency);
+		seqOutBuffer.releaseAll  (studio.actualLatency); // with syncDelay ? to check
 		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
 	}
 
@@ -424,15 +409,14 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	stopDSP{
 		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
-		voicer.killAllNotes(studio.actualLatency +! syncDelay);
+		voicer.killAllNotes   (studio.actualLatency +! syncDelay);
 	}
 
 	updateOnSolo{|latency|
 		if (this.isOn) { ^this }; // is on exception, below is done when off
-		voicer.releaseAllNotes(studio.actualLatency +! syncDelay);
-
+		voicer.releaseAllNotes  (studio.actualLatency +! syncDelay);
 		sequencer.do(_.clockStop(studio.actualLatency));
-		seqOutBuffer.releaseAll(studio.actualLatency);
+		seqOutBuffer.releaseAll (studio.actualLatency);
 		this.marker_stopPlay;
 		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
 

@@ -81,6 +81,9 @@
 	inModel{^nil}
 	inChModel{^nil}
 
+	// a list of sample banks that could have samples that need saving
+	saveBanks{^[]}
+
 	// your own vars
 	iInitVars{}
 

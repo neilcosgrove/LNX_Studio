@@ -4,6 +4,8 @@
 
 /*
 
+ALL DO FOR SAVE at mo only SAVE AS
+
 types new, file, url & MISSING
 also need for when missing on-line
 
@@ -12,8 +14,7 @@ do i need a new buffer everytime so old isn't recorded over while played and rec
 how does this play out
 server restart, saving songs, network
 
-do a wet/dry mix
-overdub or mix
+do a wet/dry mix (overdub or mix) - good
 
 empty temp folder
 
@@ -65,9 +66,143 @@ exclude temp from file dialog
 // make a dialog here.
 // WHEN A SONG IS SAVED and any temp files are left, they are auto saved
 
+
+Auto Save All
+Discard All
+Review Samples
+
+// Auto save, discard, save
+
+
 */
 
++ LNX_Studio {
+
+	// gui [ suggestedName, play, save or delete]
+
+	// GUI needs to be a singleton
+
+	// check if file exists
+
+	// AUTO SAVE or Discard
+
+	reviewBufferSaves{|bufferInstBankDict|
+		// ( buffer: [inst, bank, indexOfBuffer] )
+		var date      = Date.getDate.stamp;
+		var songName  = (this.name.size==0).if("LNX_Studio",this.name);
+		var startPath = "LNX_Songs" +/+ songName ++ "/";
+		var info      = bufferInstBankDict.collect{|list,buffer|
+			var instNo   = list[0].instNo;
+			var instName = list[0].name;
+			var bufNum   = list[2];
+			var path     = startPath ++ (instNo+1) ++ "." ++ instName ++ "(" ++ (bufNum+1) ++ ")" + date; // ++ ".aiff";
+			[
+				path.asModel,		// 0: path model
+				\switch.asModel,    // 1: 0=save, 1=delete
+				buffer,				// 2: buffer
+				list[0],			// 3: inst
+				list[1],			// 4: bank
+				instNo,				// 5: instNo
+				instName,			// 6: instName
+				bufNum,				// 7: buffer number
+				date,				// 8: date
+				startPath			// 9: start part of path
+			]
+		}.asList.sort{|a,b| (a[5]==b[5]).if{ a[7]<=b[7] }{ a[5]<=b[5] }};
+
+		var window, guiTextField;
+		var gui = IdentityDictionary[];
+		var size = info.size;
+
+		gui[\onOffTheme2] = ( \rounded_: true, \colors_: ( \on: Color(1,1,1,0.5), \off: Color(1,1,1,0.5)));
+
+		gui[\onOffTheme1] = ( \rounded_: true, \colors_: ( \off: Color(0.5,1,0.5,0.66), \on: Color(1,0.5,0.5,0.66)));
+
+		// for path
+		gui[\textTheme1]= (	labelShadow_: false, shadow_:false, canEdit_:true, hasBorder_:true, enterStopsEditing_:false,
+							\font_:	  Font("Helvetica", 13,true),
+							\colors_:  ( \label:Color.black, \edit:Color.white, \editBackground:Color(0,0,0,0.6),
+										\string:Color.black,
+										\cursor:Color.orange, \focus:Color(0,0,0,0.1),  \background:Color(0,0,0,0.3) ));
+
+		gui[\textTheme2]= (	labelShadow_: false, shadow_:false, canEdit_:false,
+							\font_:	  Font("Helvetica", 13,true),
+							\colors_:  ( \label:Color.black, \string:Color.black));
+
+		window = MVC_ModalWindow(mixerWindow, 700@((size*20).clip(0,390)+99), (
+			background: 	Color(59/77,59/77,59/77),
+			border2: 		Color(6/11,42/83,29/65),
+			border1: 		Color(3/77,1/103,0,65/77),
+			menuBackground:	Color(1,1,0.9)
+		));
+		gui[\scrollView] = window.scrollView;
+
+		// text field for the instrument / filename
+		MVC_StaticText(gui[\scrollView], Rect(10,3,655,16), gui[\textTheme2])
+			.align_(\center)
+			.string_("There are samples in this song thats haven't been saved yet.");
+
+		MVC_StaticText(gui[\scrollView], Rect(10,21,655,16), gui[\textTheme2])
+			.font_(Font("Helvetica", 13))
+			.string_("What do you want to do with them?");
+
+		gui[\infoScrollView] = MVC_ScrollView(gui[\scrollView], Rect(10,40,655,(size*20).clip(0,390)+3) )
+			.hasBorder_(true)
+			.color_(\background, Color(0.9,0.9,0.9));
+
+		info.do{|list,i|
+			// path
+			MVC_Text(list[0], gui[\infoScrollView], Rect(2,2+(i*20),550,16), gui[\textTheme1]);
+
+			// play
+			MVC_OnOffView(gui[\infoScrollView], Rect(555,1+(i*20),40,18),"Play", gui[\onOffTheme2])
+				.action_{ list[2].play };
+
+			// save discard
+			MVC_OnOffView(list[1], gui[\infoScrollView], Rect(598,1+(i*20),53,18), gui[\onOffTheme1] )
+				.strings_(["Save","Discard"])
+		};
+
+		// Cancel
+		MVC_OnOffView(gui[\scrollView], Rect(564, (size*20).clip(0,390)+50, 55, 20),"Cancel", gui[\onOffTheme2])
+			.action_{ window.close };
+
+		// Ok
+		MVC_OnOffView(gui[\scrollView], Rect(624, (size*20).clip(0,390)+50, 50, 20),"Ok", gui[\onOffTheme2])
+		.action_{
+			Dialog.savePanel{|path|
+				var baseName = path.basename.removeExtension.replace(":","");
+				var newStartPath= "LNX_Songs" +/+ baseName ++ "/";
+				info.do{|list|
+					var inst    = list[3];
+					var bank 	= list[4];
+					var bufNum	= list[7];
+					if (list[1].isFalse) {
+						var newName = list[0].string;
+						if (newName.beginsWith(startPath)) { newName = newStartPath ++ (newName.drop(startPath.size)) };
+						inst.updateTempToLocalFile(bufNum, bank[bufNum], newName);
+
+					}{
+						inst.revertTempToNew(bufNum, bank[bufNum]);
+					};
+
+				};
+				this.save(path);
+			};
+			window.close;
+		};
+	}
+
+}
+
 + LNX_StrangeLoop {
+
+	// should be in sampleBank ??
+
+	// used in discard when saving
+	revertTempToNew{|index|
+		sampleBank.revertTempToNew(index);
+	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -91,7 +226,7 @@ exclude temp from file dialog
 		if (buffer.convertedPath.pathExists!=\file)
 											{ "Temporary file doesn't exist".warn; ^this }; // no file exception
 
-		if ((buffer.source==\new)||(buffer.source==\temp)) {
+		if ((buffer.source==\new)||(buffer.source==\temp)) { // why new here ???
 			var window, scrollView, filename;
 			var songName = (studio.name.size==0).if("LNX_Studio",studio.name);
 			var path= "LNX_Songs" +/+ songName +/+ (this.instNo+1) ++ "." ++ (this.name)
@@ -113,7 +248,7 @@ exclude temp from file dialog
 				.label_("Save buffer as...")
 				.string_(filename)
 				.stringAction_{|me,string|
-				string=string.replace(":",""); // don't allow user to type :
+					string=string.replace(":",""); // don't allow user to type :
 					me.string_(string);
 				}
 				.enterKeyAction_{|me,filename| this.updateTempToLocalFile(index, buffer, filename, {window.close})}
@@ -131,9 +266,15 @@ exclude temp from file dialog
 	}
 
 	// the copy has already happened by here
+
+	// should be in sampleBank ??
+
 	updateTempToLocalFile{|index, buffer, path, func|
-		var url= "file://" ++ path ++ ".aiff";
+		var url  = "file://" ++ path ++ ".aiff";
 		var name = path.basename;
+
+		[index, buffer, path, func].postln;
+
 		path = (LNX_BufferProxy.userFolder +/+ path ++ ".aiff");
 
 		if (PathName(path)
@@ -144,7 +285,7 @@ exclude temp from file dialog
 		// we could use sfcovert here instead of copyTo and use many different sound formats eg.mp3
 		if (buffer.convertedPath.copyFile(path, silent:true)){
 			buffer.convertedPath.removeFile(toTrash:false, ask:false, silent:true);
-			func.value;
+			func.value;								// closes window
 			buffer.updateTempToLocalFile(path,url); // filename is now new local filename
 			sampleBank.name_(index, name);			// update name in sampleBank
 			sampleBankGUI[\path].string_(url);
@@ -244,6 +385,9 @@ exclude temp from file dialog
 
 					// update synth with new buffer numbers
 					this.marker_changeBuffers( sample.bufnum(0), sample.bufnum(1) ,latency);
+					//
+					// Surely this can be done sooner...!
+
 
 				};
 			};
@@ -292,7 +436,9 @@ exclude temp from file dialog
 	*record_initUGens{|server|
 
 		// index for recoring, OffsetOut gives us the correct index to record at
-		SynthDef("SLoopRecordIndex",{|bus=0,rate=1| OffsetOut.ar(bus,Integrator.ar(rate.asAudio)) }).send(server);
+		SynthDef("SLoopRecordIndex",{|bus=0,rate=1|
+			OffsetOut.ar(bus,Integrator.ar(rate.asAudio))
+		}).send(server);
 
 		// we can add to side group to record
 		SynthDef("SLoopRecordStereo",{|inputChannels=0, bufnumL=0, bufnumR=1, multiBuffer=1,
@@ -303,8 +449,8 @@ exclude temp from file dialog
 			var slope   = Slope.ar(index);
 			var signal  = In.ar(inputChannels,2) * (slope>0);
 
-			BufWr.ar(signal[0], bufnumL, index, loop:0);	// left
-			BufWr.ar(signal[1], bufnumR, index, loop:0);	// right
+			BufWr.ar(signal[0],  bufnumL, index, loop:0);	// left
+			BufWr.ar(signal[1],  bufnumR, index, loop:0);	// right
 			BufWr.ar(signal, multiBuffer, index, loop:0);	// and stereo (the multi-channel for saving)
 
 			DetectSilence.ar(Slope.ar(index+refindex), doneAction:3); // ends when index & fake slope = 0

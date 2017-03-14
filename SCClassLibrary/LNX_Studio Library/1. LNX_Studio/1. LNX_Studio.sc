@@ -1391,13 +1391,25 @@ LNX_Studio {
 	saveDialog{ if (songPath.notNil) { this.save(songPath) } { this.saveAsDialog } }
 
 	// Save as... user dialog
-
 	saveAsDialog{
-		if (this.isStandalone && LNX_Mode.isSafe) {
-			this.safeModeSaveDialog
+
+		var bufferInstBankDict = IdentityDictionary[];
+
+		insts.do{|inst|
+			inst.saveBanks.do{|bank|
+				var buffers = bank.tempFiles;
+				buffers.do{|buffer|
+					bufferInstBankDict[buffer] = [ inst, bank, bank.samples.indexOf(buffer) ];
+				};
+			};
+		};
+
+		if (bufferInstBankDict.size>0) {
+			this.reviewBufferSaves(bufferInstBankDict);
 		}{
-			Dialog.savePanel({|path| this.save(path)})
-		}
+			Dialog.savePanel({|path| this.save(path)});
+		};
+		//if (this.isStandalone && LNX_Mode.isSafe) { this.safeModeSaveDialog} {};
 	}
 
 	// save this song as path
@@ -1411,7 +1423,8 @@ LNX_Studio {
 		saveList=this.getSaveList;  // get the saveList
 		f = File(path,"w");
 			saveList.do({|i|
-				f.write(i.asString++"\n");
+				f.write(i.asString);
+				f.write("\n");
 			});
 		f.close;
 	}
