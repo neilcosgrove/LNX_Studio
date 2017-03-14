@@ -152,6 +152,10 @@ MVC_StaticText : MVC_View {
 
 		view=UserView(window,rect)
 			.canFocus_(true) // without focus we can't use keyboard
+			.focusLostAction_{
+				this.stopEditing;
+				if (view.notNil) { view.refresh };
+			}
 			.drawFunc_{|me|
 				MVC_LazyRefresh.incRefresh;
 				if (me.hasFocus.not) {this.stopEditing}; // stop editing if we loose focus

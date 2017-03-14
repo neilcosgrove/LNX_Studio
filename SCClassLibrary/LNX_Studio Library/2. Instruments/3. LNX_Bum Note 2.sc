@@ -78,9 +78,12 @@ LNX_BumNote2 : LNX_InstrumentTemplate {
 
 						// seq latch
 						if (p[60].isTrue) {
-							sequencers[3].clockIn(beat,latency);
-							sequencers[4].clockIn(beat,latency);
-							sequencers[5].clockIn(beat,latency);
+							var funcs = [
+								sequencers[3].clockIn(beat,latency),
+								sequencers[4].clockIn(beat,latency),
+								sequencers[5].clockIn(beat,latency)
+							];
+							{ funcs.do(_.value) }.deferIfNeeded;
 						};
 					};
 				},

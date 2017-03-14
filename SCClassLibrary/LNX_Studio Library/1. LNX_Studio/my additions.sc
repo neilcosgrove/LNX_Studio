@@ -328,8 +328,18 @@ gives min, max, averages and total
 }
 
 + Boolean {
-	isTrue {^this==true}
-	isFalse{^this==false}
+ 	isTrue {^this==true}
+ 	isFalse{^this==false}
+ }
+
++ True {
+	isTrue {^true}
+	isFalse{^false}
+}
+
++ False {
+	isTrue {^false}
+	isFalse{^true}
 }
 
 + Number {

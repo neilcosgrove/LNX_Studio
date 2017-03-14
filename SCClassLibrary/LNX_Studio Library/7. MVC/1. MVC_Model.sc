@@ -57,7 +57,7 @@ MVC_Model {
 	<{|aNumber|  ^value <  aNumber}
 	<={|aNumber| ^value <= aNumber}
 	isTrue{      ^value.isTrue }
-	isFalse{     ^value.isTrue }
+	isFalse{     ^value.isFalse }
 	div{|aNumber| ^value.div(aNumber)}
 	%{|aNumber|  ^value%aNumber}
 	abs{         ^value.abs}
