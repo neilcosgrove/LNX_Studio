@@ -560,6 +560,7 @@
 				gui[\name].model_(models[\name]);
 				gui[\sampleStartAdaptor].model_(models[\start]);
 				gui[\sampleEndAdaptor  ].model_(models[\end]);
+				gui[\refreshOnlyModel].model_(refreshOnlyModel);
 				if (gui[\pitch   ].notNil) {gui[\pitch   ].model_(models[\pitch   ])};
 				if (gui[\start   ].notNil) {gui[\start   ].model_(models[\start   ])};
 				if (gui[\end     ].notNil) {gui[\end     ].model_(models[\end     ])};
@@ -589,6 +590,7 @@
 				gui[\name].model_("Press search to add samples -->".asModel);
 				gui[\sampleStartAdaptor].model_(nil);
 				gui[\sampleEndAdaptor].model_(nil);
+				gui[\refreshOnlyModel].model_(nil);
 				if (gui[\pitch   ].notNil) {gui[\pitch   ].model_(nil)};
 				if (gui[\start   ].notNil) {gui[\start   ].model_(nil)};
 				if (gui[\end     ].notNil) {gui[\end     ].model_(nil)};
@@ -808,6 +810,10 @@
 			.color_(\off,Color(1,1,1,0.5))
 			.action_{	 if (this.notEmpty) {zoom.valueAction_(1)} };
 
+		// only update sample view (used by amp)
+		gui[\refreshOnlyModel] =  MVC_FuncAdaptor ( refreshOnlyModel )
+			.func_{ if (this.notEmpty) { gui[\sampleView].refresh} };
+
 		// update the start position
 		gui[\sampleStartAdaptor] = MVC_FuncAdaptor ( models[\start] )
 			.func_{ if (this.notEmpty) {gui[\sampleView].refresh} };
@@ -902,7 +908,7 @@
 		gui[\sampleView] = MVC_UserView(gui[\scrollView],Rect(10,50,width,120))
 
 			.drawFunc_{|me|
-
+				var amp = models[\amp].value.dbamp;
 				var w = me.bounds.width;
 				var h = me.bounds.height;
 				var h2= h/2;
@@ -991,14 +997,14 @@
 								if (channelsToDraw==2) { h3 = h2 * ( (channelNo==0).if(0.5,1.5)) }{ h3 = h2 };
 								visualOffset = (o * size).round(w2*2); // *2 because w/2 in below do
 
-								Pen.moveTo(2@((sampleData.atInt(visualOffset.asInt, numChannels, channelNo) )*h4+h3));
+								Pen.moveTo(2@((sampleData.atInt(visualOffset.asInt, numChannels, channelNo)*amp )*h4+h3));
 
 								(w/2).asInt.do{|i|
 									i=i*2;
 									Pen.lineTo((i+2)@((
 										sampleData.atInt(
 											(( i * w2 ) + visualOffset).asInt, numChannels, channelNo
-										)
+										)*amp
 									)*h4+h3));
 								};
 								Pen.stroke;
