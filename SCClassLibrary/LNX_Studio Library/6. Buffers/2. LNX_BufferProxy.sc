@@ -44,6 +44,10 @@ LNX_BufferProxy {
 
 	}
 
+	*emptyTempFolder{
+		tempFolder.folderContents.do{|file| file.removeFile(toTrash:false, ask:false, silent:true) }
+	}
+
 	// a new blank buffer /////////////////////////////////////////////////////
 
 	*new{|server, numFrames, numChannels, sampleRate, action, path|
