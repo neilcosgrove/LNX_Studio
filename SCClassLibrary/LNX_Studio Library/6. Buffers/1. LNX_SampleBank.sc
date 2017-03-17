@@ -93,7 +93,7 @@ LNX_SampleBank{
 
 		metaModel[\name    ] 		=        "".asModel;            // rename sample
 		metaModel[\pitch   ] 		=     \midi.asModel;            // nearest pitch
-		metaModel[\amp     ] 		=      \db8.asModel;            // need to change loading
+		metaModel[\amp     ] 		=      \db12.asModel;           // need to change loading
 		metaModel[\loop    ] 		=   \switch.asModel.value_(defaultLoop);	// loop sample
 		metaModel[\start   ] 		= \unipolar.asModel;            // start frame
 		metaModel[\end     ] 		= \unipolar.asModel.value_(1);  // end frame (1 is end of sample)
@@ -115,7 +115,7 @@ LNX_SampleBank{
 			metaModel[key].action_{|me,val,latency,send,toggle|
 				if ((key===\start)|| (key===\end)) { this.updateMarkers(this.geti(metaModel)) }; // this will sort as well
 				this.setModelVP(this.geti(metaModel),key,val,latency,send);
-				if (key==\amp) { refreshOnlyModel.valueAction_(1.0.rand) };
+				if (key==\amp) { refreshOnlyModel.lazyValueAction_(1.0.rand) };
 			}
 		};
 

@@ -908,7 +908,7 @@
 		gui[\sampleView] = MVC_UserView(gui[\scrollView],Rect(10,50,width,120))
 
 			.drawFunc_{|me|
-				var amp = models[\amp].value.dbamp;
+				var amp = (models[\amp].value?0).dbamp;
 				var w = me.bounds.width;
 				var h = me.bounds.height;
 				var h2= h/2;
