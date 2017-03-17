@@ -752,6 +752,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_FlatButton(gui[\scrollView], Rect(767, 71, 40, 20), "Save", gui[\flatButton])
 			.action_{this.guiSaveBuffer };
 
+		// Duplicate button
+		MVC_FlatButton(gui[\scrollView], Rect(767, 40, 40, 20), "Dup", gui[\flatButton])
+			.action_{
+				sampleBank.duplicate;
+				models[11].valueAction_(sampleBank.size,nil,true);
+			};
+
 		// the preset interface
 		presetView=MVC_PresetMenuInterface(gui[\scrollView],580@520,100,
 			Color(0.8,0.8,1)/1.6,

@@ -29,10 +29,10 @@ q.samples
 
 LNX_SampleBank{
 
-	classvar >network, <sampleBanks, <masterMeta, <versionKeys;
-	classvar >updateFuncs, >clipboard, >studio;
-	classvar <waitingToEmptyTrash = false;
-	classvar <maxNoMarkers = 1000;
+	classvar <version=1.3;
+	classvar >network, 		<sampleBanks,	<masterMeta, <versionKeys;
+	classvar >updateFuncs,	<>clipboard, 	>studio;
+	classvar <waitingToEmptyTrash = false,  <maxNoMarkers = 1000;
 
 	var <api, 			<id;
 
@@ -315,7 +315,7 @@ LNX_SampleBank{
 		id          = UniqueID.next; // each sampleBank has a UniqueID
 		server      = argServer;
 		api         = LNX_API.newTemp(this, apiID,
-						#[\netAddURL, \netRemove, \netSwap, \netSetModelVP, \netNewBuffer] );
+						#[\netAddURL, \netRemove, \netSwap, \netSetModelVP, \netNewBuffer, \hostPaste, \userPaste] );
 		sampleBanks = sampleBanks.add(this);        // add this to the list of all banks
 		this.initVars;                              // init the lists / arrays
 		if (path.isString) { this.loadFile(path) }; // load
@@ -331,7 +331,7 @@ LNX_SampleBank{
 		id          = UniqueID.next; // each sampleBank has a UniqueID
 		server      = argServer;
 		api         = LNX_API.newPermanent(this, apiID, //uses a permanent API
-						#[\netAddURL, \netRemove, \netSwap, \netSetModelVP] );
+						#[\netAddURL, \netRemove, \netSwap, \netSetModelVP, \hostPaste, \userPaste] );
 		sampleBanks = sampleBanks.add(this);        // add this to the list of all banks
 		this.initVars;                              // init the lists / arrays
 		if (path.isString) { this.loadFile(path) }; // load
@@ -584,12 +584,12 @@ LNX_SampleBank{
 	// an orderedSet of paths really
 
 	// this is used by both load & web, need to seperate for API
-	guiAddURL{|url,select=true|
-		api.groupCmdOD(\netAddURL,url,select,network.thisUser.id);
+	guiAddURL{|url,select=true, enableDuplicates=false|
+		api.groupCmdOD(\netAddURL,url,select,network.thisUser.id, enableDuplicates );
 	}
 
 	// this still needs user id to go with preview
-	netAddURL{|url,select=true,uid|
+	netAddURL{|url,select=true,uid, enableDuplicates=false|
 		// make onComplete Func
 		var action = {|buf|
 			var i = samples.indexOf(buf); // index of sample loaded
@@ -614,21 +614,22 @@ LNX_SampleBank{
 				if (window2.notNil) { selectSampleFuncs.do{|func| func.value(selectedSampleNo) } };
 			}.defer;   // will this work with many users?
 		};
-		this.addURL(url.asString,action,select.isTrue); // now add it
+		this.addURL(url.asString,action,select.isTrue, enableDuplicates: enableDuplicates.isTrue); // now add it
 	}
 
 	// add a url as a buffer. We maybe offline or it may not exist or not be in the cache
-	addURL{|url,action,select=true,updateBank=true|  // select sample
+	addURL{|url,action,select=true,updateBank=true, enableDuplicates=false|  // select sample
 
 		var buffer, path, metadata, metaModel, alreadyExists=false;
 
 		// check to see if it already exists in this bank
 		samples.do{|buf,i|
 			if (buf.url == url) {
-				buffer = buf;		// the one in existence is now this buffer also
-				alreadyExists = true;
-				if (select) {this.selectSample(i,false,false) };
-										// this should be in webBrowser maybe?
+				if (enableDuplicates.not) {
+					buffer = buf;		// the one in existence is now this buffer also
+					alreadyExists = true;
+					if (select) {this.selectSample(i,false,false) };
+				};					// this should be in webBrowser maybe?
 			};
 		};
 
@@ -657,7 +658,7 @@ LNX_SampleBank{
 	// get the save list from the new style URL SampleBank
 	getSaveListURL{
 		var saveList;
-		saveList=["SC URL Bank Doc v1.3",title.asSymbol,this.size];
+		saveList=["SC URL Bank Doc v"++version,title.asSymbol,this.size];
 
 		samples.do{|sample,i|
 			var source = sample.source;
@@ -670,7 +671,7 @@ LNX_SampleBank{
 			};
 
 			saveList=saveList.add(samples[i].url); // all versions use url's as path finders
-			versionKeys[1.3].do{|key|
+			versionKeys[version].do{|key|
 				if (key==\markers) {
 					saveList=saveList.add( metaModels[i][key].size );
 					saveList=saveList++metaModels[i][key];
@@ -705,7 +706,7 @@ LNX_SampleBank{
 			this.title_(l.popS);
 			n=l.popI;
 			if ((n>0)and:{freed.not}) {
-				this.recursiveLoadURL(n,0,l,version,updateBank);
+				this.recursiveLoadURL(n,0,l,version,updateBank,true,0);
 			}{
 				this.finishedLoading;
 			};
@@ -714,7 +715,7 @@ LNX_SampleBank{
 	}
 
 	// recursive add each url sample
-	recursiveLoadURL{|n,i,l,version,updateBank=true|
+	recursiveLoadURL{|n, i, l, version, updateBank=true, enableDuplicates=false, startOffset=0|
 
 		var metadata, metaModel, keysToUse;
 		var url;
@@ -753,7 +754,7 @@ LNX_SampleBank{
 		};
 
 		if (source==\url) {
-			this.addURL(url,{},false,updateBank); // add this URL
+			this.addURL(url,{},false,updateBank, enableDuplicates:enableDuplicates); // add this URL
 		};
 
 		metaModel = metaModels.last;  // its the last one added in addURL
@@ -785,7 +786,7 @@ LNX_SampleBank{
 			};
 		};
 
-		this.updateMarkers(i); // this must be after above so all info is loaded 1st
+		this.updateMarkers(i+startOffset); // this must be after above so all info is loaded 1st
 
 		// recursive add each buffer to reduce load on cpu
 		{
@@ -793,7 +794,7 @@ LNX_SampleBank{
 				if ((i+1)<n) {
 					{
 						if (freed.not) {
-							this.recursiveLoadURL(n,i+1,l,version,updateBank)
+							this.recursiveLoadURL(n,i+1,l,version,updateBank,enableDuplicates,startOffset)
 						}{
 							this.finishedLoading;
 						};
@@ -894,17 +895,67 @@ LNX_SampleBank{
 		//gui.do(_.free); // this will cause a crash, should find out why at some point
 	}
 
+	duplicate{
+		var clipboard = [1,  this.getSingleSaveList(selectedSampleNo) ].flatNoString;
+		api.hostCmdClumpedList(\hostPaste,clipboard);
+	}
+
 	// copy buffers
-	copyAll{ clipboard = [ this.urls, metaModels.collect{|c| c.collect(_.value)} ] }
+	copyAll{
+		clipboard = [this.size, this.size.collect{|i| this.getSingleSaveList(i)}].flatNoString;
+	}
 
-	// and paste them
+	// get data for just 1 sample
+	getSingleSaveList{|i|
+		var saveList = [];
+		var sample = this[i];
+		var source = sample.source;
+
+		// new in 1.3
+		if (source == \url) {
+			saveList = saveList ++ [source]; // url doesn't need all details below
+		}{
+			saveList = saveList ++ [source, sample.numFrames, sample.numChannels, sample.sampleRate,
+				metaModels[i][\length].value];
+		};
+		saveList=saveList.add(samples[i].url); // all versions use url's as path finders
+		versionKeys[version].do{|key|
+			if (key==\markers) {
+				saveList=saveList.add( metaModels[i][key].size );
+				saveList=saveList++metaModels[i][key];
+			}{
+				if (key==\name) {
+					saveList=saveList.add( metaModels[i][key].string );
+				}{
+					saveList=saveList.add( metaModels[i][key].value );
+				}
+			}
+		};
+		^saveList
+	}
+
+	// and paste them, need to use clumps because could be any size
 	pasteAll{
-		if (clipboard.notNil) {
-			clipboard[0].do{|path| this.guiAddURL(path) };
+		if (clipboard.notNil) { api.hostCmdClumpedList(\hostPaste,clipboard) };
+	}
 
-			// need to do metadata too.
+	// to the host, need to use clumps because could be any size
+	hostPaste{|list|
+		api.sendClumpedList(\userPaste,list);
+		this.userPaste(list);
+	}
+
+	// each user does the pasting with the list given
+	userPaste{|l|
+		var n;
+		l = l.reverse;
+		n=l.popI;
+		if ((n>0)and:{freed.not}) {
+			this.recursiveLoadURL(n,0,l,version,true, true, this.size);
 		};
 	}
+
+
 
 } ////////////////////////////// end.SampleBank Object
 

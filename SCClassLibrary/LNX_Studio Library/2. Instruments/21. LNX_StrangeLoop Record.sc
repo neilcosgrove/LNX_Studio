@@ -86,7 +86,7 @@ Review Samples
 
 	// AUTO SAVE or Discard
 
-	reviewBufferSaves{|bufferInstBankDict|
+	reviewBufferSaves{|bufferInstBankDict,saveMode|
 		// ( buffer: [inst, bank, indexOfBuffer] )
 		var date      = Date.getDate.stamp;
 		var songName  = (this.name.size==0).if("LNX_Studio",this.name);
@@ -170,25 +170,47 @@ Review Samples
 		// Ok
 		MVC_OnOffView(gui[\scrollView], Rect(624, (size*20).clip(0,390)+50, 50, 20),"Ok", gui[\onOffTheme2])
 		.action_{
-			Dialog.savePanel{|path|
-				var baseName = path.basename.removeExtension.replace(":","");
-				var newStartPath= "LNX_Songs" +/+ baseName ++ "/";
+
+			if (saveMode==\saveAs) {
+				Dialog.savePanel{|path|
+					var baseName = path.basename.removeExtension.replace(":","");
+					var newStartPath= "LNX_Songs" +/+ baseName ++ "/";
+					info.do{|list|
+						var inst    = list[3];
+						var bank 	= list[4];
+						var bufNum	= list[7];
+						if (list[1].isFalse) {
+							var newName = list[0].string;
+							if (newName.beginsWith(startPath)) { newName = newStartPath ++ (newName.drop(startPath.size)) };
+							// warning this will be asynchronous in network
+							inst.updateTempToLocalFile(bufNum, bank[bufNum], newName);
+						}{
+							// warning this will be asynchronous in network
+							inst.revertTempToNew(bufNum, bank[bufNum]);
+						}
+					};
+					this.save(path);
+				};
+			};
+
+			if (saveMode==\save) {
 				info.do{|list|
 					var inst    = list[3];
 					var bank 	= list[4];
 					var bufNum	= list[7];
 					if (list[1].isFalse) {
 						var newName = list[0].string;
-						if (newName.beginsWith(startPath)) { newName = newStartPath ++ (newName.drop(startPath.size)) };
+						// warning this will be asynchronous in network
 						inst.updateTempToLocalFile(bufNum, bank[bufNum], newName);
-
 					}{
+						// warning this will be asynchronous in network
 						inst.revertTempToNew(bufNum, bank[bufNum]);
-					};
-
+					}
 				};
-				this.save(path);
+				this.save(songPath);
+
 			};
+
 			window.close;
 		};
 	}
@@ -272,8 +294,6 @@ Review Samples
 	updateTempToLocalFile{|index, buffer, path, func|
 		var url  = "file://" ++ path ++ ".aiff";
 		var name = path.basename;
-
-		[index, buffer, path, func].postln;
 
 		path = (LNX_BufferProxy.userFolder +/+ path ++ ".aiff");
 
