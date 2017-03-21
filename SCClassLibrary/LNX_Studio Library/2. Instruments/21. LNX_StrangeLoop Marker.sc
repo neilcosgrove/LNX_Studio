@@ -152,7 +152,11 @@ LNX_MarkerEvent {
 				repeatRate	= 0;
 				repeatAmp	= 1;
 				// if reset mode & not latch then reset these vars too...
-				if (p[31].isFalse) { doFrame = false; repeatMode  = nil };
+				if (p[31].isFalse) {
+					doFrame 	= false;
+					repeatMode  = nil;
+					models[22].lazyValueAction_(0,nil,true,false);
+				};
 			};
 		};
 
@@ -201,6 +205,27 @@ LNX_MarkerEvent {
 
 			// *** EVENT *** freeze (beat repeat), triggered by PlayLoop
 			if (p[19]==1) { probability = 1 };
+
+			// 2nd+ event triggers
+			if ( (repeatNoE>0) && (repeatMode!=\frame) ) {
+				var reset = p[32];
+				if (reset>129) { reset = inf };
+
+				if (repeatNoE>=reset) {
+					// reset these vars
+					repeatNoE	= 0;
+					repeatRateE	= 0;
+					repeatAmpE	= 1;
+					// if reset mode & not latch then reset these vars too...
+					if (p[33].isFalse) {
+						repeatMode  = nil;
+						probability = 0;
+						models[19].lazyValueAction_(0,nil,true,false);
+					};
+				};
+			};
+
+
 			if ((probability.coin) && (lastMarkerEvent.notEmpty) && (repeatMode!=\frame)) {
 				repeatMode  = \event;
 				markerEvent = lastMarkerEvent.keep(p[20].asInt).wrapAt(repeatNoE);	// repeat
@@ -276,6 +301,7 @@ LNX_MarkerEvent {
 			var note    = pipe.note.asInt;
 			var latency = pipe.latency;
 			voicer.releaseNote(note, latency +! syncDelay);
+			^this
 		};
 
 		if (p[18].isTrue) 		{ ^this }; // hold on exception
@@ -283,7 +309,7 @@ LNX_MarkerEvent {
 		if (repeatMode==\frame) { ^this }; // in frame repeat mode exception. noteOn does not work here
 
 		// note ON (with midi max number of usable markers is 0-127)
-		if (pipe.isNoteOn ) {
+		if (pipe.isNoteOn) {
 			var probability;
 			var note		= pipe.note.asInt;
 			var vel			= pipe.velocity;
@@ -301,6 +327,26 @@ LNX_MarkerEvent {
 
 			// *** EVENT *** freeze repeat
 			if (p[19]==1) { probability = 1 } { probability = p[15]/100 };
+
+			// 2nd+ event triggers
+			if ( (repeatNoE>0) && (repeatMode!=\frame) ) {
+				var reset = p[32];
+				if (reset>129) { reset = inf };
+
+				if (repeatNoE>=reset) {
+					// reset these vars
+					repeatNoE	= 0;
+					repeatRateE	= 0;
+					repeatAmpE	= 1;
+					// if reset mode & not latch then reset these vars too...
+					if (p[33].isFalse) {
+						repeatMode  = nil;
+						probability = 0;
+						models[19].lazyValueAction_(0,nil,true,false);
+					};
+				};
+			};
+
 			if ((probability.coin) && (lastMarkerEvent.notEmpty)  && (repeatMode!=\frame)) {
 				repeatMode  = \event;
 				markerEvent = lastMarkerEvent.keep(p[20].asInt).wrapAt(repeatNoE);	// repeat

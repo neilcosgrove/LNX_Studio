@@ -277,14 +277,24 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[0, [0,15,\linear,1],  (label_:"Offset", numberFunc_:\int), midiControl, 29, "Offset",
 				{|me,val,latency,send| this.setPVPModel(29,val,latency,send) }],
 
-			// 30. reset / latch
+			// 30. reset / latch (Frame)
 			[129, [1,129,\linear,1], midiControl, 30, "Reset & Latch",
 				(label_:" Latch ", numberFunc_:{|n| (n==129).if("inf",n.asInt.asString)}),
 				{|me,val,latency,send| this.setPVPModel(30,val,latency,send) }],
 
-			// 31. reset latch Mode
+			// 31. reset latch Mode (Frame)
 			[1, \switch, midiControl, 31, "Reset Mode",
 				{|me,val,latency,send| this.setPVPModel(31,val,latency,send) }],
+
+
+			// 32. reset / latch (Event)
+			[129, [1,129,\linear,1], midiControl, 32, "Reset & Latch",
+				(label_:" Latch ", numberFunc_:{|n| (n==129).if("inf",n.asInt.asString)}),
+				{|me,val,latency,send| this.setPVPModel(32,val,latency,send) }],
+
+			// 33. reset latch Mode (Event)
+			[1, \switch, midiControl, 33, "Reset Mode",
+				{|me,val,latency,send| this.setPVPModel(33,val,latency,send) }],
 
 		].generateAllModels;
 
@@ -685,10 +695,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		// 23. frame length
 		MVC_MyKnob3(gui[\scrollView], models[23], Rect(725, 468, 28, 28), gui[\knobTheme1]);
 
-		// 30. reset / latch
-		gui[\latchReset] = MVC_MyKnob3(gui[\scrollView], models[30], Rect(785, 468, 28, 28), gui[\knobTheme1])
-			.resoultion_(2);
-
 		// 24. repeat prob
 		MVC_MyKnob3(gui[\scrollView], models[24], Rect(605, 405, 28, 28), gui[\knobTheme1]);
 
@@ -703,7 +709,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		// 27. repeat amp
 		MVC_MyKnob3(gui[\scrollView], models[27], Rect(785, 405, 28, 28), gui[\knobTheme1]);
 
-		// 31. reset latch
+		// 30. reset / latch (Frame)
+		gui[\latchResetFrame] = MVC_MyKnob3(gui[\scrollView], models[30], Rect(785, 468, 28, 28), gui[\knobTheme1])
+			.resoultion_(3.5);
+
+		// 31. reset latch (Frame)
 		MVC_OnOffView(gui[\scrollView], models[31], Rect(790, 520, 40, 20))
 			.strings_(["Reset","Latch"])
 			.rounded_(true)
@@ -711,7 +721,23 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.color_(\off,Color(1,1,1,0.88)/4);
 
 		MVC_FuncAdaptor(models[31]).func_{|me,val|
-			{gui[\latchReset].changeLabel_( val.isTrue.if("Latch","Reset") )} .deferIfNeeded
+			{gui[\latchResetFrame].changeLabel_( val.isTrue.if("Latch","Reset") )} .deferIfNeeded
+		};
+
+
+		// 32. reset / latch (Event)
+		gui[\latchResetEvent] = MVC_MyKnob3(gui[\scrollView], models[32], Rect(785, 244, 28, 28), gui[\knobTheme1])
+			.resoultion_(3.5);
+
+		// 33. reset latch Mode (Event)
+		MVC_OnOffView(gui[\scrollView], models[33], Rect(790, 203, 40, 20))
+			.strings_(["Reset","Latch"])
+			.rounded_(true)
+			.color_(\on,Color(50/77,61/77,1))
+			.color_(\off,Color(1,1,1,0.88)/4);
+
+		MVC_FuncAdaptor(models[33]).func_{|me,val|
+			{gui[\latchResetEvent].changeLabel_( val.isTrue.if("Latch","Reset") )} .deferIfNeeded
 		};
 
 
