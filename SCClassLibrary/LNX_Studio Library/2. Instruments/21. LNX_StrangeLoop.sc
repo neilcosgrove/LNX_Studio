@@ -278,8 +278,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				{|me,val,latency,send| this.setPVPModel(29,val,latency,send) }],
 
 			// 30. reset / latch (Frame)
-			[129, [1,129,\linear,1], midiControl, 30, "Reset & Latch",
-				(label_:" Latch ", numberFunc_:{|n| (n==129).if("inf",n.asInt.asString)}),
+			[65, [1,65,\linear,1], midiControl, 30, "Reset & Latch",
+				(label_:" Latch ", numberFunc_:{|n| (n==65).if("inf",n.asInt.asString)}),
 				{|me,val,latency,send| this.setPVPModel(30,val,latency,send) }],
 
 			// 31. reset latch Mode (Frame)
@@ -288,8 +288,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 
 			// 32. reset / latch (Event)
-			[129, [1,129,\linear,1], midiControl, 32, "Reset & Latch",
-				(label_:" Latch ", numberFunc_:{|n| (n==129).if("inf",n.asInt.asString)}),
+			[65, [1,65,\linear,1], midiControl, 32, "Reset & Latch",
+				(label_:" Latch ", numberFunc_:{|n| (n==65).if("inf",n.asInt.asString)}),
 				{|me,val,latency,send| this.setPVPModel(32,val,latency,send) }],
 
 			// 33. reset latch Mode (Event)

@@ -8,6 +8,12 @@
 
 // is there a way to play other samples so we can swap out while playing a loop
 
+// add HPF.ar(signal,20); to stop any low freq
+
+// BUG: incorrect sample is showing in menu
+
+// BUG: press record, swap over to a url sample and press play
+
 LNX_MarkerEvent {
 	var <>markerNo, <>deltaBeats, <>offset, <>startFrame, <>durFrame;
 	*new     {|markerNo, deltaBeats, offset, startFrame, durFrame|
@@ -144,7 +150,7 @@ LNX_MarkerEvent {
 		// 2nd+ frame triggers
 		if ( (repeatNo>0) && ( ( (instBeat3 - repeatStart) % (p[23].asInt*3) ) == 0  ) ) {
 			var reset = p[30];
-			if (reset>129) { reset = inf };
+			if (reset>=65) { reset = inf };
 			doFrame=true;
 			if (repeatNo>=reset) {
 				// reset these vars
@@ -209,7 +215,7 @@ LNX_MarkerEvent {
 			// 2nd+ event triggers
 			if ( (repeatNoE>0) && (repeatMode!=\frame) ) {
 				var reset = p[32];
-				if (reset>129) { reset = inf };
+				if (reset>=65) { reset = inf };
 
 				if (repeatNoE>=reset) {
 					// reset these vars
@@ -331,7 +337,7 @@ LNX_MarkerEvent {
 			// 2nd+ event triggers
 			if ( (repeatNoE>0) && (repeatMode!=\frame) ) {
 				var reset = p[32];
-				if (reset>129) { reset = inf };
+				if (reset>=65) { reset = inf };
 
 				if (repeatNoE>=reset) {
 					// reset these vars
@@ -487,6 +493,9 @@ LNX_MarkerEvent {
 		repeatNo         = 0;
 		repeatRate 		 = 0;
 		repeatAmp		 = 1;
+		repeatNoE		 = 0;
+		repeatRateE		 = 0;
+		repeatAmpE		 = 1;
 	}
 
 }
