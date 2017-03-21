@@ -2,18 +2,6 @@
 // Marker mode  //
 // ************ //
 
-// BUG: Event freeze memory isn't working when >1
-
-// fit pitch to fit
-
-// is there a way to play other samples so we can swap out while playing a loop
-
-// add HPF.ar(signal,20); to stop any low freq
-
-// BUG: incorrect sample is showing in menu
-
-// BUG: press record, swap over to a url sample and press play
-
 LNX_MarkerEvent {
 	var <>markerNo, <>deltaBeats, <>offset, <>startFrame, <>durFrame;
 	*new     {|markerNo, deltaBeats, offset, startFrame, durFrame|

@@ -4,46 +4,6 @@
 
 /*
 
-ALL DO FOR SAVE at mo only SAVE AS
-
-types new, file, url & MISSING
-also need for when missing on-line
-
-do i need a new buffer everytime so old isn't recorded over while played and recorded
-
-how does this play out
-server restart, saving songs, network
-
-do a wet/dry mix (overdub or mix) - good
-
-empty temp folder
-
-i can copy channels either so the only way...
-record -> stereo buffer -> save to temp -> load as 2 mono files
-after if need to save, move temp file or save again
-
-or generate both stereo & 2 mono buffers and record both at same time in ugen
-
-but what if the server restarts you loose info
-also want to avoid cpu spikes copying info
-##### only if save do we copy to a true stereo buffer and then save!!!!
-path = PathName.tmp ++ this.hash.asString;
-
-also problem with 2nd new sample and correct marker playback..
-
-s.boot;
-b = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01.wav");
-// same as Buffer.plot
-b.loadToFloatArray(action: { arg array; a = array; {a.plot;}.defer; "done".postln;});
-b.free;
-
-a.a.sampleBank[0].buffer.multiChannelBuffer;
-a.a.sampleBank[0].buffer.buffers;
-
-// SEND ?
-
-SO what next? --> now saves & loads to disk via url
-
 // stop record on url for the moment
 
 \new saves and reloads as \url. i now can record over temp. reload as \new
@@ -51,40 +11,15 @@ when a song is saved all \new have the option to be saved as a \url \file?
 when a \url is loaded can we record over it into a \new (uses temp) ?
 	what options on saving here?
 and what if not recorded yet so file doesn't exist yet
-exclude temp from file dialog
-
 
 // update LNX_BufferProxy:paths and LNX_BufferArray: various
 // also update source
 // update gui
 // also any other buffer which uses this
 
-// fix no file on load
-// what if buffer saved but song isn't? sample is missing from original as well
-// or any other that refered to it
-
-// make a dialog here.
-// WHEN A SONG IS SAVED and any temp files are left, they are auto saved
-
-
-Auto Save All
-Discard All
-Review Samples
-
-// Auto save, discard, save
-
-
 */
 
 + LNX_Studio {
-
-	// gui [ suggestedName, play, save or delete]
-
-	// GUI needs to be a singleton
-
-	// check if file exists
-
-	// AUTO SAVE or Discard
 
 	reviewBufferSaves{|bufferInstBankDict,saveMode|
 		// ( buffer: [inst, bank, indexOfBuffer] )

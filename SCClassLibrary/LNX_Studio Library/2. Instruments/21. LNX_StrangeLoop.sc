@@ -9,11 +9,18 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
-low & high pass
+do a wet/dry mix (overdub or mix) - good
+what happens when i dup a temp
+save dialog GUI needs to be a singleton
+fit pitch to fit
+save dialog
+Auto Save All
+Discard All
+add HPF.ar(signal,20); to stop any low freq
+low & high pass no repeats
+optimise vars
 rand or rev on pRoll, what about poly?
-use the same sample more than once in bank
 syncDelay
-when you enter your bpm with keyboard, length should change
 new sample (mono/stereo)
 record audio - many sources (level in) (overdub,replace)
 save names in cashe / dialog ?
@@ -23,13 +30,13 @@ grains
 clock offset start
 one shot
 zeroX or peak
-where does sample metadata sit
 proll has dark patches for out of range
-marker metadata ie default
 attack decay envelope
 
 BUGS: !!!
 ---------
+incorrect sample is showing in menu when song loaded
+press record, swap over to a url sample and press play
 need to put latency sync in
 focus is lost when adding samples now
 space bar is playing wrong sample on load
@@ -37,8 +44,16 @@ deleting all buffers while playing
 
 Done
 ----
+also problem with 2nd new sample and correct marker playback
+empty temp folder
+fix no file on load
+when you enter your bpm with keyboard, length should change
+use the same sample more than once in bank
+WHEN A SONG IS SAVED and any temp files are left, they are auto saved
+exclude temp from file dialog
 reverse button
 tap bpm
+types new, file, url & MISSING, also need for when missing on-line
 stopping sampleRefresh when not following
 also funcs called a lot when selecting sample
 entering numbers via keyboard to tempo doesn't update LNX_InstrumentTemplate:bpmChange
