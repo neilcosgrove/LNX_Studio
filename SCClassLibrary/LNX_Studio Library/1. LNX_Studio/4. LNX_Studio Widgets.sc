@@ -1442,6 +1442,7 @@
 
 	doQuit{
 		{
+			HID.closeAll;
 			LNX_BufferProxy.emptyTempFolder;
 			CmdPeriod.run;
 			0.25.wait;
