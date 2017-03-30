@@ -10,6 +10,10 @@ a.a.models[0].controlGroup.names
 
 // v1.2 has automation data saved
 
+// FREE THIS
+
+// DELETE INST WHILE IT HAS A MIDI LEARN
+
 LNX_MIDIControl {
 
 	classvar <>autoSave=true;
@@ -105,6 +109,7 @@ LNX_MIDIControl {
 	*makeElementActive{|e|
 		if (activeModel.notNil) { activeModel.deactivate };
 		activeModel=e;
+		if (activeModel.isNil) { LNX_Puss4Patch.learnOff } { LNX_Puss4Patch.learnOn };
 	}
 
 	*makeElementGroupActive{|e|
@@ -164,6 +169,7 @@ LNX_MIDIControl {
 			};
 			activeModel.deactivate;
 			activeModel=nil;
+			LNX_Puss4Patch.learnOff;
 		}
 		^name
 	}

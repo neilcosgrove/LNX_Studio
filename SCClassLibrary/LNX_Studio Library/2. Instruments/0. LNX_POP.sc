@@ -74,6 +74,26 @@ LNX_POP {
 		};
 	}
 
+	// from puss4
+	*nextProg{
+		var value;
+		case
+		{studioModels[\toBecome]>=0} { value = studioModels[\toBecome].asInt + 1 }
+		{studioModels[\program ]>=0} { value = studioModels[\program ].asInt + 1 }
+		{value = 0};
+		studioModels[\toBecome].lazyValueAction_(value.wrap(0,noPOP-1));
+	}
+
+	// from puss4
+	*previousProg{
+		var value;
+		case
+		{studioModels[\toBecome]>=0} { value = studioModels[\toBecome].asInt - 1 }
+		{studioModels[\program ]>=0} { value = studioModels[\program ].asInt - 1 }
+		{value = 0};
+		studioModels[\toBecome].lazyValueAction_(value.wrap(0,noPOP-1));
+	}
+
 	*saveMIDIPrefs{ midi.getSaveList.savePref("POP Controller") }
 
 	*new {|inst,api| ^super.new.init(inst,api) } // what api is this? from inst. will this be used?

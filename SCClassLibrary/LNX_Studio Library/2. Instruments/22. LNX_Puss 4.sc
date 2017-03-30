@@ -14,25 +14,64 @@ LNX_Puss4Patch.restartAll; // if connection is lost, you can run this again
 LNX_Puss4Patch.addAction(1,{|index, value| ~midi.control(index, value * 127, nil, send:true , ignore:false)});
 )
 
+[0]  // square
+[1]  // X
+[2]  // O
+[3]  // Triangle
+[4]  // L1 (on/off)
+[5]  // R1 (on/off)
+[6]  // L2 (pos) / L2 [DISABLED]
+[7]  // R2 (pos) / R2 [DISABLED]
+[8]  // Share
+[9]  // Options
+[10] // L3
+[11] // R3
+[12] // PS button
+[13] // Track PAD button
+[14] // L Joy L-R
+[15] // L Joy U-D
+[16] // R Joy L-R
+[17] // R Joy U-D
+[18] // DPad LEFT / urdlc (0, 0.28571429848671, 0.57142859697342, 0.85714286565781, 1.1428571939468]
+[19] // DPad RIGHT / ? Noisey. [DISABLED]
+
+[20] // DPad UP / L2 (pos) [MOVED 6]
+[21] // DPad DOWN / R2 (pos) [MOVED 7]
+
+128/20 = 6
+
+Sets for 6 are..
+-> [  0, 19 ]
+-> [ 20, 39 ]
+-> [ 40, 59 ]
+-> [ 60, 79 ]
+-> [ 80, 99 ]
+-> [ 100, 119 ]
+
+use [18] - up, down. inc dec prog
 */
 
 LNX_Puss4Patch{
 
 	classvar <>verbose = false;
-	classvar <allHIDs, <paths, <pathAsStrings, <dependants, <exclude, <reverse, <thresh, <off;
+	classvar <allHIDs, <paths, <pathAsStrings, <dependants, <exclude, <reverse, <resolution, <off;
+
+	*learnOn{ resolution = 0.5 }
+
+	*learnOff{ resolution	= 0.01 }
 
 	*initClass{
 		Class.initClassTree(HID);
-		{ 1.wait; this.restartAll }.fork;
+		{ 1.wait; this.restartAll }.fork; // everything else needs a chance to start 1st
 	}
 
 	*restartAll{
 		allHIDs		= IdentityDictionary[];
 		dependants	= dependants ? IdentityDictionary[];
-		exclude		= [6,7,19];
-		reverse		= [15,17];
-		thresh		= 0.01;
-		off			= 0.03;
+		exclude		= [6,7,19]; // raw in to exclude
+		reverse		= [15,17];	// reverse the joy's up & down
+		resolution	= 0.01;		// mininum resolution
+		off			= 0.03;		// off threshold
 		{
 			HID.findAvailable;
 			1.wait;
@@ -48,55 +87,55 @@ LNX_Puss4Patch{
 						22.do{|index|
 							lastValue[index] = inf;
 							if (exclude.includes(index).not) {
+								// actions for each element...
 								hid.elements[index].action = {|i,element|
 									var value = element.value;
 									var pass  = false;
 									var newIndex;
-									if (((value-0.5).abs < off)and:{(index>=14)&&(index<=17)}) {
+									if (((value-0.5).abs < off)and:{(index>=14)&&(index<=17)}) { // Joys are off
 										value=0.5;
-										if ((lastValue[index] - value).abs >= thresh) { pass = true };
+										if ((lastValue[index] - value).abs >= resolution) { pass = true };
 									}{
-										if (value==0) { pass = true };
+										if (index==20) { newIndex=6 }; // move L2 from 20 to 6
+										if (index==21) { newIndex=7 }; // move R2 from 21 to 7
+										if (value==0) { pass = true }; // override resolution if value is 0 or 1
 										if (value==1) { pass = true };
-										if ((lastValue[index] - value).abs >= thresh) { pass = true };
+										if ((lastValue[index] - value).abs >= resolution) { pass = true }; // resolution
 
 										// important this comes after above line
 										if (index==18) { // dpad
 											value = (value*4).asInt; // 0=up, 1=right, 2=down, 3=left, 4=centre
-											// dpad out as up/down [18,19] left/right [6,7]
+											// dpad out as up/down [18,19] left/right [20,21]
+											// dpad out as up/down [20,21] left/right [18,19]
 											switch (lastDPad)
-											{0} { dependants[path].do{|func| func.value(18, 0)}; } // up
-											{1} { dependants[path].do{|func| func.value( 7, 0)}; } // right
-											{2} { dependants[path].do{|func| func.value(19, 0)}; } // down
-											{3} { dependants[path].do{|func| func.value( 6, 0)}; } // left
+											{0} { dependants[path].do{|func| func.value(20, 0)}; } // up off
+											{1} { dependants[path].do{|func| func.value(19, 0)}; } // right off
+											{2} { dependants[path].do{|func| func.value(21, 0)}; } // down off
+											{3} { dependants[path].do{|func| func.value(18, 0)}; } // left off
 											{4} { pass = false }; // centre
-
 											switch (value)
-											{0} { newIndex = 18; lastDPad = 0; value = 1; pass = true }
-											{1} { newIndex =  7; lastDPad = 1; value = 1; pass = true }
-											{2} { newIndex = 19; lastDPad = 2; value = 1; pass = true }
-											{3} { newIndex =  6; lastDPad = 3; value = 1; pass = true }
+											{0} { newIndex = 20; lastDPad = 0; value = 1; pass = true } // up on
+											{1} { newIndex = 19; lastDPad = 1; value = 1; pass = true } // right on
+											{2} { newIndex = 21; lastDPad = 2; value = 1; pass = true } // down on
+											{3} { newIndex = 18; lastDPad = 3; value = 1; pass = true } // left on
 											{4} { lastDPad =  4; pass = false }; // centre
 										};
 									};
 									// output value if passes all tests above
 									if (pass) {
-										lastValue[index] = value;
-										if (reverse.includes(index)) { value = 1 - value };
-										dependants[path].do{|func| func.value(newIndex ? index, value)};
+										lastValue[index] = value;							// store last value
+										if (reverse.includes(index)) { value = 1 - value }; // reverse jpad up/down
+										dependants[path].do{|func| func.value(newIndex ? index, value)}; // action
 										if (verbose) { [newIndex ? index,value].postln };
 									};
-								}
+								};
 							};
 						};
 					};
 				};
 			};
-
-			paths = [\None] ++ (allHIDs.keys.asList);
-
-			pathAsStrings = paths.collect(_.asString);
-
+			paths = [\None] ++ (allHIDs.keys.asList);  // all paths as symbols
+			pathAsStrings = paths.collect(_.asString); // all paths as strings
 		}.fork;
 	}
 
@@ -108,38 +147,6 @@ LNX_Puss4Patch{
 	*removeAction{|path,func| dependants[path.asSymbol].remove(func) }
 
 }
-
-/*
-[0]  // square
-[1]  // X
-[2]  // O
-[3]  // Triangle
-[4]  // L1 (on/off)
-[5]  // R1 (on/off)
-[6]  // DPad LEFT / L2 [DISABLED]
-[7]  // DPad RIGHT / R2 [DISABLED]
-[8]  // Share
-[9]  // Options
-[10] // L3
-[11] // R3
-[12] // PS button
-[13] // Track PAD button
-[14] // L Joy L-R
-[15] // L Joy U-D
-[16] // R Joy L-R
-[17] // R Joy U-D
-[18] // DPad UP / urdlc (0, 0.28571429848671, 0.57142859697342, 0.85714286565781, 1.1428571939468]
-[19] // DPad DOWN / ? Noisey. [DISABLED]
-[20] // L2 (pos)
-[21] // R2 (pos)
-
-dpad [18,19] up/down [6,6] left/right
-
-128/22 = 5.8
-
-use [18] - up, down. inc dec prog
-
-*/
 
 ////////////////////////////////////
 // a puss 4 controller instrument //
@@ -183,6 +190,11 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 				{|me,val,latency,send,toggle| this.onOff(val,latency,send,toggle) },
 				\action2_ -> {|me| this.onOffAlt(me.value) }],
 
+			// 2. CC range
+			[0, [0,5,\lin,1], midiControl, 2, "CC range",
+				(items_:["0-19", "20-39", "40-59", "60-79", "80-99", "100-119"], label_:"CC range"),
+				{|me,val,latency,send| this.setPVP(2,val,latency,send)}]
+
 		];
 
 /*		8.do{|i|
@@ -191,7 +203,8 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 
 			template[i+10]=[0, \switch, ( strings_:(i+8).asString ),
 				{ this.guiMidiControl(i+8,1) }];
-		};*/
+		};
+*/
 
 		#models,defaults=template.generateAllModels;
 
@@ -206,10 +219,34 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 	}
 
 	puss4In{|index,value|
-		[index,value].postln;
-		midi.control(index, value * 127, nil, send:false , ignore:false);
+		if (index<=19) {
+			index = (p[2]*20)+index; // CC range
+			midi.control(index, value * 127, nil, send:false , ignore:false);
+			^this
+		};
+		if (value==0) {^this};
+		if (index==20) { // Dpad UP
+			LNX_POP.previousProg;
+			^this
+		};
+		if (index==21) { // Dpad DOWN
+			LNX_POP.nextProg;
+			^this
+		};
 	}
 
+	iGetSaveList{ ^[path.asString] }
+
+	iPutLoadList{|l,noPre,loadVersion,templateLoadVersion|
+		var index;
+		LNX_Puss4Patch.removeAction(path,func);
+		path = l.popS.asSymbol;
+		index = LNX_Puss4Patch.paths.indexOf(path);
+		if (index.notNil) { gui[\pathMenu].value_(index) };
+		LNX_Puss4Patch.addAction(path,func);
+	}
+
+	iFree{ LNX_Puss4Patch.removeAction(path,func) }
 
 	////////////////
 
@@ -235,29 +272,28 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 										\string:Color(0,0,0),
 									    \focus:Color.clear));
 
-
-
-
 		// the border and composite view
 		gui[\compositeView] = MVC_RoundedComView(window,
-				Rect(11,11,this.thisWidth-22,this.thisHeight-32-75))
+				Rect(11,11,this.thisWidth-22,this.thisHeight-22))
 				.color_(\border,  Color(59/108,65/103,505/692)  )
 				.color_(\border2, Color(0,1/103,9/77))
 				.color_(\background, Color(59/77,43/54,9/11)*1.1 );
 
-
 		// path menu
-		MVC_PopUpMenu3(gui[\compositeView  ],Rect(5,5,100,16),gui[\menuTheme2])
+		gui[\pathMenu] = MVC_PopUpMenu3(gui[\compositeView  ],Rect(10,20,158,19),gui[\menuTheme2])
 			.items_(LNX_Puss4Patch.pathAsStrings)
+			.label_("Device")
 			.action_{|me|
 				LNX_Puss4Patch.removeAction(path,func);
 				path = LNX_Puss4Patch.paths[me.value.asInt];
 				LNX_Puss4Patch.addAction(path,func);
 			};
 
+		// 2. CC range
+		MVC_PopUpMenu3(gui[\compositeView  ],Rect(180,20,75,19),gui[\menuTheme2], models[2]);
 
 		// MIDI Settings
- 		MVC_FlatButton(gui[\compositeView],Rect(124, 9, 43, 19),"MIDI")
+ 		MVC_FlatButton(gui[\compositeView],Rect(10, 54, 43, 19),"MIDI")
 			.rounded_(true)
 			.shadow_(true)
 			.canFocus_(false)
@@ -270,7 +306,7 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 			)};
 
 		// midi controls
-		MVC_FlatButton(gui[\compositeView],Rect(242, 9, 43, 19),"Cntrl")
+		MVC_FlatButton(gui[\compositeView],Rect(72, 54, 43, 19),"Cntrl")
 			.rounded_(true)
 			.shadow_(true)
 			.canFocus_(false)
@@ -278,9 +314,28 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 			.color_(\down,Color(0.3,0.5,1)+0.3/6)
 			.color_(\string,Color.white)
 			.resize_(9)
-			.action_{
-				LNX_MIDIControl.editControls(studio); LNX_MIDIControl.window.front
-			};
+			.action_{ LNX_MIDIControl.editControls(studio); LNX_MIDIControl.window.front };
+
+		// reset
+		MVC_FlatButton(gui[\compositeView],Rect(134, 54, 74, 19),"Reconnect")
+			.rounded_(true)
+			.shadow_(true)
+			.canFocus_(false)
+			.color_(\up,Color(0.3,0.5,1)+0.3/2)
+			.color_(\down,Color(0.3,0.5,1)+0.3/6)
+			.color_(\string,Color.white)
+			.resize_(9)
+			.action_{ LNX_Puss4Patch.restartAll };
+
+		// the preset interface
+		presetView=MVC_PresetMenuInterface(gui[\compositeView],10@90,150,
+				Color(0.8,0.8,1)/1.6,
+				Color(0.7,0.7,1)/3,
+				Color(0.7,0.7,1)/1.5,
+				Color(35/48,122/157,5/6),
+				Color.black
+			);
+		this.attachActionsToPresetGUI;
 
 /*		// controllers
 		8.do{|i|
