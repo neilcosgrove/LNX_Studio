@@ -155,7 +155,11 @@ LNX_BufferProxy {
 		dir    = path.dirname;
 		name   = path.basename;
 
-		convertedPath = path.getNewPath(LNX_URLDownload.format);
+		if (this.actualPath.isSoundFile) {
+			convertedPath = path;
+		}{
+			convertedPath = path.getNewPath(LNX_URLDownload.format); // this is not always the case
+		};
 
 		sampleData = [0];
 

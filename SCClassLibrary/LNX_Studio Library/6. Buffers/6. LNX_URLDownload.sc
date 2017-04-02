@@ -1,7 +1,7 @@
 
 /* LNX_BufferProxy ***********************************
 
-afconvert to covert  
+afconvert to covert
 Dialog.openPanel{|p| p.afconvert({}, "WAVE", "LEI16") };
 
 (
@@ -161,22 +161,22 @@ LNX_BufferProxy.containers.select{|b| b.download.notNil}.select{|b| b.download.i
 // an actual URL download
 
 LNX_URLDownload {
-	
+
 	classvar <>verbose=false, <>format="AIFF", <>data="BEI16";
-	
+
 	// when converting audiofiles use...
 	// format : data (as below)
 	// ========================
-	// AIFF : I8 BEI16 BEI24 BEI32 
+	// AIFF : I8 BEI16 BEI24 BEI32
 	// WAVE : UI8 LEI16 LEI24 LEI32 LEF32 LEF64
-	
+
 	var <status, <url, <path, <action, <replace, <pid, <dir, <name, <pSymbolKill;
 	var <covertedPath;
 	var <lastTime, <lastSize, <size, <time, <rate, <info, <initTime, <failReason;
 	var <rateString, <sizeString, <percentageComplete= -1;
-	
+
 	*new{|url,path,action,replace=false| ^super.new.init(url,path,action,replace) }
-	
+
 	// init a new download
 	init{|argURL, argPath, argAction, argReplace|
 		status   = \connecting;
@@ -187,13 +187,13 @@ LNX_URLDownload {
 		dir      = path.dirname;
 		name     = path.basename;
 		initTime = SystemClock.now;
-		
+
 		this.startDownload;
 	}
-	
+
 	// start the download by getting the curl -I
 	startDownload{
-		if (this.isRunning.not) {		
+		if (this.isRunning.not) {
 			if (dir.pathExists(false).not) { dir.makeDir }; // make the dir
 			if ((path.pathExists(false).not)||replace) {
 				var selector;
@@ -223,9 +223,9 @@ LNX_URLDownload {
 						}
 					}{
 						this.failed("Connection error"); // curl didn't finish
-					};				
-				});  
-				if (verbose) { 
+					};
+				});
+				if (verbose) {
 					{
 						if (this.isRunning) {("PID:"+pid+"- Starting download.").post;};
 					}.defer(0.125); // just for post
@@ -238,22 +238,22 @@ LNX_URLDownload {
 			};
 		}{
 			"The CURL for this download is already running.".warn;
-			// should i do thisÉ?
+			// should i do thisï¿½?
 			// status  = \failed;
 			// LNX_URLDownloadManager.failedDownload(this);
 		}
 	}
-	
+
 	// the download failed
 	failed{|reason|
-		failReason = reason;						
+		failReason = reason;
 		status     = \failed;
 		//info       = nil;
 		this.removeFile;
 		LNX_URLDownloadManager.failedDownload(this);
 		if (verbose) {"Failed ( ".post; reason.post; " ) :".post; path.postln };
 	}
-	
+
 	// the download was successful
 	succeeded{
 		status  = \finished;
@@ -262,28 +262,28 @@ LNX_URLDownload {
 		action.value(this);
 		action = nil; // this should only happen once & stops preview playback when reloading
 	}
-	
+
 	// now download the file
 	downloadFile{
 		if (status == \connecting) { // just a check
 			status = \downloading;
-			this.resetStats;	
+			this.resetStats;
 			// for killing the curl
-			pSymbolKill = ("curl " ++ url.freeSound2URL.replace(" ", "%20")).asSymbol;  
+			pSymbolKill = ("curl " ++ url.freeSound2URL.replace(" ", "%20")).asSymbol;
 			pid = url.curl(path,{|res,pid|
 				if (res==0) {
 					if (this.isSoundFile) {
 						this.succeeded; 			// the download was successful
-					}{					
+					}{
 						this.convert; 			// try coverting it
 					};
 				}{
 					this.failed("Download failed"); 	// curl failed
-				};				
+				};
 			});
 		};
 	}
-	
+
 	// convert the downloaded file
 	convert{
 		//  transcode file with afconvert
@@ -293,41 +293,41 @@ LNX_URLDownload {
 				covertedPath = path.getNewPath(format); // is this needed here ?
 				if (verbose) {"Converted to: ".post; covertedPath.postln };
 				this.succeeded; // the transcoding was successful
-				
+
 			}{
 				// Not an audio file or not reckonised format
 				this.failed("Not a recognised audio file");
 			}
 		}, format, data);
 	}
-	
+
 	// is the download still running?
 	isRunning{ ^((pid.notNil)and:{pid.pidRunning}) }
-	
+
 	// cancel the download
 	cancelDownload{
 		var pidKill;
 		// is the download running?
-		if (this.isRunning) { 
+		if (this.isRunning) {
 			// get the curl pid, this is different than pid which links to sh
 			pidKill = LNX_Applications.allBySymbol[pSymbolKill];
 			if (pidKill.isNumber) {
 				("kill" + pidKill).systemCmd; // stop it
 				if (verbose) { "Canceled Download".postln };
-			};					
+			};
 			status = \failed;
 			if (this.isSoundFile.not) { this.removeFile }; // delete file
-			
+
 			// should i do? this.failed("Reason");
 		};
 	}
-	
+
 	// is the downloaded file a soundfile?
 	isSoundFile{ ^path.isSoundFile }
-	
+
 	// has the download been successful?
 	isComplete{ ^status==\finished }
-	
+
 	// delete the downloaded file
 	removeFile{
 		if (path.pathExists(false)) {
@@ -336,7 +336,7 @@ LNX_URLDownload {
 			this.resetStats;
 		};
 	}
-	
+
 	// retry after a fail
 	retryDownload{
 		if ((this.isComplete.not)and:{this.isRunning.not}){
@@ -344,13 +344,13 @@ LNX_URLDownload {
 			LNX_URLDownloadManager.retryDownload(this);
 		};
 	}
-	
+
 	// as above but forces test for isComplete to false, used by recursiveLoad
 	forceRedownload{
 		status=nil;
 		this.retryDownload;
 	}
-	
+
 	// reset vars for download stats
 	resetStats{
 		lastTime = AppClock.now;
@@ -361,13 +361,13 @@ LNX_URLDownload {
 		percentageComplete = 0;
 		failReason = nil;
 	}
-	
+
 	// gets the file size
 	fileSize{ if (path.pathExists(false)) { ^File.fileSize(path) }{ ^0 } }
-	
+
 	// get the file size as a friendly string
 	fileSizeString{ ^this.fileSize.bytesAsString } // actual value not polled
-	
+
 	// poll the time and size so we can workout the download stats
 	pollStats{
 		lastTime   = time;
@@ -376,28 +376,28 @@ LNX_URLDownload {
 		size       = this.fileSize;
 		sizeString = size.bytesAsString;
 		rate       = (size-lastSize)/(time-lastTime);
-		rateString = rate.bytesAsString++"/s";	
-		
+		rateString = rate.bytesAsString++"/s";
+
 		if (status==\connecting) { percentageComplete = -1; ^this };
 		if (status==\converting) { percentageComplete = -2; ^this };
 		if (status==\finished  ) { percentageComplete = -3; ^this };
 		if (status==\failed    ) { percentageComplete = -4; ^this };
-		
+
 		if (info.notNil && {info['content-length'].notNil or:{  info['filesize'].notNil    }  }) {			percentageComplete = size / (info['content-length']?info['filesize'])*100;
 		}{
 			percentageComplete = 0;
-		};	
+		};
 	}
-	
+
 	// final stats on a completed download
 	finishedStats{
 		size       = this.fileSize;
 		sizeString = size.bytesAsString;
 		rate       = 0;
 		rateString = "";
-		percentageComplete = -3;	
+		percentageComplete = -3;
 	}
-	
+
 	// free this bufferProxy, no testing for others using it. Use BufferPorxy::free instead
 	free{
 		this.cancelDownload;
@@ -405,7 +405,7 @@ LNX_URLDownload {
 		status=\freed;
 		if (verbose) { "Freed: ".post; path.postln; }
 	}
-	
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -419,13 +419,13 @@ LNX_FreeSoundAPIKey{
 		keyModel = (("FreeSound API Key".loadPref ?? {[""]})[0]).asModel;
 		keyModel.actions_(\stringAction,{|me|
 			[keyModel.string].savePref("FreeSound API Key");
-		});	
+		});
 	}
-	
-	*key{	
+
+	*key{
 		if (keyModel.string.replace(" ","").size>0) { ^keyModel.string.replace(" ","")} {^lnxKey }
 	}
-	
+
 }
 
 + SimpleNumber {
@@ -441,29 +441,29 @@ LNX_FreeSoundAPIKey{
 			{this==1}       { ^      "1 byte"}
 			{true}          { ^      this.asFormatedString(1,0)+"bytes"  }
 	}
-	
+
 }
 
 + Nil { toLower{""} } // fix for below for no extension (faster)
 
 + String {
-	
+
 	// convert audiofile
 	// format : data
 	// ==============
-	// AIFF : I8 BEI16 BEI24 BEI32 
+	// AIFF : I8 BEI16 BEI24 BEI32
 	// WAVE : UI8 LEI16 LEI24 LEI32 LEF32 LEF64
-	
+
 	isLNXSoundFile{
 		^#[ 'wav', 'aif', 'aiff','mp3', 'm4a',
-			'3gpp', '3gp', '3gp2', '3g2', 'aac', 'adts', 'ac-3', 'ac3', 'aifc', 
+			'3gpp', '3gp', '3gp2', '3g2', 'aac', 'adts', 'ac-3', 'ac3', 'aifc',
 			'amrf', 'amr', 'm4af',  'm4r', 'm4bf', 'm4b', 'caff', 'caf',
 			'mpg1', 'mp1', 'mpeg', 'mpa', 'mpg2', 'mp2', 'mpg3', 'mp4f', 'mp4',
 			'next', 'snd', 'au', 'sd2f', 'sd2',  'wave', 'ircam', 'sun', 'mat4',
 			'mat5', 'paf', 'svx', 'nist', 'voc', 'w64', 'pvf', 'xi', 'htk', 'sds',
 			'avr', 'flac'].includes(this.extension.toLower.asSymbol)
 	}
-	
+
 	afconvert{|action, format="AIFF", data="BEI16", outputPath|
 		^Platform.case(
 			\osx, {
@@ -473,7 +473,7 @@ LNX_FreeSoundAPIKey{
 					++ " -d "
 					++ data
 					++ " "
-					++ this.unixSafe 
+					++ this.unixSafe
 					++ " "
 					++ (outputPath ?? { this.getNewPath(format) }).unixSafe
 				).unixCmd(action);
@@ -493,24 +493,24 @@ LNX_FreeSoundAPIKey{
 			}
 		);
 	}
-	
+
 	// get the new path with the new extenstion
 	getNewPath{|format="AIFF"|
 		var extension = format.toLower;
 		if (extension=="wave") { extension="wav" };
 		^this.removeExtension ++ "." ++ extension;
 	}
-		
+
 	// returns pid
 	curl{|path,action|
 		^Platform.getURL(
 			this.freeSound2URL.replace(" ", "%20"),
 			path.replace("%20", " "),
-			action); 
+			action);
 	}
 
 	// get info from the header as an IdentityDictionary (used curl -I)
-	curlInfo{|path,action| 
+	curlInfo{|path,action|
 		^Platform.getURLInfo(
 			this.replace(" ", "%20"),
 			path.replace("%20", " "),
@@ -518,7 +518,7 @@ LNX_FreeSoundAPIKey{
 				var info = IdentityDictionary[];
 				var list = path.loadList;
 				var found = true;
-				
+
 				list	.collect{|s| s.split($:)}
 					.select {|s| s.size>=2}
 					.do     {|l|
@@ -528,13 +528,13 @@ LNX_FreeSoundAPIKey{
 						// convert to int or symbol
 						if (value.asInt.asString==value) {
 							value = value.asInt
-						}{ 
+						}{
 							if (value.asFloat.asString==value) { value = value.asFloat};
-						}; 
+						};
 						// add it to the IdentityDictionary
 						info[l[0].toLower.asSymbol] = value;
 					};
-				
+
 				// test for not found
 				list.collect{|s| s.split($:)}
 					.select {|s| s.size==1}
@@ -544,18 +544,18 @@ LNX_FreeSoundAPIKey{
 							if (item.contains("404")) {
 								found = false; // 404 error
 							};
-						};	
+						};
 					};
-				
+
 				if (info.isEmpty) { found = false };
-				
+
 				action.value(res,pid,info,found);
-				
-			}); 
+
+			});
 	}
-	
+
 	// FreeSound Support ////////////////////////////////////////////////////////////////////
-	
+
 	// make url friendly to freesound api, used in curl
 	freeSound2URL{
 		var string=this;
@@ -565,7 +565,7 @@ LNX_FreeSoundAPIKey{
 		};
 		^string;
 	}
-	
+
 	// make url friendly to freesound api, used in curlInfoFreeSound
 	freeSound2URLI{
 		var string=this;
@@ -575,15 +575,15 @@ LNX_FreeSoundAPIKey{
 		};
 		^string;
 	}
-	
+
 	// get parseYAMLFile but with keys as symbols and numbers as numbers!!
 	parseYAMLFileBySymbol{
-		var info = ();		
+		var info = ();
 		this.parseYAMLFile.pairsDo{|key,value|
 			if (value.isString) {
 				if (value.asInt.asString==value) {
 					value = value.asInt
-				}{ 
+				}{
 					if (value.asFloat.asString==value) { value = value.asFloat};
 				};
 			};
@@ -591,9 +591,9 @@ LNX_FreeSoundAPIKey{
 		};
 		^info;
 	}
-	
+
 	// get info from FreeSound as an IdentityDictionary
-	curlInfoFreeSound{|path,action| 
+	curlInfoFreeSound{|path,action|
 		^("curl \""
 			++ (this.freeSound2URLI.replace(" ", "%20"))
 			++ "\" > \""
@@ -602,16 +602,16 @@ LNX_FreeSoundAPIKey{
 		).unixCmd({|res,pid|
 			var info, found = true;
 			if (res==0) {
-				info = path.parseYAMLFileBySymbol;	
+				info = path.parseYAMLFileBySymbol;
 				if ((info[\error].notNil) and:{info[\error].isTrue}) {
 					action.value(res,pid,info,false);
 				}{
 					action.value(res,pid,info,true);
-				};	
+				};
 			}{
 				action.value(res,pid,(),false);
 			};
-		}); 
+		});
 	}
 
 }

@@ -702,7 +702,7 @@
 			.mouseDownAction_{ gui[\path].color_(\string,Color.white) }
 		.mouseUpAction_{
 			gui[\path].color_(\string,Color.black);
-			this[i].convertedPath.revealInFinder
+			this[i].convertedPath.postln.revealInFinder
 		};
 
 		// search the web button
