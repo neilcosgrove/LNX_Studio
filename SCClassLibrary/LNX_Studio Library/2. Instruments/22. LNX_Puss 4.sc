@@ -65,6 +65,7 @@ LNX_Puss4Patch{
 		{ 1.wait; this.restartAll }.fork; // everything else needs a chance to start 1st
 	}
 
+	// i might need to remove all previous if you have more than 1 controller and 1 is lost and reconnected
 	*restartAll{
 		allHIDs		= IdentityDictionary[];
 		dependants	= dependants ? IdentityDictionary[];
@@ -73,17 +74,21 @@ LNX_Puss4Patch{
 		resolution	= 0.01;		// mininum resolution
 		off			= 0.03;		// off threshold
 		{
+			var deviceNo=1;
 			HID.findAvailable;
 			1.wait;
-			HID.available.do{|info|
+			HID.available.do{|info,i|
 				if (info.vendorName  =="Sony Interactive Entertainment") {
 					var path         = info.path.asSymbol;
 					var hid          = HID.openPath(path: (path.asString) );
 					var lastValue    = IdentityDictionary[];
 					var lastDPad	 = 4;
+
 					if (hid.notNil) {
-						allHIDs[path]    = hid;
-						dependants[path] = dependants[path] ? IdentitySet[];
+						var idName		   = ("Puss_"++deviceNo).asSymbol;
+						deviceNo		   = deviceNo + 1;
+						allHIDs[idName]    = hid;
+						dependants[idName] = dependants[idName] ? IdentitySet[];
 						22.do{|index|
 							lastValue[index] = inf;
 							if (exclude.includes(index).not) {
@@ -108,10 +113,10 @@ LNX_Puss4Patch{
 											// dpad out as up/down [18,19] left/right [20,21]
 											// dpad out as up/down [20,21] left/right [18,19]
 											switch (lastDPad)
-											{0} { dependants[path].do{|func| func.value(20, 0)}; } // up off
-											{1} { dependants[path].do{|func| func.value(19, 0)}; } // right off
-											{2} { dependants[path].do{|func| func.value(21, 0)}; } // down off
-											{3} { dependants[path].do{|func| func.value(18, 0)}; } // left off
+											{0} { dependants[idName].do{|func| func.value(20, 0)}; } // up off
+											{1} { dependants[idName].do{|func| func.value(19, 0)}; } // right off
+											{2} { dependants[idName].do{|func| func.value(21, 0)}; } // down off
+											{3} { dependants[idName].do{|func| func.value(18, 0)}; } // left off
 											{4} { pass = false }; // centre
 											switch (value)
 											{0} { newIndex = 20; lastDPad = 0; value = 1; pass = true } // up on
@@ -125,7 +130,7 @@ LNX_Puss4Patch{
 									if (pass) {
 										lastValue[index] = value;							// store last value
 										if (reverse.includes(index)) { value = 1 - value }; // reverse jpad up/down
-										dependants[path].do{|func| func.value(newIndex ? index, value)}; // action
+										dependants[idName].do{|func| func.value(newIndex ? index, value)}; // action
 										if (verbose) { [newIndex ? index,value].postln };
 									};
 								};
@@ -134,7 +139,7 @@ LNX_Puss4Patch{
 					};
 				};
 			};
-			paths = [\None] ++ (allHIDs.keys.asList);  // all paths as symbols
+			paths = [\None] ++ (allHIDs.keys.asList.sort);  // all paths as symbols
 			pathAsStrings = paths.collect(_.asString); // all paths as strings
 		}.fork;
 	}
@@ -191,8 +196,8 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 				\action2_ -> {|me| this.onOffAlt(me.value) }],
 
 			// 2. CC range
-			[0, [0,5,\lin,1], midiControl, 2, "CC range",
-				(items_:["0-19", "20-39", "40-59", "60-79", "80-99", "100-119"], label_:"CC range"),
+			[0, [0,31,\lin,1], midiControl, 2, "CC range",
+				(items_:(31+1).collect{|i|  (i*20)++"-"++(i*20+19)++(if(i>5,"*",""))   }, label_:"CC range"),
 				{|me,val,latency,send| this.setPVP(2,val,latency,send)}]
 
 		];
@@ -279,8 +284,8 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 				.color_(\border2, Color(0,1/103,9/77))
 				.color_(\background, Color(59/77,43/54,9/11)*1.1 );
 
-		// path menu
-		gui[\pathMenu] = MVC_PopUpMenu3(gui[\compositeView  ],Rect(10,20,158,19),gui[\menuTheme2])
+		// device
+		gui[\pathMenu] = MVC_PopUpMenu3(gui[\compositeView  ],Rect(10,20,80,19),gui[\menuTheme2])
 			.items_(LNX_Puss4Patch.pathAsStrings)
 			.label_("Device")
 			.action_{|me|
@@ -290,10 +295,10 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 			};
 
 		// 2. CC range
-		MVC_PopUpMenu3(gui[\compositeView  ],Rect(180,20,75,19),gui[\menuTheme2], models[2]);
+		MVC_PopUpMenu3(gui[\compositeView  ],Rect(216,20,75,19),gui[\menuTheme2], models[2]);
 
 		// MIDI Settings
- 		MVC_FlatButton(gui[\compositeView],Rect(10, 54, 43, 19),"MIDI")
+ 		MVC_FlatButton(gui[\compositeView],Rect(104, 20, 43, 19),"MIDI")
 			.rounded_(true)
 			.shadow_(true)
 			.canFocus_(false)
@@ -306,7 +311,7 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 			)};
 
 		// midi controls
-		MVC_FlatButton(gui[\compositeView],Rect(72, 54, 43, 19),"Cntrl")
+		MVC_FlatButton(gui[\compositeView],Rect(158, 20, 43, 19),"Cntrl")
 			.rounded_(true)
 			.shadow_(true)
 			.canFocus_(false)
@@ -316,8 +321,8 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 			.resize_(9)
 			.action_{ LNX_MIDIControl.editControls(studio); LNX_MIDIControl.window.front };
 
-		// reset
-		MVC_FlatButton(gui[\compositeView],Rect(134, 54, 74, 19),"Reconnect")
+		// reconnect
+		MVC_FlatButton(gui[\compositeView],Rect(218, 192, 74, 19),"Reconnect")
 			.rounded_(true)
 			.shadow_(true)
 			.canFocus_(false)
@@ -325,10 +330,18 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 			.color_(\down,Color(0.3,0.5,1)+0.3/6)
 			.color_(\string,Color.white)
 			.resize_(9)
-			.action_{ LNX_Puss4Patch.restartAll };
+			.action_{
+				LNX_Puss4Patch.restartAll;
+				{
+					var index;
+					gui[\pathMenu].items_(LNX_Puss4Patch.pathAsStrings);
+					index = LNX_Puss4Patch.paths.indexOf(path) ? 0;
+					gui[\pathMenu].value_(index);
+				}.defer(1.5);
+			};
 
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(gui[\compositeView],10@90,150,
+		presetView=MVC_PresetMenuInterface(gui[\compositeView],10@190,100,
 				Color(0.8,0.8,1)/1.6,
 				Color(0.7,0.7,1)/3,
 				Color(0.7,0.7,1)/1.5,
