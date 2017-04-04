@@ -138,6 +138,16 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 					this.setSynthArgVP(14,val,\highFreq,val,latency,send);
 				}],
 
+			// 15. left delay
+			[0, [0,0.2,1], midiControl, 15, "delayL", (\label_:"delayL", numberFunc_:\float2),
+				{|me,val,latency,send| this.setSynthArgVP(15,val,\delayL,val,latency,send)}
+			],
+
+			// 16. right delay
+			[0, [0,0.2,1], midiControl, 16, "delayR", (\label_:"delayR", numberFunc_:\float2),
+				{|me,val,latency,send| this.setSynthArgVP(16,val,\delayR,val,latency,send)}
+			],
+
 		];
 
 		#models,defaults=template.generateAllModels;
@@ -232,15 +242,20 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		MVC_MyKnob3(models[5],gui[\scrollView],Rect(183,48,30,30),gui[\knobTheme]);
 
 		// 13.low pass
-		MVC_MyKnob3(models[13],gui[\scrollView],Rect(143,108,30,30),gui[\knobTheme]);
+		MVC_MyKnob3(models[13],gui[\scrollView],Rect(20,108,30,30),gui[\knobTheme]);
 
 		// 14.high pass
-		MVC_MyKnob3(models[14],gui[\scrollView],Rect(68,108,30,30),gui[\knobTheme])
+		MVC_MyKnob3(models[14],gui[\scrollView],Rect(80,108,30,30),gui[\knobTheme])
 			.zeroValue_(20000); // cause its hi pass
 
+		// 15. left delay
+		MVC_MyKnob3(models[15],gui[\scrollView],Rect(140,108,30,30),gui[\knobTheme]);
+
+		// 16. right delay
+		MVC_MyKnob3(models[16],gui[\scrollView],Rect(200,108,30,30),gui[\knobTheme]);
+
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(gui[\scrollView],
-									17@(gui[\scrollView].bounds.height-23),105,
+		presetView=MVC_PresetMenuInterface(gui[\scrollView], 17@(gui[\scrollView].bounds.height-23),105,
 			Color(0.74, 0.74, 0.88)*0.6,
 			Color.black,
 			Color(0.74, 0.74, 0.88),
@@ -258,7 +273,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 
 		SynthDef("External FX", {|outputChannels=0, inputChannels=4, pan=0, inAmp=1, outAmp=1,
 			xOutputChannels=0, xInputChannels=0, channelSetup=0, xChannelSetup=0,
-			sendChannels=4, sendAmp=0, on=1, lowFreq=20000, highFreq=20|
+			sendChannels=4, sendAmp=0, on=1, lowFreq=20000, highFreq=20,delayL=0,delayR=0|
 			var in2Out, out2In, silent, mono;
 
 			var in = In.ar(inputChannels, 2)*(inAmp.dbamp); 			// from LNX input bus
@@ -272,6 +287,8 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			Out.ar(xOutputChannels,in2Out);								// send to external
 
 			out2In = In.ar(xInputChannels, 2);							// return from external
+			out2In = DelayN.ar(out2In, 0.2, [delayL.lag,delayR.lag]);   // post delay
+
 			out2In = Select.ar(xChannelSetup,[
 				[out2In[0],out2In[1]],(out2In[0]+out2In[1]).dup, out2In[0].dup, out2In[1].dup]);
 			out2In = SelectX.ar(on.lag,[in,out2In]);					// on/Off (bypass)
@@ -320,6 +337,8 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			[\n_set, node, \sendChannels, outCh],
 			[\n_set, node, \lowFreq ,p[13]],
 			[\n_set, node, \highFreq,p[14]],
+			[\n_set, node, \delayL ,p[15]],
+			[\n_set, node, \delayR ,p[16]]
 		);
 
 	}
