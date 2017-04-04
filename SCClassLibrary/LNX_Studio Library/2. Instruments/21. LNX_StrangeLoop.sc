@@ -35,7 +35,6 @@ attack decay envelope
 
 BUGS: !!!
 ---------
-links to url files doesn't work
 incorrect sample is showing in menu when song loaded
 press record, swap over to a url sample and press play
 need to put latency sync in

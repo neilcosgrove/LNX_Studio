@@ -407,6 +407,7 @@ LNX_MarkerEvent {
 
 			signal = BufRd.ar(1, [bufnumL,bufnumR], index, loop:0); // might need to be leaked
 			signal = LeakDC.ar(signal);
+			signal = HPF.ar(signal,25);
 			signal = signal * EnvGen.ar(Env.new([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,amp,doneAction:2);
 
 			DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0
@@ -426,6 +427,7 @@ LNX_MarkerEvent {
 
 			signal = BufRd.ar(1, [bufnumL,bufnumR], index, loop:0); // might need to be leaked
 			signal = LeakDC.ar(signal);
+			signal = HPF.ar(signal,25);
 			signal = signal * EnvGen.ar(Env.new([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,amp,doneAction:2);
 
 			DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0
