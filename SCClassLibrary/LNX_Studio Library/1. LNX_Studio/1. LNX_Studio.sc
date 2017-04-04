@@ -1525,25 +1525,29 @@ LNX_Studio {
 			Dialog.openPanel({ arg paths;
 				var i=(-1);
 				if (paths.size>1) {
-					if (gui[\songsMenu].notNil) {
-						gui[\songsMenu].remove;
-						gui[\songsMenu]=nil
-					};
-
+					// if more than 1 song selected make a menu of them all
 					Platform.case(\osx, {
-						gui[\songsMenu]=SCMenuGroup.new(nil, "Songs",9);
-						SCMenuItem.new(gui[\songsMenu],  "Previous song").setShortCut("1")
-							.action_{i=i-1; this.loadPath(paths.wrapAt(i))};
-						SCMenuItem.new(gui[\songsMenu],  "Next song").setShortCut("2")
-							.action_{i=i+1; this.loadPath(paths.wrapAt(i))};
-						SCMenuSeparator(gui[\songsMenu]); // add a separator
-
+						// on macOS...
+						// load previous song
+						MainMenu.register( Action("Previous song", {
+							i=i-1;
+							this.loadPath(paths.wrapAt(i));
+						}).shortcut_("Ctrl+1"),"Songs","Controls");
+						// load next song
+						MainMenu.register( Action("Next song", {
+							i=i-1;
+							this.loadPath(paths.wrapAt(i));
+						}).shortcut_("Ctrl+2"),"Songs","Controls");
+						// load a song
 						paths.do{|path,j|
-							SCMenuItem.new(gui[\songsMenu],  path.basename)
-								.action_{ i=j; this.loadPath(path) };
+							MainMenu.register( Action(path.basename, {
+ 								i=j;
+								this.loadPath(path);
+							}),"Songs","Songs");
 						};
 					});
 				}{
+					// else just load the song
 					this.loadPath(paths@0);
 				}
 			}, multipleSelection: true);

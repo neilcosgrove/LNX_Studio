@@ -16,7 +16,6 @@ fit pitch to fit
 save dialog
 Auto Save All
 Discard All
-add HPF.ar(signal,20); to stop any low freq
 low & high pass no repeats
 optimise vars
 rand or rev on pRoll, what about poly?
@@ -44,6 +43,7 @@ deleting all buffers while playing
 
 Done
 ----
+add HPF.ar(signal,20); to stop any low freq
 also problem with 2nd new sample and correct marker playback
 empty temp folder
 fix no file on load
