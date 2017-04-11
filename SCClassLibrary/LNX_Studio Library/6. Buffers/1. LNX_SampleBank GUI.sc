@@ -1352,7 +1352,7 @@
 				.font_(Font("Helvetica", 11))
 				.color_(\focus,Color.grey(alpha:0))
 				.color_(\string,Color.white)
-				.color_(\typing,Color.yellow)
+				.color_(\typing,Color.black)
 				.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 			// follow
@@ -1372,7 +1372,7 @@
 			// .label_("BPM");
 
 			// tap button
-			MVC_FlatButton(gui[\scrollView], Rect(728, 106, 33, 18),"Tap").downAction_{ tapTempo.tap }
+			MVC_FlatButton(gui[\scrollView], Rect(720, 106, 33, 18),"Tap").downAction_{ tapTempo.tap }
 				.rounded_(true)
 				.font_(Font("Helvetica",12,true))
 				.color_(\up,Color(50/77,61/77,1))

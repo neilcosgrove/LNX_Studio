@@ -9,6 +9,7 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
+gui for new sample length
 do a wet/dry mix (overdub or mix) - good
 what happens when i dup a temp
 save dialog GUI needs to be a singleton
@@ -34,12 +35,13 @@ attack decay envelope
 
 BUGS: !!!
 ---------
+Durations on pRolls don't seem to work
 incorrect sample is showing in menu when song loaded
 press record, swap over to a url sample and press play
 need to put latency sync in
 focus is lost when adding samples now
 space bar is playing wrong sample on load
-deleting all buffers while playing
+deleting all buffers while playing or deleting a sLoop when player
 
 Done
 ----
@@ -310,6 +312,10 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			// 33. reset latch Mode (Event)
 			[1, \switch, midiControl, 33, "Reset Mode",
 				{|me,val,latency,send| this.setPVPModel(33,val,latency,send) }],
+
+			// 34. new length
+			[64, \length, midiControl, 34, "New Length",
+				{|me,val,latency,send| this.setPVPModel(34,val,latency,send) }],
 
 		].generateAllModels;
 
@@ -779,8 +785,20 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.action_{this.marker_Import };
 
 		// new button
-		MVC_FlatButton(gui[\scrollView], Rect(768, 104, 40, 20), "New", gui[\flatButton])
+		MVC_FlatButton(gui[\scrollView], Rect(760, 104, 40, 20), "New", gui[\flatButton])
 			.action_{ this.guiNewBuffer };
+
+		// 34. new length
+		gui[\length]=MVC_NumberBox(gui[\scrollView],models[34], Rect(803, 104+2, 42, 16))
+			.resoultion_(250)
+			.rounded_(true)
+			.visualRound_(1)
+			.label_("(n) beats")
+			.font_(Font("Helvetica", 11))
+			.color_(\focus,Color.black)
+			.color_(\string,Color.white)
+			.color_(\typing,Color.black)
+			.color_(\background,Color(46/77,46/79,72/145)/1.5);
 
 		// record
 		gui[\record]= MVC_OnOffView(gui[\scrollView], Rect(767, 139, 40, 20),"Rec")

@@ -165,9 +165,15 @@ and what if not recorded yet so file doesn't exist yet
 
 	// make a new buffer
 	guiNewBuffer{
-		var numFrames;
+		var numFrames, length;
 		var sampleRate = studio.server.sampleRate;
-		var length     = (sampleBankGUI[\length].value); 					// length is from gui widget
+
+		if (gui[\length].view.keyString.notNil) {			// try and get length from keyString 1st
+			length = gui[\length].view.keyString.interpret; // interpret keyString to get a value
+			models[34].valueAction_(length);				// and use this in the model now
+		}{
+			length = (models[34].value); 					// length is from model
+		};
 
 		if (length<=0) { length = 64 };										// if zero use 64
 		numFrames = length * 3 * (studio.absTime) * (sampleRate);			// work that out in frames
