@@ -65,7 +65,6 @@ LNX_Puss4Patch{
 		{ 1.wait; this.restartAll }.fork; // everything else needs a chance to start 1st
 	}
 
-	// i might need to remove all previous if you have more than 1 controller and 1 is lost and reconnected
 	*restartAll{
 		allHIDs		= IdentityDictionary[];
 		dependants	= dependants ? IdentityDictionary[];
@@ -75,6 +74,7 @@ LNX_Puss4Patch{
 		off			= 0.03;		// off threshold
 		{
 			var deviceNo=1;
+			if (HID.running) { HID.closeAll; 1.wait }; // this should stop 2 on 1 device when no. devces>1
 			HID.findAvailable;
 			1.wait;
 			HID.available.do{|info,i|
