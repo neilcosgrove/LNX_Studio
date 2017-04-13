@@ -591,7 +591,6 @@
 		var moved=insts.move(id,pos);
 		if (moved){
 			this.alignInstGUI;	// move gui's
-			insts.visualOrder.do({|inst,index| inst.instNo_(index) }); // change numbers
 			api.sendOD(\netMove,id,pos);
 			MVC_Automation.refreshGUI;
 		};
@@ -603,7 +602,6 @@
 		if (moved){
 			{
 				this.alignInstGUI;	// move gui's
-				insts.visualOrder.do({|inst,index| inst.instNo_(index) }); // change numbers
 				MVC_Automation.refreshGUI;
 			}.defer;
 		};

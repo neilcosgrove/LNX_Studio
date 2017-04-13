@@ -9,8 +9,9 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
-gui for new sample length
 do a wet/dry mix (overdub or mix) - good
+pressing record, while recording stops recording
+level meter?
 what happens when i dup a temp
 save dialog GUI needs to be a singleton
 fit pitch to fit
@@ -45,6 +46,7 @@ deleting all buffers while playing or deleting a sLoop when player
 
 Done
 ----
+gui for new sample length
 add HPF.ar(signal,20); to stop any low freq
 also problem with 2nd new sample and correct marker playback
 empty temp folder
@@ -84,6 +86,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	var <guiModeModel,		<previousMode,	<currentRateAdj=1;
 	var <voicer,			<recordBus,		<cueRecord=false;
+
+	var <sources,			<sourceValues;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -303,7 +307,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[1, \switch, midiControl, 31, "Reset Mode",
 				{|me,val,latency,send| this.setPVPModel(31,val,latency,send) }],
 
-
 			// 32. reset / latch (Event)
 			[65, [1,65,\linear,1], midiControl, 32, "Reset & Latch",
 				(label_:" Latch ", numberFunc_:{|n| (n==65).if("inf",n.asInt.asString)}),
@@ -317,15 +320,76 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			[64, \length, midiControl, 34, "New Length",
 				{|me,val,latency,send| this.setPVPModel(34,val,latency,send) }],
 
+			// 35. audio source [ 0=master, -ive Audio In channels, +ive inst out channels]
+			// inf at start but reduces to i.mixerInstruments.size after load
+			/*
+			Possible sources..
+			0 - Master
+			1+  i.mixerInstruments.collect{|i| [i.id, i.instNo, i.name, i.instGroupChannel] }
+			1-  LNX_AudioDevices.inputMenuList
+			*/
+			[0, [(LNX_AudioDevices.numInputBusChannels/2*3).neg, inf, \linear,1], midiControl, 35, "Input source",
+				{|me,val,latency,send| this.setPVPModel(35,val,latency,send) }],
+
 		].generateAllModels;
+
+		models[35].constrain_(false);
 
 		// list all parameters you want exluded from a preset change
 		presetExclusion=[0,1];
 		randomExclusion=[0,1,10];
 		autoExclusion=[];
 
-
 		guiModeModel = [0,[0,2,\lin,1,1]].asModel;
+
+		studio.insts.addDependant(this);
+
+	}
+
+	update{|object, model, arg1,arg2|
+		//[object, model, arg1,arg2].postln;
+		this.updateSources;
+	}
+
+	iPostSongLoad{|offset|
+		//this.updateSources;
+	}
+
+	// update menus with any changes to the sources
+	updateSources{
+		var newSources = [ "Master" , "-" ];
+		var newSourceValues = [0, nil];
+
+		 studio.insts.mixerInstruments.do{|i,j|
+			//[i.id, i.instNo, i.name, i.instGroupChannel]
+			newSources = newSources.add( (i.instNo+1) ++ "." ++ (i.name));
+			newSourceValues = newSourceValues.add(j+1);
+		};
+
+		newSources = newSources.add("-");
+		newSourceValues = newSourceValues.add(nil);
+
+		(LNX_AudioDevices.numInputBusChannels/2).asInt.do{|i|
+			var j=i*2+1;
+			var k=i*3;
+			newSources 		= newSources.add("In: "++j++"&"++(j+1)++" L&R");// left & right
+			newSourceValues = newSourceValues.add( (k+1).neg );
+			newSources 		= newSources.add("In: "++j ++" Left");			// left
+			newSourceValues = newSourceValues.add( (k+2).neg );
+			newSources 		= newSources.add("In: "++(j+1) ++" Right");		// right
+			newSourceValues = newSourceValues.add( (k+3).neg );
+		};
+
+		models[35].controlSpec_([
+			(LNX_AudioDevices.numInputBusChannels/2*3).neg,
+			studio.insts.mixerInstruments.size,
+		\linear,1]);
+
+		gui[\source].items_(newSources);
+
+		sources		 = newSources;
+		sourceValues = newSourceValues;
+
 	}
 
 	updateGUI{|tempP|
@@ -508,6 +572,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	// free this
 	iFree{
+		studio.insts.removeDependant(this);
 		sampleBank.free;
 		webBrowser.free;
 		sequencer.free;
@@ -761,6 +826,21 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			{gui[\latchResetEvent].changeLabel_( val.isTrue.if("Latch","Reset") )} .deferIfNeeded
 		};
 
+	//  [35 indirect] = source
+		gui[\source] = MVC_PopUpMenu3(gui[\scrollView], Rect(580, 548, 190, 17), gui[\menuTheme])
+			.action_{|me|
+				var value = sourceValues [ me.value.asInt] ? 0;
+				models[35].valueAction_(value, send:true);
+			};
+
+		MVC_FuncAdaptor(models[35]).func_{|me,val|
+			{
+				var index = sourceValues.indexOf(val.asInt) ? 0;
+				gui[\source].value_(index);
+			} .deferIfNeeded
+		};
+
+		this.updateSources;
 
 		// *****************
 

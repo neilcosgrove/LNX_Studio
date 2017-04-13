@@ -19,138 +19,12 @@ and what if not recorded yet so file doesn't exist yet
 
 */
 
-+ LNX_Studio {
-
-	reviewBufferSaves{|bufferInstBankDict,saveMode|
-		// ( buffer: [inst, bank, indexOfBuffer] )
-		var date      = Date.getDate.stamp;
-		var songName  = (this.name.size==0).if("LNX_Studio",this.name);
-		var startPath = "LNX_Songs" +/+ songName ++ "/";
-		var info      = bufferInstBankDict.collect{|list,buffer|
-			var instNo   = list[0].instNo;
-			var instName = list[0].name;
-			var bufNum   = list[2];
-			var path     = startPath ++ (instNo+1) ++ "." ++ instName ++ "(" ++ (bufNum+1) ++ ")" + date; // ++ ".aiff";
-			[
-				path.asModel,		// 0: path model
-				\switch.asModel,    // 1: 0=save, 1=delete
-				buffer,				// 2: buffer
-				list[0],			// 3: inst
-				list[1],			// 4: bank
-				instNo,				// 5: instNo
-				instName,			// 6: instName
-				bufNum,				// 7: buffer number
-				date,				// 8: date
-				startPath			// 9: start part of path
-			]
-		}.asList.sort{|a,b| (a[5]==b[5]).if{ a[7]<=b[7] }{ a[5]<=b[5] }};
-
-		var window, guiTextField;
-		var gui = IdentityDictionary[];
-		var size = info.size;
-
-		gui[\onOffTheme2] = ( \rounded_: true, \colors_: ( \on: Color(1,1,1,0.5), \off: Color(1,1,1,0.5)));
-
-		gui[\onOffTheme1] = ( \rounded_: true, \colors_: ( \off: Color(0.5,1,0.5,0.66), \on: Color(1,0.5,0.5,0.66)));
-
-		// for path
-		gui[\textTheme1]= (	labelShadow_: false, shadow_:false, canEdit_:true, hasBorder_:true, enterStopsEditing_:false,
-							\font_:	  Font("Helvetica", 13,true),
-							\colors_:  ( \label:Color.black, \edit:Color.white, \editBackground:Color(0,0,0,0.6),
-										\string:Color.black,
-										\cursor:Color.orange, \focus:Color(0,0,0,0.1),  \background:Color(0,0,0,0.3) ));
-
-		gui[\textTheme2]= (	labelShadow_: false, shadow_:false, canEdit_:false,
-							\font_:	  Font("Helvetica", 13,true),
-							\colors_:  ( \label:Color.black, \string:Color.black));
-
-		window = MVC_ModalWindow(mixerWindow, 700@((size*20).clip(0,390)+99), (
-			background: 	Color(59/77,59/77,59/77),
-			border2: 		Color(6/11,42/83,29/65),
-			border1: 		Color(3/77,1/103,0,65/77),
-			menuBackground:	Color(1,1,0.9)
-		));
-		gui[\scrollView] = window.scrollView;
-
-		// text field for the instrument / filename
-		MVC_StaticText(gui[\scrollView], Rect(10,3,655,16), gui[\textTheme2])
-			.align_(\center)
-			.string_("There are samples in this song thats haven't been saved yet.");
-
-		MVC_StaticText(gui[\scrollView], Rect(10,21,655,16), gui[\textTheme2])
-			.font_(Font("Helvetica", 13))
-			.string_("What do you want to do with them?");
-
-		gui[\infoScrollView] = MVC_ScrollView(gui[\scrollView], Rect(10,40,655,(size*20).clip(0,390)+3) )
-			.hasBorder_(true)
-			.color_(\background, Color(0.9,0.9,0.9));
-
-		info.do{|list,i|
-			// path
-			MVC_Text(list[0], gui[\infoScrollView], Rect(2,2+(i*20),550,16), gui[\textTheme1]);
-
-			// play
-			MVC_OnOffView(gui[\infoScrollView], Rect(555,1+(i*20),40,18),"Play", gui[\onOffTheme2])
-				.action_{ list[2].play };
-
-			// save discard
-			MVC_OnOffView(list[1], gui[\infoScrollView], Rect(598,1+(i*20),53,18), gui[\onOffTheme1] )
-				.strings_(["Save","Discard"])
-		};
-
-		// Cancel
-		MVC_OnOffView(gui[\scrollView], Rect(564, (size*20).clip(0,390)+50, 55, 20),"Cancel", gui[\onOffTheme2])
-			.action_{ window.close };
-
-		// Ok
-		MVC_OnOffView(gui[\scrollView], Rect(624, (size*20).clip(0,390)+50, 50, 20),"Ok", gui[\onOffTheme2])
-		.action_{
-
-			if (saveMode==\saveAs) {
-				Dialog.savePanel{|path|
-					var baseName = path.basename.removeExtension.replace(":","");
-					var newStartPath= "LNX_Songs" +/+ baseName ++ "/";
-					info.do{|list|
-						var inst    = list[3];
-						var bank 	= list[4];
-						var bufNum	= list[7];
-						if (list[1].isFalse) {
-							var newName = list[0].string;
-							if (newName.beginsWith(startPath)) { newName = newStartPath ++ (newName.drop(startPath.size)) };
-							// warning this will be asynchronous in network
-							inst.updateTempToLocalFile(bufNum, bank[bufNum], newName);
-						}{
-							// warning this will be asynchronous in network
-							inst.revertTempToNew(bufNum, bank[bufNum]);
-						}
-					};
-					this.save(path);
-				};
-			};
-
-			if (saveMode==\save) {
-				info.do{|list|
-					var inst    = list[3];
-					var bank 	= list[4];
-					var bufNum	= list[7];
-					if (list[1].isFalse) {
-						var newName = list[0].string;
-						// warning this will be asynchronous in network
-						inst.updateTempToLocalFile(bufNum, bank[bufNum], newName);
-					}{
-						// warning this will be asynchronous in network
-						inst.revertTempToNew(bufNum, bank[bufNum]);
-					}
-				};
-				this.save(songPath);
-
-			};
-
-			window.close;
-		};
-	}
-
-}
+/*
+Possible sources..
+0 - Master
+1+  i.mixerInstruments.collect{|i| [i.id, i.instNo, i.name, i.instGroupChannel] }
+1-  LNX_AudioDevices.inputMenuList
+*/
 
 + LNX_StrangeLoop {
 
@@ -304,12 +178,28 @@ and what if not recorded yet so file doesn't exist yet
 	}
 
 	record{|latency|
-		var sample, bufferL, bufferR, multiBuffer, numFrames,  startFrame, endFrame, durFrame;
+		var sample, bufferL, bufferR, multiBuffer, numFrames,  startFrame, endFrame, durFrame, recordIndex, recordSource;
 		var sampleIndex = p[11];					  	// sample used in bank
 		if (sampleBank[sampleIndex].isNil) {
 			{gui[\record].value_(0)}.deferIfNeeded;
 			^this
 		};	// no samples loaded in bank exception
+
+		recordIndex = p[35].asInt.clip((LNX_AudioDevices.numInputBusChannels/2*3).neg, studio.insts.mixerInstruments.size);
+		if (recordIndex!=p[35]) { recordIndex = 0 }; // force master if bus doesn't exist
+
+		case
+			{recordIndex==0} { recordSource = [0,1] }
+			{recordIndex> 0} { recordSource = studio.insts.mixerInstruments[recordIndex-1].instGroupChannel.dup+[0,1]  }
+			{recordIndex< 0} {
+				var b = LNX_AudioDevices.firstInputBus;			// 1st audio in bus
+				var i = (recordIndex.abs - 1).div(3);			// which set of busues
+				var j = (recordIndex.abs - 1) % 3;				// L&R, L or R
+				switch (j.asInt)
+					{0}{ recordSource = [b+(i*2)  ,b+(i*2)+1] } // Left & Right
+					{1}{ recordSource = [b+(i*2)  ,b+(i*2)  ] } // Left
+					{2}{ recordSource = [b+(i*2)+1,b+(i*2)+1] };// Right
+			};
 
 		sample		= sampleBank[sampleIndex];							// the sample
 		bufferL		= sample.recordBuffers[0].bufnum;          			// this only comes from LNX_BufferArray
@@ -322,7 +212,7 @@ and what if not recorded yet so file doesn't exist yet
 
 		if (bufferR.notNil) {
 			var path;
-			var recordNode	= this.record_Buffer(0, bufferL, bufferR, multiBuffer, 1, startFrame, durFrame, latency);
+			var recordNode	= this.record_Buffer(recordSource, bufferL, bufferR, multiBuffer, 1, startFrame, durFrame, latency);
 			var node		= Node.basicNew(server, recordNode);
 			var watcher		= NodeWatcher.register(node);
 			var func 		= {|changer,message|
@@ -348,8 +238,6 @@ and what if not recorded yet so file doesn't exist yet
 					this.marker_changeBuffers( sample.bufnum(0), sample.bufnum(1) ,latency);
 					//
 					// Surely this can be done sooner...!
-
-
 				};
 			};
 
@@ -367,14 +255,15 @@ and what if not recorded yet so file doesn't exist yet
 	}
 
 	// play a buffer for sequencer mode
-	record_Buffer{|inputChannels, bufnumL, bufnumR, multiBuffer, rate, startFrame, durFrame, latency|
+	record_Buffer{|inArray, bufnumL, bufnumR, multiBuffer, rate, startFrame, durFrame, latency|
 		var indexNode  = server.nextNodeID;
 		var recordNode = server.nextNodeID;
 		recordBus 	   = Bus.audio(server,1);
 
 		server.sendBundle(latency +! syncDelay,
 			["/s_new", \SLoopRecordStereo, recordNode, 0, studio.groups[\channelOut].nodeID,
-			\inputChannels,	inputChannels,
+			\leftIn,		inArray[0],
+			\rightIn,		inArray[1],
 			\id,			id,
 			\bufnumL,		bufnumL,
 			\bufnumR,		bufnumR,
@@ -402,13 +291,14 @@ and what if not recorded yet so file doesn't exist yet
 		}).send(server);
 
 		// we can add to side group to record
-		SynthDef("SLoopRecordStereo",{|inputChannels=0, bufnumL=0, bufnumR=1, multiBuffer=1,
+		SynthDef("SLoopRecordStereo",{|leftIn=0, rightIn=1, bufnumL=0, bufnumR=1, multiBuffer=1,
 										id=0, rate=1, gate=1, startFrame=0, durFrame=44100, indexBus=0|
 			var indexIn = In.ar(indexBus,1); // comes from SynthDef above
 			var index   = startFrame + ( indexIn * BufRateScale.ir(bufnumL)         ).clip(0,durFrame); // real from in
 			var refindex= Integrator.ar((rate    * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame); // fake
 			var slope   = Slope.ar(index);
-			var signal  = In.ar(inputChannels,2) * (slope>0);
+
+			var signal  = [In.ar(leftIn,1), In.ar(rightIn,1)] * (slope>0);
 
 			BufWr.ar(signal[0],  bufnumL, index, loop:0);	// left
 			BufWr.ar(signal[1],  bufnumR, index, loop:0);	// right
@@ -418,6 +308,139 @@ and what if not recorded yet so file doesn't exist yet
 
 		}).send(server);
 
+	}
+
+}
+
++ LNX_Studio {
+
+	reviewBufferSaves{|bufferInstBankDict,saveMode|
+		// ( buffer: [inst, bank, indexOfBuffer] )
+		var date      = Date.getDate.stamp;
+		var songName  = (this.name.size==0).if("LNX_Studio",this.name);
+		var startPath = "LNX_Songs" +/+ songName ++ "/";
+		var info      = bufferInstBankDict.collect{|list,buffer|
+			var instNo   = list[0].instNo;
+			var instName = list[0].name;
+			var bufNum   = list[2];
+			var path     = startPath ++ (instNo+1) ++ "." ++ instName ++ "(" ++ (bufNum+1) ++ ")" + date; // ++ ".aiff";
+			[
+				path.asModel,		// 0: path model
+				\switch.asModel,    // 1: 0=save, 1=delete
+				buffer,				// 2: buffer
+				list[0],			// 3: inst
+				list[1],			// 4: bank
+				instNo,				// 5: instNo
+				instName,			// 6: instName
+				bufNum,				// 7: buffer number
+				date,				// 8: date
+				startPath			// 9: start part of path
+			]
+		}.asList.sort{|a,b| (a[5]==b[5]).if{ a[7]<=b[7] }{ a[5]<=b[5] }};
+
+		var window, guiTextField;
+		var gui = IdentityDictionary[];
+		var size = info.size;
+
+		gui[\onOffTheme2] = ( \rounded_: true, \colors_: ( \on: Color(1,1,1,0.5), \off: Color(1,1,1,0.5)));
+
+		gui[\onOffTheme1] = ( \rounded_: true, \colors_: ( \off: Color(0.5,1,0.5,0.66), \on: Color(1,0.5,0.5,0.66)));
+
+		// for path
+		gui[\textTheme1]= (	labelShadow_: false, shadow_:false, canEdit_:true, hasBorder_:true, enterStopsEditing_:false,
+							\font_:	  Font("Helvetica", 13,true),
+							\colors_:  ( \label:Color.black, \edit:Color.white, \editBackground:Color(0,0,0,0.6),
+										\string:Color.black,
+										\cursor:Color.orange, \focus:Color(0,0,0,0.1),  \background:Color(0,0,0,0.3) ));
+
+		gui[\textTheme2]= (	labelShadow_: false, shadow_:false, canEdit_:false,
+							\font_:	  Font("Helvetica", 13,true),
+							\colors_:  ( \label:Color.black, \string:Color.black));
+
+		window = MVC_ModalWindow(mixerWindow, 700@((size*20).clip(0,390)+99), (
+			background: 	Color(59/77,59/77,59/77),
+			border2: 		Color(6/11,42/83,29/65),
+			border1: 		Color(3/77,1/103,0,65/77),
+			menuBackground:	Color(1,1,0.9)
+		));
+		gui[\scrollView] = window.scrollView;
+
+		// text field for the instrument / filename
+		MVC_StaticText(gui[\scrollView], Rect(10,3,655,16), gui[\textTheme2])
+			.align_(\center)
+			.string_("There are samples in this song thats haven't been saved yet.");
+
+		MVC_StaticText(gui[\scrollView], Rect(10,21,655,16), gui[\textTheme2])
+			.font_(Font("Helvetica", 13))
+			.string_("What do you want to do with them?");
+
+		gui[\infoScrollView] = MVC_ScrollView(gui[\scrollView], Rect(10,40,655,(size*20).clip(0,390)+3) )
+			.hasBorder_(true)
+			.color_(\background, Color(0.9,0.9,0.9));
+
+		info.do{|list,i|
+			// path
+			MVC_Text(list[0], gui[\infoScrollView], Rect(2,2+(i*20),550,16), gui[\textTheme1]);
+
+			// play
+			MVC_OnOffView(gui[\infoScrollView], Rect(555,1+(i*20),40,18),"Play", gui[\onOffTheme2])
+				.action_{ list[2].play };
+
+			// save discard
+			MVC_OnOffView(list[1], gui[\infoScrollView], Rect(598,1+(i*20),53,18), gui[\onOffTheme1] )
+				.strings_(["Save","Discard"])
+		};
+
+		// Cancel
+		MVC_OnOffView(gui[\scrollView], Rect(564, (size*20).clip(0,390)+50, 55, 20),"Cancel", gui[\onOffTheme2])
+			.action_{ window.close };
+
+		// Ok
+		MVC_OnOffView(gui[\scrollView], Rect(624, (size*20).clip(0,390)+50, 50, 20),"Ok", gui[\onOffTheme2])
+		.action_{
+
+			if (saveMode==\saveAs) {
+				Dialog.savePanel{|path|
+					var baseName = path.basename.removeExtension.replace(":","");
+					var newStartPath= "LNX_Songs" +/+ baseName ++ "/";
+					info.do{|list|
+						var inst    = list[3];
+						var bank 	= list[4];
+						var bufNum	= list[7];
+						if (list[1].isFalse) {
+							var newName = list[0].string;
+							if (newName.beginsWith(startPath)) { newName = newStartPath ++ (newName.drop(startPath.size)) };
+							// warning this will be asynchronous in network
+							inst.updateTempToLocalFile(bufNum, bank[bufNum], newName);
+						}{
+							// warning this will be asynchronous in network
+							inst.revertTempToNew(bufNum, bank[bufNum]);
+						}
+					};
+					this.save(path);
+				};
+			};
+
+			if (saveMode==\save) {
+				info.do{|list|
+					var inst    = list[3];
+					var bank 	= list[4];
+					var bufNum	= list[7];
+					if (list[1].isFalse) {
+						var newName = list[0].string;
+						// warning this will be asynchronous in network
+						inst.updateTempToLocalFile(bufNum, bank[bufNum], newName);
+					}{
+						// warning this will be asynchronous in network
+						inst.revertTempToNew(bufNum, bank[bufNum]);
+					}
+				};
+				this.save(songPath);
+
+			};
+
+			window.close;
+		};
 	}
 
 }
