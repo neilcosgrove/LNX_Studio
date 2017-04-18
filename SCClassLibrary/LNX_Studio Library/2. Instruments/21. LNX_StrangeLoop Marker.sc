@@ -118,7 +118,7 @@ LNX_MarkerEvent {
 		if ( (instBeat3%3)==0) { this.guiHighlight(repeatMode, latency) };
 
 		frameProb	= p[24]/100;					// frame beat repeat
-		rateAdj		= 1;							// so we can change rate with this.marker_changeRate
+		rateAdj		= 0;							// so we can change rate with this.marker_changeRate
 		rate		= (p[12]+p[13]).midiratio.round(0.0000000001).clip(0,100000);
 		amp         = (100/127) * (sampleBank.amp(sampleIndex).dbamp);	// 100/127 - amp in pRoll
 		doFrame     = false;
@@ -312,7 +312,7 @@ LNX_MarkerEvent {
 			var sampleIndex = p[11];
 			var sample      = sampleBank[sampleIndex];
 			var rate		= (p[12]+p[13]).midiratio.round(0.0000000001).clip(0,100000);
-			var rateAdj		= 1;
+			var rateAdj		= 0;
 			var amp         = (vel/127) * (sampleBank.amp(sampleIndex).dbamp);
 			var clipMode    = p[14];
 			var bufferL		= sample.bufnumPlayback(0);          	// this only comes from LNX_BufferArray

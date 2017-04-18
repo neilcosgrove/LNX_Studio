@@ -155,7 +155,7 @@ Possible sources..
 		cueRecord = true;
 	}
 
-	// from clockIn3
+	// record tigger from clockIn3 (starts record)
 	record_ClockIn3{|instBeat,absTime3,latency,beat|
 		var length;
 
@@ -177,6 +177,7 @@ Possible sources..
 
 	}
 
+	// record is go...
 	record{|latency|
 		var sample, bufferL, bufferR, multiBuffer, numFrames,  startFrame, endFrame, durFrame, recordIndex, recordSource;
 		var sampleIndex = p[11];					  	// sample used in bank

@@ -9,21 +9,22 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
+record audio - many sources (level in) (overdub,replace) level meter?
 do a wet/dry mix (overdub or mix) - good
-pressing record, while recording stops recording
-level meter?
+pressing record, while recording stops recording + other combos,
+record 1 after another after another
+startOffset
 what happens when i dup a temp
 save dialog GUI needs to be a singleton
 fit pitch to fit
 save dialog
 Auto Save All
 Discard All
-low & high pass no repeats
+low & high pass no repeats or increases sends
 optimise vars
 rand or rev on pRoll, what about poly?
 syncDelay
 new sample (mono/stereo)
-record audio - many sources (level in) (overdub,replace)
 save names in cashe / dialog ?
 playback bpm [div 2] [*2] buttons
 quantise options
@@ -33,6 +34,8 @@ one shot
 zeroX or peak
 proll has dark patches for out of range
 attack decay envelope
+NETWORK
+TIDY GUI
 
 BUGS: !!!
 ---------
@@ -46,6 +49,7 @@ deleting all buffers while playing or deleting a sLoop when player
 
 Done
 ----
+input source
 gui for new sample length
 add HPF.ar(signal,20); to stop any low freq
 also problem with 2nd new sample and correct marker playback
