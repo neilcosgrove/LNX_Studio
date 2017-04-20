@@ -147,6 +147,7 @@ LNX_BufferArray {
 		soundFile.openRead(path.standardizePath); // why does only standardizePath work?
 		sampleData  = FloatArray.fill(numFrames*numChannels,0); // causes lates with large samples
 		soundFile.readData(sampleData); // fast but causes lates
+		soundFile.close;
 	}
 
 	// update buffer to a local file with the filename path //////////////////////////////////////
@@ -176,6 +177,8 @@ LNX_BufferArray {
 
 		// fast but causes lates
 		soundFile.readData(sampleData);
+
+		soundFile.close;
 
 //		// slow causes less lates
 //		soundFile.readByChunks(action:{|data|
