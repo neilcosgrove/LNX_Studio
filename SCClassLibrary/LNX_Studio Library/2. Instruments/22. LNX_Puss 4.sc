@@ -2,6 +2,18 @@
 // a puss 4 control patcher //
 //////////////////////////////
 /*
+
+TO DO
+
+Can output both midi cc & note  (each control has a cc index and can be set with previous memory
+Can turn off program up/down
+Fade In & Out are registered models with -ive indexs
+Nice GUI
+Text labels showing whats learned
+network it
+
+//////////
+
 LNX_Puss4Patch.allHIDs;
 LNX_Puss4Patch.paths;
 LNX_Puss4Patch.verbose_(false);
@@ -54,15 +66,20 @@ use [18] - up, down. inc dec prog
 LNX_Puss4Patch{
 
 	classvar <>verbose = false;
+
 	classvar <allHIDs, <paths, <pathAsStrings, <dependants, <exclude, <reverse, <resolution, <off;
+	classvar <elementNames, <noElements;
 
-	*learnOn{ resolution = 0.5 }
-
-	*learnOff{ resolution	= 0.01 }
+	*learnOn { resolution = 0.25 }
+	*learnOff{ resolution = 0.01 }
 
 	*initClass{
 		Class.initClassTree(HID);
 		{ 1.wait; this.restartAll }.fork; // everything else needs a chance to start 1st
+		elementNames = ["Square", "Cross","Circle", "Triangle", "L1", "R1", "L2", "R2", "Share", "Options", "L3", "R3",
+			"PS Button", "TPad Button", "LJoy L&R", "LJoy U&D", "RJoy L&R", "RJoy U&D", "DPad Left", "DPad Right",
+			"DPad Up", "DPad Down"];
+		noElements=elementNames.size;
 	}
 
 	*restartAll{
@@ -113,17 +130,17 @@ LNX_Puss4Patch{
 											// dpad out as up/down [18,19] left/right [20,21]
 											// dpad out as up/down [20,21] left/right [18,19]
 											switch (lastDPad)
-											{0} { dependants[idName].do{|func| func.value(20, 0)}; } // up off
-											{1} { dependants[idName].do{|func| func.value(19, 0)}; } // right off
-											{2} { dependants[idName].do{|func| func.value(21, 0)}; } // down off
-											{3} { dependants[idName].do{|func| func.value(18, 0)}; } // left off
-											{4} { pass = false }; // centre
+												{0} { dependants[idName].do{|func| func.value(20, 0)}; } // up off
+												{1} { dependants[idName].do{|func| func.value(19, 0)}; } // right off
+												{2} { dependants[idName].do{|func| func.value(21, 0)}; } // down off
+												{3} { dependants[idName].do{|func| func.value(18, 0)}; } // left off
+												{4} { pass = false }; // centre
 											switch (value)
-											{0} { newIndex = 20; lastDPad = 0; value = 1; pass = true } // up on
-											{1} { newIndex = 19; lastDPad = 1; value = 1; pass = true } // right on
-											{2} { newIndex = 21; lastDPad = 2; value = 1; pass = true } // down on
-											{3} { newIndex = 18; lastDPad = 3; value = 1; pass = true } // left on
-											{4} { lastDPad =  4; pass = false }; // centre
+												{0} { newIndex = 20; lastDPad = 0; value = 1; pass = true } // up on
+												{1} { newIndex = 19; lastDPad = 1; value = 1; pass = true } // right on
+												{2} { newIndex = 21; lastDPad = 2; value = 1; pass = true } // down on
+												{3} { newIndex = 18; lastDPad = 3; value = 1; pass = true } // left on
+												{4} { lastDPad =  4; pass = false }; // centre
 										};
 									};
 									// output value if passes all tests above
@@ -202,12 +219,15 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 
 		];
 
-/*		8.do{|i|
-			template[i+2]=[0, [0,127,\linear,1], ( label_:(i.asString), numberFunc_:\int),
-				{|me,val| this.midiControlVP(i,val) }];
-
-			template[i+10]=[0, \switch, ( strings_:(i+8).asString ),
-				{ this.guiMidiControl(i+8,1) }];
+/*
+		// noE = 22;
+		LNX_Puss4Patch.noElements.do{|i|
+			template=template. add([0, \switch, ( label_:("Type:"++LNX_Puss4Patch.elementNames[i]), numberFunc_:\int),
+			{|me,val,latency,send| this.setPVP(2+i,val,latency,send)}]);
+		};
+		LNX_Puss4Patch.noElements.do{|i|
+		template=template. add([0, \unipolar, ( label_:("CC:"++LNX_Puss4Patch.elementNames[i]), numberFunc_:\int),
+			{|me,val,latency,send| this.setPVP(22+2+i,val,latency,send)}]);
 		};
 */
 
@@ -225,17 +245,19 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 
 	puss4In{|index,value|
 		if (index<=19) {
+			// texample for sending notes
+			// if (index == 4) { if (value>0.5) { midi.noteOn(53,100) } { midi.noteOff(53,100) } };
 			index = (p[2]*20)+index; // CC range
-			midi.control(index, value * 127, nil, send:false , ignore:false);
+			midi.control(index, value * 127, nil, send:false, ignore:false);
 			^this
 		};
 		if (value==0) {^this};
 		if (index==20) { // Dpad UP
-			LNX_POP.previousProg;
+			//LNX_POP.previousProg;
 			^this
 		};
 		if (index==21) { // Dpad DOWN
-			LNX_POP.nextProg;
+			//LNX_POP.nextProg;
 			^this
 		};
 	}

@@ -119,6 +119,8 @@ LNX_Studio {
 
 	var midi2, padNotes; // temp for CARBON ************
 
+	var <loadIndex = -1, <loadPaths;
+
 	// create a new studio ///////////////////////////////////////////////////////
 
 	*new {|server| if (studios.isEmpty) { ^super.new.init(server) } } // only 1 instance for now
@@ -1515,33 +1517,50 @@ LNX_Studio {
 				};
 				g.close;
 			};
+		}
+	}
 
-}	}
+	// load previous song if many files selected
+
+	nextSong{
+		if (loadPaths.size>1) {
+			loadIndex=loadIndex+1;
+			this.loadPath(loadPaths.wrapAt(loadIndex));
+		}
+	}
+
+	// load previous song if many files selected
+
+	previousSong{
+		if (loadPaths.size>1) {
+			loadIndex=loadIndex-1;
+			this.loadPath(loadPaths.wrapAt(loadIndex));
+		}
+	}
 
 	// load user dialog
 
 	loadDialog{
 		if (this.canLoadSong) {
 			Dialog.openPanel({ arg paths;
-				var i=(-1);
 				if (paths.size>1) {
+					loadIndex = -1;
+					loadPaths = loadPaths ++ (paths.sort);
 					// if more than 1 song selected make a menu of them all
 					Platform.case(\osx, {
 						// on macOS...
 						// load previous song
-						MainMenu.register( Action("Previous song", {
-							i=i-1;
-							this.loadPath(paths.wrapAt(i));
+						MainMenu.register( Action("Next song", {
+							this.nextSong;
 						}).shortcut_("Ctrl+1"),"Songs","Controls");
 						// load next song
-						MainMenu.register( Action("Next song", {
-							i=i-1;
-							this.loadPath(paths.wrapAt(i));
+						MainMenu.register( Action("Previous song", {
+							this.previousSong;
 						}).shortcut_("Ctrl+2"),"Songs","Controls");
 						// load a song
-						paths.do{|path,j|
+						loadPaths.do{|path,j|
 							MainMenu.register( Action(path.basename, {
- 								i=j;
+ 								loadIndex=j;
 								this.loadPath(path);
 							}),"Songs","Songs");
 						};

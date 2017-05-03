@@ -174,11 +174,10 @@ LNX_BufferArray {
 		//sampleData  = FloatArray[0]; // temp
 
 		sampleData  = FloatArray.fill(numFrames*numChannels,0); // causes lates with large samples
-
-		// fast but causes lates
-		soundFile.readData(sampleData);
-
+		soundFile.readData(sampleData); // fast but causes lates
 		soundFile.close;
+
+		//sampleData  = FloatArray.fill(1*numChannels,0); // *** temp FOR GIG
 
 //		// slow causes less lates
 //		soundFile.readByChunks(action:{|data|

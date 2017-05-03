@@ -155,6 +155,10 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 		sequencer.pipeIn(pipe);                 // to the sequencer
 		keyboardView.pipeIn(pipe,Color.orange); // to the gui keyboard
 		// drop out and Don't send if pipe is external and coming from Sub37 going to Sub37
+
+		// hack for gig
+		if ((pipe.source==\external) && {midi.outPoint.isNil}) { "midi.outPoint".warn; ^this};
+
 		if ((pipe.source==\external) && {midi.outPoint.isSameDeviceAndName(pipe[\endPoint])}) {
 			^this
 		};

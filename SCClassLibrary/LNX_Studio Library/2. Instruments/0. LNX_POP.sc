@@ -67,6 +67,29 @@ LNX_POP {
 			studio.padMixerNoteOnFunc(src, chan, note, vel ,latency); // carbon pad mixer
 
 		};
+
+		midi.controlFunc  = {|src, chan, num, val,latency|
+			if (val==127) {
+				if (num==111) { {
+					LNX_MIDIPatch.panic;
+					{
+						studio.updateAllPadMixer; // temp for CARBON ************
+					}.defer(1);
+				}.deferIfNeeded }; // panic
+				if ((num==104)&&(studio.isPlaying.not)) { {
+					midi.control(104,127);
+					studio.nextSong;
+					{ midi.control(104,0); }.defer(1);
+				}.deferIfNeeded;}; // next song
+				if ((num==105)&&(studio.isPlaying.not)) { {
+					midi.control(105,127);
+					studio.previousSong;
+					{ midi.control(105,0); }.defer(1);
+				}.deferIfNeeded }; // previous song
+			};
+
+		};
+
 		midi.programFunc = {|src, chan, prog, latency|
 			if (prog.notNil and: {prog<noPOP}) {
 				studioModels[\toBecome].lazyValueAction_(prog);

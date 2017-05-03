@@ -263,6 +263,7 @@ LNX_AppMenus {
 			// edit menu
 			Menu(
 				Action("Stop Audio",			{CmdPeriod.run}).shortcut_("Ctrl+."),
+				Action("MIDI Panic",			{LNX_MIDIPatch.panic}).shortcut_("Ctrl+,"),
 				Action.separator,
 				Action("Copy Instrument",		{ studio.guiCopy }).shortcut_("Ctrl+Shift+C"),
 				Action("Paste Instrument",		{ studio.guiPaste }).shortcut_("Ctrl+Shift+V"),
