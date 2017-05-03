@@ -6,12 +6,15 @@ LNX_MIDIControl.elements.postList;
 a.a.models[3].controlGroup.modelIDs
 a.a.models[0].controlGroup.models
 a.a.models[0].controlGroup.names
+
+// to get a list of all IDs used by LNX & all insts then do the line below after adding all insts to a song
+// i used this to find -10, -11 are free for fadeIn & fadeOut
+(i.asList++a).collect{|i| i.midiControl.modelIDs }.asList.flat.asSet.asList.sort.postList
+
 */
 
 // v1.2 has automation data saved
-
 // FREE THIS
-
 // DELETE INST WHILE IT HAS A MIDI LEARN
 
 LNX_MIDIControl {

@@ -425,7 +425,6 @@
 			.postfix_(" db")
 			.color_(\label,Color.white);
 
-
 		// fadeIn
 		MVC_FlatButton(sv,Rect(25, 3, 27, 17), mixerGUI[\buttonTheme2 ] ,"up")
 			.mode_(\icon)
@@ -746,15 +745,21 @@
 			// peakLevel
 			MVC_PeakLevel(sv,inst.peakModel,Rect(54, 132, 13, 172));
 
+/*
+m=\switch.asModel;
+w=MVC_Window().create;
+f=MVC_FlatButton(w,m,Rect(10,10,20,20));
+m.action_{|...a| a.postln}
+//-10, -11 are free for fadeIn & fadeOut
+*/
+
 			// fadeIn
-			MVC_FlatButton(sv,Rect(24, 107, 27, 17), mixerGUI[\buttonTheme2 ] ,"up")
-				.mode_(\icon)
-				.action_{ inst.fadeIn };
+			MVC_FlatButton(inst.fadeInModel, sv,Rect(24, 107, 27, 17), mixerGUI[\buttonTheme2 ] ,"up")
+				.mode_(\icon);
 
 			// fadeOut
-			MVC_FlatButton(sv,Rect(24, 290+30, 27, 17), mixerGUI[\buttonTheme2 ] ,"down")
-				.mode_(\icon)
-				.action_{ inst.fadeOut };
+			MVC_FlatButton(inst.fadeOutModel, sv,Rect(24, 290+30, 27, 17), mixerGUI[\buttonTheme2 ] ,"down")
+				.mode_(\icon);
 
 			// pan
 			MVC_MyKnob3(inst.panModel,sv,Rect(12, 340 + ScrollBars.addIfNone(2), 25, 25),mixerGUI[\knobTheme1])

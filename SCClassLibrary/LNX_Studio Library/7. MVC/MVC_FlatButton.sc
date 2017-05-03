@@ -1,5 +1,11 @@
 
-// LNX_BevelPushOnOffView
+// LNX_PushOnOffView
+/*
+m=\switch.asModel;
+w=MVC_Window().create;
+f=MVC_FlatButton(w,m,Rect(10,10,20,20), a.midiControl, -10);
+m.action_{|...a| a.postln}
+*/
 
 MVC_FlatButton : MVC_View {
 
@@ -151,7 +157,8 @@ MVC_FlatButton : MVC_View {
 				}{
 					evaluateAction=true;
 					if (buttonNumber==2) {
-						this.toggleMIDIactive
+						this.toggleMIDIactive;
+						".".post;
 					}{
 						down=true;
 						view.refresh;

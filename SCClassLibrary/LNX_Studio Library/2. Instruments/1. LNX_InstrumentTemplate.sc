@@ -61,6 +61,8 @@ LNX_InstrumentTemplate {
 
 	var <syncDelay=0;
 
+	var <fadeInModel, <fadeOutModel, <freed = false;
+
 	////////////////////////////////////////
 	//                                    //
 	//// init stuff ////////////////////////
@@ -273,6 +275,13 @@ LNX_InstrumentTemplate {
 		midi.internalFunc= {|...msg| this.internal(*msg); this.midiInternal(*msg) };
 		midi.action      = {|me| api.sendClumpedList(\netMidiChange,me.getSaveList) };
 		midiControl=LNX_MIDIControl(this); // for midi controls only
+
+		if (this.isMixerInstrument) {
+			//-10, -11 are free for fadeIn & fadeOut
+			fadeInModel  = [\switch, midiControl, -10, "Fade In",  { this.fadeIn  }].asModel;
+			fadeOutModel = [\switch, midiControl, -11, "Fade Out", { this.fadeOut }].asModel;
+
+		};
 	}
 
 	// used by keyboard controller to add presets
@@ -423,7 +432,6 @@ LNX_InstrumentTemplate {
 
 	// free up this instrument/child
 	free{
-
 		this.iFree;
 
 		studio.midiCnrtLastNote.removeAll(this); // not the best place but the easiest to do
@@ -445,6 +453,8 @@ LNX_InstrumentTemplate {
 		tasks.do(_.stop);
 		this.freeEQ;
 
+		freed = true;
+
 		{
 			presetsOfPresets = tasks = models = defaults = nameModel = api =
 			instrumentHeaderType = version = studioName =thisWidth =thisHeight = defaultP =
@@ -452,7 +462,7 @@ LNX_InstrumentTemplate {
 			hidden = hiddenBounds = controlTitle = p = midi = midiControl = isLoading =
 			loadedAction = notesOn = synthsOn = releaseTimes = instOnSolo = presetView =
 			presetMemory = presetExclusion = randomExclusion = presetNames = presetInterface =
-			instGroup = instGroupID = fxGroup = fxGroupID = synth = node = bpm = absTime= nil;
+			instGroup = instGroupID = fxGroup = fxGroupID = synth = node = bpm = absTime = nil;
 		}.defer(1);
 	 }
 
@@ -1651,17 +1661,14 @@ LNX_InstrumentTemplate {
 		var startVolume,x;
 		if (this.volumeModel.notNil) {
 			startVolume = this.volume;
-
 			hack[\fadeTask].stop;
 			hack[\fadeTask]={
 				(beats*resolution).do{|n|
-					(absTime/8/resolution).wait;
-
-					x=(n+1)/beats/resolution;
-					this.volume_(
-						(level*x)+(startVolume*(1-x))
-
-					)
+					if (freed.not) {
+						(absTime/8/resolution).wait;
+						x=(n+1)/beats/resolution;
+						this.volume_( (level*x)+(startVolume*(1-x)) )
+					};
 				}
 			}.fork(SystemClock);
 		}
@@ -1669,24 +1676,18 @@ LNX_InstrumentTemplate {
 
 	fadeIn{|level,beats=64,resolution=1|
 		var startVolume,x;
-
 		beats = #[ 192, 64, 24 ][studio.models[\fadeSpeed].value];
-
 		if (this.volumeModel.notNil) {
 			level=level ? (this.peakLevel) ? 1; // levels ?
 			startVolume = this.volume;
-
-			// this.volume_(0); // do i want this?
-
 			hack[\fadeTask].stop;
 			hack[\fadeTask]={
 				(beats*resolution).do{|n|
-					(absTime/8/resolution).wait;
-					x=(n+1)/beats/resolution;
-					this.volume_(
-						//level*x
-						(level*x)+(startVolume*(1-x))
-					);
+					if (freed.not) {
+						(absTime/8/resolution).wait;
+						x=(n+1)/beats/resolution;
+						this.volume_( (level*x)+(startVolume*(1-x)) );
+					};
 				}
 			}.fork(SystemClock);
 		}
@@ -1694,17 +1695,17 @@ LNX_InstrumentTemplate {
 
 	fadeOut{|beats=64,resolution=1|
 		var startVolume;
-
 		beats = #[ 192, 64, 24 ][studio.models[\fadeSpeed].value];
-
 		if (this.volumeModel.notNil) {
 			startVolume = this.volume; // levels?
 			hack[\fadeTask].stop;
 			hack[\fadeTask]={
 				(beats*resolution).do{|n|
-					(absTime/8/resolution).wait;
-					this.volume_(startVolume*(beats*resolution-n-1)/(beats*resolution))
-				}
+					if (freed.not) {
+						(absTime/8/resolution).wait;
+						this.volume_(startVolume*(beats*resolution-n-1)/(beats*resolution))
+					}
+				};
 			}.fork(SystemClock);
 		}
 	}

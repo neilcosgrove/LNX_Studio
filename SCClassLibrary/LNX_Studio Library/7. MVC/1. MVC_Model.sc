@@ -41,7 +41,7 @@ MVC_Model {
 
 	var <automation, <>automationActive=true, <>isProgramModel=false;
 
-	var lazyRefresh;
+	var lazyRefresh,  <freed=false;
 
 	// maths & logic support (more to add)
 
@@ -200,6 +200,7 @@ MVC_Model {
 		lazyRefresh = automation = dependants = noDependants = action = action2 = actions = value =
 		string = enabled = midiLearn = controlID = controlGroup = resoultion =
 		defaultControlType = controlSpec = themeMethods = midiMode = hackAction = synthDefControl = nil;
+		freed = true;
 	}
 
 	// set enabled in all dependants
@@ -454,6 +455,7 @@ MVC_Model {
 
 	// set with a range 0-1
 	set_{|val,latency,send=true|
+		if (freed) { ^this };
 		if (controlSpec.notNil) { val=controlSpec.map(val) };
 		if (value!=val) { this.lazyValueAction_(val,latency,send) }; // important its lazy!!
 	}
