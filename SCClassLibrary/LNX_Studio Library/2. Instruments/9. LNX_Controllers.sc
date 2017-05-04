@@ -63,7 +63,7 @@ LNX_Controllers : LNX_InstrumentTemplate {
 		];
 
 		8.do{|i|
-			template[i+2]=[0, [0,127,\linear,1], ( label_:(i.asString), numberFunc_:\int),
+			template[i+2]=[0, [0,127,\linear,0], ( label_:(i.asString), numberFunc_:\int),
 				{|me,val| this.midiControlVP(i,val) }];
 
 			template[i+10]=[0, \switch, ( strings_:(i+8).asString ),
@@ -79,10 +79,6 @@ LNX_Controllers : LNX_InstrumentTemplate {
 
 	}
 
-	guiAddPreset{} // not for this
-
-	selectProgram{} // not for this
-
 	////////////////
 
 	// override insts template to stop select preset when loading
@@ -92,7 +88,7 @@ LNX_Controllers : LNX_InstrumentTemplate {
 	}
 
 	*thisWidth  {^320}
-	*thisHeight {^240}
+	*thisHeight {^240+30}
 
 	createWindow{|bounds|
 		this.createTemplateWindow(bounds,Color(0,1/103,9/77));
@@ -140,6 +136,17 @@ LNX_Controllers : LNX_InstrumentTemplate {
 				LNX_MIDIControl.editControls(studio); LNX_MIDIControl.window.front
 			};
 
+		// the preset interface
+		presetView=MVC_PresetMenuInterface(gui[\compositeView],10@134,187,
+				Color(0.8,0.8,1)/1.6,
+				Color(0.7,0.7,1)/3,
+				Color(0.7,0.7,1)/1.5,
+				Color(35/48,122/157,5/6),
+				Color.black
+			);
+		this.attachActionsToPresetGUI;
+
+
 		// controllers
 		8.do{|i|
 			// knobs
@@ -158,7 +165,7 @@ LNX_Controllers : LNX_InstrumentTemplate {
 		};
 
 		// the keyboard, fix bug so we don't need this scrollView
-		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(6+5,148+9,305-10,75))
+		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(6+5,148+9+30,305-10,75))
 			.hasHorizontalScroller_(false)
 			.hasVerticalScroller_(false);
 
