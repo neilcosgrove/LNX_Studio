@@ -253,25 +253,18 @@ MVC_OnOffView : MVC_View {
 						}{
 							colors[\background].set;
 						};
-
 						Pen.fillRect(Rect(0,0,w,h));
 
 						(col*(flashState*0.5+0.5)).set;
 
-
-
 						// draw border
 						if (colors[\border].notNil) {
-
 							Pen.fillRect(Rect(0,0+hAdjust,w,h-hAdjust));
-
 							colors[\border].set;
 							Pen.strokeRect(Rect(0,0,w-1,h-1));
 						}{
-
 							Pen.fillRect(Rect(1,1+hAdjust,w- 2,h- 2-hAdjust));
 						};
-
 
 						if (colors[\innerBorder].notNil) {
 							colors[\innerBorder].set;

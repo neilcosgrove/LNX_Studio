@@ -879,7 +879,7 @@ m.action_{|...a| a.postln}
 			y = (i*62);
 
 			mixerGUI[id][\scrollView] = MVC_CompositeView(mixerGUI[\fxScrollView],
-										Rect(0,0+y,170,62), hasBorder:false);
+										Rect(0,0+y,170+ ScrollBars.addIfSome(7),62), hasBorder:false);
 
 			sv=mixerGUI[id][\scrollView];
 
@@ -1001,12 +1001,12 @@ m.action_{|...a| a.postln}
 				.color_(\background, inst.mixerColor);
 
 			// divider
-			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(0,59,170+7,1))
+			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(0,59,170+7+ ScrollBars.addIfSome(7),1))
 					.color_(\on,Color(0,0,0,0.3))
 					.color_(\off,Color(0,0,0,0.3));
 
 			// divider
-			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(0,60,170+7,1))
+			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(0,60,170+7+ ScrollBars.addIfSome(7),1))
 					.color_(\on,Color(1,1,1,0.4))
 					.color_(\off,Color(1,1,1,0.4));
 
@@ -1018,7 +1018,7 @@ m.action_{|...a| a.postln}
 			y = (i*23);
 
 			mixerGUI[id][\scrollView] = MVC_CompositeView(mixerGUI[\midiScrollView],
-										Rect(0,0+y,250,25), hasBorder:false);
+										Rect(0,0+y,240+ ScrollBars.addIfSome(7),25), hasBorder:false);
 
 			sv=mixerGUI[id][\scrollView];
 
@@ -1083,11 +1083,13 @@ m.action_{|...a| a.postln}
 
 				// MIDI icon
 				mixerGUI[id][\midi]=MVC_OnOffView(inst.onOffModel,sv,
-											Rect(151,3,84,16))
+											Rect(151,3,84,17))
 					.permanentStrings_(["MIDI"])
 					.canFocus_(false)
-					.color_(\on, Color(0.2,0.3,0.5))
-					.color_(\off,Color(0.2,0.3,0.5))
+					.color_(\background, Color.clear)
+					.color_(\border, Color(0,0,0,0.33), true)
+					.color_(\on, inst.mixerColor)
+					.color_(\off,inst.mixerColor)
 					.font_(Font("Helvetica",11,true));
 
 			}{
@@ -1126,12 +1128,12 @@ m.action_{|...a| a.postln}
 			};
 
 			// divider
-			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(0,22,250,1))
+			mixerGUI[id][\divider]=MVC_PlainSquare(sv, Rect(0,22,250 + ScrollBars.addIfSome(7),1))
 					.color_(\on,Color(0,0,0,0.3))
 					.color_(\off,Color(0,0,0,0.3));
 
 			// divider
-			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(0,23,250,1))
+			mixerGUI[id][\divider2]=MVC_PlainSquare(sv, Rect(0,23,250 + ScrollBars.addIfSome(7),1))
 					.color_(\on,Color(1,1,1,0.4))
 					.color_(\off,Color(1,1,1,0.4));
 
