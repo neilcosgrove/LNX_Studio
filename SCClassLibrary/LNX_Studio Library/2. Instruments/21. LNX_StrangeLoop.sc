@@ -91,7 +91,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <guiModeModel,		<previousMode,	<currentRateAdj=1;
 	var <voicer,			<recordBus,		<cueRecord=false;
 
-	var <sources,			<sourceValues;
+	var <sources,			<sourceValues,	<lastSource;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -333,7 +333,12 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			1-  LNX_AudioDevices.inputMenuList
 			*/
 			[0, [(LNX_AudioDevices.numInputBusChannels/2*3).neg, inf, \linear,1], midiControl, 35, "Input source",
-				{|me,val,latency,send| this.setPVPModel(35,val,latency,send) }],
+				{|me,val,latency,send|
+					this.setPVPModel(35,val,latency,send);
+					// if inst is selected then lastSource = id else nil
+					lastSource = nil;
+					if (val>=1) { lastSource = studio.insts.mixerInstruments[val - 1].id };
+			}],
 
 		].generateAllModels;
 
@@ -350,21 +355,31 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	}
 
+	// update coming from LNX_Instruments
 	update{|object, model, arg1,arg2|
-		//[object, model, arg1,arg2].postln;
 		this.updateSources;
 	}
 
+	// after every inst is loaded...
 	iPostSongLoad{|offset|
-		//this.updateSources;
+		lastSource = nil;
+		if (p[35]>=1) { lastSource = studio.insts.mixerInstruments[p[35] - 1].id }; // find id if an inst
+		this.privateUpdateSources;
 	}
 
 	// update menus with any changes to the sources
+
+	// called when loading, adding insts, moving insts or deleting insts
 	updateSources{
+		if (studio.isLoading) { ^this }; // drop out if loading a song else many calls as each inst is added
+		this.privateUpdateSources;
+	}
+
+	privateUpdateSources{
 		var newSources = [ "Master" , "-" ];
 		var newSourceValues = [0, nil];
 
-		 studio.insts.mixerInstruments.do{|i,j|
+		studio.insts.mixerInstruments.do{|i,j|
 			//[i.id, i.instNo, i.name, i.instGroupChannel]
 			newSources = newSources.add( (i.instNo+1) ++ "." ++ (i.name));
 			newSourceValues = newSourceValues.add(j+1);
@@ -394,10 +409,21 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		sources		 = newSources;
 		sourceValues = newSourceValues;
 
+		if (lastSource.notNil) {
+			var guiIndex = studio.insts.mixerInstruments.indexOf( studio.insts[lastSource] );
+			if (guiIndex.notNil) {
+				guiIndex =  guiIndex + 2;
+				{gui[\source].value_(guiIndex)}.deferIfNeeded
+			}{
+				models[35].valueAction_(0);
+				{gui[\source].value_(0)}.deferIfNeeded
+			};
+		};
+
 	}
 
 	updateGUI{|tempP|
-		(11..18).do{|i| p[i] = tempP[i] };
+		(11..18).do{|i| p[i] = tempP[i] }; // WHAT IS THIS ???????????????
 		tempP.do{|v,j|
 			if (p[j]!=v) {
 				models[j].lazyValueAction_(v,send:false)
@@ -830,7 +856,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			{gui[\latchResetEvent].changeLabel_( val.isTrue.if("Latch","Reset") )} .deferIfNeeded
 		};
 
-	//  [35 indirect] = source
+		// [35 indirect] = source
 		gui[\source] = MVC_PopUpMenu3(gui[\scrollView], Rect(580, 548, 190, 17), gui[\menuTheme])
 			.action_{|me|
 				var value = sourceValues [ me.value.asInt] ? 0;
@@ -844,7 +870,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			} .deferIfNeeded
 		};
 
-		this.updateSources;
+		this.privateUpdateSources;
 
 		// *****************
 

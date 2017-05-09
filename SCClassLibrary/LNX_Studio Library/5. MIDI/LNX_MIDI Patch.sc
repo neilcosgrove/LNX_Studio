@@ -295,8 +295,7 @@ LNX_MIDIPatch {
 					if ( (patch.uidIn==src) and:
 						{(chan==(patch.midiInChannel)) or: {(patch.midiInChannel)==(-1)}} ) {							patch.touchFunc.value(src, chan, pressure);
 							// send with no latency parameter
-
-																			if (patch.pipeFunc.notNil) {
+							if (patch.pipeFunc.notNil) {
 								var pipe = LNX_Touch(pressure,nil,\external);
 								pipe[\endPoint] = patch.inPoint;
 								pipe[\source] = src;
@@ -354,8 +353,8 @@ LNX_MIDIPatch {
 				if ( (patch.uidIn==src) and:
 					{(chan==(patch.midiInChannel)) or: {(patch.midiInChannel)==(-1)}} ) {
 						patch.noteOnFunc.value(src, chan, note, vel);
-									// send with no latency parameter
-																		if (patch.pipeFunc.notNil) {
+						// send with no latency parameter
+						if (patch.pipeFunc.notNil) {
 							var pipe = LNX_NoteOn(note,vel,nil,\external);
 							pipe[\source] = src;
 							pipe[\channel] = chan;
@@ -374,9 +373,8 @@ LNX_MIDIPatch {
 							{(chan==(patch.midiInChannel)) or:
 							{(patch.midiInChannel)==(-1)}} ) {
 								patch.noteOnFunc.value(src, chan, note, vel);
-										// send with no latency parameter
-
-																				if (patch.pipeFunc.notNil) {
+								// send with no latency parameter
+								if (patch.pipeFunc.notNil) {
 									var pipe = LNX_NoteOn(note,vel,nil,\external);
 									pipe[\source] = src;
 									pipe[\channel] = chan;
@@ -441,7 +439,6 @@ LNX_MIDIPatch {
 				if ( (patch.uidIn==uidOut) and:{(patch===this).not} and:
 					{(patch.midiInChannel==midiOutChannel) or: {patch.midiInChannel==(-1)}} ) {
 						patch.noteOnFunc.value (uidIn, midiOutChannel, note, vel, latency);
-
 						if (patch.pipeFunc.notNil) {
 							var pipe = LNX_NoteOn(note,vel,nil,\internal);
 							pipe[\source] = uidIn;
@@ -464,8 +461,7 @@ LNX_MIDIPatch {
 				if ( (patch.uidIn==uidOut) and:{(patch===this).not} and:
 					{(patch.midiInChannel==midiOutChannel) or: {patch.midiInChannel==(-1)}} ) {
 						patch.noteOffFunc.value (uidIn, midiOutChannel, note, vel, latency);
-
-																		if (patch.pipeFunc.notNil) {
+						if (patch.pipeFunc.notNil) {
 							var pipe = LNX_NoteOff(note,vel,nil,\internal);
 							pipe[\source] = uidIn;
 							pipe[\channel] = midiOutChannel;
@@ -545,8 +541,6 @@ LNX_MIDIPatch {
 
 	}
 
-
-
 	// special internal messages only lnx understands (comms via midi) used in LNX_Controllers
 	internal{|...msg|
 		if ((uidOut>0)and:{uidOut<=noInternalBuses}) {
@@ -559,17 +553,15 @@ LNX_MIDIPatch {
 		};
 	}
 
-
 	// need to update these to include internal buses, but i'm not them at the moment
 	bend { |val, latency|
 		if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
 		outs[midiOut].bendLatency   (midiOutChannel, val, latency);
-
 	}
+
 	touch{ |val, latency|
 		if (latency.isNil) { latency = 0 }{ latency = latency + midiSyncLatency };
 		outs[midiOut].touchLatency  (midiOutChannel, val, latency);
-
 	}
 
 	*panic{ patches.do(_.panic) }
@@ -616,7 +608,6 @@ LNX_MIDIPatch {
 			outs[midiOut].midiClockLatency(latency);
 		}
 	}
-
 
 	setInPort{|in|
 		midiIn=in.clip(0,noInPorts+noInternalBuses- 1);
@@ -710,7 +701,6 @@ LNX_MIDIPatch {
 	}
 
 	free {
-
 		if ((patchNo+1)<noPatches) {
 			for (patchNo+1, noPatches - 1, {|i|
 				patches[i].patchNo=patches[i].patchNo - 1;
@@ -718,7 +708,6 @@ LNX_MIDIPatch {
 		};
 		patches.removeAt(patchNo);
 		noPatches=patches.size;
-
 	}
 
 	*uidInName{|i|

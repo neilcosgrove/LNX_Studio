@@ -1301,9 +1301,11 @@ LNX_Studio {
 
 	fullDump{
 		"// LNX_Studio Dump ///////////".postln;
-		insts.postList;
+		this.dump;
 		"//////////////////////////////".postln;
 		super.dump;
+		"//////////////////////////////".postln;
+		insts.postList;
 		"//////////////////////////////".postln;
 		insts.do(_.dump);
 	}
@@ -1472,11 +1474,7 @@ LNX_Studio {
 			saveList=saveList++(b); // change
 			saveList=saveList++(inst.getSaveList);
 		});
-
-
 		saveList=saveList++LNX_POP.getSaveList;
-
-
 		saveList=saveList++(List["*** END STUDIO DOC ***"]);
 		^saveList
 	}

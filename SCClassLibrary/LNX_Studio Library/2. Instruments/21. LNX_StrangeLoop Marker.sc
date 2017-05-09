@@ -2,6 +2,8 @@
 // Marker mode  //
 // ************ //
 
+// idea: how about a list of repeat times [2,4,6,8,12,16] // like reverese bouncing ball
+
 LNX_MarkerEvent {
 	var <>markerNo, <>deltaBeats, <>offset, <>startFrame, <>durFrame;
 	*new     {|markerNo, deltaBeats, offset, startFrame, durFrame|
