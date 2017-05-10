@@ -26,6 +26,9 @@ Possible sources..
 1-  LNX_AudioDevices.inputMenuList
 */
 
+
+// changing insts still a problem for sources gui when source is audio in
+
 + LNX_StrangeLoop {
 
 	// should be in sampleBank ??
@@ -180,6 +183,7 @@ Possible sources..
 	// record is go...
 	record{|latency|
 		var sample, bufferL, bufferR, multiBuffer, numFrames,  startFrame, endFrame, durFrame, recordIndex, recordSource;
+		var playBufferL, playBufferR, overdub;
 		var sampleIndex = p[11];					  	// sample used in bank
 		if (sampleBank[sampleIndex].isNil) {
 			{gui[\record].value_(0)}.deferIfNeeded;
@@ -205,15 +209,20 @@ Possible sources..
 		sample		= sampleBank[sampleIndex];							// the sample
 		bufferL		= sample.recordBuffers[0].bufnum;          			// this only comes from LNX_BufferArray
 		bufferR		= sample.recordBuffers[1].bufnum; 					// this only comes from LNX_BufferArray
+		playBufferL	= sample.bufnumPlayback(0);          				// this only comes from LNX_BufferArray
+		playBufferR	= sample.bufnumPlayback(1) ? playBufferL; 			// this only comes from LNX_BufferArray
 		multiBuffer = sample.multiChannelBuffer.bufnum;					// multi channel buffer only used to save & > SClang
 		numFrames	= sampleBank.numFrames  (sampleIndex); 				// total number of frames in sample
 		startFrame	= sampleBank.actualStart(sampleIndex) * numFrames;	// start pos frame
 		endFrame	= sampleBank.actualEnd  (sampleIndex) * numFrames;	// end pos frame
 		durFrame	= endFrame - startFrame;			 				// frames playing for
+		overdub     = p[36];											// overdub onto the previous buffer
 
 		if (bufferR.notNil) {
 			var path;
-			var recordNode	= this.record_Buffer(recordSource, bufferL, bufferR, multiBuffer, 1, startFrame, durFrame, latency);
+			var recordNode	= this.record_Buffer(
+				recordSource, bufferL, bufferR, multiBuffer, 1, startFrame, durFrame, latency, playBufferL, playBufferR, overdub
+			);
 			var node		= Node.basicNew(server, recordNode);
 			var watcher		= NodeWatcher.register(node);
 			var func 		= {|changer,message|
@@ -256,7 +265,7 @@ Possible sources..
 	}
 
 	// play a buffer for sequencer mode
-	record_Buffer{|inArray, bufnumL, bufnumR, multiBuffer, rate, startFrame, durFrame, latency|
+	record_Buffer{|inArray, bufnumL, bufnumR, multiBuffer, rate, startFrame, durFrame, latency, playBufferL, playBufferR, overdub|
 		var indexNode  = server.nextNodeID;
 		var recordNode = server.nextNodeID;
 		recordBus 	   = Bus.audio(server,1);
@@ -273,6 +282,9 @@ Possible sources..
 			\durFrame,		durFrame,
 			\indexBus,		recordBus.index,
 			\rate,			rate,
+			\playBufferL,	playBufferL,
+			\playBufferR,	playBufferR,
+			\overdub,       overdub,
 		]);
 
 		server.sendBundle(latency +! syncDelay,
@@ -292,17 +304,21 @@ Possible sources..
 		}).send(server);
 
 		// we can add to side group to record
-		SynthDef("SLoopRecordStereo",{|leftIn=0, rightIn=1, bufnumL=0, bufnumR=1, multiBuffer=1,
-										id=0, rate=1, gate=1, startFrame=0, durFrame=44100, indexBus=0|
+		SynthDef("SLoopRecordStereo",{|leftIn=0, rightIn=1, bufnumL=0, bufnumR=1, multiBuffer=1, id=0, rate=1, gate=1,
+										startFrame=0, durFrame=44100, indexBus=0, playBufferL=0, playBufferR=1,overdub=0|
 			var indexIn = In.ar(indexBus,1); // comes from SynthDef above
 			var index   = startFrame + ( indexIn * BufRateScale.ir(bufnumL)         ).clip(0,durFrame); // real from in
 			var refindex= Integrator.ar((rate    * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame); // fake
 			var slope   = Slope.ar(index);
 
-			var signal  = [In.ar(leftIn,1), In.ar(rightIn,1)] * (slope>0);
+			var signal  = [In.ar(leftIn,1), In.ar(rightIn,1)]; // source in
 
-			BufWr.ar(signal[0],  bufnumL, index, loop:0);	// left
-			BufWr.ar(signal[1],  bufnumR, index, loop:0);	// right
+			signal = signal + (BufRd.ar(1, [playBufferL,playBufferR], index, loop:0) * overdub); // overdub origial buffer
+
+			signal = signal * (slope>0); // an index with a slope <=0 turns input off
+
+			BufWr.ar(signal[0],  bufnumL, index, loop:0);	// write to the left buffer
+			BufWr.ar(signal[1],  bufnumR, index, loop:0);	// write to the right buffer
 			BufWr.ar(signal, multiBuffer, index, loop:0);	// and stereo (the multi-channel for saving)
 
 			DetectSilence.ar(Slope.ar(index+refindex), doneAction:3); // ends when index & fake slope = 0

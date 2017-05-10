@@ -340,6 +340,11 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 					if (val>=1) { lastSource = studio.insts.mixerInstruments[val - 1].id };
 			}],
 
+			// 36. overdub / replace
+			[0, \switch, midiControl, 36, "Overdub",
+				{|me,val,latency,send| this.setPVPModel(36,val,latency,send) }],
+
+
 		].generateAllModels;
 
 		models[35].constrain_(false);
@@ -871,6 +876,14 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		};
 
 		this.privateUpdateSources;
+
+		// 36. Overdub
+		MVC_OnOffView(gui[\scrollView], models[36], Rect(777, 548, 65, 20))
+			.strings_(["Overdub","Overdub"])
+			.rounded_(true)
+			.color_(\on,Color(50/77,61/77,1))
+			.color_(\off,Color(1,1,1,0.88)/4);
+
 
 		// *****************
 
