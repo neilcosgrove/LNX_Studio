@@ -135,7 +135,7 @@ LNX_BufferArray {
 
 	// finish by swapping out and freeing old buffers
 	cleanupRecord{|latency|
-		if (buffers != recordBuffers) { buffers.do{|b| b.freeWithLatency(latency)}; "Free".postln };
+		if (buffers != recordBuffers) { buffers.do{|b| b.freeWithLatency(latency)} };
 		buffers = recordBuffers;
 		playbackBuffers = recordBuffers;
 		recordBuffers = nil;

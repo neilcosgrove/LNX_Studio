@@ -190,8 +190,8 @@ Possible sources..
 		if (recordIndex!=p[35]) { recordIndex = 0 }; // force master if bus doesn't exist
 
 		case
-			{recordIndex==0} { recordSource = [0,1] }
-			{recordIndex> 0} { recordSource = studio.insts.mixerInstruments[recordIndex-1].instGroupChannel.dup+[0,1]  }
+			{recordIndex==0} { recordSource = [0,1] } // master out L&R
+			{recordIndex> 0} { recordSource = [0,1] + studio.insts.mixerInstruments[recordIndex-1].instGroupChannel } // inst
 			{recordIndex< 0} {
 				var b = LNX_AudioDevices.firstInputBus;			// 1st audio in bus
 				var i = (recordIndex.abs - 1).div(3);			// which set of busues
