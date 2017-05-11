@@ -347,7 +347,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		].generateAllModels;
 
-		models[35].constrain_(false);
+		models[35].constrain_(false); // sources can't be constrained because insts.size changes during load
 
 		// list all parameters you want exluded from a preset change
 		presetExclusion=[0,1];
@@ -380,49 +380,57 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		this.privateUpdateSources;
 	}
 
+	// update the possible source list
 	privateUpdateSources{
-		var newSources = [ "Master" , "-" ];
-		var newSourceValues = [0, nil];
+		var newSources = [ "Master" , "-" ]; // menu items
+		var newSourceValues = [0, nil];		 // and their p values
 
+		// add all the mixer instruments
 		studio.insts.mixerInstruments.do{|i,j|
-			//[i.id, i.instNo, i.name, i.instGroupChannel]
-			newSources = newSources.add( (i.instNo+1) ++ "." ++ (i.name));
-			newSourceValues = newSourceValues.add(j+1);
+			newSources = newSources.add( (i.instNo+1) ++ "." ++ (i.name)); // menu items
+			newSourceValues = newSourceValues.add(j+1);					   // and their p values
 		};
 
-		newSources = newSources.add("-");
-		newSourceValues = newSourceValues.add(nil);
+		newSources = newSources.add("-");			// menu gap
+		newSourceValues = newSourceValues.add(nil); // menu gap
 
 		(LNX_AudioDevices.numInputBusChannels/2).asInt.do{|i|
 			var j=i*2+1;
 			var k=i*3;
 			newSources 		= newSources.add("In: "++j++"&"++(j+1)++" L&R");// left & right
-			newSourceValues = newSourceValues.add( (k+1).neg );
+			newSourceValues = newSourceValues.add( (k+1).neg );				// left & right p value
 			newSources 		= newSources.add("In: "++j ++" Left");			// left
-			newSourceValues = newSourceValues.add( (k+2).neg );
+			newSourceValues = newSourceValues.add( (k+2).neg );				// left p value
 			newSources 		= newSources.add("In: "++(j+1) ++" Right");		// right
-			newSourceValues = newSourceValues.add( (k+3).neg );
+			newSourceValues = newSourceValues.add( (k+3).neg );				// right p value
 		};
 
+		// update model control spec
 		models[35].controlSpec_([
 			(LNX_AudioDevices.numInputBusChannels/2*3).neg,
 			studio.insts.mixerInstruments.size,
 		\linear,1]);
 
-		gui[\source].items_(newSources);
+		gui[\source].items_(newSources); // update gui menu items
 
 		sources		 = newSources;
 		sourceValues = newSourceValues;
 
+		// find index of currently selected source and if still here adjust menu item so it still points to it.
 		if (lastSource.notNil) {
-			var guiIndex = studio.insts.mixerInstruments.indexOf( studio.insts[lastSource] );
-			if (guiIndex.notNil) {
-				guiIndex =  guiIndex + 2;
-				{gui[\source].value_(guiIndex)}.deferIfNeeded
+			var guiIndex = studio.insts.mixerInstruments.indexOf( studio.insts[lastSource] ); // find index of inst
+			if (guiIndex.notNil) {								// if it exists
+				guiIndex =  guiIndex + 2;						// offset by 2
+				{gui[\source].value_(guiIndex)}.deferIfNeeded	// and update menu
 			}{
-				models[35].valueAction_(0);
-				{gui[\source].value_(0)}.deferIfNeeded
+				models[35].valueAction_(0);						// else if missing select master L&R
+				{gui[\source].value_(0)}.deferIfNeeded			// update gui
 			};
+		}{
+			if (p[35]<0) { {									// if source is line in then find it's location again
+				var index = sourceValues.indexOf(p[35].asInt);  // index of line in
+				gui[\source].value_(index ? 0);					// update gui
+			} .deferIfNeeded }
 		};
 
 	}
@@ -498,18 +506,18 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	// mode selecting /////////////////////////////////////////////////////////////////////////////////////////
 
 	// clock in, select mode
-	clockIn3{|instBeat,absTime3,latency,beat|
+	clockIn3{|instBeat,absTime,latency,beat|
 
-		this.record_ClockIn3(instBeat,absTime3,latency,beat);
+		this.record_ClockIn3(instBeat,absTime,latency,beat);
 
 		if (mode===\repitch) {
-			this.pitch_clockIn3(instBeat,absTime3,latency,beat);
+			this.pitch_clockIn3(instBeat,absTime,latency,beat);
 			^this
 		};
 
 		if (mode===\marker ) {
-			this.marker_clockIn3(instBeat,absTime3,latency,beat); // SHOULD BE BELOW SEQ BUT CAUSE HELD MARKERS
-			if (p[18].isFalse) { sequencer.clockIn3(instBeat,absTime3,latency,beat) };
+			this.marker_clockIn3(instBeat,absTime,latency,beat); // SHOULD BE BELOW SEQ BUT CAUSE HELD MARKERS
+			if (p[18].isFalse) { sequencer.clockIn3(instBeat,absTime,latency,beat) };
 			^this
 		};
 

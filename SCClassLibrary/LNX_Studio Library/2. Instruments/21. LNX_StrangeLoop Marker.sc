@@ -117,7 +117,11 @@ LNX_MarkerEvent {
 		sampleIndex = p[11];					  		// sample used in bank
 		if (sampleBank[sampleIndex].isNil) { ^this };	// no samples loaded in bank exception
 
-		if ( (instBeat3%3)==0) { this.guiHighlight(repeatMode, latency) };
+		if ( (instBeat3%3)==0) {
+			this.guiHighlight(repeatMode, latency);		// gui highligh repeat buttons
+		}{
+			if (p[18].isFalse) { ^this }; 				// efficiency exception, when in "sequncer" mode only clock1 needed
+		};
 
 		frameProb	= p[24]/100;					// frame beat repeat
 		rateAdj		= 0;							// so we can change rate with this.marker_changeRate
@@ -242,15 +246,27 @@ LNX_MarkerEvent {
 			if (repeatMode.isNil) { lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent) }; // add last event
 			lastMarkerEvent = lastMarkerEvent.keep(8); // memory of length p[20]
 
-			{
+
+			if	(p[18].isTrue) {
+				{
+					if (this.isOn) {
+						// special note of -1
+						this.marker_playBufferMIDI( -1,
+							bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
+						currentRateAdj = rateAdj; // so we can change rate between events with this.marker_changeRate
+					};
+					nil;
+				}.sched(markerEvent.offset * absTime3);
+			}{
 				if (this.isOn) {
 					// special note of -1
 					this.marker_playBufferMIDI( -1,
 						bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency);
 					currentRateAdj = rateAdj; // so we can change rate between events with this.marker_changeRate
 				};
-				nil;
-			}.sched(markerEvent.offset * absTime3);
+			};
+
+			// should this be scaled if using pRoll?
 
 		};
 

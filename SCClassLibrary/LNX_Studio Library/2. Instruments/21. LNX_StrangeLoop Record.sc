@@ -159,7 +159,7 @@ Possible sources..
 	}
 
 	// record tigger from clockIn3 (starts record)
-	record_ClockIn3{|instBeat,absTime3,latency,beat|
+	record_ClockIn3{|instBeat,absTime,latency,beat|
 		var length;
 
 		if (cueRecord.not) {^this};					// recording not cued exception
