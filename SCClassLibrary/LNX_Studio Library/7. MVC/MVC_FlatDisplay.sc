@@ -55,7 +55,11 @@ MVC_FlatDisplay : MVC_View {
 				val=value.clip(0,1);
 			};
 
-			thisDrawValue = ((h-4)*(1-val)+2).ceil;
+			if (direction===\vertical) {
+				thisDrawValue = ((h-4)*(1-val)+2).ceil;
+			}{
+				thisDrawValue = ((w-4)*(val)+2).ceil;
+			};
 
 			if (thisDrawValue != lastDrawValue) {
 				lastDrawValue = thisDrawValue;
@@ -88,14 +92,24 @@ MVC_FlatDisplay : MVC_View {
 						val=value.clip(0,1);
 					};
 
-					hv = ((h-4)*(1-val)+2).ceil;
-
-					if (invert) {
-						r2.set( 2, 2, w-4, hv-2);
-						r3.set( 1, 1, w-2, hv);
+					if (direction===\vertical) {
+						hv = ((h-4)*(1-val)+2).ceil;
+						if (invert) {
+							r2.set( 2, 2, w-4, hv-2);
+							r3.set( 1, 1, w-2, hv);
+						}{
+							r2.set( 2, hv, w-4, h-hv-2);
+							r3.set( 1, hv-1, w-2, h-hv);
+						};
 					}{
-						r2.set( 2, hv, w-4, h-hv-2);
-						r3.set( 1, hv-1, w-2, h-hv);
+						hv = ((w-4)*(val)+2).ceil;
+						if (invert) {
+							r2.set( hv, 2,  h-hv-2, h-4);
+							r3.set( hv-1, 1, h-hv, h-2);
+						}{
+							r2.set( 2, 2, hv-2, h-4);
+							r3.set( 1, 1, hv, h-2);
+						};
 					};
 
 					colors[\border].set;

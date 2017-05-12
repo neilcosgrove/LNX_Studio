@@ -17,17 +17,11 @@ and what if not recorded yet so file doesn't exist yet
 // update gui
 // also any other buffer which uses this
 
-*/
-
-/*
 Possible sources..
 0 - Master
 1+  i.mixerInstruments.collect{|i| [i.id, i.instNo, i.name, i.instGroupChannel] }
 1-  LNX_AudioDevices.inputMenuList
 */
-
-
-// changing insts still a problem for sources gui when source is audio in
 
 + LNX_StrangeLoop {
 
@@ -66,7 +60,7 @@ Possible sources..
 		if (buffer.convertedPath.pathExists!=\file)
 											{ "Temporary file doesn't exist".warn; ^this }; // no file exception
 
-		if ((buffer.source==\new)||(buffer.source==\temp)) { // why new here ???
+		if ((buffer.source==\new)||(buffer.source==\temp)) { 								// why new here ???
 			var window, scrollView, filename;
 			var songName = (studio.name.size==0).if("LNX_Studio",studio.name);
 			var path= "LNX_Songs" +/+ songName +/+ (this.instNo+1) ++ "." ++ (this.name)
@@ -183,27 +177,27 @@ Possible sources..
 	// record is go...
 	record{|latency|
 		var sample, bufferL, bufferR, multiBuffer, numFrames,  startFrame, endFrame, durFrame, recordIndex, recordSource;
-		var playBufferL, playBufferR, overdub;
-		var sampleIndex = p[11];					  	// sample used in bank
+		var playBufferL, playBufferR, overdub, recordLevel;
+		var sampleIndex = p[11];					  					// sample used in bank
 		if (sampleBank[sampleIndex].isNil) {
 			{gui[\record].value_(0)}.deferIfNeeded;
-			^this
-		};	// no samples loaded in bank exception
+			^this														// no samples loaded in bank exception
+		};
 
 		recordIndex = p[35].asInt.clip((LNX_AudioDevices.numInputBusChannels/2*3).neg, studio.insts.mixerInstruments.size);
-		if (recordIndex!=p[35]) { recordIndex = 0 }; // force master if bus doesn't exist
+		if (recordIndex!=p[35]) { recordIndex = 0 }; 					// force master if bus doesn't exist
 
 		case
-			{recordIndex==0} { recordSource = [0,1] } // master out L&R
+			{recordIndex==0} { recordSource = [0,1] } 					// master out L&R
 			{recordIndex> 0} { recordSource = [0,1] + studio.insts.mixerInstruments[recordIndex-1].instGroupChannel } // inst
 			{recordIndex< 0} {
-				var b = LNX_AudioDevices.firstInputBus;			// 1st audio in bus
-				var i = (recordIndex.abs - 1).div(3);			// which set of busues
-				var j = (recordIndex.abs - 1) % 3;				// L&R, L or R
+				var b = LNX_AudioDevices.firstInputBus;					// 1st audio in bus
+				var i = (recordIndex.abs - 1).div(3);					// which set of busues
+				var j = (recordIndex.abs - 1) % 3;						// L&R, L or R
 				switch (j.asInt)
-					{0}{ recordSource = [b+(i*2)  ,b+(i*2)+1] } // Left & Right
-					{1}{ recordSource = [b+(i*2)  ,b+(i*2)  ] } // Left
-					{2}{ recordSource = [b+(i*2)+1,b+(i*2)+1] };// Right
+					{0}{ recordSource = [b+(i*2)  ,b+(i*2)+1] } 		// Left & Right
+					{1}{ recordSource = [b+(i*2)  ,b+(i*2)  ] } 		// Left
+					{2}{ recordSource = [b+(i*2)+1,b+(i*2)+1] };		// Right
 			};
 
 		sample		= sampleBank[sampleIndex];							// the sample
@@ -217,11 +211,13 @@ Possible sources..
 		endFrame	= sampleBank.actualEnd  (sampleIndex) * numFrames;	// end pos frame
 		durFrame	= endFrame - startFrame;			 				// frames playing for
 		overdub     = p[36];											// overdub onto the previous buffer
+		recordLevel = p[37].dbamp;
 
 		if (bufferR.notNil) {
 			var path;
 			var recordNode	= this.record_Buffer(
-				recordSource, bufferL, bufferR, multiBuffer, 1, startFrame, durFrame, latency, playBufferL, playBufferR, overdub
+				recordSource, bufferL, bufferR, multiBuffer, 1, startFrame, durFrame, latency, playBufferL, playBufferR,
+				overdub, recordLevel
 			);
 			var node		= Node.basicNew(server, recordNode);
 			var watcher		= NodeWatcher.register(node);
@@ -238,7 +234,9 @@ Possible sources..
 					sample.multiChannelBuffer.write(path.standardizePath, completionMessage:{
 						{
 							sample.updateSampleData(path);
-							{sampleBankGUI.sampleView.refresh}.defer(0.25);
+							recordLevelModels[0].lazyValueAction_(0, nil, false);	// update input levels
+							recordLevelModels[1].lazyValueAction_(0, nil, false);	// update input levels
+							sampleBankGUI.sampleView.refresh; //}.defer(0.25);
 						}.defer(0.25)
 					});
 
@@ -246,12 +244,12 @@ Possible sources..
 
 					// update synth with new buffer numbers
 					this.marker_changeBuffers( sample.bufnum(0), sample.bufnum(1) ,latency);
-					//
 					// Surely this can be done sooner...!
 				};
 			};
 
 			node.addDependant(func);
+			lastRecordNode = recordNode;
 
 			{ gui[\record].color_(\on,Color(1,0.25,0.25)) }.deferIfNeeded;
 
@@ -265,7 +263,8 @@ Possible sources..
 	}
 
 	// play a buffer for sequencer mode
-	record_Buffer{|inArray, bufnumL, bufnumR, multiBuffer, rate, startFrame, durFrame, latency, playBufferL, playBufferR, overdub|
+	record_Buffer{|inArray, bufnumL, bufnumR, multiBuffer, rate, startFrame, durFrame, latency, playBufferL, playBufferR,
+		overdub, recordLevel|
 		var indexNode  = server.nextNodeID;
 		var recordNode = server.nextNodeID;
 		recordBus 	   = Bus.audio(server,1);
@@ -285,6 +284,8 @@ Possible sources..
 			\playBufferL,	playBufferL,
 			\playBufferR,	playBufferR,
 			\overdub,       overdub,
+			\id, 			id,
+			\recordLevel, 	recordLevel,
 		]);
 
 		server.sendBundle(latency +! syncDelay,
@@ -305,26 +306,35 @@ Possible sources..
 
 		// we can add to side group to record
 		SynthDef("SLoopRecordStereo",{|leftIn=0, rightIn=1, bufnumL=0, bufnumR=1, multiBuffer=1, id=0, rate=1, gate=1,
-										startFrame=0, durFrame=44100, indexBus=0, playBufferL=0, playBufferR=1,overdub=0|
-			var indexIn = In.ar(indexBus,1); // comes from SynthDef above
+								startFrame=0, durFrame=44100, indexBus=0, playBufferL=0, playBufferR=1, overdub=0, recordLevel=1|
+			var indexIn = In.ar(indexBus,1); 					// comes from SynthDef above
 			var index   = startFrame + ( indexIn * BufRateScale.ir(bufnumL)         ).clip(0,durFrame); // real from in
 			var refindex= Integrator.ar((rate    * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame); // fake
 			var slope   = Slope.ar(index);
 
-			var signal  = [In.ar(leftIn,1), In.ar(rightIn,1)]; // source in
+			var signalIn = [In.ar(leftIn,1), In.ar(rightIn,1)] * (recordLevel.lag);	// source in
 
-			signal = signal + (BufRd.ar(1, [playBufferL,playBufferR], index, loop:0) * overdub); // overdub origial buffer
+			var signal = signalIn + (BufRd.ar(1, [playBufferL,playBufferR], index, loop:0) * (overdub.lag)); // overdub
 
-			signal = signal * (slope>0); // an index with a slope <=0 turns input off
+			signal = signal * (slope>0); 						// an index with a slope <=0 turns input off
+			signal = signal.clip(-1,1);							// signal needs to be clipped because it will be when saved
 
-			BufWr.ar(signal[0],  bufnumL, index, loop:0);	// write to the left buffer
-			BufWr.ar(signal[1],  bufnumR, index, loop:0);	// write to the right buffer
-			BufWr.ar(signal, multiBuffer, index, loop:0);	// and stereo (the multi-channel for saving)
+			BufWr.ar(signal[0],  bufnumL, index, loop:0);		// write to the left buffer
+			BufWr.ar(signal[1],  bufnumR, index, loop:0);		// write to the right buffer
+			BufWr.ar(signal, multiBuffer, index, loop:0);		// and stereo (the multi-channel for saving)
 
 			DetectSilence.ar(Slope.ar(index+refindex), doneAction:3); // ends when index & fake slope = 0
 
+			SendPeakRMS.kr(signalIn , 20, 1, "/sRecLvl", id);	// return to client
+
 		}).send(server);
 
+	}
+
+	// record levels from server
+	sRecLvl_{|l,r|
+		recordLevelModels[0].lazyValueAction_(l, nil, false);	// update input levels
+		recordLevelModels[1].lazyValueAction_(r, nil, false);	// update input levels
 	}
 
 }

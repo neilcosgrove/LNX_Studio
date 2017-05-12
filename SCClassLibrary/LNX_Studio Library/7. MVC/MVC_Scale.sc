@@ -45,9 +45,12 @@ MVC_Scale : MVC_View {
 					colors[\background].set;
 					Pen.fillRect(Rect(0,0,w,h));
 					Pen.strokeColor = colors[\marks];
-					h2=(h-1)/(marks);
-					(marks).do{|i|
-						Pen.line( 0@(h2*i+1), w@(h2*i+1));
+					if (direction===\vertical) {
+						h2=(h-1)/(marks);
+						(marks).do{|i| Pen.line( 0@(h2*i+1), w@(h2*i+1)) };
+					}{
+						h2=(w-1)/(marks);
+						(marks).do{|i| Pen.line( (h2*i+1)@0, (h2*i+1)@h  ) };
 					};
 					Pen.fillStroke;
 				};

@@ -490,6 +490,10 @@ LNX_Studio {
 			if (insts[msg[2]].notNil) { insts[msg[2]].sIdx_in_(msg[3]) }
 		}, '/sIdx');
 
+		OSCFunc({|msg|
+			if (insts[msg[2]].notNil) { insts[msg[2]].sRecLvl_(msg[3],msg[5]) }
+		}, '/sRecLvl');
+
 	}
 
 	// reset all dsp (stop all audio, boot server if needed and restart all audio)

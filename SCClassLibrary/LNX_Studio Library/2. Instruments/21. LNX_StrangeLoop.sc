@@ -39,7 +39,6 @@ TIDY GUI
 
 BUGS: !!!
 ---------
-Durations on pRolls don't seem to work
 incorrect sample is showing in menu when song loaded
 press record, swap over to a url sample and press play
 need to put latency sync in
@@ -92,6 +91,8 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <voicer,			<recordBus,		<cueRecord=false;
 
 	var <sources,			<sourceValues,	<lastSource;
+
+	var <recordLevelModels, <lastRecordNode;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -264,12 +265,10 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				{|me,val,latency,send| this.setPVPModel(20,val,latency,send) }],
 
 			// 21. reverse
-			[0, \switch, midiControl, 21, "Rev",
-				{|me,val,latency,send| this.setPVPModel(21,val,latency,send) }],
+			[0, \switch, midiControl, 21, "Rev", {|me,val,latency,send| this.setPVPModel(21,val,latency,send) }],
 
 			// 22. frame freeze
-			[0, \switch, midiControl, 22, "Frame",
-				{|me,val,latency,send| this.setPVPModel(22,val,latency,send) }],
+			[0, \switch, midiControl, 22, "Frame", {|me,val,latency,send| this.setPVPModel(22,val,latency,send) }],
 
 			// 23. frame length 1-16
 			[4, [1,16,\linear,1],  (label_:"Frame", numberFunc_:\int), midiControl, 23, "Frame",
@@ -308,8 +307,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				{|me,val,latency,send| this.setPVPModel(30,val,latency,send) }],
 
 			// 31. reset latch Mode (Frame)
-			[1, \switch, midiControl, 31, "Reset Mode",
-				{|me,val,latency,send| this.setPVPModel(31,val,latency,send) }],
+			[1, \switch, midiControl, 31, "Reset Mode", {|me,val,latency,send| this.setPVPModel(31,val,latency,send) }],
 
 			// 32. reset / latch (Event)
 			[65, [1,65,\linear,1], midiControl, 32, "Reset & Latch",
@@ -317,12 +315,10 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				{|me,val,latency,send| this.setPVPModel(32,val,latency,send) }],
 
 			// 33. reset latch Mode (Event)
-			[1, \switch, midiControl, 33, "Reset Mode",
-				{|me,val,latency,send| this.setPVPModel(33,val,latency,send) }],
+			[1, \switch, midiControl, 33, "Reset Mode", {|me,val,latency,send| this.setPVPModel(33,val,latency,send) }],
 
 			// 34. new length
-			[64, \length, midiControl, 34, "New Length",
-				{|me,val,latency,send| this.setPVPModel(34,val,latency,send) }],
+			[64, \length, midiControl, 34, "New Length", {|me,val,latency,send| this.setPVPModel(34,val,latency,send) }],
 
 			// 35. audio source [ 0=master, -ive Audio In channels, +ive inst out channels]
 			// inf at start but reduces to i.mixerInstruments.size after load
@@ -341,9 +337,20 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}],
 
 			// 36. overdub / replace
-			[0, \switch, midiControl, 36, "Overdub",
-				{|me,val,latency,send| this.setPVPModel(36,val,latency,send) }],
+			[0, \switch, midiControl, 36, "Overdub", {|me,val,latency,send|
+				this.setPVPModel(36,val,latency,send);
+				if (lastRecordNode.notNil) {
+					server.sendBundle(latency +! syncDelay, [\n_set, lastRecordNode, \overdub, p[36]])
+				};
+			}],
 
+			// 37. record levels
+			[-2, \db6, midiControl, 37, "Record Levels", {|me,val,latency,send|
+				this.setPVPModel(37,val,latency,send);
+				if (lastRecordNode.notNil) {
+					server.sendBundle(latency +! syncDelay, [\n_set, lastRecordNode, \recordLevel, p[37].dbamp])
+				};
+			}],
 
 		].generateAllModels;
 
@@ -358,6 +365,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		studio.insts.addDependant(this);
 
+		recordLevelModels  = {\unipolar.asModel} ! 2;	// model to hold value of incoming RMS signal
 	}
 
 	// update coming from LNX_Instruments
@@ -478,7 +486,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.pipeOutAction_{|pipe|
 				if (this.isOff.not) {seqOutBuffer.pipeIn(pipe)};
 			}
-			//.releaseAllAction_{ seqOutBuffer.releaseAll(studio.actualLatency) }
 			.releaseAllAction_{ voicer.releaseAllNotes(studio.actualLatency +! syncDelay) }
 			.keyDownAction_{|me, char, modifiers, unicode, keycode, key|
 				//keyboardView.view.keyDownAction.value(me,char, modifiers, unicode, keycode, key)
@@ -886,11 +893,32 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		this.privateUpdateSources;
 
 		// 36. Overdub
-		MVC_OnOffView(gui[\scrollView], models[36], Rect(777, 548, 65, 20))
-			.strings_(["Overdub","Overdub"])
+		MVC_OnOffView(gui[\scrollView], models[36], Rect(777, 548, 40, 20))
+			.strings_(["Dub","Dub"])
 			.rounded_(true)
 			.color_(\on,Color(50/77,61/77,1))
 			.color_(\off,Color(1,1,1,0.88)/4);
+
+
+		// levels
+		gui[\recLevL] = MVC_FlatDisplay(gui[\scrollView], recordLevelModels[0], Rect(600, 163, 178, 7));
+		gui[\recLevR] = MVC_FlatDisplay(gui[\scrollView], recordLevelModels[1], Rect(600, 163+9, 178, 7));
+		MVC_Scale(gui[\scrollView], Rect(600, 163+7, 178, 2)).direction_(\horizontal);
+
+		// volume
+		MVC_SmoothSlider(models[37], gui[\scrollView], Rect(600, 126, 178, 11))
+			.labelShadow_(false)
+			.numberFunc_(\float2)
+			.showNumberBox_(true)
+			.direction_(\horizontal)
+			.orientation_(\horizontal)
+			.numberFont_(Font("Helvetica",10))
+			.color_(\label,Color.black)
+			.color_(\knob,Color(1,1,1))
+			.color_(\hilite,Color(0,0,0,0.5))
+			.color_(\numberUp,Color.black)
+			.color_(\numberDown,Color.white);
+
 
 
 		// *****************
