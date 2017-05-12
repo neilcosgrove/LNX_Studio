@@ -9,13 +9,11 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
-record audio - many sources (level in) (overdub,replace) level meter?
-do a wet/dry mix (overdub or mix) - good
-pressing record, while recording stops recording + other combos,
+pressing record, while recording stops recording + other combos, // this is proving difficult
 record 1 after another after another
-startOffset
+startOffset // i can do this in pRoll
 what happens when i dup a temp
-save dialog GUI needs to be a singleton
+save dialog GUI needs to be a singleton // partially done. song save & inst save still clash
 fit pitch to fit
 save dialog
 Auto Save All
@@ -48,6 +46,7 @@ deleting all buffers while playing or deleting a sLoop when player
 
 Done
 ----
+record audio - many sources (level in) (overdub,replace)
 input source
 gui for new sample length
 add HPF.ar(signal,20); to stop any low freq

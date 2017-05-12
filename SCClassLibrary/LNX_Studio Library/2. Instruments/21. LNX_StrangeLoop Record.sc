@@ -55,13 +55,14 @@ Possible sources..
 	guiSaveBuffer{
 		var guiTextField, index=p[11], buffer = sampleBank[index];
 
+		if (studio.saveBuffersWindow.notNil) {^this}; // window singleton already open exception
 		if (buffer.isNil) { "No buffer to save".warn; ^this };								// no buffer exception
 		if (buffer.source==\url) { "Sample is already saved as a local file".warn; ^this };	// already saved exception
 		if (buffer.convertedPath.pathExists!=\file)
 											{ "Temporary file doesn't exist".warn; ^this }; // no file exception
 
 		if ((buffer.source==\new)||(buffer.source==\temp)) { 								// why new here ???
-			var window, scrollView, filename;
+			var scrollView, filename;
 			var songName = (studio.name.size==0).if("LNX_Studio",studio.name);
 			var path= "LNX_Songs" +/+ songName +/+ (this.instNo+1) ++ "." ++ (this.name)
 						++ "(" ++ (p[11]+1) ++ ")" + (Date.getDate.stamp) ++ ".aiff"; 		// sugggested name
@@ -70,12 +71,14 @@ Possible sources..
 
 			filename = path.removeExtension;
 
-			window = MVC_ModalWindow(this.window, 600@90, (
+			studio.saveBuffersWindow = MVC_ModalWindow(this.window, 600@90, (
 				background:		Color.new255(122,132,132),
 				border2:		Color.new255(122,132,132)/2,
 				border1:		Color.black
 			));
-			scrollView = window.scrollView;
+			studio.saveBuffersWindow.onClose_{ studio.saveBuffersWindow = nil };
+
+			scrollView = studio.saveBuffersWindow.scrollView;
 
 			// text field for the instrument / filename
 			guiTextField = MVC_Text(scrollView, Rect(10,21,548,16), gui[\textTheme1])
@@ -85,16 +88,22 @@ Possible sources..
 					string=string.replace(":",""); // don't allow user to type :
 					me.string_(string);
 				}
-				.enterKeyAction_{|me,filename| this.updateTempToLocalFile(index, buffer, filename, {window.close})}
+				.enterKeyAction_{|me,filename| this.updateTempToLocalFile(index, buffer, filename, {
+					studio.saveBuffersWindow.close;
+				})}
 				.focus.startEditing;
 
 			// Cancel
 			MVC_OnOffView(scrollView,Rect(464, 44, 55, 20),"Cancel", gui[\onOffTheme1])
-				.action_{ window.close };
+				.action_{
+					studio.saveBuffersWindow.close;
+				};
 
 			// Ok
 			MVC_OnOffView(scrollView,Rect(524, 44, 50, 20),"Ok", gui[\onOffTheme1])
-				.action_{ this.updateTempToLocalFile(index, buffer, guiTextField.string, { window.close }) };
+				.action_{ this.updateTempToLocalFile(index, buffer, guiTextField.string, {
+					studio.saveBuffersWindow.close;
+				}) };
 
 		};
 	}
@@ -243,7 +252,7 @@ Possible sources..
 					sample.cleanupRecord(latency); // update & free buffers no longer used
 
 					// update synth with new buffer numbers
-					this.marker_changeBuffers( sample.bufnum(0), sample.bufnum(1) ,latency);
+					this.marker_changeBuffers( sample.bufnum(0), sample.bufnum(1) , nil);
 					// Surely this can be done sooner...!
 				};
 			};
@@ -260,6 +269,9 @@ Possible sources..
 	guiStopRecord{
 		cueRecord = false;
 		{ gui[\record].color_(\on,Color(1,0.5,0.5)) }.deferIfNeeded;
+		if (lastRecordNode.notNil) {
+			//server.sendBundle(studio.latency +! syncDelay, [\n_free, lastRecordNode])
+		};
 	}
 
 	// play a buffer for sequencer mode
@@ -307,14 +319,12 @@ Possible sources..
 		// we can add to side group to record
 		SynthDef("SLoopRecordStereo",{|leftIn=0, rightIn=1, bufnumL=0, bufnumR=1, multiBuffer=1, id=0, rate=1, gate=1,
 								startFrame=0, durFrame=44100, indexBus=0, playBufferL=0, playBufferR=1, overdub=0, recordLevel=1|
-			var indexIn = In.ar(indexBus,1); 					// comes from SynthDef above
-			var index   = startFrame + ( indexIn * BufRateScale.ir(bufnumL)         ).clip(0,durFrame); // real from in
-			var refindex= Integrator.ar((rate    * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame); // fake
-			var slope   = Slope.ar(index);
-
+			var indexIn  = In.ar(indexBus,1); 					// comes from SynthDef above
+			var index    = startFrame + ( indexIn * BufRateScale.ir(bufnumL)         ).clip(0,durFrame); // real from in
+			var refindex = Integrator.ar((rate    * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame); // fake
+			var slope    = Slope.ar(index);
 			var signalIn = [In.ar(leftIn,1), In.ar(rightIn,1)] * (recordLevel.lag);	// source in
-
-			var signal = signalIn + (BufRd.ar(1, [playBufferL,playBufferR], index, loop:0) * (overdub.lag)); // overdub
+			var signal   = signalIn + (BufRd.ar(1, [playBufferL,playBufferR], index, loop:0) * (overdub.lag)); // overdub
 
 			signal = signal * (slope>0); 						// an index with a slope <=0 turns input off
 			signal = signal.clip(-1,1);							// signal needs to be clipped because it will be when saved
@@ -342,6 +352,10 @@ Possible sources..
 + LNX_Studio {
 
 	reviewBufferSaves{|bufferInstBankDict,saveMode|
+		if (saveBuffersWindow.isNil) { this.privateReviewBufferSaves(bufferInstBankDict,saveMode) }
+	}
+
+	privateReviewBufferSaves{|bufferInstBankDict,saveMode|
 		// ( buffer: [inst, bank, indexOfBuffer] )
 		var date      = Date.getDate.stamp;
 		var songName  = (this.name.size==0).if("LNX_Studio",this.name);
@@ -365,7 +379,7 @@ Possible sources..
 			]
 		}.asList.sort{|a,b| (a[5]==b[5]).if{ a[7]<=b[7] }{ a[5]<=b[5] }};
 
-		var window, guiTextField;
+		var guiTextField;
 		var gui = IdentityDictionary[];
 		var size = info.size;
 
@@ -384,13 +398,15 @@ Possible sources..
 							\font_:	  Font("Helvetica", 13,true),
 							\colors_:  ( \label:Color.black, \string:Color.black));
 
-		window = MVC_ModalWindow(mixerWindow, 700@((size*20).clip(0,390)+99), (
+		saveBuffersWindow = MVC_ModalWindow(mixerWindow, 700@((size*20).clip(0,390)+99), (
 			background: 	Color(59/77,59/77,59/77),
 			border2: 		Color(6/11,42/83,29/65),
 			border1: 		Color(3/77,1/103,0,65/77),
 			menuBackground:	Color(1,1,0.9)
 		));
-		gui[\scrollView] = window.scrollView;
+		saveBuffersWindow.onClose_{ saveBuffersWindow = nil };
+
+		gui[\scrollView] = saveBuffersWindow.scrollView;
 
 		// text field for the instrument / filename
 		MVC_StaticText(gui[\scrollView], Rect(10,3,655,16), gui[\textTheme2])
@@ -420,7 +436,7 @@ Possible sources..
 
 		// Cancel
 		MVC_OnOffView(gui[\scrollView], Rect(564, (size*20).clip(0,390)+50, 55, 20),"Cancel", gui[\onOffTheme2])
-			.action_{ window.close };
+			.action_{ saveBuffersWindow.close };
 
 		// Ok
 		MVC_OnOffView(gui[\scrollView], Rect(624, (size*20).clip(0,390)+50, 50, 20),"Ok", gui[\onOffTheme2])
@@ -466,7 +482,7 @@ Possible sources..
 
 			};
 
-			window.close;
+			saveBuffersWindow.close;
 		};
 	}
 

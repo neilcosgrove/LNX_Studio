@@ -119,7 +119,7 @@ LNX_Studio {
 
 	var midi2, padNotes; // temp for CARBON ************
 
-	var <loadIndex = -1, <loadPaths;
+	var <loadIndex = -1, <loadPaths, <>saveBuffersWindow;
 
 	// create a new studio ///////////////////////////////////////////////////////
 
