@@ -375,6 +375,7 @@
 			.color_(\background, Color(6/11,42/83,29/65));
 
 		// code view
+		// gui[\code]=MVC_CodeView(gui[\codeGUIScrollView],codeModel,Rect(5, 15, 610, 290))
 		gui[\code]=MVC_TextView(gui[\codeGUIScrollView],codeModel,Rect(5, 15, 610, 290))
 			.label_("Code")
 			.font_(Font("Monaco",14))

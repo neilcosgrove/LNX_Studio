@@ -242,7 +242,7 @@ LNX_Studio {
 		models      = IdentityDictionary[];
 		gui         = IdentityDictionary[];
 		tasks       = IdentityDictionary[];
-		bpm         = 90+(60.rand);
+		bpm         = 90.rrand(200);
 		absTime     = 2.5/bpm;
 		extTiming   = [];
 		tapTempo    = LNX_TapTempo().tapFunc_{|me,bpm| models[\tempo].valueAction_(bpm.asInt) };

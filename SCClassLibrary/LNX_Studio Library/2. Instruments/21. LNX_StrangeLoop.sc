@@ -9,11 +9,13 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
+
+how about: repeatNo / noRepeats --> midi cc out
+
 pressing record, while recording stops recording + other combos, // this is proving difficult
 record 1 after another after another
 startOffset // i can do this in pRoll
-what happens when i dup a temp
-save dialog GUI needs to be a singleton // partially done. song save & inst save still clash
+what happens when i dup a temp // nothing and it shouldn't
 fit pitch to fit
 save dialog
 Auto Save All
@@ -21,12 +23,14 @@ Discard All
 low & high pass no repeats or increases sends
 optimise vars
 rand or rev on pRoll, what about poly?
-syncDelay
+syncDelay // to test
 new sample (mono/stereo)
 save names in cashe / dialog ?
 playback bpm [div 2] [*2] buttons
 quantise options
 grains
+keyboard
+midi learn freeze buttons
 clock offset start
 one shot
 zeroX or peak
@@ -46,6 +50,7 @@ deleting all buffers while playing or deleting a sLoop when player
 
 Done
 ----
+save dialog GUI needs to be a singleton
 record audio - many sources (level in) (overdub,replace)
 input source
 gui for new sample length
@@ -351,6 +356,12 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				};
 			}],
 
+			// 38. Freeze CC = 0-127 & -1 = off
+			[0, [-1,127,\lin,1], midiControl, 38, "Freeze CC", {|me,val,latency,send| this.setPVPModel(38,val,latency,send) }],
+
+			// 39. Frame CC = 0-127 & -1 = off
+			[1, [-1,127,\lin,1], midiControl, 39, "Frame CC", {|me,val,latency,send| this.setPVPModel(39,val,latency,send) }],
+
 		].generateAllModels;
 
 		models[35].constrain_(false); // sources can't be constrained because insts.size changes during load
@@ -502,6 +513,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	iInitMIDI{
 		this.useMIDIPipes;
+		midi.putLoadList([0, 0 ]++LNX_MIDIPatch.nextUnusedOut);
 		seqOutBuffer  = LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromSequencerBuffer(pipe) };
 	}
 
@@ -654,7 +666,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 	// GUI ////////////////////////////////////////////////////////////////////////////////////////////
 
-	*thisWidth  {^870}
+	*thisWidth  {^910}
 	*thisHeight {^600}
 
 	createWindow{|bounds|
@@ -680,6 +692,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 							\font_:	  Font("Helvetica", 13,true),
 							\colors_:  ( \label:Color.black, \edit:Color.white, \editBackground:Color(0,0,0,0.44),
 										\cursor:Color.orange, \focus:Color(0,0,0,0.1),  \background:Color(0,0,0,0.44) ));
+
+		gui[\learnTheme]=(	\font_		: Font("Helvetica", 12, true),
+							\rounded_	: true,
+							\canFocus_	: false,
+						 	\colors_	: (\up	: Color(50/77,61/77,1),
+						 	   			 \down 	: Color(50/77,61/77,1),
+										\string	: Color.black) );
 
 		gui[\scrollViewOuter] = MVC_RoundedComView(window, Rect(11,11,thisWidth-22,thisHeight-22-1))
 			.color_(\background,Color.new255(122,132,132))
@@ -761,11 +780,15 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.tabHeight_(32);
 
 		// freeze button
-		gui[\freezeButton] = MVC_FlatButton(gui[\scrollView], Rect(590, 360, 50, 20),"Freeze", gui[\flatButton])
+		gui[\freezeButton] = MVC_FlatButton(gui[\scrollView], Rect(584, 360, 50, 20),"Freeze", gui[\flatButton])
 			.downAction_{ models[19].valueAction_(1,nil,true,false) }
 			.upAction_{ models[19].valueAction_(0,nil,true,false) };
 
-		gui[\eventLamp] = MVC_PipeLampView(gui[\scrollView],models[19], Rect(643,363,14,14))
+		// Event CC clock
+		gui[\eventCCModel] = \unipolar.asModel;
+		MVC_ClockView(gui[\scrollView], gui[\eventCCModel], Rect(641-5,363-5,14+10,14+10)).innerWidth_(8);
+
+		gui[\eventLamp] = MVC_PipeLampView(gui[\scrollView],models[19], Rect(641,363,14,14))
 			.doLazyRefresh_(false)
 			.border_(true)
 			.insetBy2_(1)
@@ -807,9 +830,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		// ***************** FRAME
 
 		// frame button
-		gui[\frameButton] = MVC_FlatButton(gui[\scrollView], Rect(774, 360, 50, 20), "Frame", gui[\flatButton])
+		gui[\frameButton] = MVC_FlatButton(gui[\scrollView], Rect(778, 360, 50, 20), "Frame", gui[\flatButton])
 			.downAction_{ models[22].valueAction_(1,nil,true,false) }
 			.upAction_{ models[22].valueAction_(0,nil,true,false) };
+
+		// Frame CC clock
+		gui[\frameCCModel] = \unipolar.asModel;
+		MVC_ClockView(gui[\scrollView], gui[\frameCCModel], Rect(755-5,363-5,14+10,14+10)).innerWidth_(8);
 
 		gui[\frameLamp] = MVC_PipeLampView(gui[\scrollView],models[22], Rect(755,363,14,14))
 			.doLazyRefresh_(false)
@@ -859,7 +886,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			{gui[\latchResetFrame].changeLabel_( val.isTrue.if("Latch","Reset") )} .deferIfNeeded
 		};
 
-
 		// 32. reset / latch (Event)
 		gui[\latchResetEvent] = MVC_MyKnob3(gui[\scrollView], models[32], Rect(785, 244, 28, 28), gui[\knobTheme1])
 			.resoultion_(3.5);
@@ -874,6 +900,40 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		MVC_FuncAdaptor(models[33]).func_{|me,val|
 			{gui[\latchResetEvent].changeLabel_( val.isTrue.if("Latch","Reset") )} .deferIfNeeded
 		};
+
+		// 38. Freeze CC = 0-127 & -1 = off
+		MVC_NumberBox(gui[\scrollView],models[38], Rect(840, 295, 42, 16))
+			.resoultion_(25)
+			.rounded_(true)
+			.visualRound_(1)
+			.label_("CC")
+			.font_(Font("Helvetica", 11))
+			.color_(\focus,Color.black)
+			.color_(\string,Color.white)
+			.color_(\typing,Color.black)
+			.color_(\background,Color(46/77,46/79,72/145)/1.5);
+
+		// learn button Freeze CC
+		MVC_FlatButton(gui[\scrollView], Rect(840, 320, 43, 18),"Learn",gui[\learnTheme])
+			.action_{ if (p[38]>=0) { midi.learn(p[38],64)} };
+
+		// 39. Freeze CC = 0-127 & -1 = off
+		MVC_NumberBox(gui[\scrollView],models[39], Rect(840, 363, 42, 16))
+			.resoultion_(25)
+			.rounded_(true)
+			.visualRound_(1)
+			.label_("CC")
+			.font_(Font("Helvetica", 11))
+			.color_(\focus,Color.black)
+			.color_(\string,Color.white)
+			.color_(\typing,Color.black)
+			.color_(\background,Color(46/77,46/79,72/145)/1.5);
+
+		// learn button Freeze CC
+		MVC_FlatButton(gui[\scrollView], Rect(840, 390, 43, 18),"Learn",gui[\learnTheme])
+			.action_{ if (p[39]>=0) { midi.learn(p[39],64)} };
+
+		// *****************
 
 		// [35 indirect] = source
 		gui[\source] = MVC_PopUpMenu3(gui[\scrollView], Rect(580, 548, 190, 17), gui[\menuTheme])
@@ -918,8 +978,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.color_(\numberUp,Color.black)
 			.color_(\numberDown,Color.white);
 
-
-
 		// *****************
 
 		// piano roll
@@ -935,7 +993,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				 \noteBS:     Color.black,
 				 \velocitySel:Color(0.5,0.5,1)*1.5
 				),
-				parentViews: [ window]
+				parentViews: [window]
 				);
 
 		// import button

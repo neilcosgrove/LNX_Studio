@@ -109,6 +109,41 @@ LNX_MarkerEvent {
 		if (mode===\repitch) { this.pitch_stopBuffer (latency); ^this };
 	}
 
+	// sample bank has changed...so do this
+	marker_update{|model|
+		var sampleIndex=p[11];  // sample used in bank
+		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
+
+		if (model==\itemFunc) {
+			^this
+		};
+		if (model==\selectFunc) {
+			this.marker_makeSeq;
+			^this
+		};
+		if ((model==\start)||(model==\end)||(model==\bpm)) {
+			this.marker_updateLength;
+			this.marker_makeSeq;
+			relaunch = true; // modelValueAction_ may do a relaunch as well but not always
+			^this
+		};
+		if (model==\length) {
+			this.marker_makeSeq;
+			relaunch = true;
+			^this
+		};
+		if (model==\markers) {
+			this.marker_makeSeq;
+			relaunch = true;
+			^this
+		};
+	}
+
+	// *************************************************************************************************************
+	// *************************************************************************************************************
+	// *************************************************************************************************************
+	// CLOCK IN does (in SEQUENCER MODE - FRAME FREEZE) (in PLAYLOOP MODE - plays loop & EVENT FREEZE)
+
 	// marker clock in mode (new)
 	marker_clockIn3{|instBeat3,absTime3,latency,beat3|
 		var length3, markerEvent, instBeat, frameProb, rateAdj, rate,  amp, doFrame, sampleIndex, addMarker=false;
@@ -156,6 +191,11 @@ LNX_MarkerEvent {
 					doFrame 	= false;
 					repeatMode  = nil;
 					models[22].lazyValueAction_(0,nil,true,false);
+					// Frame CC
+					if (p[39]>=0) {
+						midi.control(p[39],0,latency,false,true);
+						gui[\frameCCModel].lazyValueAction_(0);
+					};
 				};
 			};
 		};
@@ -172,6 +212,12 @@ LNX_MarkerEvent {
 			if ((frameProb.coin) && (lastMarkerEvent2.notEmpty) && (repeatMode!=\event)) {
 				repeatMode  = \frame;
 				if (repeatNo==0) { this.stopAudio(latency) };
+				// Frame CC
+				if (p[39]>=0) {
+					var val = repeatNo/(p[30].clip(2,64)-1);
+					midi.control(p[39],val*127,latency,false,true);
+					gui[\frameCCModel].lazyValueAction_(val);
+				};
 				markerEvent = lastMarkerEvent2.keep(p[25].asInt).wrapAt(repeatNo); // repeat
 				repeatNo 	= repeatNo + 1;				// inc number of repeats
 				rate		= (p[12]+p[13]+repeatRate).midiratio.round(0.0000000001).clip(0,100000);
@@ -187,6 +233,12 @@ LNX_MarkerEvent {
 					repeatRate	= 0;
 					repeatAmp	= 1;
 					repeatStart = 0;
+					// Frame CC
+					if (p[39]>=0) {
+						midi.control(p[39],0,latency,false,true);
+						gui[\frameCCModel].lazyValueAction_(0);
+					};
+
 				};
 				if (p[18].isFalse) { ^this };	// no hold exception
 			};
@@ -210,7 +262,6 @@ LNX_MarkerEvent {
 			if ( (repeatNoE>0) && (repeatMode!=\frame) ) {
 				var reset = p[32];
 				if (reset>=65) { reset = inf };
-
 				if (repeatNoE>=reset) {
 					// reset these vars
 					repeatNoE	= 0;
@@ -221,11 +272,22 @@ LNX_MarkerEvent {
 						repeatMode  = nil;
 						probability = 0;
 						models[19].lazyValueAction_(0,nil,true,false);
+						// Event CC
+						if (p[38]>=0) {
+							midi.control(p[38],0,latency,false,true);
+							gui[\eventCCModel].lazyValueAction_(0);
+						};
 					};
 				};
 			};
 
 			if ((probability.coin) && (lastMarkerEvent.notEmpty) && (repeatMode!=\frame)) {
+				// Event CC
+				if (p[38]>=0) {
+					var val = repeatNoE/(p[32].clip(2,64)-1);
+					midi.control(p[38],val*127,latency,false,true);
+					gui[\eventCCModel].lazyValueAction_(val);
+				};
 				repeatMode  = \event;
 				markerEvent = lastMarkerEvent.keep(p[20].asInt).wrapAt(repeatNoE);	// repeat
 				repeatNoE 	= repeatNoE + 1;	// inc number of repeats
@@ -240,6 +302,11 @@ LNX_MarkerEvent {
 					repeatNoE	= 0;
 					repeatRateE	= 0;
 					repeatAmpE	= 1;
+					// Event CC
+					if (p[38]>=0) {
+						midi.control(p[38],0,latency,false,true);
+						gui[\eventCCModel].lazyValueAction_(0);
+					};
 				};
 			};
 
@@ -272,37 +339,10 @@ LNX_MarkerEvent {
 
 	}
 
-	// sample bank has changed...so do this
-	marker_update{|model|
-		var sampleIndex=p[11];  // sample used in bank
-		if (sampleBank[sampleIndex].isNil) { ^this }; // no samples loaded in bank exception
-
-		if (model==\itemFunc) {
-			^this
-		};
-		if (model==\selectFunc) {
-			this.marker_makeSeq;
-			^this
-		};
-		if ((model==\start)||(model==\end)||(model==\bpm)) {
-			this.marker_updateLength;
-			this.marker_makeSeq;
-			relaunch = true; // modelValueAction_ may do a relaunch as well but not always
-			^this
-		};
-		if (model==\length) {
-			this.marker_makeSeq;
-			relaunch = true;
-			^this
-		};
-		if (model==\markers) {
-			this.marker_makeSeq;
-			relaunch = true;
-			^this
-		};
-	}
-
+	// *************************************************************************************************************
+	// MIDI IN does EVENT FREEZE ONLY
 	// both midi in & pRoll seq destinations
+
 	marker_pipeIn{|pipe|
 
 		if (sampleBank[p[11]].isNil) { ^this }; // no sample exception
@@ -354,11 +394,22 @@ LNX_MarkerEvent {
 						repeatMode  = nil;
 						probability = 0;
 						models[19].lazyValueAction_(0,nil,true,false);
+						// EVENT cc
+						if (p[38]>=0) {
+							midi.control(p[38],0,latency,false,true);
+							gui[\eventCCModel].lazyValueAction_(0);
+						};
 					};
 				};
 			};
 
 			if ((probability.coin) && (lastMarkerEvent.notEmpty)  && (repeatMode!=\frame)) {
+				// Event CC
+				if (p[38]>=0) {
+					var val = repeatNoE/(p[32].clip(2,64)-1);
+					midi.control(p[38],val*127,latency,false,true);
+					gui[\eventCCModel].lazyValueAction_(val);
+				};
 				repeatMode  = \event;
 				markerEvent = lastMarkerEvent.keep(p[20].asInt).wrapAt(repeatNoE);	// repeat
 				repeatNoE 	= repeatNoE + 1;						// inc number of repeats
@@ -373,6 +424,11 @@ LNX_MarkerEvent {
 					repeatNoE	 = 0; // reset all vars
 					repeatRateE	 = 0;
 					repeatAmpE	 = 1;
+					// Event CC
+					if (p[38]>=0) {
+						midi.control(p[38],0,latency,false,true);
+						gui[\eventCCModel].lazyValueAction_(0);
+					};
 				};
 			};
 
@@ -390,6 +446,10 @@ LNX_MarkerEvent {
 		};
 
 	}
+
+	// *************************************************************************************************************
+	// *************************************************************************************************************
+	// *************************************************************************************************************
 
 	// play a buffer for sequencer mode
 	marker_playBufferMIDI{|note, bufnumL,bufnumR,rate,startFrame,durFrame,attackLevel,clipMode,amp,latency|

@@ -158,7 +158,6 @@ MVC_FlatButton : MVC_View {
 					evaluateAction=true;
 					if (buttonNumber==2) {
 						this.toggleMIDIactive;
-						".".post;
 					}{
 						down=true;
 						view.refresh;

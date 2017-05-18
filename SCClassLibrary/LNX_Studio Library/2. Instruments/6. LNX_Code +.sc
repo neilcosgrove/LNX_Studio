@@ -266,13 +266,13 @@ LNX_SynthDefControl : ControlName {
 
 SynthDef(\"MySaw\",{|out, gate, midi, vel, filtFreq=2000, q=0.5, dur=0.5|
 
-	var signal;
+  var signal;
 
-	signal = Saw.ar(midi.midicps, 0.33);
-	signal = DFM1.ar(signal, filtFreq * vel, q);
-	signal = signal * EnvGen.ar(Env.adsr(0,0,1,1), gate, vel, 0, dur,2);
+  signal = Saw.ar(midi.midicps, 0.33);
+  signal = DFM1.ar(signal, filtFreq * vel, q);
+  signal = signal * EnvGen.ar(Env.adsr(0,0,1,1), gate, vel, 0, dur,2);
 
-	LNX_InstOut(signal, out);
+  LNX_InstOut(signal, out);
 
 }, metadata: ( specs: ( filtFreq: \\freq ) ) )
 "
