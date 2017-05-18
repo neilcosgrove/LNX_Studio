@@ -306,20 +306,20 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				{|me,val,latency,send| this.setPVPModel(29,val,latency,send) }],
 
 			// 30. reset / latch (Frame)
-			[65, [1,65,\linear,1], midiControl, 30, "Reset & Latch",
-				(label_:" Latch ", numberFunc_:{|n| (n==65).if("inf",n.asInt.asString)}),
+			[8, [1,65,\linear,1], midiControl, 30, "Frame Cycle",
+				(label_:"Cycle", numberFunc_:{|n| (n==65).if("inf",n.asInt.asString)}),
 				{|me,val,latency,send| this.setPVPModel(30,val,latency,send) }],
 
 			// 31. reset latch Mode (Frame)
-			[1, \switch, midiControl, 31, "Reset Mode", {|me,val,latency,send| this.setPVPModel(31,val,latency,send) }],
+			[1, \switch, midiControl, 31, "Cycle Mode", {|me,val,latency,send| this.setPVPModel(31,val,latency,send) }],
 
 			// 32. reset / latch (Event)
-			[65, [1,65,\linear,1], midiControl, 32, "Reset & Latch",
-				(label_:" Latch ", numberFunc_:{|n| (n==65).if("inf",n.asInt.asString)}),
+			[8, [1,65,\linear,1], midiControl, 32, "Freeze Cycle",
+				(label_:"Cycle", numberFunc_:{|n| (n==65).if("inf",n.asInt.asString)}),
 				{|me,val,latency,send| this.setPVPModel(32,val,latency,send) }],
 
 			// 33. reset latch Mode (Event)
-			[1, \switch, midiControl, 33, "Reset Mode", {|me,val,latency,send| this.setPVPModel(33,val,latency,send) }],
+			[1, \switch, midiControl, 33, "Cycle Mode", {|me,val,latency,send| this.setPVPModel(33,val,latency,send) }],
 
 			// 34. new length
 			[64, \length, midiControl, 34, "New Length", {|me,val,latency,send| this.setPVPModel(34,val,latency,send) }],
@@ -877,13 +877,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		// 31. reset latch (Frame)
 		MVC_OnOffView(gui[\scrollView], models[31], Rect(790, 520, 40, 20))
-			.strings_(["Reset","Latch"])
+			.strings_(["Off","Cycle"])
 			.rounded_(true)
 			.color_(\on,Color(50/77,61/77,1))
 			.color_(\off,Color(1,1,1,0.88)/4);
 
 		MVC_FuncAdaptor(models[31]).func_{|me,val|
-			{gui[\latchResetFrame].changeLabel_( val.isTrue.if("Latch","Reset") )} .deferIfNeeded
+			{gui[\latchResetFrame].changeLabel_( val.isTrue.if("Cycle","Off") )} .deferIfNeeded
 		};
 
 		// 32. reset / latch (Event)
@@ -892,17 +892,17 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 		// 33. reset latch Mode (Event)
 		MVC_OnOffView(gui[\scrollView], models[33], Rect(790, 203, 40, 20))
-			.strings_(["Reset","Latch"])
+			.strings_(["Off","Cycle"])
 			.rounded_(true)
 			.color_(\on,Color(50/77,61/77,1))
 			.color_(\off,Color(1,1,1,0.88)/4);
 
 		MVC_FuncAdaptor(models[33]).func_{|me,val|
-			{gui[\latchResetEvent].changeLabel_( val.isTrue.if("Latch","Reset") )} .deferIfNeeded
+			{gui[\latchResetEvent].changeLabel_( val.isTrue.if("Cycle","Off") )} .deferIfNeeded
 		};
 
 		// 38. Freeze CC = 0-127 & -1 = off
-		MVC_NumberBox(gui[\scrollView],models[38], Rect(840, 295, 42, 16))
+		gui[\freezeCC] = MVC_NumberBox(gui[\scrollView],models[38], Rect(840, 295, 42, 16))
 			.resoultion_(25)
 			.rounded_(true)
 			.visualRound_(1)
@@ -912,13 +912,22 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.color_(\string,Color.white)
 			.color_(\typing,Color.black)
 			.color_(\background,Color(46/77,46/79,72/145)/1.5);
+
+		// off for above gui
+		MVC_FuncAdaptor(models[38]).func_{|me, value|
+			if (value<0) {
+				gui[\freezeCC].postfix_("   OFF      ");
+			}{
+				gui[\freezeCC].postfix_("");
+			};
+		};
 
 		// learn button Freeze CC
 		MVC_FlatButton(gui[\scrollView], Rect(840, 320, 43, 18),"Learn",gui[\learnTheme])
 			.action_{ if (p[38]>=0) { midi.learn(p[38],64)} };
 
-		// 39. Freeze CC = 0-127 & -1 = off
-		MVC_NumberBox(gui[\scrollView],models[39], Rect(840, 363, 42, 16))
+		// 39. Frame CC = 0-127 & -1 = off
+		gui[\frameCC] = MVC_NumberBox(gui[\scrollView],models[39], Rect(840, 363, 42, 16))
 			.resoultion_(25)
 			.rounded_(true)
 			.visualRound_(1)
@@ -928,6 +937,15 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.color_(\string,Color.white)
 			.color_(\typing,Color.black)
 			.color_(\background,Color(46/77,46/79,72/145)/1.5);
+
+		// off for above gui
+		MVC_FuncAdaptor(models[39]).func_{|me, value|
+			if (value<0) {
+				gui[\frameCC].postfix_("   OFF      ");
+			}{
+				gui[\frameCC].postfix_("");
+			};
+		};
 
 		// learn button Freeze CC
 		MVC_FlatButton(gui[\scrollView], Rect(840, 390, 43, 18),"Learn",gui[\learnTheme])
@@ -957,7 +975,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.rounded_(true)
 			.color_(\on,Color(50/77,61/77,1))
 			.color_(\off,Color(1,1,1,0.88)/4);
-
 
 		// levels
 		gui[\recLevL] = MVC_FlatDisplay(gui[\scrollView], recordLevelModels[0], Rect(600, 163, 178, 7));
