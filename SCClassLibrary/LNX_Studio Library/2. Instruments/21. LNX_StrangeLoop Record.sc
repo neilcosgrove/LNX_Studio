@@ -147,7 +147,7 @@ Possible sources..
 	guiRecord{
 		// i need to make multi if doesn't already exist
 		// what about samples for net or local ?
-
+		cancelRecord = false;
 		if (sampleBank[p[11]].isNil) {
 			this.guiNewBuffer
 		}{
@@ -232,46 +232,48 @@ Possible sources..
 			var watcher		= NodeWatcher.register(node);
 			var func 		= {|changer,message|
 				if (message==\n_end) {
-					node.removeDependant(func);
-					recordBus.free;
-
-					{ gui[\record].value_(0).color_(\on,Color(50/77,61/77,1)) }.deferIfNeeded;
-
-					// now save to temp so it can be loaded into lang
-					path = (LNX_BufferProxy.tempFolder) +/+ (sample.path);
-
-					sample.multiChannelBuffer.write(path.standardizePath, completionMessage:{
-						{
-							sample.updateSampleData(path);
-							recordLevelModels[0].lazyValueAction_(0, nil, false);	// update input levels
-							recordLevelModels[1].lazyValueAction_(0, nil, false);	// update input levels
-							sampleBankGUI.sampleView.refresh; //}.defer(0.25);
-						}.defer(0.25)
-					});
-
-					sample.cleanupRecord(latency); // update & free buffers no longer used
-
-					// update synth with new buffer numbers
-					this.marker_changeBuffers( sample.bufnum(0), sample.bufnum(1) , nil);
-					// Surely this can be done sooner...!
+					if (cancelRecord) {
+						cancelRecord = false;
+					}{
+						node.removeDependant(func);
+						recordBus.free;
+						// now save to temp so it can be loaded into lang
+						path = (LNX_BufferProxy.tempFolder) +/+ (sample.path);
+						sample.multiChannelBuffer.write(path.standardizePath, completionMessage:{
+							{
+								sample.updateSampleData(path);
+								sampleBankGUI.sampleView.refresh;
+								recordLevelModels[0].lazyValueAction_(0, nil, false);	// update input levels
+								recordLevelModels[1].lazyValueAction_(0, nil, false);	// update input levels
+								gui[\record].value_(0).color_(\on,Color(50/77,61/77,1));
+								cancelRecord = false; // incase inbetween below defer
+							}.defer(0.25)
+						});
+						sample.cleanupRecord(latency); // update & free buffers no longer used
+						// update synth with new buffer numbers
+						this.marker_changeBuffers( sample.bufnum(0), sample.bufnum(1) , nil);
+						// Surely this can be done sooner...!
+					};
 				};
 			};
 
 			node.addDependant(func);
 			lastRecordNode = recordNode;
-
 			{ gui[\record].color_(\on,Color(1,0.25,0.25)) }.deferIfNeeded;
-
 		};
-
 	}
 
 	guiStopRecord{
 		cueRecord = false;
-		{ gui[\record].color_(\on,Color(1,0.5,0.5)) }.deferIfNeeded;
+		cancelRecord = true;
 		if (lastRecordNode.notNil) {
-			//server.sendBundle(studio.latency +! syncDelay, [\n_free, lastRecordNode])
+			server.sendBundle(studio.latency +! syncDelay, [\n_free, lastRecordNode])
 		};
+		{
+			recordLevelModels[0].lazyValueAction_(0, nil, false);	// update input levels
+			recordLevelModels[1].lazyValueAction_(0, nil, false);	// update input levels
+			gui[\record].value_(0).color_(\on,Color(50/77,61/77,1));
+		}.defer(studio.latency +! syncDelay);
 	}
 
 	// play a buffer for sequencer mode

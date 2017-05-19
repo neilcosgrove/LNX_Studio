@@ -563,6 +563,17 @@ LNX_MarkerEvent {
 		repeatNoE		 = 0;
 		repeatRateE		 = 0;
 		repeatAmpE		 = 1;
+		// Event CC
+		if (p[38]>=0) {
+			midi.control(p[38],0,studio.latency +! syncDelay,false,true);
+			gui[\eventCCModel].lazyValueAction_(0);
+		};
+		// Frame CC
+		if (p[39]>=0) {
+			midi.control(p[39],0,studio.latency +! syncDelay,false,true);
+			gui[\frameCCModel].lazyValueAction_(0);
+		};
+
 	}
 
 }

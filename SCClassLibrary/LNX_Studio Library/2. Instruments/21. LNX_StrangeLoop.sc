@@ -86,17 +86,15 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 	var <sampleBank,		<sampleBankGUI,	<webBrowser, 		<relaunch = false,	<newBPM = false;
 	var <mode = \marker,	<markerSeq,		<lastMarkerEvent,	<lastMarkerEvent2;
 	var <allMakerEvents,    <sequencer,		<seqOutBuffer;
-	var <repeatMode,		<recordNode;
 
 	var <repeatNo=0,		<repeatRate=0,	<repeatAmp=1,		<repeatStart=0;
-	var <repeatNoE=0,		<repeatRateE=0,	<repeatAmpE=1;
+	var <repeatNoE=0,		<repeatRateE=0,	<repeatAmpE=1, 		<repeatMode;
 
-	var <guiModeModel,		<previousMode,	<currentRateAdj=1;
-	var <voicer,			<recordBus,		<cueRecord=false;
+	var <guiModeModel,		<previousMode,	<currentRateAdj=1, 	<voicer;
 
-	var <sources,			<sourceValues,	<lastSource;
-
-	var <recordLevelModels, <lastRecordNode;
+	var <recordNode, 		<recordBus,			<cueRecord=false;
+	var <recordLevelModels, <lastRecordNode, 	<cancelRecord = false;
+	var <sources,			<sourceValues,		<lastSource;
 
 	*new { arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
