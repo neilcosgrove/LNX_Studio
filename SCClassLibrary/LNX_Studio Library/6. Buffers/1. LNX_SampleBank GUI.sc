@@ -700,10 +700,10 @@
 			.color_(\string,Color.black)
 			.font_(Font("Helvetica", 10))
 			.mouseDownAction_{ gui[\path].color_(\string,Color.white) }
-		.mouseUpAction_{
-			gui[\path].color_(\string,Color.black);
-			this[i].convertedPath.postln.revealInFinder
-		};
+			.mouseUpAction_{
+				gui[\path].color_(\string,Color.black);
+				this[i].convertedPath.postln.revealInFinder
+			};
 
 		// search the web button
 		if (search) {
@@ -979,6 +979,28 @@
 					var y;
 					var visualOffset;
 
+					// show selected regions, used in StrangeLoop
+					if (selectedNotes.size>0) {
+						selectedNotes.do{|i|
+							var x1, x2;
+							i=i%(models[\enabledMarkers].size+1); 								// wrap to list size
+							if (i==0) {
+								x1 = start * w / z - ( o * w / z) + 2; 							// use start
+							}{
+								x1 = models[\enabledMarkers].at(i-1) * w / z - ( o * w / z) + 2;// x1 is a marker
+							};
+							if (i==(models[\enabledMarkers].size)) {
+								x2 = end * w / z - ( o * w / z) + 2; 							// use end
+							}{
+								x2 = models[\enabledMarkers].at(i) * w / z - ( o * w / z) + 2;	// x2 is a marker
+							};
+							if  ( ( ((x1<0) && (x2<0)) || ((x1>w) && (x2>w)) ).not) {			// is it on screen
+								Color(1,1,1,0.2).set;
+								Pen.fillRect(Rect(x1,0,x2-x1,h));								// draw it
+							};
+						};
+					};
+
 					if (buffer.buffer.notNil) {
 
 						// sampleData, should lead to LNX_BufferArray.sampleData
@@ -1045,7 +1067,7 @@
 						var rect;
 						x = x * w / z - ( o * w / z) + 2;
 						if ((x>=(-15))&&(x<=w)) { // only draw if in view bounds
-						if ((i+models[\firstMarker])==markerIndex)
+							if ((i+models[\firstMarker])==markerIndex)
 								{ Color(1,1,1,0.6).set } { Color(0.8,0.8,1,0.5).set };
 							Pen.moveTo(x@(h-2));
 							Pen.lineTo(x@1);
@@ -1556,7 +1578,9 @@
 				gui[\numChannels].string_("-");
 			};
 
-		}
+		};
+
+		bankGUIs = bankGUIs.add(gui);
 
 		// i'm returning extra stuff so the web browser can update gsRythmns sample only
 		^[gui[\window],  this,  {|j|
@@ -1575,6 +1599,13 @@
 		];
 
 	}
+
+	// notes selected by pRoll in StrangeLoop
+	selectedNotes_{|notes|
+		selectedNotes = notes;
+		{ bankGUIs.do{|gui| gui[\sampleView].refresh } }.deferIfNeeded;
+	}
+
 }
 
 // for accessing sample data in SCLang

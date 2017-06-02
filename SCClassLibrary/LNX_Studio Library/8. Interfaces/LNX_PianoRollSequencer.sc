@@ -433,7 +433,8 @@ LNX_PianoRollSequencer{
 	var <gridW=22, <gridH=15, <noteRects;
 	var <lastDuration=2, <lastVelocity;
 	var <scores, <initialSize=64;
-	var <>action, <>offAction, <>releaseAllAction, <>keyDownAction, <>keyUpAction;
+	var <>action, <>offAction, <>releaseAllAction, <>keyDownAction, <>keyUpAction, <>selectAction;
+	var <selectedNotes;
 	var <>pipeOutAction;
 	var <>recordFocusAction;
 	var <>notesOff;
@@ -692,6 +693,7 @@ LNX_PianoRollSequencer{
 		score = scores[i].deepCopy;
 		viewArgs = score.viewArgs;
 		this.clearGUIEditing;
+		this.updateSelectAction;
 		models[\dur].value_(score.dur); // update the dur model
 
 		models[\speed].valueAction_( 6-(log(score.speed*8)/log(2)) );
@@ -1218,6 +1220,7 @@ LNX_PianoRollSequencer{
 			clipboard.do{|note|
 				this.addNote(note.note,note.start+marker,note.dur,note.vel)
 			};
+			this.updateSelectAction;
 		}
 	}
 

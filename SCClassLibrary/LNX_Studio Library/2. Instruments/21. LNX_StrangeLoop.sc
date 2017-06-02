@@ -9,10 +9,7 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
-
-how about: repeatNo / noRepeats --> midi cc out
-
-pressing record, while recording stops recording + other combos, // this is proving difficult
+pRoll highlights marker & preview
 record 1 after another after another
 startOffset // i can do this in pRoll
 what happens when i dup a temp // nothing and it shouldn't
@@ -20,11 +17,11 @@ fit pitch to fit
 save dialog
 Auto Save All
 Discard All
-low & high pass no repeats or increases sends
 optimise vars
 rand or rev on pRoll, what about poly?
 syncDelay // to test
 new sample (mono/stereo)
+save buffers when adding to library
 save names in cashe / dialog ?
 playback bpm [div 2] [*2] buttons
 quantise options
@@ -41,6 +38,7 @@ TIDY GUI
 
 BUGS: !!!
 ---------
+playing a loop in the pRoll and then deleting the sample
 incorrect sample is showing in menu when song loaded
 press record, swap over to a url sample and press play
 need to put latency sync in
@@ -50,6 +48,8 @@ deleting all buffers while playing or deleting a sLoop when player
 
 Done
 ----
+pressing record, while recording stops recording + other combos
+repeatNo / noRepeats --> midi cc out
 save dialog GUI needs to be a singleton
 record audio - many sources (level in) (overdub,replace)
 input source
@@ -360,6 +360,9 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			// 39. Frame CC = 0-127 & -1 = off
 			[1, [-1,127,\lin,1], midiControl, 39, "Frame CC", {|me,val,latency,send| this.setPVPModel(39,val,latency,send) }],
 
+			// 40. Preview
+			[1, \switch, midiControl, 40, "Preview", {|me,val,latency,send| this.setPVPModel(40,val,latency,send) }],
+
 		].generateAllModels;
 
 		models[35].constrain_(false); // sources can't be constrained because insts.size changes during load
@@ -503,6 +506,12 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			}
 			.recordFocusAction_{
 				//keyboardView.focus
+			}.selectAction_{|me,selectedNotes|
+				sampleBank.selectedNotes_(selectedNotes);
+
+				if ((selectedNotes.size==1)&&(p[40].isTrue)) {
+				 	this.playMarker(selectedNotes.choose) // always 1 note because of if .size==1
+				};
 			};
 
 		this.marker_initVars;
@@ -684,7 +693,10 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 							\font_:	  Font("Helvetica",12,true),
 							\colors_:  ( \up: Color(50/77,61/77,1), \down: Color(1,1,1,0.88)/4 ) );
 
-		gui[\onOffTheme1] = ( \rounded_: true, \colors_: ( \on: Color(1,1,1,0.5), \off: Color(1,1,1,0.5)));
+		gui[\onOffTheme ] = (\colors_ : (	\on    : Color(0.4, 1, 0.4),
+										\off   : Color(6/11,42/83,29/65)/1.8,
+					 					\string: Color.white),
+							\rounded_ : true);
 
 		gui[\textTheme1]= (	labelShadow_: false, shadow_:false, canEdit_:true, hasBorder_:true, enterStopsEditing_:false,
 							\font_:	  Font("Helvetica", 13,true),
@@ -1082,6 +1094,12 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.color_(\string,Color.white)
 			.resize_(9)
 			.action_{ LNX_MIDIControl.editControls(this); LNX_MIDIControl.window.front  };
+
+		// 40.preview
+		MVC_OnOffView(gui[\scrollView], Rect(798,168,22,20), models[40], gui[\onOffTheme], "speaker")
+			.resize_(7)
+			.mode_(\icon);
+
 
 		///// highlight which repeat mode is used
 

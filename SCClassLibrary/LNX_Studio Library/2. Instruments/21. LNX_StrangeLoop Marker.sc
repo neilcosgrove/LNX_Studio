@@ -313,7 +313,6 @@ LNX_MarkerEvent {
 			if (repeatMode.isNil) { lastMarkerEvent = lastMarkerEvent.insert(0,markerEvent) }; // add last event
 			lastMarkerEvent = lastMarkerEvent.keep(8); // memory of length p[20]
 
-
 			if	(p[18].isTrue) {
 				{
 					if (this.isOn) {
@@ -445,6 +444,31 @@ LNX_MarkerEvent {
 
 		};
 
+	}
+
+	// play just a marker, used by pRoll to highlight & playmarker via gui
+	playMarker{|note|
+		if (sampleBank[p[11]].isNil){ ^this }; // no sample exception
+		if (this.isOff)   			{ ^this }; // instrument is off exception
+		note = note.asInt;
+		{
+			var vel			= 127;
+			var latency     = nil;
+			var markerEvent = allMakerEvents.wrapAt(note);
+			var sampleIndex = p[11];
+			var sample      = sampleBank[sampleIndex];
+			var rate		= (p[12]+p[13]).midiratio.round(0.0000000001).clip(0,100000);
+			var amp         = (vel/127) * (sampleBank.amp(sampleIndex).dbamp);
+			var clipMode    = 0;
+			var bufferL		= sample.bufnumPlayback(0);          	// this only comes from LNX_BufferArray
+			var bufferR		= sample.bufnumPlayback(1) ? bufferL; 	// this only comes from LNX_BufferArray
+
+			if (markerEvent.isNil) { ^this }; // no marker event exception
+
+			this.marker_playBufferMIDI(note,
+				bufferL,bufferR,rate,markerEvent.startFrame,markerEvent.durFrame,1,clipMode,amp,latency
+			);
+		}.value;
 	}
 
 	// *************************************************************************************************************

@@ -1134,7 +1134,8 @@ LNX_Studio {
 		if (id.notNil) {
 			if (showNone.not) {
 				if (show1) {insts.do({|inst| if (inst.id!=id) { inst.closeWindow.closeEQ }})};
-				insts[id].front.openEQIfOn;
+				insts[id].front;
+				//insts[id].openEQIfOn;
 			};
 			insts.selectedInst_(id);
 			this.setInstNumberColours;

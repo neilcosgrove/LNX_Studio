@@ -3,6 +3,21 @@
 
 + LNX_PianoRollSequencer{
 
+	// update the select function used by strangeLoop
+	updateSelectAction{
+		var currentNotes = IdentitySet[];			// make a set of all the midi notes currently selected
+		notesSelected.do{|id|
+			var note = score.notesDict[id]; 		// the LNX_Note
+			if (note.notNil) {
+				currentNotes = currentNotes.add(note.note.asInt) // get note number from the LNX_Note & + to the set
+			};
+		};
+		if (selectedNotes!=currentNotes) {
+			selectedNotes = currentNotes;			// update selectedNotes
+			selectAction.value(this,selectedNotes); // if different from the last one update the selectAction
+		};
+	}
+
 	// calculate the rect of every note so it doesn't have to be done on every refresh
 	calcNoteRects{
 		noteRects=IdentityDictionary[];
@@ -475,7 +490,8 @@
 						Pen.fillRect(rect);
 						colors[\noteBGS].set;
 						Pen.fillRect(rect.insetBy(1,1));
-					}{													colors[\noteB].set;
+					}{
+						colors[\noteB].set;
 						Pen.fillRect(rect);
 						colors[\noteBG].set;
 						Pen.fillRect(rect.insetBy(1,1));
@@ -631,6 +647,8 @@
 		}{
 			this.refresh(false);
 		};
+
+		this.updateSelectAction;
 	}
 
 	// MOVE /////////////////////////////////////////////////////////////////
@@ -725,6 +743,8 @@
 			lastMX=mx;
 		};
 
+		this.updateSelectAction;
+
 	}
 
 	// UP /////////////////////////////////////////////////////////////////
@@ -748,6 +768,8 @@
 			this.useAdjustments;
 		};
 		this.refresh(true);
+
+		selectedNotes = nil;
 
 	}
 
@@ -945,13 +967,15 @@
 	}
 
 	guiSelectAll{
-		notesSelected = noteRects.keys;
+		notesSelected = noteRects.keys(IdentitySet);
 		this.refresh;
+		this.updateSelectAction;
 	}
 
 	guiDelete{
 		if (notesSelected.size>0) {
 			this.deleteNotes(notesSelected.asList);
+			this.updateSelectAction;
 		};
 	}
 

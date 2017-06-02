@@ -54,6 +54,8 @@ LNX_SampleBank{
 
 	var refreshOnlyModel;
 
+	var <selectedNotes,   <bankGUIs;
+
 	// init the class
 	*initClass {
 		sampleBanks=Set[];
@@ -325,6 +327,7 @@ LNX_SampleBank{
 		if (path.isString) { this.loadFile(path) }; // load
 		follow = \switch.asModel;                   // the follow waveform model
 		iModel = [1,[1,24,\lin,1,1]].asModel;       // not sure what this is
+		selectedNotes = IdentitySet[];				// selected notes, used in StrangeLoop
 	}
 
 	// bank for preview, will only hold 1 sample
@@ -897,6 +900,7 @@ LNX_SampleBank{
 		if (this.isOpen) { window.parent.close };
 		this.finishedLoading;
 		//gui.do(_.free); // this will cause a crash, should find out why at some point
+		bankGUIs = nil;
 	}
 
 	duplicate{
