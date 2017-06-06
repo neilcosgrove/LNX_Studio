@@ -76,6 +76,8 @@ LNX_MarkerEvent {
 			markerSeq.clipPut(index, markerEvent);				// for autoSeq
 		};
 
+		sequencer.maxNoteRange_(allMakerEvents.size);
+
 	}
 
 	// import play loop seq into the piano roll
@@ -100,7 +102,9 @@ LNX_MarkerEvent {
 				nextTime = length;														// or the length of the loop
 			};
 			sequencer.addNote(marker.markerNo, thisTime, nextTime-thisTime , 0.7874);	// add to pRoll (0.7874 =100/127)
-		}
+		};
+
+		sequencer.resizeToSLoopImport;
 
 	}
 

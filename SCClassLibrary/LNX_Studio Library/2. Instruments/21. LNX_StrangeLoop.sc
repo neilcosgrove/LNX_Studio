@@ -9,7 +9,6 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
-pRoll highlights marker & preview
 record 1 after another after another
 startOffset // i can do this in pRoll
 what happens when i dup a temp // nothing and it shouldn't
@@ -31,7 +30,6 @@ midi learn freeze buttons
 clock offset start
 one shot
 zeroX or peak
-proll has dark patches for out of range
 attack decay envelope
 NETWORK
 TIDY GUI
@@ -48,6 +46,8 @@ deleting all buffers while playing or deleting a sLoop when player
 
 Done
 ----
+proll has dark patches for out of range
+pRoll highlights marker & preview
 pressing record, while recording stops recording + other combos
 repeatNo / noRepeats --> midi cc out
 save dialog GUI needs to be a singleton
@@ -494,6 +494,7 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 		webBrowser = LNX_WebBrowser(server,sampleBank);
 
 		sequencer = LNX_PianoRollSequencer(id++\pR)
+			.maxNoteRange_(0)
 			.pipeOutAction_{|pipe|
 				if (this.isOff.not) {seqOutBuffer.pipeIn(pipe)};
 			}
@@ -508,7 +509,6 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 				//keyboardView.focus
 			}.selectAction_{|me,selectedNotes|
 				sampleBank.selectedNotes_(selectedNotes);
-
 				if ((selectedNotes.size==1)&&(p[40].isTrue)) {
 				 	this.playMarker(selectedNotes.choose) // always 1 note because of if .size==1
 				};

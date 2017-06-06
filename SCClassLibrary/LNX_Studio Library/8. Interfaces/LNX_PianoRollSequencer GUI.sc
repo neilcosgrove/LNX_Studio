@@ -18,6 +18,14 @@
 		};
 	}
 
+	// range of notes strangeLoop uses
+	maxNoteRange_{|note|
+		if (maxNoteRange!=note) {
+			maxNoteRange=note;
+			if (gui[\notes].notNil) { gui[\notes].refresh };
+		};
+	}
+
 	// calculate the rect of every note so it doesn't have to be done on every refresh
 	calcNoteRects{
 		noteRects=IdentityDictionary[];
@@ -154,6 +162,7 @@
 		var gridDash1  = FloatArray[2,3];
 		var selectDash = FloatArray[3,3];
 		var markerDash = FloatArray[4,4];
+		var sLoopDash  = FloatArray[6,2];
 
 		var bCount=0;
 
@@ -507,7 +516,16 @@
 				};
 			};
 
-			MVC_LazyRefresh.incRefreshN(noRect/10);
+			// area cover and div line for strangeLoop
+			if (maxNoteRange.notNil) {
+				var y = h-(maxNoteRange*gridH);
+				Color(0,0,0,0.66).set;
+				Pen.fillRect( Rect(0, 0, w,  y) );
+				Color(1,1,1,0.5).set;
+				Pen.lineDash_(sLoopDash);
+				Pen.line(0@y, w@y);
+				Pen.stroke;
+			};
 
 			// the selction rect
 			if (selectRect.notNil) {
@@ -517,6 +535,8 @@
 				Pen.lineDash_(selectDash);
 				Pen.strokeRect(selectRect);
 			};
+
+			MVC_LazyRefresh.incRefreshN(noRect/10);
 
 		};
 

@@ -446,6 +446,7 @@ LNX_PianoRollSequencer{
 	var <marker=0;
 	var <>spoModel;
     var lazyRefresh;
+	var <maxNoteRange;
 
 	*initClass{ allPianoRolls = [] } // all pRolls kept in allPianoRolls
 
@@ -592,6 +593,15 @@ LNX_PianoRollSequencer{
 				//.resizeBy(ScrollBars.addIfSome(13).neg).height/2)));
 		};
 
+	}
+
+	// resize to strangeLoop import size
+	resizeToSLoopImport{
+		if ((maxNoteRange.notNil) && (gui[\scrollView].notNil)) {
+			models[\gridW].multipyValueAction_(0);
+			models[\gridH].valueAction_( (gui[\scrollView].bounds.height / (maxNoteRange)).floor );
+			gui[\scrollView].visibleOrigin_(0@(gui[\notes].bounds.height));
+		}
 	}
 
 	// change the duration of the score & update gui

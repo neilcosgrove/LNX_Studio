@@ -234,7 +234,6 @@ LNX_Studio {
 	// studio vars (note this is called when clear is called ?) /////////////////////////////////
 
 	initVars{
-
 		myHack=(); // to remove
 
 		onSoloGroup = LNX_InstrumentTemplate.onSoloGroup;
@@ -257,9 +256,6 @@ LNX_Studio {
 		insts.addDependant(LNX_POP); 		  // for updating gui positions
 
 		#show1, showNone = (("show1 showNone").loadPref?[true,false]).collect(_.isTrue);
-
-
-
 	}
 
 	// the Network ///////////////////////////////////////////////////////////////
@@ -320,9 +316,7 @@ LNX_Studio {
 	// send all the instrument UGens to the server, and other misc stuff
 
 	postBootFuncs{
-
 		{
-
 			if (serverBootNo != LNX_AudioDevices.bootNo) {
 
 				serverBootNo = LNX_AudioDevices.bootNo;
