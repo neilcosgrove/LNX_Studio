@@ -495,7 +495,9 @@ LNX_MarkerEvent {
 			\startFrame,		startFrame,
 			\durFrame:			durFrame,
 			\attackLevel:		attackLevel,
-			\clipMode:			clipMode
+			\clipMode:			clipMode,
+			\a: p[41],
+			\d: p[42],
 		]);
 
 	}
@@ -503,7 +505,7 @@ LNX_MarkerEvent {
 	*marker_initUGens{|server|
 
 		SynthDef("SLoopMarker",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
-				gate=1,attackLevel=1, clipMode=0, id=0, amp=1|
+				gate=1,attackLevel=1, clipMode=0, id=0, amp=1, a=0, d=0|
 			var signal, index;
 
 			index  = Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio);
@@ -513,7 +515,8 @@ LNX_MarkerEvent {
 			signal = BufRd.ar(1, [bufnumL,bufnumR], index, loop:0); // might need to be leaked
 			signal = LeakDC.ar(signal);
 			signal = HPF.ar(signal,25);
-			signal = signal * EnvGen.ar(Env.new([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,amp,doneAction:2);
+			signal = signal * EnvGen.ar(Env([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,amp,doneAction:2);
+			signal = signal * EnvGen.ar(Env([0, 1, d >= 1 ], [a**2*2, d**2*2], -3));
 
 			DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0
 			OffsetOut.ar(outputChannels,signal);			 // now send out
@@ -523,7 +526,7 @@ LNX_MarkerEvent {
 
 
 		SynthDef("SLoopMarkerRev",{|outputChannels=0,bufnumL=0,bufnumR=0,rate=1,startFrame=0,durFrame=44100,
-				gate=1,attackLevel=1, clipMode=0, id=0, amp=1|
+				gate=1,attackLevel=1, clipMode=0, id=0, amp=1, a=0, d=0|
 			var signal, index;
 
 			index  = Integrator.ar((rate * BufRateScale.ir(bufnumL)).asAudio);
@@ -533,7 +536,8 @@ LNX_MarkerEvent {
 			signal = BufRd.ar(1, [bufnumL,bufnumR], index, loop:0); // might need to be leaked
 			signal = LeakDC.ar(signal);
 			signal = HPF.ar(signal,25);
-			signal = signal * EnvGen.ar(Env.new([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,amp,doneAction:2);
+			signal = signal * EnvGen.ar(Env([attackLevel,1,0], [0.01,0.01], [2,-2], 1),gate,amp,doneAction:2);
+			signal = signal * EnvGen.ar(Env([0, 1, d >= 1 ], [a**2*2, d**2*2], -3));
 
 			DetectSilence.ar(Slope.ar(index), doneAction:2); // ends when index slope = 0
 			OffsetOut.ar(outputChannels,signal);			 // now send out

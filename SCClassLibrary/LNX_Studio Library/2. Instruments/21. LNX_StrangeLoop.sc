@@ -30,7 +30,6 @@ midi learn freeze buttons
 clock offset start
 one shot
 zeroX or peak
-attack decay envelope
 NETWORK
 TIDY GUI
 
@@ -46,6 +45,7 @@ deleting all buffers while playing or deleting a sLoop when player
 
 Done
 ----
+attack decay envelope
 proll has dark patches for out of range
 pRoll highlights marker & preview
 pressing record, while recording stops recording + other combos
@@ -362,6 +362,17 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 
 			// 40. Preview
 			[1, \switch, midiControl, 40, "Preview", {|me,val,latency,send| this.setPVPModel(40,val,latency,send) }],
+
+			// 41. a=0
+			[0, \unipolar, midiControl, 41, "Attack", (label_:"Attack", numberFunc_:\float2),
+				{|me,val,latency,send| this.setPVPModel(41,val,latency,send)}
+			],
+
+			// 42. d=0
+			[1, \unipolar, midiControl, 42, "Decay", (label_:"Decay", numberFunc_:\float2),
+				{|me,val,latency,send| this.setPVPModel(42,val,latency,send) }
+			],
+
 
 		].generateAllModels;
 
@@ -1004,6 +1015,13 @@ LNX_StrangeLoop : LNX_InstrumentTemplate {
 			.color_(\hilite,Color(0,0,0,0.5))
 			.color_(\numberUp,Color.black)
 			.color_(\numberDown,Color.white);
+
+
+		// 41. a=0
+		MVC_MyKnob3(gui[\scrollView], models[41], Rect(845, 156, 28, 28), gui[\knobTheme1]);
+
+		// 42. d=0
+		MVC_MyKnob3(gui[\scrollView], models[42], Rect(845, 236, 28, 28), gui[\knobTheme1]);
 
 		// *****************
 
