@@ -83,8 +83,8 @@ LNX_Puss4Patch{
 	}
 
 	*restartAll{
-		allHIDs		= IdentityDictionary[];
-		dependants	= dependants ? IdentityDictionary[];
+		allHIDs		= IdentityDictionary[]; // only & all ps4 controllers
+		dependants	= dependants ? IdentityDictionary[]; // make a dict for dependants if it doesn't already exist
 		exclude		= [6,7,19]; // raw in to exclude
 		reverse		= [15,17];	// reverse the joy's up & down
 		resolution	= 0.01;		// mininum resolution
@@ -92,20 +92,21 @@ LNX_Puss4Patch{
 		{
 			var deviceNo=1;
 			if (HID.running) { HID.closeAll; 1.wait }; // this should stop 2 on 1 device when no. devces>1
-			HID.findAvailable;
+			HID.findAvailable;	// this will init HID
 			1.wait;
 			HID.available.do{|info,i|
 				if (info.vendorName  =="Sony Interactive Entertainment") {
 					var path         = info.path.asSymbol;
-					var hid          = HID.openPath(path: (path.asString) );
+					var hid          = HID.openPath(path: (path.asString) ); 	 // the device
 					var lastValue    = IdentityDictionary[];
-					var lastDPad	 = 4;
+					var lastDPad	 = 4;									 	 // last position the dPad was in
 
 					if (hid.notNil) {
-						var idName		   = ("Puss_"++deviceNo).asSymbol;
+						var idName		   = ("Puss_"++deviceNo).asSymbol;		 // make a name
 						deviceNo		   = deviceNo + 1;
 						allHIDs[idName]    = hid;
-						dependants[idName] = dependants[idName] ? IdentitySet[];
+						dependants[idName] = dependants[idName] ? IdentitySet[]; // dependants that get updates
+						// for the 1st 22 elements
 						22.do{|index|
 							lastValue[index] = inf;
 							if (exclude.includes(index).not) {
@@ -157,7 +158,7 @@ LNX_Puss4Patch{
 				};
 			};
 			paths = [\None] ++ (allHIDs.keys.asList.sort);  // all paths as symbols
-			pathAsStrings = paths.collect(_.asString); // all paths as strings
+			pathAsStrings = paths.collect(_.asString);		// all paths as strings
 		}.fork;
 	}
 
@@ -253,11 +254,11 @@ LNX_Puss4 : LNX_InstrumentTemplate {
 		};
 		if (value==0) {^this};
 		if (index==20) { // Dpad UP
-			//LNX_POP.previousProg;
+			LNX_POP.previousProg;
 			^this
 		};
 		if (index==21) { // Dpad DOWN
-			//LNX_POP.nextProg;
+			LNX_POP.nextProg;
 			^this
 		};
 	}

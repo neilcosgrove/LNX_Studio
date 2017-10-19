@@ -9,6 +9,11 @@ Possible playback modes are...
 
 To do / Think about...
 ----------------------
+when we add new inst midiOut need to be set to internal
+midi NoteIn changes Transpose
+Freeze & Frame remember velocity
+last AGA song breaks quit
+save buffers when adding to library
 record 1 after another after another
 startOffset // i can do this in pRoll
 what happens when i dup a temp // nothing and it shouldn't
@@ -20,7 +25,6 @@ optimise vars
 rand or rev on pRoll, what about poly?
 syncDelay // to test
 new sample (mono/stereo)
-save buffers when adding to library
 save names in cashe / dialog ?
 playback bpm [div 2] [*2] buttons
 quantise options

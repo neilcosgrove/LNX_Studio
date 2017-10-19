@@ -205,67 +205,89 @@
 		}
 	}
 
+	// dictionary of every temp buffer so they can be reviewed for saving
+	getBufferInstBankDictLib{|inst|
+		var bufferInstBankDict = IdentityDictionary[];
+		inst.saveBanks.do{|bank|
+			var buffers = bank.tempFiles;
+			buffers.do{|buffer|
+				// at index Buffer is a list of [ inst, bank, BufferProxy ]
+				bufferInstBankDict[buffer] = [ inst, bank, bank.samples.indexOf(buffer) ];
+			};
+		};
+		^bufferInstBankDict;
+	}
+
 	// gui call to save the current instrument to the library
 	guiSaveInstToLibrary{
+		var inst = insts.selectedInst;
+		if (inst.notNil) {
+			var bufferDict = this.getBufferInstBankDictLib(inst);
+			if (bufferDict.notEmpty) {
+				this.reviewBufferSaves(bufferDict, \library, inst);
+			}{
+				this.saveInstToLibraryPrivate(inst);
+			};
+		};
+	}
 
+	// private call to save the current instrument to the library
+	saveInstToLibraryPrivate{|inst|
 		var window, scrollView, class, saveList, filename, studioName;
 
-		if (insts.selectedInst.notNil) {
-			class      = insts.selectedInst.class;
-			LNX_MIDIControl.autoSave_(false); // disable save with Automation
-			saveList   = insts.selectedInst.getSaveListForLibrary;
-			LNX_MIDIControl.autoSave_(true);  // enable save with Automation
-			filename   = insts.selectedInst.name;
-			studioName = insts.selectedInst.studioName;
+		class      = inst.class;
+		LNX_MIDIControl.autoSave_(false); // disable save with Automation
+		saveList   = inst.getSaveListForLibrary;
+		LNX_MIDIControl.autoSave_(true);  // enable save with Automation
+		filename   = inst.name;
+		studioName = inst.studioName;
 
-			window = MVC_ModalWindow(mixerWindow, 195@90);
-			scrollView = window.scrollView;
+		window = MVC_ModalWindow(mixerWindow, 195@90);
+		scrollView = window.scrollView;
 
-			// text field for the instrument / filename
-			MVC_Text(scrollView,Rect(10,21,142,16))
-				.string_(filename)
-				.label_("Add instrument to library as...")
-				.labelShadow_(false)
-				.shadow_(false)
-				.canEdit_(true)
-				.hasBorder_(true)
-				.enterStopsEditing_(false)
-				.color_(\label,Color.black)
-				.color_(\edit,Color.white)
-				.color_(\editBackground,Color(0,0,0,0.3))
-				.color_(\background,Color(0,0,0,0.3))
-				.color_(\focus,Color(0,0,0,0.1))
-				.font_(Font.new("Helvetica", 13,true))
-				.stringAction_{|me,string|
-					filename=string.filenameSafe;
-					me.string_(filename);
-				}
-				.enterKeyAction_{|me,string|
-					filename=string.filenameSafe;
-					me.string_(filename);
-					window.close;
-					{this.saveInstToLibrary(class, saveList, filename, studioName)}.defer(0.1);
-				}
-				.focus.startEditing;
+		// text field for the instrument / filename
+		MVC_Text(scrollView,Rect(10,21,142,16))
+			.string_(filename)
+			.label_("Add instrument to library as...")
+			.labelShadow_(false)
+			.shadow_(false)
+			.canEdit_(true)
+			.hasBorder_(true)
+			.enterStopsEditing_(false)
+			.color_(\label,Color.black)
+			.color_(\edit,Color.white)
+			.color_(\editBackground,Color(0,0,0,0.3))
+			.color_(\background,Color(0,0,0,0.3))
+			.color_(\focus,Color(0,0,0,0.1))
+			.font_(Font.new("Helvetica", 13,true))
+			.stringAction_{|me,string|
+				filename=string.filenameSafe;
+				me.string_(filename);
+			}
+			.enterKeyAction_{|me,string|
+				filename=string.filenameSafe;
+				me.string_(filename);
+				window.close;
+				{this.saveInstToLibrary(class, saveList, filename, studioName)}.defer(0.1);
+			}
+			.focus.startEditing;
 
-			// Cancel
-			MVC_OnOffView(scrollView,Rect(130-11-60, 55-11, 55, 20),"Cancel")
-				.rounded_(true)
-				.color_(\on,Color(1,1,1,0.5))
-				.color_(\off,Color(1,1,1,0.5))
-				.action_{	 window.close };
+		// Cancel
+		MVC_OnOffView(scrollView,Rect(130-11-60, 55-11, 55, 20),"Cancel")
+			.rounded_(true)
+			.color_(\on,Color(1,1,1,0.5))
+			.color_(\off,Color(1,1,1,0.5))
+			.action_{	 window.close };
 
-			// Ok
-			MVC_OnOffView(scrollView,Rect(130-11, 55-11, 50, 20),"Ok")
-				.rounded_(true)
-				.color_(\on,Color(1,1,1,0.5))
-				.color_(\off,Color(1,1,1,0.5))
-				.action_{
-					window.close;
-					{this.saveInstToLibrary(class, saveList, filename, studioName)}.defer(0.1);
-				};
-
-		}
+		// Ok
+		MVC_OnOffView(scrollView,Rect(130-11, 55-11, 50, 20),"Ok")
+			.rounded_(true)
+			.color_(\on,Color(1,1,1,0.5))
+			.color_(\off,Color(1,1,1,0.5))
+			.action_{
+				window.close;
+				{this.saveInstToLibrary(class, saveList, filename, studioName)}.defer(0.1);
+			};
 
 	}
 

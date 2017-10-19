@@ -496,8 +496,8 @@ LNX_MarkerEvent {
 			\durFrame:			durFrame,
 			\attackLevel:		attackLevel,
 			\clipMode:			clipMode,
-			\a: p[41],
-			\d: p[42],
+			\a: 				p[41],
+			\d: 				p[42],
 		]);
 
 	}

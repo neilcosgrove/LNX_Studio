@@ -320,7 +320,7 @@ Possible sources..
 
 		// we can add to side group to record
 		SynthDef("SLoopRecordStereo",{|leftIn=0, rightIn=1, bufnumL=0, bufnumR=1, multiBuffer=1, id=0, rate=1, gate=1,
-								startFrame=0, durFrame=44100, indexBus=0, playBufferL=0, playBufferR=1, overdub=0, recordLevel=1|
+						startFrame=0, durFrame=44100, indexBus=0, playBufferL=0, playBufferR=1, overdub=0, recordLevel=1|
 			var indexIn  = In.ar(indexBus,1); 					// comes from SynthDef above
 			var index    = startFrame + ( indexIn * BufRateScale.ir(bufnumL)         ).clip(0,durFrame); // real from in
 			var refindex = Integrator.ar((rate    * BufRateScale.ir(bufnumL)).asAudio).clip(0,durFrame); // fake
@@ -353,20 +353,42 @@ Possible sources..
 
 + LNX_Studio {
 
-	reviewBufferSaves{|bufferInstBankDict,saveMode|
-		if (saveBuffersWindow.isNil) { this.privateReviewBufferSaves(bufferInstBankDict,saveMode) }
+	// makes gui a singleton
+	reviewBufferSaves{|bufferInstBankDict,saveMode,inst|
+		if (saveBuffersWindow.isNil) { this.privateReviewBufferSaves(bufferInstBankDict,saveMode,inst) }
 	}
 
-	privateReviewBufferSaves{|bufferInstBankDict,saveMode|
+	// make gui for reviewing buffer saves
+	privateReviewBufferSaves{|bufferInstBankDict,saveMode,inst|
 		// ( buffer: [inst, bank, indexOfBuffer] )
 		var date      = Date.getDate.stamp;
 		var songName  = (this.name.size==0).if("LNX_Studio",this.name);
-		var startPath = "LNX_Songs" +/+ songName ++ "/";
-		var info      = bufferInstBankDict.collect{|list,buffer|
+		var startPath = {
+			var path;
+			if (saveMode!=\library) {
+				path = "LNX_Songs" +/+ songName ++ "/"; // saving as part of a song
+			}{
+				path = "LNX_Library" +/+ (inst.studioName) ++ "/"; // saving to the library
+			};
+			path;
+		}.value;
+
+		var info = bufferInstBankDict.collect{|list,buffer|
 			var instNo   = list[0].instNo;
 			var instName = list[0].name;
+			var bank     = list[1];
 			var bufNum   = list[2];
-			var path     = startPath ++ (instNo+1) ++ "." ++ instName ++ "(" ++ (bufNum+1) ++ ")" + date; // ++ ".aiff";
+
+			var path     = {
+				var path;
+				if (saveMode!=\library) {
+					path = startPath ++ (instNo+1) ++ "." ++ instName ++ "(" ++ (bufNum+1) ++ ")" + date; // ++ ".aiff";
+				}{
+					path = startPath ++ instName ++ "(" ++ (bufNum+1) ++ ")" + date; // ++ ".aiff";
+				};
+				path;
+			}.value;
+
 			[
 				path.asModel,		// 0: path model
 				\switch.asModel,    // 1: 0=save, 1=delete
@@ -413,7 +435,7 @@ Possible sources..
 		// text field for the instrument / filename
 		MVC_StaticText(gui[\scrollView], Rect(10,3,655,16), gui[\textTheme2])
 			.align_(\center)
-			.string_("There are samples in this song thats haven't been saved yet.");
+		.string_("There are samples in this" + ((saveMode==\library).if("instrument","song")) + "that haven't been saved yet.");
 
 		MVC_StaticText(gui[\scrollView], Rect(10,21,655,16), gui[\textTheme2])
 			.font_(Font("Helvetica", 13))
@@ -444,6 +466,16 @@ Possible sources..
 		MVC_OnOffView(gui[\scrollView], Rect(624, (size*20).clip(0,390)+50, 50, 20),"Ok", gui[\onOffTheme2])
 		.action_{
 
+			if (saveMode==\library) {
+
+				this.saveInstToLibraryPrivate(inst);
+
+
+
+
+
+			};
+
 			if (saveMode==\saveAs) {
 				Dialog.savePanel{|path|
 					var baseName = path.basename.removeExtension.replace(":","");
@@ -460,7 +492,7 @@ Possible sources..
 						}{
 							// warning this will be asynchronous in network
 							inst.revertTempToNew(bufNum, bank[bufNum]);
-						}
+						};
 					};
 					this.save(path);
 				};
@@ -478,10 +510,9 @@ Possible sources..
 					}{
 						// warning this will be asynchronous in network
 						inst.revertTempToNew(bufNum, bank[bufNum]);
-					}
+					};
 				};
 				this.save(songPath);
-
 			};
 
 			saveBuffersWindow.close;

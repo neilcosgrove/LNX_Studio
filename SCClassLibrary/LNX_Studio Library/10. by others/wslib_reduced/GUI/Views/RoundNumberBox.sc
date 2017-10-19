@@ -86,9 +86,9 @@ RoundNumberBox : RoundView {
 			2, { inc = (2**(value.abs.log2.floor)).max(0.0625);  }
 		);
 		^case
-			{ modifiers & 131072 == 131072 } {"a".post; shift_scale * inc }
-			{ modifiers & 262144 == 262144 } {"b".post; ctrl_scale * inc }
-			{ modifiers & 524288 == 524288 } {"c".post; alt_scale * inc }
+			{ modifiers & 131072 == 131072 } { shift_scale * inc }
+			{ modifiers & 262144 == 262144 } { ctrl_scale * inc }
+			{ modifiers & 524288 == 524288 } { alt_scale * inc }
 			{ inc };
 	}
 

@@ -1423,6 +1423,7 @@ LNX_Studio {
 			inst.saveBanks.do{|bank|
 				var buffers = bank.tempFiles;
 				buffers.do{|buffer|
+					// at index Buffer is a list of [ inst, bank, BufferProxy ]
 					bufferInstBankDict[buffer] = [ inst, bank, bank.samples.indexOf(buffer) ];
 				};
 			};

@@ -1322,7 +1322,6 @@ NoMIDI {
 	*midiClockLatency{}
 	*endPoint{}
 	*device  {}
-	*name    {^"NoMIDI"}
 	*uid     {}
 	*isSameDevice{|endPoint| ^(endPoint === this) }
 	*isSameName{|endPoint| ^(endPoint === this) }
