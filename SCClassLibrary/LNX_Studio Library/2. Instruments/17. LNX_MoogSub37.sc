@@ -179,7 +179,24 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 
 	// and finally to the midi out
 	toMIDIPipeOut{|pipe|
-		midi.pipeIn(pipe.addToHistory(this).addLatency(syncDelay)); // add this to its history
+		if ((pipe.isNote) || (pipe.isBend)) {
+			var note = pipe.note;
+			var spo4midi = note.spo4midi(60,7).postln;
+			var bend;
+
+			pipe.note_(spo4midi[0]).addToHistory(this).addLatency(syncDelay);
+
+			// bend = LNX_Bend(spo4midi[1].map(-0.5,0.5,0,16384).asInt, pipe.latency, pipe.source); semi tone
+			bend = LNX_Bend(spo4midi[1].map(-2,2,0,16383).asInt, pipe.latency, pipe.source); // tone
+
+			bend.history_(pipe.history); // i don't think i need to copy the history here
+
+			midi.pipeIn(pipe);
+			midi.pipeIn(bend); // note and the bend to spo
+
+		}{
+			midi.pipeIn(pipe.addToHistory(this).addLatency(syncDelay)); // add this to its history
+		}
 	}
 
 	// release all played notes, uses midi Buffer
@@ -840,7 +857,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 				moogPresets.do{|string,i| gui[i].canEdit_(me.value.isFalse) }
 			};
 
-				// control strip ///////
+		// control strip ///////
 
 		// 1. channel onOff
 		MVC_OnOffView(models[1], window,Rect(182, 4, 26, 18),gui[\onOffTheme1])
@@ -1070,3 +1087,11 @@ Sub37 {
 	}
 
 }
+
++ Number {
+	spo4midi{|root=69,spo=12|
+		var note = this - root / spo * 12 + root;
+		^[note.round.asInt, note - (note.round)]
+	}
+}
+

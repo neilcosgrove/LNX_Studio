@@ -1,3 +1,5 @@
+// Big bug, poly / mono model not working in SC Code URL: APaino +
+
    //                                //        //||     //  || //
   // ****************************** //        // ||    //   ||//
  //     LNX_STUDIO Version 2.0     //        //  ||   //    |//
@@ -153,8 +155,7 @@ LNX_Studio {
 		LNX_SplashScreen.init(this); // start splash screen
 		CmdPeriod.add(this);		 // add this object to CmdPeriod
 		this.startClockOff;          // and start off_clock for client side lfos
-
-		MVC_LazyRefresh.startRefreshWatchingTask; // start the lazy refresh task
+		MVC_LazyRefresh.start;       // start the lazy refresh task
 
 	}
 
@@ -516,7 +517,7 @@ LNX_Studio {
 		this.startResponders;		 // for levels back into SCLang
 		insts.do(_.cmdPeriod);
 		{this.restartDSP}.defer(0.5);
-		MVC_LazyRefresh.startRefreshWatchingTask;
+		MVC_LazyRefresh.start;
 	}
 
 	// and this on close

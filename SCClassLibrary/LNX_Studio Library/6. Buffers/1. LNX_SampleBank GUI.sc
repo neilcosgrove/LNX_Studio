@@ -1009,7 +1009,7 @@
 						if (sampleData.notNil) {
 
 							// the wave form
-							Pen.smoothing_(true);
+							Pen.smoothing_(true); // this can be false when moving
 							Pen.width_(1.5);
 							Color(0.7,0.8,1,0.8).set;
 

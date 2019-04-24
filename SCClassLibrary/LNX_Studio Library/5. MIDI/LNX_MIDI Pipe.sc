@@ -30,7 +30,7 @@ LNX_Bend(1,2,3);
 
 LNX_MIDIPipe {
 
-	var	<>latency, <>source, tag, <history;
+	var	<>latency, <>source, tag, <>history;
 
 	kind{^nil}
 	isNoteOn {^false}

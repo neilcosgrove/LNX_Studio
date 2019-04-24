@@ -549,6 +549,15 @@ LNX_InstrumentTemplate {
 		var l;
 		if (presetMemory.size<128) {
 			l=this.getPresetList;
+
+			// this is where the split can go to copy & paste the current settings to other inst
+			// call it...
+
+			// Copy to Clipboard
+			// Add from Clipboard
+
+			// testing for inst type done inside method
+
 			this.addPresetList(l);
 			if (network.isConnected) {
 				api.sendClumpedList(\netAddPresetList,l.compress); // net this

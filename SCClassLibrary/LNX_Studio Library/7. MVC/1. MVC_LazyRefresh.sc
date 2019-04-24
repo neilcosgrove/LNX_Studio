@@ -39,9 +39,10 @@ MVC_LazyRefresh{
 	// this global FPS is released with mouse up events
 	*mouseUp{ globalFPS = nil}
 
+	// start Refresh Watching Task
 	// a task that adjusts the lazyRefresh rate of the whole gui according to how many freshCount
 	// have been had, this helps stop the gui from freezing if to many refreshes are called
-	*startRefreshWatchingTask{
+	*start{
 		if (task.isPlaying) {^this};           // only 1 task playing
 		if (task.notNil) { task.play; ^this }; // only 1 task playing
 		task = Task({

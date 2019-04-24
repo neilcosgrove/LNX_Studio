@@ -769,7 +769,7 @@ MVC_Automation {
 												\off: Color(1,1,1,0.5)));
 
 		// logo
-		MVC_ImageView(gui[\window],Rect(33, 3, 107, 22))
+		MVC_ImageView(gui[\window],Rect(3, 3, 107, 22))
 			.image_("fontImages/Automation.png");
 
 		// pen mode (write, erase, slect, value)
@@ -872,7 +872,7 @@ MVC_Automation {
 			.color_(\numberDown,Color.white);
 
 		// jumpTo
-		MVC_OnOffView(window, Rect(10, 5, 20, 19))
+		MVC_OnOffView(window, Rect(117, 5, 20, 19))
 			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
