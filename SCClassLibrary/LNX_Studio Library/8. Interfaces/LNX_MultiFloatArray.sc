@@ -12,7 +12,7 @@ m;           // now array is 3 size
 m.size_(64); // gives you back the orignal array of size 64
 m;           // the original array
 
-m = LNX_MultiFloatArray(20);
+m = LNX_MultiFloatArray(16);
 m.randFill;        // fill with random values
 m.clipAtLin(0.5);  // half way between 0 & 1
 m.wrapAtLin(-0.5); // half way between 0 & -1
@@ -30,7 +30,7 @@ LNX_MultiFloatArray{
 
 	// make me a new one
 	*new {|size=64, minSize=3, maxSize=128, controlSpec=\unipolar|
-		^super.new.init(size,minSize,maxSize,controlSpec)
+		^super.new.init(size.clip(minSize,maxSize),minSize,maxSize,controlSpec)
 	}
 
 	// init and make the 1st array with size size
@@ -47,6 +47,7 @@ LNX_MultiFloatArray{
 	// at
 	at{|index| ^array[index] }
 	@ {|index| ^array[index] }
+	unmapAt{|index| ^controlSpec.unmap(array[index]) }
 
 	// clipAt with linear interpolation, map & unmap with control spec
 	clipAtLin{|index,fromSize|
@@ -94,9 +95,10 @@ LNX_MultiFloatArray{
 
 	// resize array to newSize using data fromSize using linear interpolation
 	resizeLin_{|newSize,fromSize|
-		if (newSize==fromSize) { ^this };
 		fromSize = (fromSize ? size).asInt;
+		if (arrays[fromSize].isNil) { "Size does not exist".throw };
 		this.size_(newSize);
+		if (newSize==fromSize) { ^this };
 		newSize.do{|i|
 			array.put(i,
 				this.clipAtLin(i/(newSize-1)*(fromSize-1), fromSize)
