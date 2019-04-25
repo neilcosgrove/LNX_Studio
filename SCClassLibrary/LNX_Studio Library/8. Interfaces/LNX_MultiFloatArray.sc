@@ -92,7 +92,7 @@ LNX_MultiFloatArray{
 		}
 	}
 
-	// resize array to size using data fromSize using linear interpolation
+	// resize array to newSize using data fromSize using linear interpolation
 	resizeLin_{|newSize,fromSize|
 		if (newSize==fromSize) { ^this };
 		fromSize = (fromSize ? size).asInt;
