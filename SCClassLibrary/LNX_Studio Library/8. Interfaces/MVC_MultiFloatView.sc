@@ -4,31 +4,34 @@
 ** /////////////////////////////////////////////////////////////////////////////////////////////////
 
 w=MVC_Window();
-f=LNX_MultiFloatArray(64).randFill;
-v=MVC_MultiFloatView(w,Rect(10,10,380,200)).multiFloatArray_(f);
+w.setInnerExtent(800);
+f=LNX_MultiFloatArray(32).randFill;
+v=MVC_MultiFloatView(w,Rect(10,10,780,320)).multiFloatArray_(f);
+m=[3,128,0,1,32].asSpec.asModel.action_{|me,val| f.resizeLin_(val,n ? (f.size)); v.refresh; };
+k=MVC_MyKnob(w,Rect(10,335,40,40),m);
+k.mouseDownAction_{ n=f.size };
 w.create;
 
 f.randFill; v.refresh;
+f.resizeLin_(8,32); v.refresh;
+f.resizeLin_(16,32); v.refresh;
+f.resizeLin_(31,32); v.refresh;
+f.resizeLin_(32,32); v.refresh;
+f.resizeLin_(33,32); v.refresh;
+f.resizeLin_(63,32); v.refresh;
+f.resizeLin_(64,32); v.refresh;
+f.resizeLin_(65,32); v.refresh;
+f.resizeLin_(128,32); v.refresh;
 
-64.do{|i| f[i] = (i/3).sin+1*0.5}; v.refresh;
-f.resizeLin_(8,64); v.refresh;
-f.resizeLin_(16,64); v.refresh;
-f.resizeLin_(31,64); v.refresh;
-f.resizeLin_(32,64); v.refresh;
-f.resizeLin_(33,64); v.refresh;
-f.resizeLin_(63,64); v.refresh;
-f.resizeLin_(64,64); v.refresh;
-f.resizeLin_(65,64); v.refresh;
-f.resizeLin_(128,64); v.refresh;
-
-{ inf.do{|i| f.resizeLin_(i.fold(3,128),64); v.refresh; 0.05.wait } }.fork(AppClock);
+f.size.do{|i| f[i] = (i/6).sin+1*0.5}; v.refresh;
+o=f.size; { inf.do{|i| f.resizeLin_(i.fold(3,128),o); v.refresh; 0.05.wait } }.fork(AppClock);
 
 0.exit;
 */
 
 MVC_MultiFloatView : MVC_View {
 
-	var <multiFloatArray, size=1, sw=1, sw2=1, sh=1;
+	var <multiFloatArray, size=1, sw=1, sw2=1, sh=1, lx, ly;
 
 	*initClass{}
 
@@ -55,7 +58,6 @@ MVC_MultiFloatView : MVC_View {
 					//Color(1,i/size/4+0.25).set;
 					Pen.fillRect( Rect(i*sw+1, h-1, sw2, value.neg*(h-2) ) );
 				};
-
 			}
 		}
 	}
@@ -67,7 +69,11 @@ MVC_MultiFloatView : MVC_View {
 
 	// add the controls
 	addControls{
-		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
+		view.mouseDownAction_{|me, x, y, modifiers, buttonNumber, clickCount|
+			lx = ((x-1)/sw).asInt.clip(0,size-1);
+			ly = 1-(((y-1)/(h-2)).clip(0,1));
+			multiFloatArray.putMap(lx, ly);
+			this.refresh;
 			if (modifiers.isAlt)  { buttonNumber=1 };
 			if (modifiers.isCtrl) { buttonNumber=2 };
 			buttonPressed=buttonNumber;
@@ -77,8 +83,28 @@ MVC_MultiFloatView : MVC_View {
 				}
 			};
 		};
-		view.mouseMoveAction={|me, x, y, modifiers, buttonNumber, clickCount|
+		view.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			var xx=x/w, yy=y/h;
+			var nx = ((x-1)/sw).asInt.clip(0,size-1);
+			var ny = 1-(((y-1)/(h-2)).clip(0,1));
+			if ((nx-lx).abs==0) {
+				multiFloatArray.putMap(nx, ny);
+			}{
+				if (lx<nx) {
+					lx.for(nx,{|i|
+						var frac = (i-lx) / ((lx-nx).abs);
+						multiFloatArray.putMap(i, ( ny * frac ) + ( ly * (1 - frac) ) );
+					});
+				}{
+					nx.for(lx,{|i|
+						var frac = (i-nx) / ((lx-nx).abs);
+						multiFloatArray.putMap(i, ( ly * frac ) + ( ny * (1 - frac) ) );
+					});
+				};
+			};
+			lx = nx;
+			ly = ny;
+			this.refresh;
 			if (editMode) {
 				this.moveBy(x-startX,y-startY,buttonPressed)
 			}

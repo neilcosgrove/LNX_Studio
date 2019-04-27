@@ -73,6 +73,9 @@ LNX_MultiFloatArray{
 	put{|index,value| array.put(index, value) }
 
 	// put and contrain value with the controlSpec
+	putMap{|index,value| array.put( index, controlSpec.map(value)) }
+
+	// put and contrain value with the controlSpec
 	putConstrain{|index,value| array.put( index, controlSpec.constrain(value)) }
 
 	// fill with random values
