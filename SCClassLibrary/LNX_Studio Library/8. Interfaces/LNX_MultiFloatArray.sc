@@ -26,10 +26,10 @@ m.plot;
 
 LNX_MultiFloatArray{
 
-	var <size, <minSize, <maxSize, <controlSpec, <arrays, <array;
+	var <size, <minSize, <maxSize, <>controlSpec, <arrays, <array;
 
 	// make me a new one
-	*new {|size=64, minSize=3, maxSize=128, controlSpec=\unipolar|
+	*new {|size=64, minSize=3, maxSize=512, controlSpec=\unipolar|
 		^super.new.init(size.clip(minSize,maxSize),minSize,maxSize,controlSpec)
 	}
 
@@ -48,6 +48,8 @@ LNX_MultiFloatArray{
 	at{|index| ^array[index] }
 	@ {|index| ^array[index] }
 	unmapAt{|index| ^controlSpec.unmap(array[index]) }
+	unmapNoClipAt{|index| ^controlSpec.unmapNoClip(array[index]) }
+
 
 	// clipAt with linear interpolation, map & unmap with control spec
 	clipAtLin{|index,fromSize|
@@ -80,6 +82,33 @@ LNX_MultiFloatArray{
 
 	// fill with random values
 	randFill{ size.do{|i| array.put(i,controlSpec.map(1.0.rand)) } }
+
+	// replace array with new array
+	replace{|newArray|
+		array = newArray;
+		arrays[size] = array;
+	}
+
+	// rest to control spec default
+	reset{ size.do{|i| array.put(i,controlSpec.default) } }
+
+	normalize{
+		var min, max;
+		array.size.do{|i|
+			array[i] = controlSpec.unmap(array[i]);
+		};
+		min = array.minItem;
+		max = array.maxItem;
+		array.size.do{|i|
+			array[i] = controlSpec.mapFix(array[i].map(min,max,0,1));
+		};
+	}
+
+	constrain{
+		array.size.do{|i|
+			array[i] = controlSpec.constrain(array[i]);
+		};
+	}
 
 	// select what size array you want
 	size_{|newSize|

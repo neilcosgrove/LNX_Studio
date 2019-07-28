@@ -469,7 +469,16 @@ MVC_Model {
 		val=1.0.rand;
 		if (controlSpec.notNil) { val=controlSpec.map(val) };
 		if (value!=val) { this.lazyValueAction_(val,nil,true,false) };
+	}
 
+	rand{ this.randomise }
+
+	//reset
+	reset{
+		var val;
+		if (controlSpec.notNil) { val=controlSpec.default };
+		val = val ? 0;
+		if (value!=val) { this.lazyValueAction_(val,nil,true,false) };
 	}
 
 	// only refresh at a frame rate

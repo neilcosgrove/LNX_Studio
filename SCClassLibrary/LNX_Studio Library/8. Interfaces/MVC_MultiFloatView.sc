@@ -23,15 +23,15 @@ f.resizeLin_(64,32); v.refresh;
 f.resizeLin_(65,32); v.refresh;
 f.resizeLin_(128,32); v.refresh;
 
-f.size.do{|i| f[i] = (i/6).sin+1*0.5}; v.refresh;
-o=f.size; { inf.do{|i| f.resizeLin_(i.fold(3,128),o); v.refresh; 0.05.wait } }.fork(AppClock);
+f.size.do{|i| f[i] = (i/0.25pi).sin+1*0.5}; v.refresh;
+o=f.size; { inf.do{|i| f.resizeLin_(i.fold(3,128),o); v.refresh; 0.025.wait } }.fork(AppClock);
 
 0.exit;
 */
 
 MVC_MultiFloatView : MVC_View {
 
-	var <multiFloatArray, size=1, sw=1, sw2=1, sh=1, lx, ly;
+	var <multiFloatArray, size=1, sw=1, sw2=1, sh=1, lx, ly, <>multiFloatAction;
 
 	*initClass{}
 
@@ -47,15 +47,15 @@ MVC_MultiFloatView : MVC_View {
 				// update vars for use in other methods
 				size = multiFloatArray.size;
 				sw   = ((w-2)/size).clip(1,inf);
-				sw2  = (sw-2).clip(1,inf);
-
+				sw2  = (sw).clip(1,inf);
 				Pen.smoothing_(false);
-				Color.black.set;
+				Color(0.1,0.1,0.2).set;
 				Pen.fillRect(Rect(0,0,w,h));
-				Color.orange.set;
+				Color(0.87,0.87,1).set;
 				size.do{|i|
-					var value = multiFloatArray.unmapAt(i);
-					//Color(1,i/size/4+0.25).set;
+					var value = multiFloatArray.unmapNoClipAt(i);
+					if ((value>1)||(value<0)) { value = value.wrap(0,1) }; // wrap for offset
+					//(Color(0.8,0.8,0.95)*((i%3).map(0,2,0.8,1))).set;
 					Pen.fillRect( Rect(i*sw+1, h-1, sw2, value.neg*(h-2) ) );
 				};
 			}
@@ -73,6 +73,7 @@ MVC_MultiFloatView : MVC_View {
 			lx = ((x-1)/sw).asInt.clip(0,size-1);
 			ly = 1-(((y-1)/(h-2)).clip(0,1));
 			multiFloatArray.putMap(lx, ly);
+			multiFloatAction.value(this,multiFloatArray);
 			this.refresh;
 			if (modifiers.isAlt)  { buttonNumber=1 };
 			if (modifiers.isCtrl) { buttonNumber=2 };
@@ -104,6 +105,7 @@ MVC_MultiFloatView : MVC_View {
 			};
 			lx = nx;
 			ly = ny;
+			multiFloatAction.value(this,multiFloatArray);
 			this.refresh;
 			if (editMode) {
 				this.moveBy(x-startX,y-startY,buttonPressed)

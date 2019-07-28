@@ -884,6 +884,12 @@ gives min, max, averages and total
 
 + String {
 
+	play{
+		if (this.isSoundFile) {
+			^Buffer.read(path:this, action:{|b| b.play})
+		}
+	}
+
 	asInt{ ^this.asInteger }
 
 	version {

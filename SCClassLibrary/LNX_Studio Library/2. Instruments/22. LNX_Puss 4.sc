@@ -75,7 +75,9 @@ LNX_Puss4Patch{
 
 	*initClass{
 		Class.initClassTree(HID);
-		{ 1.wait; this.restartAll }.fork; // everything else needs a chance to start 1st
+		//{ 1.wait; this.restartAll }.fork; // everything else needs a chance to start 1st
+		// the above line is commented out during developemnt because it causes a crash on recomplile
+
 		elementNames = ["Square", "Cross","Circle", "Triangle", "L1", "R1", "L2", "R2", "Share", "Options", "L3", "R3",
 			"PS Button", "TPad Button", "LJoy L&R", "LJoy U&D", "RJoy L&R", "RJoy U&D", "DPad Left", "DPad Right",
 			"DPad Up", "DPad Down"];

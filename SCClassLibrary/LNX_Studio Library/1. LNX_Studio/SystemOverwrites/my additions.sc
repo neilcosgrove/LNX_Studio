@@ -111,11 +111,42 @@
 
 	filterNaN { if (this >= 0 or: { this <= 0 }) { ^this } { ^0 } }
 
+	hashScape{|res=1073741788|
+		var floor = this.asFloat.floor.hash.wrap(0.0,res)/res;
+		var ceil  = this.asFloat.ceil.hash.wrap(0.0,res)/res;
+		var frac  = this.frac;
+		^(floor*(1-frac)) + (ceil*frac)
+	}
+
 }
+
 
 + SequenceableCollection {
 
 	filterNaN { ^this.collect{|i| i.filterNaN } }
+
+	// mean blur
+	blur {|kernalSize=3, amount=1, wrap=true|
+		var dataSize     = this.size;
+		var newData      = FloatArray.fill(dataSize,0);
+		var kernal       = FloatArray.fill(kernalSize,0);
+		var kernalOffset = kernalSize.div(2);
+		amount = amount.clip(0,1);
+		if (wrap.isTrue) {
+			kernalSize.do{|i| kernal[i]=this.wrapAt(i-kernalOffset) };
+			(dataSize).do{|i|
+				newData[i] = (kernal.mean * amount) + (this.at(i)*(1-amount) );
+				kernal.wrapPut(i, this.wrapAt(i+kernalSize-kernalOffset));
+			};
+		}{
+			kernalSize.do{|i| kernal[i]=this.clipAt(i-kernalOffset) };
+			(dataSize).do{|i|
+				newData[i] = (kernal.mean * amount) + (this.at(i)*(1-amount) );
+				kernal.wrapPut(i, this.clipAt(i+kernalSize-kernalOffset));
+			};
+		};
+		^newData;
+	}
 
 }
 
@@ -128,9 +159,20 @@
 		^warp.map(value.clip(0.0, 1.0)).round(step).filterNaN;
 	}
 
+	// bug fix
+	mapFix { arg value;
+		// maps a value from [0..1] to spec range
+		^warp.map(value.clip(0.0, 1.0)).round(step).filterNaN.clip(minval,maxval);
+	}
+
 	unmap { arg value;
 		// maps a value from spec range to [0..1]
 		^warp.unmap(value.round(step).clip(clipLo, clipHi)).filterNaN;
+	}
+
+	unmapNoClip { arg value;
+		// maps a value from spec range to [0..1]
+		^warp.unmap(value.round(step)).filterNaN;
 	}
 
 	constrain { arg value;

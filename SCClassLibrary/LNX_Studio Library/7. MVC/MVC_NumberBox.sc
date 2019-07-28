@@ -92,8 +92,8 @@ MVC_NumberBox : MVC_View {
 		view.action_{|me|
 			val=val2=me.value;
 			if (controlSpec.notNil) { val2=controlSpec.constrain(val2) };
+			if (val2!=val) { me.value_(val2) }; // this was below the below before, not checked
 			this.viewValueAction_(val2,nil,true,false);
-			if (val2!=val) { me.value_(val2) };
 		}
 		.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
@@ -105,6 +105,9 @@ MVC_NumberBox : MVC_View {
 			startX=x;
 			startY=y;
 			if (editMode||viewEditMode) {lw=lh=nil; view.bounds.postln };
+
+			this.valueActions(\mouseDown,this, x, y, modifiers);
+
 			if (mouseWorks) {
 				mouseDownAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 				if (buttonNumber==2)	{this.toggleMIDIactive; };
@@ -123,8 +126,9 @@ MVC_NumberBox : MVC_View {
 				}{
 					startVal=value;
 				};
-				me.stringColor_(Color.black);
 			};
+			me.stringColor_(Color.black);
+
 		}
 		.mouseMoveAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			var val,spenRange;
@@ -145,13 +149,18 @@ MVC_NumberBox : MVC_View {
 			if (mouseWorks) {
 				mouseMoveAction.value(this, x, y, modifiers, buttonNumber, clickCount);
 			};
+
+			this.valueActions(\mouseMove,this, x, y, modifiers);
 		}
 		.mouseUpAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			MVC_LazyRefresh.mouseUp;
+
+			this.valueActions(\mouseUp,this, x, y, modifiers);
+
 			if (mouseWorks) {
-				me.stringColor_(colors[\string]);
 				mouseUpAction.value(this, x, y, modifiers, buttonNumber, clickCount);
-			}
+			};
+			me.stringColor_(colors[\string]);
 		};
 	}
 
