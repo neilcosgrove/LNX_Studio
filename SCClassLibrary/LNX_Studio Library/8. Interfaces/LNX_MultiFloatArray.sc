@@ -1,10 +1,10 @@
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
-**  multi FloatArray with multiple FloatArray sizes
+**  multi DoubleArray with multiple DoubleArray sizes
 **  1 array exists for each size in the range minSize..maxSize which gets dyamically created as used
 **  used in K-Hole
 ** /////////////////////////////////////////////////////////////////////////////////////////////////
 
-m = LNX_MultiFloatArray(64);
+m = LNX_MultiDoubleArray(64);
 m[1]=2;
 m[1];
 m.size_(3);  // you can change the size of the array, must be between minSize and maxSize or throws an error
@@ -12,7 +12,7 @@ m;           // now array is 3 size
 m.size_(64); // gives you back the orignal array of size 64
 m;           // the original array
 
-m = LNX_MultiFloatArray(16);
+m = LNX_MultiDoubleArray(16);
 m.randFill;        // fill with random values
 m.clipAtLin(0.5);  // half way between 0 & 1
 m.wrapAtLin(-0.5); // half way between 0 & -1
@@ -24,7 +24,7 @@ m.plot;
 
 */ ///////////////////////////
 
-LNX_MultiFloatArray{
+LNX_MultiDoubleArray{
 
 	var <size, <minSize, <maxSize, <>controlSpec, <arrays, <array;
 
@@ -40,7 +40,7 @@ LNX_MultiFloatArray{
 		maxSize      = argMaxSize;
 		controlSpec  = argControlSpec.asSpec;
 		arrays       = IdentityDictionary[];
-		array        = FloatArray.fill(size, controlSpec.default);
+		array        = DoubleArray.fill(size, controlSpec.default);
 		arrays[size] = array;
 	}
 
@@ -100,7 +100,7 @@ LNX_MultiFloatArray{
 		min = array.minItem;
 		max = array.maxItem;
 		array.size.do{|i|
-			array[i] = controlSpec.mapFix(array[i].map(min,max,0,1));
+			array[i] = controlSpec.map(array[i].map(min,max,0,1));
 		};
 	}
 
@@ -115,7 +115,7 @@ LNX_MultiFloatArray{
 		if ((newSize>=minSize) && (newSize<=maxSize)) {
 			size = newSize.asInt;
 			if (arrays[size].isNil) {
-				array = FloatArray.fill(size, controlSpec.default);
+				array = DoubleArray.fill(size, controlSpec.default);
 				arrays[size] = array;
 			}{
 				array = arrays[size];

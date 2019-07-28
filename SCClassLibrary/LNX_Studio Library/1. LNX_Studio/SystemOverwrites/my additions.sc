@@ -159,12 +159,6 @@
 		^warp.map(value.clip(0.0, 1.0)).round(step).filterNaN;
 	}
 
-	// bug fix
-	mapFix { arg value;
-		// maps a value from [0..1] to spec range
-		^warp.map(value.clip(0.0, 1.0)).round(step).filterNaN.clip(minval,maxval);
-	}
-
 	unmap { arg value;
 		// maps a value from spec range to [0..1]
 		^warp.unmap(value.round(step).clip(clipLo, clipHi)).filterNaN;

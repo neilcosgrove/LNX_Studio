@@ -1,12 +1,12 @@
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
-**  MVC_MultiFloatView(s) displays LNX_MultiFloatArray(s)
+**  MVC_MultiFloatView(s) displays LNX_MultiDoubleArray(s)
 **  used in K_Hole D_HoleFX
 ** /////////////////////////////////////////////////////////////////////////////////////////////////
 
 w=MVC_Window();
 w.setInnerExtent(800);
-f=LNX_MultiFloatArray(32).randFill;
-v=MVC_MultiFloatView(w,Rect(10,10,780,320)).multiFloatArray_(f);
+f=LNX_MultiDoubleArray(32).randFill;
+v=MVC_MultiFloatView(w,Rect(10,10,780,320)).multiDoubleArray_(f);
 m=[3,128,0,1,32].asSpec.asModel.action_{|me,val| f.resizeLin_(val,n ? (f.size)); v.refresh; };
 k=MVC_MyKnob(w,Rect(10,335,40,40),m);
 k.mouseDownAction_{ n=f.size };
@@ -31,7 +31,7 @@ o=f.size; { inf.do{|i| f.resizeLin_(i.fold(3,128),o); v.refresh; 0.025.wait } }.
 
 MVC_MultiFloatView : MVC_View {
 
-	var <multiFloatArray, size=1, sw=1, sw2=1, sh=1, lx, ly, <>multiFloatAction;
+	var <multiDoubleArray, size=1, sw=1, sw2=1, sh=1, lx, ly, <>multiFloatAction;
 
 	*initClass{}
 
@@ -43,9 +43,9 @@ MVC_MultiFloatView : MVC_View {
 		view=UserView.new(window,rect)
 		.drawFunc={|me|
 			if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
-			if (multiFloatArray.notNil) {
+			if (multiDoubleArray.notNil) {
 				// update vars for use in other methods
-				size = multiFloatArray.size;
+				size = multiDoubleArray.size;
 				sw   = ((w-2)/size).clip(1,inf);
 				sw2  = (sw).clip(1,inf);
 				Pen.smoothing_(false);
@@ -53,7 +53,7 @@ MVC_MultiFloatView : MVC_View {
 				Pen.fillRect(Rect(0,0,w,h));
 				Color(0.87,0.87,1).set;
 				size.do{|i|
-					var value = multiFloatArray.unmapNoClipAt(i);
+					var value = multiDoubleArray.unmapNoClipAt(i);
 					if ((value>1)||(value<0)) { value = value.wrap(0,1) }; // wrap for offset
 					//(Color(0.8,0.8,0.95)*((i%3).map(0,2,0.8,1))).set;
 					Pen.fillRect( Rect(i*sw+1, h-1, sw2, value.neg*(h-2) ) );
@@ -62,8 +62,8 @@ MVC_MultiFloatView : MVC_View {
 		}
 	}
 
-	multiFloatArray_{|array|
-		multiFloatArray=array;
+	multiDoubleArray_{|array|
+		multiDoubleArray=array;
 		if (view.notClosed) {view.refresh}
 	}
 
@@ -72,8 +72,8 @@ MVC_MultiFloatView : MVC_View {
 		view.mouseDownAction_{|me, x, y, modifiers, buttonNumber, clickCount|
 			lx = ((x-1)/sw).asInt.clip(0,size-1);
 			ly = 1-(((y-1)/(h-2)).clip(0,1));
-			multiFloatArray.putMap(lx, ly);
-			multiFloatAction.value(this,multiFloatArray);
+			multiDoubleArray.putMap(lx, ly);
+			multiFloatAction.value(this,multiDoubleArray);
 			this.refresh;
 			if (modifiers.isAlt)  { buttonNumber=1 };
 			if (modifiers.isCtrl) { buttonNumber=2 };
@@ -89,23 +89,23 @@ MVC_MultiFloatView : MVC_View {
 			var nx = ((x-1)/sw).asInt.clip(0,size-1);
 			var ny = 1-(((y-1)/(h-2)).clip(0,1));
 			if ((nx-lx).abs==0) {
-				multiFloatArray.putMap(nx, ny);
+				multiDoubleArray.putMap(nx, ny);
 			}{
 				if (lx<nx) {
 					lx.for(nx,{|i|
 						var frac = (i-lx) / ((lx-nx).abs);
-						multiFloatArray.putMap(i, ( ny * frac ) + ( ly * (1 - frac) ) );
+						multiDoubleArray.putMap(i, ( ny * frac ) + ( ly * (1 - frac) ) );
 					});
 				}{
 					nx.for(lx,{|i|
 						var frac = (i-nx) / ((lx-nx).abs);
-						multiFloatArray.putMap(i, ( ly * frac ) + ( ny * (1 - frac) ) );
+						multiDoubleArray.putMap(i, ( ly * frac ) + ( ny * (1 - frac) ) );
 					});
 				};
 			};
 			lx = nx;
 			ly = ny;
-			multiFloatAction.value(this,multiFloatArray);
+			multiFloatAction.value(this,multiDoubleArray);
 			this.refresh;
 			if (editMode) {
 				this.moveBy(x-startX,y-startY,buttonPressed)
