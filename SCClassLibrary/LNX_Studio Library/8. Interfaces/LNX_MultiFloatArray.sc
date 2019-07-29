@@ -22,7 +22,118 @@ m.plot;
 m.resizeLin_(10);  // resize current data to new size using linear interpolation
 m.plot;
 
-*/ ///////////////////////////
+~osc = Kosc();
+~osc.array.plot;
+~osc.nextTickArray.plot;
+~osc.freq = 2;
+~osc.nextTickArray.plot;
+
+*/
+
+	// 2nd freq can be up down or left and right
+	// one shot animation
+	// reverse fill animation
+	// copy waveForm
+
+Kosc{
+
+	// type = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
+	var  <type=\sine, <>freq=1, <>freq2=1, <>phase=0, <size=64, <>time=0, <>tick=0.01, <>controlSpec, <array;
+
+	// make me a new one
+	*new {|type=\sine, freq=1, freq2=1, phase=0, size=64, time=0, tick=0.01, controlSpec|
+		^super.new.init(type, freq, freq2, phase, size, time, tick, controlSpec)
+	}
+
+	init{|argType, argFreq, argFreq2, argPhase, argSize, argTime, argTick, argControlSpec|
+		this.type   = argType;
+		freq        = argFreq;
+		freq2       = argFreq2;
+		phase       = argPhase;
+		size        = argSize;
+		time        = argTime;
+		tick        = argTick;
+		controlSpec = argControlSpec;
+		array = DoubleArray.fill(size, 0);
+		this.generateArray;
+	}
+
+	// change wave types
+	type_{|argType|
+		type = argType;
+		if (type.isNumber) { type = #[\sine, \triangle, \sawUp, \sawDown, \square][type] };
+		if (type == \sin) { type = \sine     };
+		if (type == \tri) { type = \triangle };
+	}
+
+	// 1 tick of the clock
+	tickClock{ time = time + (tick * freq * freq2) }
+
+	// make the array
+	generateArray{
+		// sine wave
+		if (type==\sine) {
+			if (controlSpec.isNil){
+				size.do{|i|
+					array[i] = ( (time + phase + 0.75 * 2pi) + (i * freq * 2pi / size) ).sin + 1 * 0.5
+				};
+			}{
+				size.do{|i|
+					array[i] = controlSpec.map( ( (time + phase + 0.75 * 2pi) + (i * freq * 2pi / size) ).sin + 1 * 0.5 )
+				};
+			};
+		};
+		// triangle wave
+		if (type==\triangle) {
+			if (controlSpec.isNil){
+				size.do{|i|
+					array[i] = ( (time + phase + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).fold(0.0,1.0)
+				};
+			}{
+				size.do{|i|
+					array[i] = controlSpec.map( ( (time + phase + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).fold(0.0,1.0) )
+				};
+			};
+		};
+		// sawUp wave
+		if (type==\sawUp) {
+			if (controlSpec.isNil){
+				if (freq==0) {
+					size.do{|i| array[i] = 0 };
+				}{
+					size.do{|i|
+						array[i] = ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0);
+					};
+				};
+			}{
+				if (freq==0) {
+					size.do{|i| array[i] = controlSpec.map( 0 ) };
+				}{
+					size.do{|i|
+						array[i] = controlSpec.map( ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0) );
+					};
+				};
+			};
+		};
+	}
+
+	// next tick of clock + make next array
+	nextTickArray{|argTick|
+		tick = argTick ? tick;
+		this.tickClock;
+		this.generateArray;
+		^array
+	}
+
+	// reset the clock + make array
+	reset{
+		time = 0;
+		this.generateArray;
+	}
+
+}
+
+// ***********************************************************************************************************************
 
 LNX_MultiDoubleArray{
 

@@ -409,11 +409,11 @@ LNX_Studio {
 
 		SynthDef("LNX_LimitOut", {|channel=0,preAmp=0|
 			var out;
-			out=In.ar(channel, 2);
-			out=Protect.newNoClip(out);
-			out=LeakDC.ar(out);
-			out=out * (preAmp.dbamp);
-			out=Limiter.ar(out,0.99, 0.001);
+			out = In.ar(channel, 2);
+			out = Protect.newNoClip(out);
+			out = LeakDC.ar(out);
+			out = out * (preAmp.dbamp);
+			out = Limiter.ar(out,0.99, 0.001);
 			SendPeakRMS.kr(out, 20, 1.5, "/peakOut");
 			ReplaceOut.ar(channel,out);	// replace
 		}).send(server);
@@ -427,8 +427,7 @@ LNX_Studio {
 			rightPan = (pan*2+1).clip(-1,1);   // right pos
 			out      = LinPan2.ar(out[0], leftPan) + LinPan2.ar(out[1], rightPan); // pan
 			out      = out * amp;                                 // apply amp
-			SendPeakRMS.kr(out, 20, 1.5, "/instPeakOut", id); // left meter
-			//SendPeakRMS.kr(out[1], 20, 1.5, "/instPeakOutR", id); // right meter
+			SendPeakRMS.kr(out, 20, 1.5, "/instPeakOut", id);     // levels meter
 			Out.ar(outChannel,out);                               // now send out
 			out = out*sendAmp;                                    // apply send amp
 			Out.ar(sendChannel,out);                          	  // and send to fxs
