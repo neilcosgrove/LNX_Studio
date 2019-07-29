@@ -115,6 +115,46 @@ Kosc{
 				};
 			};
 		};
+		// sawDown wave
+		if (type==\sawDown) {
+			if (controlSpec.isNil){
+				if (freq==0) {
+					size.do{|i| array[i] = 1 };
+				}{
+					size.do{|i|
+						array[i] = 1 - (( (time + phase) + (i * freq / size) ).wrap(0.0,1.0));
+					};
+				};
+			}{
+				if (freq==0) {
+					size.do{|i| array[i] = controlSpec.maxval };
+				}{
+					size.do{|i|
+						array[i] = controlSpec.map( 1-( ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0) ) );
+					};
+				};
+			};
+		};
+		// square wave
+		if (type==\square) {
+			if (controlSpec.isNil){
+				if (freq==0) {
+					size.do{|i| array[i] = 1 };
+				}{
+					size.do{|i|
+						array[i] = 1 - (( (time + phase) + (i * freq / size) ).wrap(0.0,1.0).round(1));
+					};
+				};
+			}{
+				if (freq==0) {
+					size.do{|i| array[i] = controlSpec.maxval };
+				}{
+					size.do{|i|
+						array[i] = controlSpec.map( 1-( ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0).round(1) ) );
+					};
+				};
+			};
+		};
 	}
 
 	// next tick of clock + make next array
