@@ -30,26 +30,120 @@ m.plot;
 
 */
 
+
+
+Kintegrator{
+
+	// wave = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
+	var  <wave=\sine, <>freq=1, <>phase=0, <size=64, <>time=0, <>tick=0.01, <value=0, <>oneShot=false;
+
+	// make me a new one
+	*new {|wave=\sine, freq=1, phase=0, oneShot=false, time=0, tick=0.01|
+		^super.new.init(wave, freq, phase, oneShot, time, tick)
+	}
+
+	init{|argWave, argFreq, argPhase, argOneShot, argTime, argTick|
+		this.wave   = argWave;
+		freq        = argFreq;
+		phase       = argPhase;
+		oneShot     = argOneShot;
+		time        = argTime;
+		tick        = argTick;
+		this.generateValue;
+	}
+
+	// change wave types
+	wave_{|argWave|
+		wave = argWave;
+		if (wave.isNumber) { wave = #[\sine, \triangle, \sawUp, \sawDown, \square][wave] };
+		if (wave == \sin) { wave = \sine     };
+		if (wave == \tri) { wave = \triangle };
+	}
+
+	// 1 tick of the clock
+	tickClock{
+		time = time + (tick * freq);
+		if (oneShot) {
+			if (time>1)   { time =  1.0 };
+			if (time< -1) { time = -1.0 };
+		};
+	}
+
+	// make the value
+	generateValue{
+		// sine wave
+		if (wave==\sine) {
+			value = ( (time + phase + 0.75 * 2pi) ).sin + 1 * 0.5
+		};
+		// triangle wave
+		if (wave==\triangle) {
+			value = ( (time + phase + 0.75) * 2 + 0.5 ).fold(0.0,1.0)
+		};
+		// sawUp wave
+		if (wave==\sawUp) {
+			if (freq==0) {
+				value = 0;
+			}{
+				value = ( time + phase ).wrap(0.0,1.0);
+			};
+		};
+		// sawDown wave
+		if (wave==\sawDown) {
+			if (freq==0) {
+				value = 1;
+			}{
+				value = 1 - (( time + phase ).wrap(0.0,1.0));
+			};
+		};
+		// square wave
+		if (wave==\square) {
+			if (freq==0) {
+				value= 1;
+			}{
+				value = 1 - (( time + phase ).wrap(0.0,1.0).round(1));
+			};
+		};
+	}
+
+	// next tick of clock + make next value
+	nextTick{|argTick|
+		tick = argTick ? tick;
+		this.tickClock;
+		this.generateValue;
+		^value
+	}
+
+	// reset the clock + make value
+	reset{
+		time = 0;
+		this.generateValue;
+	}
+
+}
+
+
 	// 2nd freq can be up down or left and right
 	// one shot animation
 	// reverse fill animation
 	// copy waveForm
 
+
 Kosc{
 
-	// type = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
-	var  <type=\sine, <>freq=1, <>freq2=1, <>phase=0, <size=64, <>time=0, <>tick=0.01, <>controlSpec, <array;
+	// wave = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
+	var  <wave=\sine, <>freq=1, <>freq2=1, <>phase=0, <size=64, <>time=0, <>tick=0.01, <>controlSpec, <array, <>oneShot=false;
 
 	// make me a new one
-	*new {|type=\sine, freq=1, freq2=1, phase=0, size=64, time=0, tick=0.01, controlSpec|
-		^super.new.init(type, freq, freq2, phase, size, time, tick, controlSpec)
+	*new {|wave=\sine, freq=1, freq2=1, phase=0, oneShot=false, size=64, time=0, tick=0.01, controlSpec|
+		^super.new.init(wave, freq, freq2, phase, oneShot, size, time, tick, controlSpec)
 	}
 
-	init{|argType, argFreq, argFreq2, argPhase, argSize, argTime, argTick, argControlSpec|
-		this.type   = argType;
+	init{|argWave, argFreq, argFreq2, argPhase, argOneShot, argSize, argTime, argTick, argControlSpec|
+		this.wave   = argWave;
 		freq        = argFreq;
 		freq2       = argFreq2;
 		phase       = argPhase;
+		oneShot     = argOneShot;
 		size        = argSize;
 		time        = argTime;
 		tick        = argTick;
@@ -59,98 +153,191 @@ Kosc{
 	}
 
 	// change wave types
-	type_{|argType|
-		type = argType;
-		if (type.isNumber) { type = #[\sine, \triangle, \sawUp, \sawDown, \square][type] };
-		if (type == \sin) { type = \sine     };
-		if (type == \tri) { type = \triangle };
+	wave_{|argWave|
+		wave = argWave;
+		if (wave.isNumber) { wave = #[\sine, \triangle, \sawUp, \sawDown, \square][wave] };
+		if (wave == \sin) { wave = \sine     };
+		if (wave == \tri) { wave = \triangle };
 	}
 
 	// 1 tick of the clock
-	tickClock{ time = time + (tick * freq * freq2) }
+	tickClock{
+		time = time + (tick * freq * freq2);
+	}
 
 	// make the array
 	generateArray{
 		// sine wave
-		if (type==\sine) {
-			if (controlSpec.isNil){
-				size.do{|i|
-					array[i] = ( (time + phase + 0.75 * 2pi) + (i * freq * 2pi / size) ).sin + 1 * 0.5
+		if (wave==\sine) {
+
+			if (oneShot) {
+				if (controlSpec.isNil){
+					size.do{|i|
+						array[i] = ( (time + phase + 0.75 * 2pi) + (i * freq / size* 2pi) ).clip(2pi*0.75,2pi*1.75).sin + 1 * 0.5
+					};
+				}{
+					size.do{|i|
+					array[i] = controlSpec.map(
+							( (time + phase + 0.75 * 2pi) + (i * freq / size * 2pi) ).clip(2pi*0.75,2pi*1.75).sin + 1 * 0.5 )
+					};
 				};
+
 			}{
-				size.do{|i|
-					array[i] = controlSpec.map( ( (time + phase + 0.75 * 2pi) + (i * freq * 2pi / size) ).sin + 1 * 0.5 )
+				if (controlSpec.isNil){
+					size.do{|i|
+						array[i] = ( (time + phase + 0.75 * 2pi) + (i * freq * 2pi / size) ).sin + 1 * 0.5
+					};
+				}{
+					size.do{|i|
+						array[i] = controlSpec.map( ( (time + phase + 0.75 * 2pi) + (i * freq * 2pi / size) ).sin + 1 * 0.5 )
+					};
 				};
-			};
+			}
 		};
 		// triangle wave
-		if (type==\triangle) {
-			if (controlSpec.isNil){
-				size.do{|i|
-					array[i] = ( (time + phase + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).fold(0.0,1.0)
+		if (oneShot) {
+			if (wave==\triangle) {
+				if (controlSpec.isNil){
+					size.do{|i|
+						array[i] = ( (time + phase + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).clip(2,4).fold(0.0,1.0)
+					};
+				}{
+					size.do{|i|
+						array[i] = controlSpec.map(
+							( (time + phase + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).clip(2,4).fold(0.0,1.0) )
+					};
 				};
-			}{
-				size.do{|i|
-					array[i] = controlSpec.map( ( (time + phase + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).fold(0.0,1.0) )
+			};
+		}{
+			if (wave==\triangle) {
+				if (controlSpec.isNil){
+					size.do{|i|
+						array[i] = ( (time + phase + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).fold(0.0,1.0)
+					};
+				}{
+					size.do{|i|
+						array[i] = controlSpec.map( ( (time + phase + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).fold(0.0,1.0) )
+					};
 				};
 			};
 		};
 		// sawUp wave
-		if (type==\sawUp) {
-			if (controlSpec.isNil){
-				if (freq==0) {
-					size.do{|i| array[i] = 0 };
+		if (wave==\sawUp) {
+			if (oneShot) {
+				if (controlSpec.isNil){
+					if (freq==0) {
+						size.do{|i| array[i] = 0 };
+					}{
+						size.do{|i|
+							array[i] = ( (time + phase) + (i * freq / size) ).clip(0,1).wrap(0.0,1.0);
+						};
+					};
 				}{
-					size.do{|i|
-						array[i] = ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0);
+					if (freq==0) {
+						size.do{|i| array[i] = controlSpec.map( 0 ) };
+					}{
+						size.do{|i|
+							array[i] = controlSpec.map( ( (time + phase) + (i * freq / size) ).clip(0,1).wrap(0.0,1.0) );
+						};
 					};
 				};
 			}{
-				if (freq==0) {
-					size.do{|i| array[i] = controlSpec.map( 0 ) };
+				if (controlSpec.isNil){
+					if (freq==0) {
+						size.do{|i| array[i] = 0 };
+					}{
+						size.do{|i|
+							array[i] = ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0);
+						};
+					};
 				}{
-					size.do{|i|
-						array[i] = controlSpec.map( ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0) );
+					if (freq==0) {
+						size.do{|i| array[i] = controlSpec.map( 0 ) };
+					}{
+						size.do{|i|
+							array[i] = controlSpec.map( ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0) );
+						};
 					};
 				};
 			};
 		};
 		// sawDown wave
-		if (type==\sawDown) {
-			if (controlSpec.isNil){
-				if (freq==0) {
-					size.do{|i| array[i] = 1 };
+		if (wave==\sawDown) {
+			if (oneShot) {
+				if (controlSpec.isNil){
+					if (freq==0) {
+						size.do{|i| array[i] = 0 };
+					}{
+						size.do{|i|
+							array[i] = ( 1-((time + phase) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0);
+						};
+					};
 				}{
-					size.do{|i|
-						array[i] = 1 - (( (time + phase) + (i * freq / size) ).wrap(0.0,1.0));
+					if (freq==0) {
+						size.do{|i| array[i] = controlSpec.map( 0 ) };
+					}{
+						size.do{|i|
+							array[i] = controlSpec.map( ( 1 - ((time + phase) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0) );
+						};
 					};
 				};
 			}{
-				if (freq==0) {
-					size.do{|i| array[i] = controlSpec.maxval };
+				if (controlSpec.isNil){
+					if (freq==0) {
+						size.do{|i| array[i] = 1 };
+					}{
+						size.do{|i|
+							array[i] = 1 - (( (time + phase) + (i * freq / size) ).wrap(0.0,1.0));
+						};
+					};
 				}{
-					size.do{|i|
-						array[i] = controlSpec.map( 1-( ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0) ) );
+					if (freq==0) {
+						size.do{|i| array[i] = controlSpec.maxval };
+					}{
+						size.do{|i|
+							array[i] = controlSpec.map( 1-( ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0) ) );
+						};
 					};
 				};
-			};
+			}
 		};
 		// square wave
-		if (type==\square) {
-			if (controlSpec.isNil){
-				if (freq==0) {
-					size.do{|i| array[i] = 1 };
+		if (wave==\square) {
+			if (oneShot) {
+				if (controlSpec.isNil){
+					if (freq==0) {
+						size.do{|i| array[i] = 0 };
+					}{
+						size.do{|i|
+							array[i] = ( 1-((time + phase) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0).round(1);
+						};
+					};
 				}{
-					size.do{|i|
-						array[i] = 1 - (( (time + phase) + (i * freq / size) ).wrap(0.0,1.0).round(1));
+					if (freq==0) {
+						size.do{|i| array[i] = controlSpec.map( 0 ) };
+					}{
+						size.do{|i|
+							array[i] = controlSpec.map(
+								( 1 - ((time + phase) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0).round(1) );
+						};
 					};
 				};
 			}{
-				if (freq==0) {
-					size.do{|i| array[i] = controlSpec.maxval };
+				if (controlSpec.isNil){
+					if (freq==0) {
+						size.do{|i| array[i] = 1 };
+					}{
+						size.do{|i|
+							array[i] = 1 - (( (time + phase) + (i * freq / size) ).wrap(0.0,1.0).round(1));
+						};
+					};
 				}{
-					size.do{|i|
-						array[i] = controlSpec.map( 1-( ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0).round(1) ) );
+					if (freq==0) {
+						size.do{|i| array[i] = controlSpec.maxval };
+					}{
+						size.do{|i|
+							array[i] = controlSpec.map( 1-( ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0).round(1) ) );
+						};
 					};
 				};
 			};
@@ -158,7 +345,7 @@ Kosc{
 	}
 
 	// next tick of clock + make next array
-	nextTickArray{|argTick|
+	nextTick{|argTick|
 		tick = argTick ? tick;
 		this.tickClock;
 		this.generateArray;
