@@ -31,32 +31,52 @@ o=f.size; { inf.do{|i| f.resizeLin_(i.fold(3,128),o); v.refresh; 0.025.wait } }.
 
 MVC_MultiFloatView : MVC_View {
 
-	var <multiDoubleArray, size=1, sw=1, sw2=1, sh=1, lx, ly, <>multiFloatAction;
+	var <multiDoubleArray, size=1, sw=1, sw2=1, sh=1, lx, ly, <>multiFloatAction, <>drawMode=\rect;
 
 	*initClass{}
 
 	// set your defaults
 	initView{}
 
-	// make the view
+	// make the view as line
 	createView{
 		view=UserView.new(window,rect)
 		.drawFunc={|me|
 			if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 			if (multiDoubleArray.notNil) {
-				// update vars for use in other methods
-				size = multiDoubleArray.size;
-				sw   = ((w-2)/size).clip(1,inf);
-				sw2  = (sw).clip(1,inf);
-				Pen.smoothing_(false);
-				Color(0.1,0.1,0.2).set;
-				Pen.fillRect(Rect(0,0,w,h));
-				Color(0.87,0.87,1).set;
-				size.do{|i|
-					var value = multiDoubleArray.unmapNoClipAt(i);
-					if ((value>1)||(value<0)) { value = value.wrap(0,1) }; // wrap for offset
-					//(Color(0.8,0.8,0.95)*((i%3).map(0,2,0.8,1))).set;
-					Pen.fillRect( Rect(i*sw+1, h-1, sw2, value.neg*(h-2) ) );
+				if (drawMode==\rect) {
+					// update vars for use in other methods
+					size = multiDoubleArray.size;
+					sw   = ((w-2)/size).clip(1,inf);
+					sw2  = (sw).clip(1,inf);
+					Pen.smoothing_(false);
+					Color(0.1,0.1,0.2).set;
+					Pen.fillRect(Rect(0,0,w,h));
+					(Color(0.87,0.87,1)*0.5).set;
+					size.do{|i|
+						var value = multiDoubleArray.unmapNoClipAt(i);
+						if ((value>1)||(value<0)) { value = value.wrap(0,1) }; // wrap for offset
+						//(Color(0.8,0.8,0.95)*((i%3).map(0,2,0.8,1))).set;
+						Pen.fillRect( Rect(i*sw+1, h-1, sw2, value.neg*(h-2) ) );
+					};
+				}{
+					// update vars for use in other methods
+					size = multiDoubleArray.size;
+					sw   = ((w-2)/(size-1)).clip(1,inf);
+					sw2  = (sw).clip(1,inf);
+					Pen.smoothing_(false);
+					Color(0.1,0.1,0.2).set;
+					Pen.fillRect(Rect(0,0,w,h));
+					(Color(0.87,0.87,1)*0.5).set;
+					Pen.moveTo((1@(h-1)));
+					size.do{|i|
+						var value = multiDoubleArray.unmapNoClipAt(i);
+						if ((value>1)||(value<0)) { value = value.wrap(0,1) }; // wrap for offset
+						Pen.lineTo(((i*sw+1) @ (h- (value*(h-2)))));
+					};
+					Pen.lineTo(((w-1)@(h-1)));
+					Pen.lineTo((1@(h-1)));
+					Pen.fillStroke;
 				};
 			}
 		}

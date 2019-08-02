@@ -30,9 +30,7 @@ m.plot;
 
 */
 
-
-
-Kintegrator{
+Kmodulator{
 
 	// wave = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
 	var  <wave=\sine, <>freq=1, <>phase=0, <size=64, <>time=0, <>tick=0.01, <value=0, <>oneShot=false;
@@ -55,7 +53,7 @@ Kintegrator{
 	// change wave types
 	wave_{|argWave|
 		wave = argWave;
-		if (wave.isNumber) { wave = #[\sine, \triangle, \sawUp, \sawDown, \square][wave] };
+		if (wave.isNumber) { wave = #[\sine, \triangle, \sawUp, \sawDown, \square][wave.asInt] };
 		if (wave == \sin) { wave = \sine     };
 		if (wave == \tri) { wave = \triangle };
 	}
@@ -121,29 +119,26 @@ Kintegrator{
 
 }
 
-
-	// 2nd freq can be up down or left and right
-	// one shot animation
-	// reverse fill animation
-	// copy waveForm
-
+//
 
 Kosc{
 
 	// wave = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
-	var  <wave=\sine, <>freq=1, <>freq2=1, <>phase=0, <size=64, <>time=0, <>tick=0.01, <>controlSpec, <array, <>oneShot=false;
+	var  <wave=\sine, <>freq=1, <>freq2=1, <>phase=0, <size=64, <>time=0, <>tick=0.01, <>controlSpec, <array;
+	var <>oneShot=false, <>mirror=false;
 
 	// make me a new one
-	*new {|wave=\sine, freq=1, freq2=1, phase=0, oneShot=false, size=64, time=0, tick=0.01, controlSpec|
-		^super.new.init(wave, freq, freq2, phase, oneShot, size, time, tick, controlSpec)
+	*new {|wave=\sine, freq=1, freq2=1, phase=0, oneShot=false, mirror=false, size=64, time=0, tick=0.01, controlSpec|
+		^super.new.init(wave, freq, freq2, phase, oneShot, mirror, size, time, tick, controlSpec)
 	}
 
-	init{|argWave, argFreq, argFreq2, argPhase, argOneShot, argSize, argTime, argTick, argControlSpec|
+	init{|argWave, argFreq, argFreq2, argPhase, argOneShot, argMirror, argSize, argTime, argTick, argControlSpec|
 		this.wave   = argWave;
 		freq        = argFreq;
 		freq2       = argFreq2;
 		phase       = argPhase;
 		oneShot     = argOneShot;
+		mirror      = argMirror;
 		size        = argSize;
 		time        = argTime;
 		tick        = argTick;
@@ -155,7 +150,7 @@ Kosc{
 	// change wave types
 	wave_{|argWave|
 		wave = argWave;
-		if (wave.isNumber) { wave = #[\sine, \triangle, \sawUp, \sawDown, \square][wave] };
+		if (wave.isNumber) { wave = #[\sine, \triangle, \sawUp, \sawDown, \square][wave.asInt] };
 		if (wave == \sin) { wave = \sine     };
 		if (wave == \tri) { wave = \triangle };
 	}
@@ -169,16 +164,17 @@ Kosc{
 	generateArray{
 		// sine wave
 		if (wave==\sine) {
-
 			if (oneShot) {
 				if (controlSpec.isNil){
 					size.do{|i|
-						array[i] = ( (time + phase + 0.75 * 2pi) + (i * freq / size* 2pi) ).clip(2pi*0.75,2pi*1.75).sin + 1 * 0.5
+						array[i] = ((time + phase + 0.75 * 2pi)
+							+ (i * freq / size* 2pi)).clip(2pi*0.75,2pi*1.75).sin + 1 * 0.5
 					};
 				}{
 					size.do{|i|
 					array[i] = controlSpec.map(
-							( (time + phase + 0.75 * 2pi) + (i * freq / size * 2pi) ).clip(2pi*0.75,2pi*1.75).sin + 1 * 0.5 )
+							( (time + phase + 0.75 * 2pi)
+								+ (i * freq / size * 2pi) ).clip(2pi*0.75,2pi*1.75).sin + 1 * 0.5 )
 					};
 				};
 
@@ -189,7 +185,8 @@ Kosc{
 					};
 				}{
 					size.do{|i|
-						array[i] = controlSpec.map( ( (time + phase + 0.75 * 2pi) + (i * freq * 2pi / size) ).sin + 1 * 0.5 )
+						array[i] = controlSpec.map(
+							( (time + phase + 0.75 * 2pi) + (i * freq * 2pi / size) ).sin + 1 * 0.5 )
 					};
 				};
 			}
@@ -216,7 +213,8 @@ Kosc{
 					};
 				}{
 					size.do{|i|
-						array[i] = controlSpec.map( ( (time + phase + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).fold(0.0,1.0) )
+						array[i] = controlSpec.map(
+							( (time + phase + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).fold(0.0,1.0) )
 					};
 				};
 			};
@@ -237,7 +235,8 @@ Kosc{
 						size.do{|i| array[i] = controlSpec.map( 0 ) };
 					}{
 						size.do{|i|
-							array[i] = controlSpec.map( ( (time + phase) + (i * freq / size) ).clip(0,1).wrap(0.0,1.0) );
+							array[i] = controlSpec.map(
+								( (time + phase) + (i * freq / size) ).clip(0,1).wrap(0.0,1.0) );
 						};
 					};
 				};
@@ -277,7 +276,8 @@ Kosc{
 						size.do{|i| array[i] = controlSpec.map( 0 ) };
 					}{
 						size.do{|i|
-							array[i] = controlSpec.map( ( 1 - ((time + phase) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0) );
+							array[i] = controlSpec.map(
+								( 1 - ((time + phase) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0) );
 						};
 					};
 				};
@@ -336,12 +336,15 @@ Kosc{
 						size.do{|i| array[i] = controlSpec.maxval };
 					}{
 						size.do{|i|
-							array[i] = controlSpec.map( 1-( ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0).round(1) ) );
+							array[i] = controlSpec.map(
+								1-( ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0).round(1) ) );
 						};
 					};
 				};
 			};
 		};
+
+		if (mirror) { array = array.reverse }; // you can do this in place more efficiently
 	}
 
 	// next tick of clock + make next array
