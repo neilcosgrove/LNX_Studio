@@ -183,11 +183,11 @@ Koscillator{
 		if (wave==\sine) {
 			if (oneShot) {
 				size.do{|i|
-					array[i] = ((time + phase + 0.75 * 2pi) + (i * freq / size* 2pi)).clip(2pi*0.75,2pi*1.75).sin + 1 * 0.5
+					array[i] = ((time + (phase * freq) + 0.75 * 2pi) + (i * freq / size* 2pi)).clip(2pi*0.75,2pi*1.75).sin + 1 * 0.5
 				};
 			}{
 				size.do{|i|
-					array[i] = ( (time + phase + 0.75 * 2pi) + (i * freq * 2pi / size) ).sin + 1 * 0.5
+					array[i] = ( (time + (phase * freq) + 0.75 * 2pi) + (i * freq * 2pi / size) ).sin + 1 * 0.5
 				};
 			}
 		};
@@ -195,11 +195,11 @@ Koscillator{
 		if (wave==\triangle) {
 			if (oneShot) {
 				size.do{|i|
-					array[i] = ( (time + phase + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).clip(2,4).fold(0.0,1.0)
+					array[i] = ( (time + (phase * freq) + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).clip(2,4).fold(0.0,1.0)
 				};
 			}{
 				size.do{|i|
-					array[i] = ( (time + phase + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).fold(0.0,1.0)
+					array[i] = ( (time + (phase * freq) + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).fold(0.0,1.0)
 				}
 			}
 		};
@@ -210,7 +210,7 @@ Koscillator{
 					size.do{|i| array[i] = 0 };
 				}{
 					size.do{|i|
-						array[i] = ( (time + phase) + (i * freq / size) ).clip(0,1).wrap(0.0,1.0);
+						array[i] = ( (time + (phase * freq)) + (i * freq / size) ).clip(0,1).wrap(0.0,1.0);
 					};
 				};
 			}{
@@ -218,7 +218,7 @@ Koscillator{
 					size.do{|i| array[i] = 0 };
 				}{
 					size.do{|i|
-						array[i] = ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0);
+						array[i] = ( (time + (phase * freq)) + (i * freq / size) ).wrap(0.0,1.0);
 					};
 				};
 			};
@@ -230,7 +230,7 @@ Koscillator{
 					size.do{|i| array[i] = 0 };
 				}{
 					size.do{|i|
-						array[i] = ( 1-((time + phase) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0);
+						array[i] = ( 1-((time + (phase * freq)) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0);
 					};
 				};
 			}{
@@ -238,7 +238,7 @@ Koscillator{
 					size.do{|i| array[i] = 0 };
 				}{
 					size.do{|i|
-						array[i] = 1 - (( (time + phase) + (i * freq / size) ).wrap(0.0,1.0));
+						array[i] = 1 - (( (time + (phase * freq)) + (i * freq / size) ).wrap(0.0,1.0));
 					};
 				};
 			}
@@ -250,7 +250,7 @@ Koscillator{
 					size.do{|i| array[i] = 0 };
 				}{
 					size.do{|i|
-						array[i] = ( 1-((time + phase) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0).round(1);
+						array[i] = ( 1-((time + (phase * freq)) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0).round(1);
 					};
 				};
 			}{
@@ -258,7 +258,7 @@ Koscillator{
 					size.do{|i| array[i] = 1 };
 				}{
 					size.do{|i|
-						array[i] = 1 - (( (time + phase) + (i * freq / size) ).wrap(0.0,1.0).round(1));
+						array[i] = 1 - (( (time + (phase * freq)) + (i * freq / size) ).wrap(0.0,1.0).round(1));
 					};
 				};
 			};
@@ -281,12 +281,23 @@ Koscillator{
 			if (clipboard.size>0) {
 				var clipArray = clipboard.last;
 				var clipSize  = clipArray.size;
-				if (freq==0) {
-					size.do{|i| array[i] = clipArray[0] };
+				if (oneShot) {
+					if (freq==0) {
+						size.do{|i| array[i] = clipArray[0] };
+					}{
+						size.do{|i|
+							var index = ( (time + (phase * freq)) + (i * freq / size) ).clip(0,1)*(clipSize);
+							array[i] = clipArray.atL(index);
+						};
+					};
 				}{
-					size.do{|i|
-						var index = ( (time + phase) + (i * freq / size) ).wrap(0.0,1.0)*(clipSize);
-						array[i] = clipArray.atL(index);
+					if (freq==0) {
+						size.do{|i| array[i] = clipArray[0] };
+					}{
+						size.do{|i|
+							var index = ( (time + (phase * freq)) + (i * freq / size) ).wrap(0.0,1.0)*(clipSize);
+							array[i] = clipArray.atL(index);
+						};
 					};
 				};
 			}{

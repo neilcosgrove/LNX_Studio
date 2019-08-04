@@ -1621,7 +1621,6 @@
 	atL{|index, numChannels=1, channel=0|
 		var i= index.frac;
 		var index1 = index.asInteger * numChannels + channel;
-		".".post;
 		^ (( this.clipAt(index1 + numChannels) )*i)+( ( this.clipAt(index1) )*(1-i));
 	}
 
