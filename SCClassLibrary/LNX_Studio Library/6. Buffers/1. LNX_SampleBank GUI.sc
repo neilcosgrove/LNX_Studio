@@ -1621,6 +1621,23 @@
 	atL{|index, numChannels=1, channel=0|
 		var i= index.frac;
 		var index1 = index.asInteger * numChannels + channel;
+		".".post;
+		^ (( this.clipAt(index1 + numChannels) )*i)+( ( this.clipAt(index1) )*(1-i));
+	}
+
+}
+
++ DoubleArray {
+
+	// integer index into a flat multichannel FloatArray
+	atInt{|index, numChannels=1, channel=0|
+		^ this.clipAt( index * numChannels + channel);
+	}
+
+	// simple linear interpolation into a flat multichannel FloatArray
+	atL{|index, numChannels=1, channel=0|
+		var i= index.frac;
+		var index1 = index.asInteger * numChannels + channel;
 		^ (( this.clipAt(index1 + numChannels) )*i)+( ( this.clipAt(index1) )*(1-i));
 	}
 

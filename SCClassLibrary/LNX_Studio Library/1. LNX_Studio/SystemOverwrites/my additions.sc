@@ -118,6 +118,13 @@
 		^(floor*(1-frac)) + (ceil*frac)
 	}
 
+	hashScapeSin{|res=1073741788|
+		var floor = this.asFloat.floor.hash.wrap(0.0,res)/res;
+		var ceil  = this.asFloat.ceil.hash.wrap(0.0,res)/res;
+		var frac  = (this.frac - 0.5 * pi).sin + 1 * 0.5;
+		^(floor*(1-frac)) + (ceil*frac)
+	}
+
 }
 
 
