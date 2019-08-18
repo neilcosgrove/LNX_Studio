@@ -686,7 +686,13 @@
 
 		// name
 		gui[\name] = MVC_StaticText( gui[\scrollView], Rect(42,5,490+x,18),
-						models[\name]??{"Press search to add samples -->".asModel})
+						models[\name]??{
+				(interface == \kHole).if {
+					"<-- Press \"Open\" to add a sample".asModel
+				}{
+					"Press search to add samples -->".asModel
+				};
+		})
 			.shadow_(false)
 			.align_(\center)
 			.color_(\string,Color.black)
@@ -717,7 +723,7 @@
 		};
 
 		// up
-		MVC_OnOffView(gui[\scrollView],Rect(11, 4, 20, 20),"up")
+		gui[\upButton] = MVC_OnOffView(gui[\scrollView],Rect(11, 4, 20, 20),"up")
 			.rounded_(true)
 			.mode_(\icon)
 			.color_(\on,Color(1,1,1,0.5))
@@ -725,7 +731,7 @@
 			.action_{	  if (this.notEmpty) {selectSampleFunc.value(i-1)} };
 
 		// down
-		MVC_OnOffView(gui[\scrollView],Rect(11, 27, 20, 20),"down")
+		gui[\downButton] = MVC_OnOffView(gui[\scrollView],Rect(11, 27, 20, 20),"down")
 			.rounded_(true)
 			.mode_(\icon)
 			.color_(\on,Color(1,1,1,0.5))
@@ -1359,11 +1365,59 @@
 			if (window.isKindOf(MVC_CompositeView).not) { interface = \gsr } { interface = \sccode }
 		};
 
+		if (interface == \kHole ) { // interface in strange loop
+
+			gui[\upButton].free;
+			gui[\downButton].free;
+
+			gui[\name].bounds_(Rect(80,5, 445,18));
+			gui[\path].bounds_(Rect(80,27,445,18));
+
+			gui[\length] = ();
+			gui[\amp]    = ();
+			gui[\bpm]    = ();
+
+			gui[\offset].bounds_(Rect(168,175,328,20));
+
+			// follow
+			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(111, 174, 50, 20),"Follow", follow)
+				.rounded_(true)
+				.color_(\on,Color(50/77,61/77,1))
+				.color_(\off,Color(1,1,1,0.88)/4);
+
+			// the sample loop
+			gui[\loop]= MVC_OnOffView(gui[\scrollView], models[\loop],
+										Rect(61, 174, 46, 20),"Loop")
+				.rounded_(true)
+				.color_(\on,Color(50/77,61/77,1))
+				.color_(\off,Color(1,1,1,0.88)/4);
+
+			// sampleRate
+			gui[\sampleRate] = MVC_StaticText( gui[\scrollView], Rect(322,196,65,18), gui[\infoTheme])
+				.label_("Sample Rate:");
+
+			// duration
+			gui[\duration] = MVC_StaticText( gui[\scrollView], Rect(477,196,65,18), gui[\infoTheme])
+				.label_("Duration:");
+
+			//numChannels
+			gui[\numChannels] = MVC_StaticText( gui[\scrollView], Rect(144,196,65,18), gui[\infoTheme])
+				.label_("Num Channels:");
+
+			if ((this.notEmpty) and:{ buffer.isLoaded}) {
+				gui[\sampleRate].string_((buffer.sampleRate/1000).asString+"kHz");
+				gui[\duration].string_((buffer.duration.round(0.01)).asString+"sec(s)");
+				gui[\numChannels].string_((buffer.numChannels).asString);
+			}{
+				gui[\sampleRate].string_("- kHz");
+				gui[\duration].string_("- sec(s)");
+				gui[\numChannels].string_("-");
+			};
+
+		};
+
+
 		if (interface == \strangeLoop ) { // interface in strange loop
-/*			// the edit mode
-			gui[\amp] = MVC_MyKnob3(gui[\scrollView], editModel, Rect(95,245, 28, 28),
-				gui[\knobTheme1])
-				.label_("Edit mode");*/
 
 			// length
 			gui[\length]=MVC_NumberBox(gui[\scrollView],models[\length], Rect(602, 107, 42, 16))
