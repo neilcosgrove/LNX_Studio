@@ -296,7 +296,7 @@ Koscillator{
 					}{
 						size.do{|i|
 							var index = ( (time + (phase * freq)) + (i * freq / size) ).wrap(0.0,1.0)*(clipSize);
-							array[i] = clipArray.atL(index);
+							array[i] = clipArray.atLW(index);
 						};
 					};
 				};

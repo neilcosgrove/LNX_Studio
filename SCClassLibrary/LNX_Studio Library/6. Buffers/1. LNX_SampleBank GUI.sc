@@ -1380,14 +1380,14 @@
 			gui[\offset].bounds_(Rect(168,175,328,20));
 
 			// follow
-			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(111, 174, 50, 20),"Follow", follow)
+			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(111, 175, 50, 20),"Follow", follow)
 				.rounded_(true)
 				.color_(\on,Color(50/77,61/77,1))
 				.color_(\off,Color(1,1,1,0.88)/4);
 
 			// the sample loop
 			gui[\loop]= MVC_OnOffView(gui[\scrollView], models[\loop],
-										Rect(61, 174, 46, 20),"Loop")
+										Rect(61, 175, 46, 20),"Loop")
 				.rounded_(true)
 				.color_(\on,Color(50/77,61/77,1))
 				.color_(\off,Color(1,1,1,0.88)/4);
@@ -1678,6 +1678,13 @@
 		^ (( this.clipAt(index1 + numChannels) )*i)+( ( this.clipAt(index1) )*(1-i));
 	}
 
+	// simple linear interpolation into a flat multichannel FloatArray (wrap)
+	atLW{|index, numChannels=1, channel=0|
+		var i= index.frac;
+		var index1 = index.asInteger * numChannels + channel;
+		^ (( this.wrapAt(index1 + numChannels) )*i)+( ( this.wrapAt(index1) )*(1-i));
+	}
+
 }
 
 + DoubleArray {
@@ -1693,6 +1700,14 @@
 		var index1 = index.asInteger * numChannels + channel;
 		^ (( this.clipAt(index1 + numChannels) )*i)+( ( this.clipAt(index1) )*(1-i));
 	}
+
+	// simple linear interpolation into a flat multichannel FloatArray
+	atLW{|index, numChannels=1, channel=0|
+		var i= index.frac;
+		var index1 = index.asInteger * numChannels + channel;
+		^ (( this.wrapAt(index1 + numChannels) )*i)+( ( this.wrapAt(index1) )*(1-i));
+	}
+
 
 }
 
