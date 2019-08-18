@@ -95,7 +95,7 @@ LNX_SampleBank{
 
 		metaModel[\name    ] 		=        "".asModel;            // rename sample
 		metaModel[\pitch   ] 		=     \midi.asModel;            // nearest pitch
-		metaModel[\amp     ] 		=      \db12.asModel;           // need to change loading
+		metaModel[\amp     ] 		=     \db12.asModel;            // need to change loading
 		metaModel[\loop    ] 		=   \switch.asModel.value_(defaultLoop);	// loop sample
 		metaModel[\start   ] 		= \unipolar.asModel;            // start frame
 		metaModel[\end     ] 		= \unipolar.asModel.value_(1);  // end frame (1 is end of sample)
@@ -132,7 +132,7 @@ LNX_SampleBank{
 		^metaModel;
 	}
 
-	// used in strnagle loop
+	// used in strange loop
 	modelValueAction_{|i,model,val,latency,send| metaModels.wrapAt(i)[model].valueAction_(val,latency,send)}
 
 	// find index model
@@ -602,6 +602,8 @@ LNX_SampleBank{
 			var i = samples.indexOf(buf); // index of sample loaded
 			if (uid.asSymbol == network.thisUser.id) {
 				if (LNX_WebBrowser.preview.isTrue) { this.play(i) }; // play when finished downloading
+
+				loadedAction.value(this); // used in kHole
 
 				// can this be removed??
 				{

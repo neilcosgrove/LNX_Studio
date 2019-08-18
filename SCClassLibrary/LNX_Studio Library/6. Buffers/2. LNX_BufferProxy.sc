@@ -149,8 +149,15 @@ LNX_BufferProxy {
 		source = \url;
 		server = argServer ? Server.default;
 		url    = argURL;
-		isLocal= (url[..6]=="file://")||(url[..6]=="temp://");
-		path   = cashePath +/+ url.replace("://","/");
+		isLocal= (url[..6]=="file://")||(url[..6]=="temp://")||(url[..7]=="local://");
+
+		// for real local files loaded with a dialog for KHole
+		if (url[..7]=="local://"){
+			path   = url.replace("local://","/");
+		}{
+			path   = cashePath +/+ url.replace("://","/");   // this is where the path is changed
+		};
+
 		path   = path.replace("%20", " ");
 		dir    = path.dirname;
 		name   = path.basename;
@@ -159,6 +166,15 @@ LNX_BufferProxy {
 			convertedPath = path;
 		}{
 			convertedPath = path.getNewPath(LNX_URLDownload.format); // this is not always the case
+		};
+
+		if (verbose) {
+			"LNX_BufferProxy:initURL info...".postln;
+			[\argServer, \argURL, \argCompletionFunc, \replace, \source, \server, \url, \isLocal,
+				\path, \dir, \name, \convertedPath].do{|i,j| i.post; " : ".post;
+				[argServer, argURL, argCompletionFunc, replace, source, server, url, isLocal,
+					path, dir, name, convertedPath][j].postln;
+			};
 		};
 
 		sampleData = [0];
