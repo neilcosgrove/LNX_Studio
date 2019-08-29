@@ -33,7 +33,7 @@ m.plot;
 Kmodulator{
 
 	// wave = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
-	var  <wave=\sine, <>freq=1, <>phase=0, <size=64, <>time=0, <>tick=0.01, <value=0, <>oneShot=false;
+	var  <wave=\sine, <>freq=1, <>phase=0, <>time=0, <>tick=0.01, <value=0, <>oneShot=false;
 
 	// make me a new one
 	*new {|wave=\sine, freq=1, phase=0, oneShot=false, time=0, tick=0.01|
@@ -147,22 +147,28 @@ Koscillator{
 		controlSpec = argControlSpec;
 		array = DoubleArray.fill(size, 0);
 		this.generateArray;
-		clipboard = [];
+		clipboard = nil;
+	}
+
+	// happens when noBands is changed
+	size_{|n|
+		var newArray;
+		if (clipboard.notNil) {
+			newArray = DoubleArray.fill(n, 0);
+			n.do{|i| newArray[i] = clipboard.atL(i/n*size) };
+			clipboard = newArray;
+		};
+		newArray = DoubleArray.fill(n, 0);
+		n.do{|i| newArray[i] = array.atL(i/n*size) };
+		array = newArray;
+		size=n;
 	}
 
 	// add array to the clipboard
-	addToClipboard{|array| if (array.isArray) { clipboard=clipboard.add(array) } }
+	addToClipboard{|array| clipboard=array  }
 
 	// remove item from clipboard
-	removeFromClipboard{|item|
-		case {item.isNumber} {
-			clipboard.removeAt(item)
-		} {item.isNil} {
-			clipboard = clipboard.drop(-1)
-		}{
-			clipboard.removeitem(item)
-		};
-	}
+	emptyClipboard{|item| clipboard = nil }
 
 	// change wave types
 	wave_{|argWave|
@@ -278,25 +284,24 @@ Koscillator{
 
 		// user wave
 		if (wave==\user) {
-			if (clipboard.size>0) {
-				var clipArray = clipboard.last;
-				var clipSize  = clipArray.size;
+			if (clipboard.notNil) {
+				var clipSize  = clipboard.size;
 				if (oneShot) {
 					if (freq==0) {
-						size.do{|i| array[i] = clipArray[0] };
+						size.do{|i| array[i] = clipboard[0] };
 					}{
 						size.do{|i|
 							var index = ( (time + (phase * freq)) + (i * freq / size) ).clip(0,1)*(clipSize);
-							array[i] = clipArray.atL(index);
+							array[i] = clipboard.atL(index);
 						};
 					};
 				}{
 					if (freq==0) {
-						size.do{|i| array[i] = clipArray[0] };
+						size.do{|i| array[i] = clipboard[0] };
 					}{
 						size.do{|i|
 							var index = ( (time + (phase * freq)) + (i * freq / size) ).wrap(0.0,1.0)*(clipSize);
-							array[i] = clipArray.atLW(index);
+							array[i] = clipboard.atLW(index);
 						};
 					};
 				};

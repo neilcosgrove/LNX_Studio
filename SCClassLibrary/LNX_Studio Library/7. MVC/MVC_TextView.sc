@@ -6,7 +6,7 @@ MVC_TextView : MVC_View {
 
 	classvar <menus;
 
-	var <>colorizeOnOpen = false, <>autoColorize=false, helpWindow, task, parentWindow, menuXY;
+	var <>colorizeOnOpen = false, <>autoColorize=false, helpWindow, task, parentWindow, menuXY, <>editable=true;
 
 	// set your defaults
 	initView{
@@ -29,7 +29,8 @@ MVC_TextView : MVC_View {
 			.background_(colors[\background])
 			.stringColor_(colors[\string])
 			.usesTabToFocusNextView_(false)
-			.hasVerticalScroller_ (true);
+			.hasVerticalScroller_ (true)
+			.editable_(editable);
 
 		if (colorizeOnOpen) {view.syntaxColorize};
 	}

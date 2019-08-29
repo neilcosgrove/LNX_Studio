@@ -199,6 +199,13 @@ MVC_TabbedView {
 		if (view.notClosed) {	view.value_(value) }
 	}
 
+	valueAction_{|val|
+		value=val;
+		if (view.notClosed) {	view.value_(value) };
+		action.value(this);
+	}
+
+
 	// resize number
 	resize_{|num|
 		resize=num;

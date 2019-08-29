@@ -41,7 +41,7 @@ LNX_WebBrowser{
 
 		// class models
 		classModels = IdentityDictionary[];
-		classModels[\preview]= \switch.asModel.value_(1);
+		classModels[\preview]= \switch.asModel.value_(0);
 
 		this.refreshUserFiles;
 
