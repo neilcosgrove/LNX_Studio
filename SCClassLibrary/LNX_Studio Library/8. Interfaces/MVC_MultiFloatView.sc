@@ -84,12 +84,13 @@ MVC_MultiFloatView : MVC_View {
 
 	multiDoubleArray_{|array|
 		multiDoubleArray=array;
-		if (view.notClosed) {view.refresh}
+		if (view.notClosed) {  {view.refresh}.deferIfNeeded  }
 	}
 
 	// add the controls
 	addControls{
 		view.mouseDownAction_{|me, x, y, modifiers, buttonNumber, clickCount|
+			size = multiDoubleArray.size;
 			lx = ((x-1)/sw).asInt.clip(0,size-1);
 			ly = 1-(((y-1)/(h-2)).clip(0,1));
 			multiDoubleArray.putMap(lx, ly);

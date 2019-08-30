@@ -300,7 +300,7 @@ LNX_Studio {
 		server.options.inDevice=LNX_AudioDevices.defaultInput;
 		server.options.memSize_(8192*16); // = 128MB (this is for UGens not buffers)
 		server.options.numWireBufs_(1024*4);
-		server.options.numBuffers_(1024*16);
+		server.options.numBuffers_(1024*64);
 		instTypes.do{|inst| inst.initServer(server)}; // and all insts
 		ServerBoot.add({this.postBootFuncs},server);
 	}
