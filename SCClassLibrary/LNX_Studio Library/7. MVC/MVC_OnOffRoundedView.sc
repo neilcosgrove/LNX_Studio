@@ -8,6 +8,7 @@ MVC_OnOffRoundedView : MVC_View {
 	var <down=false;
 	var <>permanentStrings; // used primarily in studio_inst onOff button to stop its string changing
 	var <>rounded=true;
+	var <>insetBy=0;
 
 	// set your default colours
 	initView{
@@ -149,9 +150,9 @@ MVC_OnOffRoundedView : MVC_View {
 							Pen.fillColor_(Color.black);
 							Pen.smoothing_(true);
 							if (value>=0.5) {
-								DrawIcon.symbolArgs(strings|@|1, Rect(0,0,w,h).insetBy(0,0));
+								DrawIcon.symbolArgs(strings|@|1, Rect(0,0,w,h).insetBy(insetBy,insetBy));
 							}{
-								DrawIcon.symbolArgs(strings|@|0, Rect(0,0,w,h).insetBy(0,0));
+								DrawIcon.symbolArgs(strings|@|0, Rect(0,0,w,h).insetBy(insetBy,insetBy));
 							};
 						}
 

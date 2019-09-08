@@ -9,7 +9,8 @@ MVC_Slider : MVC_View {
 		colors=colors++(
 			'knob'					: Color.orange,
 			'backgroundDisabled'	: Color.grey/2,
-			'knobDisabled'			: Color.grey*1.2
+			'knobDisabled'			: Color.grey*1.2,
+			'background'            : Color(0.15,0.15,0.15)
 		);
 
 	}
@@ -51,7 +52,7 @@ MVC_Slider : MVC_View {
 		};
 		view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
-			MVC_LazyRefresh.mouseDown;
+			//MVC_LazyRefresh.mouseDown;
 			if (modifiers.isAlt ) { buttonNumber=1  };
 			if (modifiers.isCtrl) { clickCount  =2  };
 			buttonPressed=buttonNumber;

@@ -41,7 +41,7 @@ MVC_MyKnob4 : MVC_View {
 		view=Knob(window,rect)
 		.mode_(\vert)
 		.centered_(centered)
-		.shift_scale_(1)
+		.shift_scale_(1/3)
 		.color_([colors[\knob],colors[\on], colors[\off], colors[\hilite]]);
 
 		if (controlSpec.notNil) {
@@ -87,7 +87,7 @@ MVC_MyKnob4 : MVC_View {
 		 view.mouseDownAction_{|me,x, y, modifiers, buttonNumber, clickCount|
 		 	// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			mouseDown = true;
-		 	MVC_LazyRefresh.mouseDown;
+		 	//MVC_LazyRefresh.mouseDown;
 		 	if (modifiers.isAlt ) { buttonNumber=1  };
 		 	if (modifiers.isCtrl) { clickCount  =2  };
 		 	buttonPressed=buttonNumber;

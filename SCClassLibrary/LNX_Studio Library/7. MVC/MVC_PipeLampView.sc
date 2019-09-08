@@ -20,7 +20,7 @@ MVC_PipeLampView : MVC_View {
 
 	var call=0; // used to tag last update to stop lamp turning off in mid noteOn
 
-	var <notesOn, <>border=false, <>mouseWorks=false, <down=false, <>insetBy=0, <>insetBy2=0, <>border2=false;
+	var <notesOn, <>border=true, <>mouseWorks=false, <down=false, <>insetBy=0, <>insetBy2=0, <>border2=false;
 
 	var lazyRefresh, <>doLazyRefresh=true;
 
@@ -59,7 +59,7 @@ MVC_PipeLampView : MVC_View {
 							{ colors[\off].set; };
 					}{
 						if (value>0)
-							{ (colors[\on]*(value.map(0,1,0.5,1))).set; }
+					        {(colors[\on ]*(value)).set; }
 							{ colors[\off].set; };
 					};
 

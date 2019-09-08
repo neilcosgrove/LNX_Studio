@@ -39,8 +39,8 @@ MVC_MultiFloatView : MVC_View {
 	initView{
 
 		colors=colors++(
-			'background' : Color(0.1,0.1,0.2),
-			'graph' 	 : (Color(0.87,0.87,1)*0.5)
+			'background' : Color(0.15,0.15,0.15),
+			'graph' 	 : Color(31/59,52/85,28/43)
 		);
 
 
