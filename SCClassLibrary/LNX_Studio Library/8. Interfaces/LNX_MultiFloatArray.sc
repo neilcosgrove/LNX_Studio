@@ -63,7 +63,7 @@ Kmodulator{
 		time = time + (tick * freq);
 		if (oneShot) {
 			if (time>1)   { time =  1.0 };
-			if (time< -1) { time = -1.0 };
+			//if (time< -1) { time = -1.0 };
 		};
 	}
 
@@ -82,7 +82,11 @@ Kmodulator{
 			if (freq==0) {
 				value = 0;
 			}{
-				value = ( time + phase ).wrap(0.0,1.0);
+				if ((oneShot) and: {(phase==0) && (time==1)}) {
+					value = 1;
+				}{
+					value = ( time + phase ).wrap(0.0,1.0);
+				};
 			};
 		};
 		// sawDown wave
@@ -90,7 +94,11 @@ Kmodulator{
 			if (freq==0) {
 				value = 1;
 			}{
-				value = 1 - (( time + phase ).wrap(0.0,1.0));
+				if ((oneShot) and: {(phase==0) && (time==1)}) {
+					value = 0;
+				}{
+					value = 1 - (( time + phase ).wrap(0.0,1.0));
+				};
 			};
 		};
 		// square wave
@@ -98,7 +106,11 @@ Kmodulator{
 			if (freq==0) {
 				value= 1;
 			}{
-				value = 1 - (( time + phase ).wrap(0.0,1.0).round(1));
+				if ((oneShot) and: {(phase==0) && (time==1)}) {
+					value = 0;
+				}{
+					value = 1 - (( time + phase ).wrap(0.0,1.0).round(1));
+				};
 			};
 		};
 	}
@@ -344,7 +356,7 @@ Koscillator{
 
 LNX_MultiDoubleArray{
 
-	var <size, <minSize, <maxSize, <>controlSpec, <arrays, <array;
+	var <size, <minSize, <maxSize, <controlSpec, <arrays, <array, scratchPad;
 
 	// make me a new one
 	*new {|size=64, minSize=3, maxSize=512, controlSpec=\unipolar|
@@ -368,6 +380,10 @@ LNX_MultiDoubleArray{
 	unmapAt{|index| ^controlSpec.unmap(array[index]) }
 	unmapNoClipAt{|index| ^controlSpec.unmapNoClip(array[index]) }
 
+	controlSpec_{|newSpec|
+		array.do{|val,i|  array[i] = newSpec.map(controlSpec.unmap(val)) };
+		controlSpec = newSpec;
+	}
 
 	// clipAt with linear interpolation, map & unmap with control spec
 	clipAtLin{|index,fromSize|

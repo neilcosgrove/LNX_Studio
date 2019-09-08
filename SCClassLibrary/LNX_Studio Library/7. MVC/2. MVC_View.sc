@@ -51,7 +51,7 @@ MVC_View {
 	var	<>viewEditMode=false,	<>viewGrid=1,	<>viewEditResize=false;
 	var	<hidden = false,		<hiddenBounds,	<>canBeHidden=true;
 	var <>locked = false, 		<>numberOffset = 0;
-	var <beginDragAction, 		<canReceiveDragHandler, <receiveDragHandler;
+	var <beginDragAction, 		<canReceiveDragHandler, <receiveDragHandler, <dragLabel;
 
 	*initClass{
 		Class.initClassTree(LNX_File);
@@ -235,6 +235,9 @@ MVC_View {
 			};
 		};
 
+		if (dragLabel.notNil) { view.dragLable_(dragLabel) };
+
+
 		// just add begin to number box
 		if (numberGUI.notNil) { numberGUI.beginDragAction_(view.beginDragAction) };
 		labelGUI.do{|labelView| labelView.beginDragAction_(view.beginDragAction) };
@@ -257,6 +260,11 @@ MVC_View {
 	receiveDragHandler_{|func|
 		receiveDragHandler=func;
 		if (view.notClosed) { view.receiveDragHandler_(func) }
+	}
+
+	dragLabel_{|text|
+		dragLabel=text;
+		if (view.notClosed) { view.dragLabel_(text) }
 	}
 
 	// override to do anything after creation

@@ -129,6 +129,7 @@
 				.color_(\up,Color(0,0,0,0.2))
 				.color_(\down,Color(0,0,0,0.4))
 				.action_({
+				[type.class,type].postln;
 					this.guiAddInst(type);
 				});
 

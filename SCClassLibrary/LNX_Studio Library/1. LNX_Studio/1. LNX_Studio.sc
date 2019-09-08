@@ -114,14 +114,13 @@ LNX_Studio {
 		<lastBatchFolder,	jumpTo;
 
 	//// the network
-	var	<network, 		<netTransport=true,	// transport on network
-		<api,			transmitInstChange=true;
-
+	var	<network, 		<netTransport=true;	// transport on network
+	var	<api,			transmitInstChange=true;
 	var <>myHack,		<>hackOn=false; // for my own hacking of lnx, to remove
-
 	var midi2, padNotes; // temp for CARBON ************
-
 	var <loadIndex = -1, <loadPaths, <>saveBuffersWindow;
+
+	var <kHoleRunning = false;
 
 	// create a new studio ///////////////////////////////////////////////////////
 
@@ -151,12 +150,21 @@ LNX_Studio {
 		this.createLibraryWidgets;   // add the library widgets
 		this.autoSizeGUI;			 // autosize to number of users. (to add widgets & remove)
 		mixerWindow.create;          // now make the window
+		mixerWindow.hide;
 
 		LNX_SplashScreen.init(this); // start splash screen
 		CmdPeriod.add(this);		 // add this object to CmdPeriod
 		this.startClockOff;          // and start off_clock for client side lfos
 		MVC_LazyRefresh.start;       // start the lazy refresh task
+	}
 
+	startKHole{
+		if (kHoleRunning.not) {
+			this.guiAddInst(LNX_KHole);
+			kHoleRunning = true;
+			~oldMixerWindow = mixerWindow;
+			mixerWindow = insts[0].window;
+		};
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -352,6 +360,7 @@ LNX_Studio {
 						.do(_.startDSP)
 						.do(_.updateDSP)
 						.do(_.restartEQ);
+					    this.startKHole;
 				}.defer(0.3); // defer used to help LNX_CodeFX
 				{
 					if (songToLoad.notNil) {

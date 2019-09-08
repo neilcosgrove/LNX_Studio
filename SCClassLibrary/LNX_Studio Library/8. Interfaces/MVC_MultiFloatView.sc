@@ -36,7 +36,15 @@ MVC_MultiFloatView : MVC_View {
 	*initClass{}
 
 	// set your defaults
-	initView{}
+	initView{
+
+		colors=colors++(
+			'background' : Color(0.1,0.1,0.2),
+			'graph' 	 : (Color(0.87,0.87,1)*0.5)
+		);
+
+
+	}
 
 	// make the view as line
 	createView{
@@ -50,9 +58,9 @@ MVC_MultiFloatView : MVC_View {
 					sw   = ((w-2)/size).clip(1,inf);
 					sw2  = (sw).clip(1,inf);
 					Pen.smoothing_(false);
-					Color(0.1,0.1,0.2).set;
+					colors[\background].set;
 					Pen.fillRect(Rect(0,0,w,h));
-					(Color(0.87,0.87,1)*0.5).set;
+					colors[\graph].set;
 					size.do{|i|
 						var value = multiDoubleArray.unmapNoClipAt(i);
 						if ((value>1)||(value<0)) { value = value.wrap(0,1) }; // wrap for offset
@@ -64,10 +72,10 @@ MVC_MultiFloatView : MVC_View {
 					size = multiDoubleArray.size;
 					sw   = ((w-2)/(size-1)).clip(1,inf);
 					sw2  = (sw).clip(1,inf);
-					Pen.smoothing_(false);
-					Color(0.1,0.1,0.2).set;
+					Pen.smoothing_(true);
+					colors[\background].set;
 					Pen.fillRect(Rect(0,0,w,h));
-					(Color(0.87,0.87,1)*0.5).set;
+					colors[\graph].set;
 					Pen.moveTo((1@(h-1)));
 					size.do{|i|
 						var value = multiDoubleArray.unmapNoClipAt(i);

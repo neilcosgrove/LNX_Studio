@@ -688,7 +688,7 @@
 		gui[\name] = MVC_StaticText( gui[\scrollView], Rect(42,5,490+x,18),
 						models[\name]??{
 				(interface == \kHole).if {
-					"<-- Press \"Open\" to add a sample".asModel
+					"Sample not loaded yet".asModel
 				}{
 					"Press search to add samples -->".asModel
 				};
@@ -1370,8 +1370,15 @@
 			gui[\upButton].free;
 			gui[\downButton].free;
 
-			gui[\name].bounds_(Rect(80,5, 445,18));
-			gui[\path].bounds_(Rect(80,27,445,18));
+			gui[\name].bounds_(Rect(80,5+9, 445,18))
+			.mouseDownAction_{ gui[\name].color_(\string,Color.white) }
+			.mouseUpAction_{
+				gui[\name].color_(\string,Color.black);
+				this[i].convertedPath.postln.revealInFinder
+			};
+			gui[\path].bounds_(Rect(80,27+5,445,18))
+			.mouseDownAction_{}
+			.mouseUpAction_{};
 
 			gui[\length] = ();
 			gui[\amp]    = ();

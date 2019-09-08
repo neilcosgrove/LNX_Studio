@@ -487,7 +487,7 @@ LNX_FreeSoundAPIKey{
 				).unixCmd(action);
 			},
 			\windows, {
-				"afconvert not imlemented".postln;
+				"afconvert not implemented".postln;
 				action.(127);
 				nil;
 			}
