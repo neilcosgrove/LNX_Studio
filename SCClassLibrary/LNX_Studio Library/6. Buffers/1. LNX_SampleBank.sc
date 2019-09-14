@@ -56,6 +56,8 @@ LNX_SampleBank{
 
 	var <selectedNotes,   <bankGUIs;
 
+	var <>keyDownAction, <>keyUpAction;
+
 	// init the class
 	*initClass {
 		sampleBanks=Set[];

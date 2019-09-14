@@ -22,7 +22,7 @@ MVC_PipeLampView : MVC_View {
 
 	var <notesOn, <>border=true, <>mouseWorks=false, <down=false, <>insetBy=0, <>insetBy2=0, <>border2=false;
 
-	var lazyRefresh, <>doLazyRefresh=true;
+	var lazyRefresh, <>doLazyRefresh=true, clickCount;
 
 	// set your defaults
 	initView{
@@ -83,7 +83,8 @@ MVC_PipeLampView : MVC_View {
 
 	// add the controls
 	addControls{
-		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, clickCount|
+		view.mouseDownAction={|me, x, y, modifiers, buttonNumber, argClickCount|
+			clickCount=argClickCount;
 			// mods 256:none, 131330:shift, 8388864:func, 262401:ctrl, 524576:alt, 1048840:apple
 			if (editMode) {lw=lh=nil; startX=x; startY=y; view.bounds.postln }; // for moving
 			buttonPressed=buttonNumber;
@@ -118,7 +119,7 @@ MVC_PipeLampView : MVC_View {
 				};
 			};
 		};
-		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, clickCount|
+		view.mouseUpAction={|me, x, y, modifiers, buttonNumber, argClickCount|
 			var xx=x/w, yy=y/h;
 			if (mouseWorks) {
 				if ( (xx>=0)and:{xx<=1}and:{yy>=0}and:{yy<=1}
@@ -128,7 +129,8 @@ MVC_PipeLampView : MVC_View {
 				};
 				down=false;
 				view.refresh;
-			}
+			};
+			mouseUpAction.value(me, x, y, modifiers, buttonNumber, clickCount);
 		};
 	}
 

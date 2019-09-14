@@ -70,7 +70,7 @@ MVC_MyKnob4 : MVC_View {
 		// i should do this everywhere in own method
 		view.onClose_{|me|
 			onClose.value(this);
-			me.drawFunc_(nil).mouseDownAction_(nil).mouseMoveAction_(nil).onClose_(nil);
+			//me.drawFunc_(nil).mouseDownAction_(nil).mouseMoveAction_(nil).onClose_(nil);
 		};
 
 
@@ -125,7 +125,7 @@ MVC_MyKnob4 : MVC_View {
 		colors[key]=color;
 		if (view.notClosed) {
 			view.color_([colors[\knob],colors[\on], colors[\off], colors[\hilite]]);
-
+			view.refresh;
 		};
 	}
 
@@ -160,7 +160,7 @@ MVC_MyKnob4 : MVC_View {
 			enabled=bool;
 			{
 				if (view.notClosed) {
-					this.refresh;
+					view.enabled_(enabled);
 				}
 			}.defer;
 		}

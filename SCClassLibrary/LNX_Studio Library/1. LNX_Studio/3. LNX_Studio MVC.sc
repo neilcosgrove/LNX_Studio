@@ -214,10 +214,15 @@
 			( strings_:"Net", mouseMode_:\tapUp ),
 			{ {network.guiConnect}.defer }].asModel.midiMode_(\tap).automationActive_(false);
 
+		models[\cpu]= "".asModel;
+
 		// connect server stats & serverRunning to models
 		SimpleController(server)
 			.put(\counts,{
-				mixerGUI[\cpu].string_(server.peakCPU.asInt.clip(0,100).asString++"%");
+			//	mixerGUI[\cpu].string_(server.peakCPU.asInt.clip(0,100).asString++"%");
+
+			    models[\cpu].string_(server.peakCPU.asInt.clip(0,100).asString++"%");
+
 				//mixerGUI[\synths].string_( (server.numSynths-1).clip(0,inf) );
 
 			})

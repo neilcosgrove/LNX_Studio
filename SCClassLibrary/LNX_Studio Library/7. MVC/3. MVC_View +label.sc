@@ -231,6 +231,8 @@
 
 	}
 
+	numberRefresh{ if (view.notClosed && (numberGUI.notNil)) { numberGUI.refresh} }
+
 	// make the number box gui
 	createNumberGUI{
 		if (showNumberBox) {

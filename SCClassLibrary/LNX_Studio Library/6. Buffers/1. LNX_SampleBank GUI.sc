@@ -489,7 +489,7 @@
 	// adding a download from search in the metaeditor doesn't update when loaded
 	// use select same item when finishing downloads
 
-	openMetadataEditor{|window,i,search=false,webBrowser,argColors,x=0,interface|
+	openMetadataEditor{|window,i,search=false,webBrowser,argColors,x=0,interface,xx=0|
 
 		var buffer, models, otherModel, size, numChannels,  gui, colors, width, zoom, offset,
 			setVarsFunc, setModelsFunc, selectSampleFunc, lastPlayValue=false,
@@ -764,7 +764,7 @@
 			.color_(\numberDown,Color.white);
 
 		// zoom out
-		MVC_OnOffView(gui[\scrollView],Rect(472+30+x, 145+30, 20, 20),"-")
+		MVC_OnOffView(gui[\scrollView],Rect(472+30+x+xx, 145+30, 20, 20),"-")
 			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
@@ -782,7 +782,7 @@
 			};
 
 		// zoom in
-		MVC_OnOffView(gui[\scrollView],Rect(472+24+30+x, 145+30, 20, 20),"+")
+		MVC_OnOffView(gui[\scrollView],Rect(472+24+30+x+xx, 145+30, 20, 20),"+")
 			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
@@ -810,7 +810,7 @@
 			};
 
 		// zoom to fit
-		MVC_OnOffView(gui[\scrollView],Rect(550+x, 145+30, 20, 20),"=")
+		MVC_OnOffView(gui[\scrollView],Rect(550+x+xx, 145+30, 20, 20),"=")
 			.rounded_(true)
 			.color_(\on,Color(1,1,1,0.5))
 			.color_(\off,Color(1,1,1,0.5))
@@ -1354,37 +1354,77 @@
 					}
 					{126} { selectSampleFunc.value(i-1) }
 					{125} { selectSampleFunc.value(i+1) }
+			        { keyDownAction.value(me, char, modifiers, unicode, keycode, key) }
 			}
+		    .keyUpAction_{|me, char, modifiers, unicode, keycode, key|
+                keyUpAction.value(me, char, modifiers, unicode, keycode, key)
+		    }
 			.focusColor_(Color.clear)
 			.canFocus_(true)
 			.focus;
-
-
 
 		if (interface.isNil) {
 			if (window.isKindOf(MVC_CompositeView).not) { interface = \gsr } { interface = \sccode }
 		};
 
-		if (interface == \kHole ) { // interface in strange loop
+		// [k] hole (2019) £
+
+		if (interface == \kHole ) { // interface in strange loop £
 
 			gui[\upButton].free;
 			gui[\downButton].free;
 
-			gui[\name].bounds_(Rect(80,5+9, 445,18))
+			gui[\name].bounds_(Rect(1180,5+9, 445,18))
 			.mouseDownAction_{ gui[\name].color_(\string,Color.white) }
 			.mouseUpAction_{
 				gui[\name].color_(\string,Color.black);
 				this[i].convertedPath.postln.revealInFinder
 			};
-			gui[\path].bounds_(Rect(80,27+5,445,18))
+			gui[\path].bounds_(Rect(1180,27+5,445,18))
 			.mouseDownAction_{}
 			.mouseUpAction_{};
 
-			gui[\length] = ();
 			gui[\amp]    = ();
+			gui[\length] = ();
 			gui[\bpm]    = ();
 
-			gui[\offset].bounds_(Rect(168,175,328,20));
+			gui[\offset].bounds_(Rect(170,175,328,20));
+
+			// tap tempo
+			MVC_FlatButton(gui[\scrollView], Rect(582, 175, 46, 30), "Tap").downAction_{ tapTempo.tap }
+				.rounded_(true)
+				.font_(Font("Helvetica",12,true))
+				.color_(\up,Color(50/77,61/77,1))
+				.color_(\down,Color(1,1,1,0.88)/4);
+
+			// bpm
+			gui[\bpm]=MVC_NumberBox(gui[\scrollView],models[\bpm], Rect(636, 175, 46, 20))
+				.resoultion_(25)
+				.rounded_(true)
+				.visualRound_(0.01)
+			    .color_(\label,Color.black)
+				.color_(\focus,Color.grey(alpha:0))
+				.color_(\string,Color.white)
+				.color_(\typing,Color.yellow)
+				.color_(\background,Color(46/77,46/79,72/145)/1.5);
+
+			MVC_StaticText( gui[\scrollView], Rect(684,176,26,18), gui[\infoTheme])
+			.string_("bpm")
+			    .font_(Font("Helvetica",12));
+
+			// length
+			gui[\length]=MVC_NumberBox(gui[\scrollView],models[\length], Rect(714, 175, 46, 20))
+				.resoultion_(250)
+				.rounded_(true)
+				.visualRound_(1)
+				.color_(\focus,Color.grey(alpha:0))
+				.color_(\string,Color.white)
+				.color_(\typing,Color.black)
+				.color_(\background,Color(46/77,46/79,72/145)/1.5);
+
+			MVC_StaticText( gui[\scrollView], Rect(762,176,33,18), gui[\infoTheme])
+			.string_("beats")
+			    .font_(Font("Helvetica",12));
 
 			// follow
 			gui[\follow] = MVC_OnOffView(gui[\scrollView],Rect(111, 175, 50, 20),"Follow", follow)
@@ -1421,10 +1461,12 @@
 				gui[\numChannels].string_("-");
 			};
 
+
+
 		};
 
 
-		if (interface == \strangeLoop ) { // interface in strange loop
+		if (interface == \strangeLoop ) { // interface in strange loop £
 
 			// length
 			gui[\length]=MVC_NumberBox(gui[\scrollView],models[\length], Rect(602, 107, 42, 16))
