@@ -233,6 +233,116 @@ LNX_AppMenus {
 	// new sc1.8 style menus //////////////////////////////////////////////////////////
 
 	*menus{
+
+
+		if (LNX_Studio.is_in_a_khole) {
+
+
+		^[
+			// main menu
+			Menu(
+				Action("About [k] hole",       { LNX_SplashScreen.init(studio,true) }),
+				Action.separator,
+				Action("Preferences", { studio.preferences }),
+				Action.separator,
+				Action("Hide [k] hole", {
+					Platform.case(\osx,{
+						"osascript -e 'tell application \"Finder\"' -e 'set visible of process \"[k] hole\" to false' -e 'end tell'".unixCmd
+					});
+				}).shortcut_("Ctrl+H"),
+				Action.separator,
+				Action("Quit",        { studio.quit }).shortcut_("Ctrl+Q")
+			).title_("SuperCollider"),
+
+			// file menu
+			Menu(
+				Action("Open",				{ studio.loadDialog }).shortcut_("Ctrl+O"),
+				Action("Open Last Song",	{ studio.quickLoad }).shortcut_("Ctrl+Shift+O"),
+				Action.separator,
+				Action("Save",				{ studio.saveDialog }).shortcut_("Ctrl+S"),
+				Action("Save As...",		{ studio.saveAsDialog }).shortcut_("Ctrl+Shift+S"),
+				Action.separator,
+				Action("Close Song", 		{ studio.guiCloseStudio }).shortcut_("Ctrl+Shift+W"),
+			).title_("File"),
+
+			// edit menu
+			Menu(
+				Action("Stop Audio",			{CmdPeriod.run}).shortcut_("Ctrl+."),
+				Action("MIDI Panic",			{LNX_MIDIPatch.panic}).shortcut_("Ctrl+,"),
+				Action.separator,
+				Action("Add a new [k]hole",		{ studio.guiAddInst(LNX_KHole) }).shortcut_("Ctrl+N"),
+				Action("Copy Instrument",		{ studio.guiCopy }).shortcut_("Ctrl+Shift+C"),
+				Action("Paste Instrument",		{ studio.guiPaste }).shortcut_("Ctrl+Shift+V"),
+				Action("Duplicate Instrument",	{ studio.guiDuplicate }).shortcut_("Ctrl+Shift+D"),
+				Action.separator,
+				Action("Delete Instrument",		{ studio.guiDeleteInst }).shortcut_("Ctrl+Shift+Backspace"),
+				Action.separator,
+				Action("All MIDI Controls",		{ studio.editMIDIControl }).shortcut_("Ctrl+Shift+M"),
+
+			).title_("Edit"),
+
+
+			//  dev menu
+			Menu(
+				Action("Code Window",{TextView().enterInterpretsSelection_(true).front }).shortcut_("Ctrl+1"),
+				Action("Recompile Class Libray",{thisProcess.platform.recompile}).shortcut_("Ctrl+K"),
+				Action.separator,
+				Action("Index all help files",{  SCDoc.indexAllDocuments }),
+				Action("Render all help files",{ SCDoc.renderAll }),
+				Action.separator,
+				Action("MVC Verbose",{ MVC_View.verbose_(MVC_View.verbose.not) }),
+				Action("MVC Show Background",{
+					MVC_View.showLabelBackground_(MVC_View.showLabelBackground.not)
+				}).shortcut_("Ctrl+B"),
+				Action("MVC Edit / Resize",{
+					if (MVC_View.editMode==false) {
+						MVC_View.editResize=false;
+						MVC_View.editMode_(true);
+						"Edit mode: On".postln;
+						"MVC_View.grid_(1)".postln;
+					}{
+						if (MVC_View.editResize==false) {
+							MVC_View.editResize=true;
+							"Edit mode: Resize".postln;
+						}{
+							MVC_View.editMode_(false);
+							"Edit mode: Off".postln;
+						};
+					};
+				}).shortcut_("Ctrl+R"),
+				Action("ColorPicker",{ ColorPicker() }),
+				Action.separator,
+				Action("Server Window",{ studio.server.makeWindow }),
+				Action("Open LNX_Studio",{ ~oldMixerWindow.open }),
+
+			).title_("Dev"),
+
+			//  windows menu
+			Menu(
+				Action("Minimise",			{ MVC_Window.frontWindow.minimize }).shortcut_("Ctrl+M"),
+				//Action("Arrange",			{}),
+				//Action("Close Window",		{ MVC_Window.frontWindow.guiClose }),
+				//Action("Close All Window",	{ studio.insts.do(_.closeWindow) }),
+			).title_("Windows"),
+
+			//  help menu
+			Menu(
+				Action("Help with [k] hole",		{studio.openHelp}).shortcut_("Ctrl+D"),
+				Action("Help with Supercollider",	{Help.help}),
+			).title_("Help"),
+
+		];
+
+
+
+		}{
+
+
+
+
+
+
+
 		^[
 			// main menu
 			Menu(
@@ -368,6 +478,12 @@ LNX_AppMenus {
 			).title_("Help"),
 
 		];
+
+
+
+		}
+
+
 	}
 
 	// my hack stuff

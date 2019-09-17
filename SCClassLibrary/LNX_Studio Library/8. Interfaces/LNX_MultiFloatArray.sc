@@ -356,12 +356,25 @@ Koscillator{
 
 LNX_MultiDoubleArray{
 
-	var <size, <minSize, <maxSize, <controlSpec, <arrays, <array, scratchPad;
+	var <size, <minSize, <maxSize, <controlSpec, <arrays, <array;
 
 	// make me a new one
 	*new {|size=64, minSize=3, maxSize=512, controlSpec=\unipolar|
 		^super.new.init(size.clip(minSize,maxSize),minSize,maxSize,controlSpec)
 	}
+
+	// used in save & load maybe?
+	arrayUnmapped{
+		var newArray = DoubleArray.newClear(size);
+		array.do{|val,i| newArray[i] = controlSpec.unmap(val) };
+		^newArray
+	}
+
+	// used in save & load
+	arrayUnmapped_{|newArray|
+		newArray.do{|val,i| array[i] = controlSpec.map(val) };
+	}
+
 
 	// init and make the 1st array with size size
 	init{|argSize,argMinSize,argMaxSize,argControlSpec|

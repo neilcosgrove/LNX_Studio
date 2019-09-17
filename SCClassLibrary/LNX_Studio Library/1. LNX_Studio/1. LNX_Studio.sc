@@ -62,9 +62,14 @@
 // enjoy, love neil x (lnx)
 //
 
+// if (LNX_Studio.is_in_a_khole) {};
+// LNX_Studio.is_in_a_khole.if("[k] hole"
+
 LNX_Studio {
 
 	//// class ////////////////////////////////////////////////////
+
+	classvar    <is_in_a_khole = true;
 
 	classvar	<>versionMajor=2,	<>versionMinor=0,	<version,
 				<internetVersion,	<fileLoadVersion=3;
@@ -150,7 +155,7 @@ LNX_Studio {
 		this.createLibraryWidgets;   // add the library widgets
 		this.autoSizeGUI;			 // autosize to number of users. (to add widgets & remove)
 		mixerWindow.create;          // now make the window
-		mixerWindow.hide;
+		if (LNX_Studio.is_in_a_khole) {mixerWindow.hide};
 
 		LNX_SplashScreen.init(this); // start splash screen
 		CmdPeriod.add(this);		 // add this object to CmdPeriod
@@ -159,11 +164,13 @@ LNX_Studio {
 	}
 
 	startKHole{
-		if (kHoleRunning.not) {
-			this.guiAddInst(LNX_KHole);
-			kHoleRunning = true;
-			~oldMixerWindow = mixerWindow;
-			mixerWindow = insts[0].window;
+		if (LNX_Studio.is_in_a_khole) {
+			if (kHoleRunning.not) {
+				this.guiAddInst(LNX_KHole);
+				kHoleRunning = true;
+				~oldMixerWindow = mixerWindow;
+				mixerWindow = insts[0].window;
+			};
 		};
 	}
 
@@ -197,13 +204,17 @@ LNX_Studio {
 		Class.initClassTree(LNX_File);
 		Class.initClassTree(LNX_AudioDevices);
 		Class.initClassTree(LNX_MIDIPatch);
+		studios = [];
+
 		// get the latest version number online
+
+		if (LNX_Studio.is_in_a_khole) {^this};
+
 		Platform.getURL(
 			"http://lnxstudio.sourceforge.net/lnx_version.scd",
 			Platform.lnxResourceDir+/+"lnx_version",
 			{|status|
 				internetVersion = (Platform.lnxResourceDir+/+"lnx_version").loadList;
-
 				if (internetVersion.notNil) {
 					if (internetVersion.size>0) {
 						internetVersion = internetVersion[0].asFloat;
@@ -215,9 +226,6 @@ LNX_Studio {
 				};
 			}
 		);
-
-		studios = [];
-
 	}
 
 	// create the lists of instruments available
@@ -1713,29 +1721,22 @@ LNX_Studio {
 		if (insts.size<1) {this.updateOSX}; // update the studio window offset
 		l=l.reverse;
 		header=l.popS;
-
 		loadVersion=header.version;
-
 		if (this.versionAtLeast(loadVersion.asInt,loadVersion.frac.asString.drop(2).asInt)) {
-
 			if (((header.documentType)=="SC Studio Doc")&&(isLoading.not)) {
 				// house keeping ahead
 				isLoading=true;
 				network.stopTimeOut; // stop room time out
 				this.stop;	// stop transport
 				this.kill; 	// this will stop all note on events
-
 				// now wait until all gui calls, seqs and messages sent before closing
-
 				{
 					this.clear;	// clear also does stopDSP on all insts
 				}.defer(this.actualLatency+0.05);
-
 				{
 					// this.clearShowWindowsOptions; // show all instrument windows
 					// close midi
 					if (LNX_MIDIControl.window.notNil) {LNX_MIDIControl.window.close};
-
 					this.dialog1("Loading...");
 					loadedAction={
 						{
@@ -1747,18 +1748,13 @@ LNX_Studio {
 							this.dialog1("Studio"+version);
 							this.dialog2("April 2016 - l n x");
 							isLoading=false;
-																			// maybe move this here?
+        					// maybe move this here?
 							// insts.do(_.postSongLoad); // after all insts added.
-
 							MVC_Automation.updateDurationAndGUI;
-
 						}.defer(1);
-
 					};
-
 					// this is where i used to change audio device if needed
 					if (loadVersion>1.1) { l.popS; l.popS }{ l.popS };
-
 					if (loadVersion>1.0) {
 						extClock=(l.popS=="true").if(true,false);
 						models[\extClock].value_(extClock.binaryValue);
@@ -1778,14 +1774,11 @@ LNX_Studio {
 					title=l.popS;
 					noInst=l.popI;
 					this.noInternalBuses_(l.popI);
-
 					// use subversion to add bar length to save
 					if (header.subVersion>=1) { MVC_Automation.barLength_(l.popI)};
-
 					l.popNS(noInst); // pop inst names (not for use yet.
 					midiLoadVersion=l.popS.version;
-					midiControl.putLoadList(l.popEND(
-						"*** End MIDI Control Doc ***"),midiLoadVersion);
+					midiControl.putLoadList(l.popEND("*** End MIDI Control Doc ***"),midiLoadVersion);
 					if (noInst==0) {
 						loadedAction=nil;
 						this.dialog1("Finished loading.",Color.white);
@@ -1802,7 +1795,6 @@ LNX_Studio {
 							LNX_POP.putLoadList(l.popEND("***EOD of POP Doc***"));
 						};
 					};
-
 					// leave inst windows open or close
 					if (showNone) {
 						{ models[\showNone].doValueAction_(1,nil,false) }.defer(0.1);
@@ -1811,16 +1803,13 @@ LNX_Studio {
 							{ models[\show1].doValueAction_(1,nil,false) }.defer(0.1);
 						}
 					};
-
 				}.defer(this.actualLatency+0.1);
 				// if you change this defer value update value in netSyncCollaboration
-
 			};
 
 		}{
 			this.addTextToDialog("I can't load LNX"+loadVersion+"songs.",true,true);
 		}
-
 	}
 
 	// recursiveLoad is used to load one instrument at a time so the server does get

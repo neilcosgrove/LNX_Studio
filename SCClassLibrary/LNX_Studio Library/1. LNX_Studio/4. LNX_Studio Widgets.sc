@@ -1395,22 +1395,27 @@ m.action_{|...a| a.postln}
 	// gui window to quit LNX ///////////////////////////////////////////////////////////
 
 	quit{
-		var gui = (),
-		colors = (
+		var gui = IdentityDictionary[];
+		var colors = (
 			background: 	Color(59/77,59/77,59/77),
 			border2: 		Color(6/11,42/83,29/65),
 			border1: 		Color(3/77,1/103,0,65/77),
 			menuBackground:	Color(1,1,0.9)
 		) ++ (colors?());
 
-		gui[\window] = MVC_ModalWindow(mixerWindow, (190)@(132), colors);
+		if (mixerWindow.isClosed) {
+			this.doQuit;
+			^this
+		};
+
+		gui[\window] = MVC_ModalWindow(mixerWindow, (190)@(132), colors).postln;
 		gui[\scrollView] = gui[\window].scrollView;
 
 		MVC_StaticText( gui[\scrollView], Rect(10,5,190,18))
 			.shadow_(false)
 			.color_(\string,Color.black)
 			.font_(Font("Helvetica", 13,true))
-			.string_("Quit LNX_Studio?");
+		.string_(LNX_Studio.is_in_a_khole.if("Quit [k] hole?","Quit LNX_Studio?"));
 
 		MVC_StaticText( gui[\scrollView], Rect(10,30,190,18*2))
 			.shadow_(false)

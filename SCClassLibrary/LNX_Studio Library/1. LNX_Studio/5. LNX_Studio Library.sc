@@ -341,6 +341,7 @@
 	// comment this neil!!
 	checkForLibraryUpdates{
 		var internetLibraryIndex;
+		if (LNX_Studio.is_in_a_khole) {^this};
 		if (LNX_Mode.isSafe.not) {
 			{
 				(String.scDir+/+"internet_library_index").removeFile(false,false,true);
@@ -389,6 +390,7 @@
 	// comment this neil!!
 	downLoadUpdates{|internetLibraryIndex|
 		var folder = String.scDir++"/default library".absolutePath;
+
 		internetLibraryIndex.collect{|file|
 			if ((folder+/+file).pathExists(false).not) {
 				this.dialog1("Downloading... ",Color.white);
@@ -402,6 +404,7 @@
 				(0.25/4).wait;
 			};
 		};
+
 		this.dialog1("Installing... ",Color.white);
 		this.dialog2("",Color.white);
 		1.wait;

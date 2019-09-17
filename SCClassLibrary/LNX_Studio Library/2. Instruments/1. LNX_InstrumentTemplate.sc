@@ -884,43 +884,32 @@ LNX_InstrumentTemplate {
 			lastTemplateLoadVersion = templateLoadVersion;
 
 			l.pop; // ingore object type, was used for loading inst presets but not any more
-
 			this.name_(l.popS,false); // false = don't send over network
-
 			noP   = l.popI;	// pop number of elements in p
 			noPre = l.popI;	// pop number of presets
-
 			// am i ever going to need this?
 			this.clear; // clear presets, midi controls and call .iClear
-
 			tempP = l.popNF(noP); // read tempP now, for use after midi loaded
-
 			// now put in the presets
 			presetMemory = 0!noPre;
 			noPre.do({|i|
 				var temp;
 				temp = l.popNF(noP);
 				temp = (temp++defaults[(temp.size)..(defaults.size)])[0..(defaults.size-1)];
-
 				// extend older versions with deault P and clip any extra
 				presetMemory[i] = temp;
 			});
 			presetNames = l.popNS(noPre);
-
 			// put in midi
 			midi.putLoadList(l.popNI(4));
-
 			// extend older versions with deault P and clip any extra
 			tempP = (tempP++defaults[(tempP.size)..(defaults.size)])[0..(defaults.size-1)];
-
 			// now use tempP
 			// pop & adjust in preLoadP if needed, used to change p in LNX_BumNote2:preLoadP only
 			tempP = this.preLoadP(tempP,loadVersion);
-
 			// and midi controls but do later...
 			midiLoadVersion = l.pop.version;
 			midiContolList = l.popEND("*** End MIDI Control Doc ***");
-
 			// the mixer eq
 			if (this.hasEQ) {
 				if (lastTemplateLoadVersion>=1.3) {
@@ -929,33 +918,22 @@ LNX_InstrumentTemplate {
 					eq.noSaveList(noPre);
 				}
 			};
-
 			l = this.iPutLoadList(l,noPre,loadVersion,templateLoadVersion); // for instance
-
 			this.onOffModel.valueAction_(tempP[1],nil,false,false);
 			this.soloModel.valueAction_(tempP[0],nil,false,false);
-
 			this.updateGUI(tempP); // before p=tempP, this calls the models with lazyValueAction
-
 			// update preset gui
 			if (presetView.notNil) {this.updatePresetNames; presetView.refresh};
-
 			p = tempP; // this might not be needed now, but is safe
-
 			this.iPostLoad(noPre,loadVersion,templateLoadVersion);
-
 			if (updateDSP) {this.updateDSP};  // will this ever happen now? i don't know
-
 			// now we add midi controls
 			midiControl.putLoadList(midiContolList,midiLoadVersion); // connect at end
-
 			// if old use vol as peak
 			if (lastTemplateLoadVersion<1.2) { this.setAsPeakLevel(false) };
-
 			// finish
 			isLoading=false;
 			loadedAction.value(this);
-
 		};
 	}
 

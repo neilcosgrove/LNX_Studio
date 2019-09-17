@@ -15,9 +15,11 @@ MVC_ModalWindow{
 
 
 	*new{|parent,pointSize,colors| ^super.new.init(parent,pointSize,colors) }
+
 	init{|argParent,argPointSize,colors|
 		// var bounds;
 		parentViews = [this];
+
 		if (argParent.isKindOf(MVC_Window)) {
 			parent = argParent.view;
 			mvc_parentWindow = argParent;
@@ -25,6 +27,7 @@ MVC_ModalWindow{
 			parent = argParent;
 			mvc_parentWindow = nil;
 		};
+
 		pointSize=argPointSize;
 		colors = (
 			background:		Color(59/77,59/77,59/77),
@@ -80,12 +83,12 @@ ModalSheet : Window {
 
 	*new {|parent, size|
 		var b, pb;
-		pb = parent.bounds;
+		pb = {parent.bounds}.try ?? {Window.screenBounds.insetBy(100)};
 		b = Rect(
 			pb.left + ((pb.width-size.x)/2),
 			pb.bottom - size.y,
 			size.x,size.y);
-		^super.new(parent.name, b, border: false);
+		^super.new(parent.name ? "", b, border: false);
 	}
 
 }

@@ -11,6 +11,8 @@ LNX_SplashScreen{
 
 		gui=IdentityDictionary[];
 
+		if (LNX_Studio.is_in_a_khole) {^this};
+
 		{
 			if (("SplashScreen".loadPref.isNil || forceOpen) and: {(window.isNil) or: {window.isClosed}} ) {
 

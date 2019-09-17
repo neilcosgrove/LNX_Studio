@@ -739,6 +739,13 @@ gives min, max, averages and total
 		^l
 	}
 
+	popNDF{|n|
+		var l=DoubleArray.newClear(n);
+		n.do{|i| l.put(i,this.pop.asFloat) };
+		^l
+	}
+
+
 	popNS{|n|
 		var l=Array.newClear(n);
 		n.do{|i| l.put(i,this.pop.asString) };
