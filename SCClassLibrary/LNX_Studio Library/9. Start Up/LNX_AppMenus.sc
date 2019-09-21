@@ -281,7 +281,7 @@ LNX_AppMenus {
 
 			).title_("Edit"),
 
-
+/*
 			//  dev menu
 			Menu(
 				Action("Code Window",{TextView().enterInterpretsSelection_(true).front }).shortcut_("Ctrl+1"),
@@ -316,10 +316,11 @@ LNX_AppMenus {
 				Action("Open LNX_Studio",{ ~oldMixerWindow.open }),
 
 			).title_("Dev"),
-
+*/
 			//  windows menu
 			Menu(
 				Action("Minimise",			{ MVC_Window.frontWindow.minimize }).shortcut_("Ctrl+M"),
+				Action("Open LNX_Studio",{ ~oldMixerWindow.open }),
 				//Action("Arrange",			{}),
 				//Action("Close Window",		{ MVC_Window.frontWindow.guiClose }),
 				//Action("Close All Window",	{ studio.insts.do(_.closeWindow) }),

@@ -469,7 +469,8 @@ MVC_View {
 		this.viewFree;
 		if (model.notNil) {model.removeView(this)};
 		model=parent=window=onClose=action=actions=string=strings=items=
-		colors=labelGUI=font=controlSpec=label=labelFont=resizeAction=
+		//colors=
+		labelGUI=font=controlSpec=label=labelFont=resizeAction=
 		numberFunc=numberString=numberFont=boundsAction=nil;
 
 	}
