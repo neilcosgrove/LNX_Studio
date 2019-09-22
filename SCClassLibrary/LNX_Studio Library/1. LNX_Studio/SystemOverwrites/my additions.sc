@@ -245,7 +245,7 @@
 			} {
 				path = thisProcess.platform.recordingsDir
 				+/+
-				"LNX "
+				(LNX_Studio.is_in_a_khole.if("[k]hole ","LNX "))
 				++ (Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2)) ++ "." ++ recHeaderFormat;
 			};
 		};
