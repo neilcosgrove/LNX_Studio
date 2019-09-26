@@ -102,7 +102,7 @@
 						if (batchOn.not) {
 							path = server.prepareForRecord(
 								"~/Desktop".standardizePath +/+
-								(LNX_Studio.is_in_a_khole.if("[k]hole","LNX")) +
+								(LNX_Studio.is_in_a_khole.if("kHole","LNX")) +
 								(Date.getDate.format("%Y-%m-%d %R:%S").replace(":",".").drop(2)) ++
 								"." ++ (server.recHeaderFormat)
 							);
