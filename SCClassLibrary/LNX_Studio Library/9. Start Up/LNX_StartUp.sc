@@ -88,8 +88,8 @@ LNX_StartUp {
 		LNX_AppMenus.studio_(studio); // so menus can access studio
 		// set the recording directory
 		thisProcess.platform.recordingsDir = "~/Desktop".standardizePath;
-		//SCDoc.renderAll;
-		SCDoc.indexAllDocuments;
+//		SCDoc.renderAll;
+//		SCDoc.indexAllDocuments;
 		this.postStartUp;
 
 		LNX_AppMenus.initMyHack(studio);

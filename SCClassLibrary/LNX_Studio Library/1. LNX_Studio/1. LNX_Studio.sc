@@ -424,7 +424,6 @@ LNX_Studio {
 
 		// all purpose out for studio.
 		// nb need to think about >2 channels out because this wont work
-
 		SynthDef("LNX_LimitOut", {|channel=0,preAmp=0|
 			var out;
 			out = In.ar(channel, 2);
@@ -437,18 +436,12 @@ LNX_Studio {
 		}).send(server);
 
 		// SynthDef out instOut, does levels, pan & send
-
 		SynthDef("LNX_InstOut", {|inChannel=0, outChannel=0, id=0, amp=1, pan=0, sendAmp=0, sendChannel=0|
-			var leftPan, rightPan;
 			var out  = In.ar(inChannel, 2);    // signal in
-			leftPan  = (pan*2-1).clip(-1,1);   // left pos
-			rightPan = (pan*2+1).clip(-1,1);   // right pos
-			out      = LinPan2.ar(out[0], leftPan) + LinPan2.ar(out[1], rightPan); // pan
-			out      = out * amp;                                 // apply amp
+			out = Balance2.ar(out[0],out[1], pan, amp);
 			SendPeakRMS.kr(out, 20, 1.5, "/instPeakOut", id);     // levels meter
-			Out.ar(outChannel,out);                               // now send out
-			out = out*sendAmp;                                    // apply send amp
-			Out.ar(sendChannel,out);                          	  // and send to fxs
+			Out.ar(outChannel, out);                              // now send out
+			Out.ar(sendChannel,out*sendAmp);                      // and send to fxs
 		}).send(server);
 
 	}
@@ -506,6 +499,10 @@ LNX_Studio {
 		OSCFunc({|msg|
 			if (insts[msg[2]].notNil) { insts[msg[2]].sRecLvl_(msg[3],msg[5]) }
 		}, '/sRecLvl');
+
+		OSCFunc({|msg|
+			if (insts[msg[2]].notNil) { insts[msg[2]].kHoleLevels_(msg[3..]) }
+		}, '/kHoleLevels');
 
 	}
 

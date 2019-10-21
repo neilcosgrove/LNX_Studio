@@ -166,6 +166,11 @@
 		^warp.map(value.clip(0.0, 1.0)).round(step).filterNaN;
 	}
 
+	mapNoRound{ arg value;
+		// maps a value from [0..1] to spec range
+		^warp.map(value.clip(0.0, 1.0)).filterNaN;
+	}
+
 	unmap { arg value;
 		// maps a value from spec range to [0..1]
 		^warp.unmap(value.round(step).clip(clipLo, clipHi)).filterNaN;

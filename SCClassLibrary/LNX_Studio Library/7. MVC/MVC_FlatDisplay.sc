@@ -13,7 +13,7 @@ MVC_FlatDisplay : MVC_View {
 
 	var <>right=false, <>direction=\vertical, <lastDrawValue;
 
-	var <>invert=false;
+	var <>invert=false, <>upsideDown=false;
 
 	initView{
 		colors=colors++(
@@ -93,7 +93,12 @@ MVC_FlatDisplay : MVC_View {
 					};
 
 					if (direction===\vertical) {
-						hv = ((h-4)*(1-val)+2).ceil;
+						if (upsideDown){
+							hv = ((h-4)*(val)+2).ceil;
+						}{
+							hv = ((h-4)*(1-val)+2).ceil;
+						};
+
 						if (invert) {
 							r2.set( 2, 2, w-4, hv-2);
 							r3.set( 1, 1, w-2, hv);
@@ -101,6 +106,8 @@ MVC_FlatDisplay : MVC_View {
 							r2.set( 2, hv, w-4, h-hv-2);
 							r3.set( 1, hv-1, w-2, h-hv);
 						};
+
+
 					}{
 						hv = ((w-4)*(val)+2).ceil;
 						if (invert) {

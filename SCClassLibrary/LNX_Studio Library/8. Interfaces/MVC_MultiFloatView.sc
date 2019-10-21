@@ -32,6 +32,8 @@ o=f.size; { inf.do{|i| f.resizeLin_(i.fold(3,128),o); v.refresh; 0.025.wait } }.
 MVC_MultiFloatView : MVC_View {
 
 	var <multiDoubleArray, size=1, sw=1, sw2=1, sh=1, lx, ly, <>multiFloatAction, <>drawMode=\rect;
+	var <>guiFeedbackAction, <>feedbackText, <graphView;
+	var <>options, <>lowMid, <>midHigh;
 
 	*initClass{}
 
@@ -48,7 +50,8 @@ MVC_MultiFloatView : MVC_View {
 
 	// make the view as line
 	createView{
-		view=UserView.new(window,rect)
+
+		graphView=UserView.new(window,rect)
 		.drawFunc={|me|
 			if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 			if (multiDoubleArray.notNil) {
@@ -76,6 +79,20 @@ MVC_MultiFloatView : MVC_View {
 					colors[\background].set;
 					Pen.fillRect(Rect(0,0,w,h));
 					colors[\graph].set;
+
+					Pen.width_(8);
+					size.do{|i|
+						var value = multiDoubleArray.unmapNoClipAt(i);
+						if ((value>1)||(value<0)) { value = value.wrap(0,1) }; // wrap for offset
+						if (i==0) {
+							Pen.moveTo(((i*sw+1) @ (h- (value*(h-2)))));
+						}{
+							Pen.lineTo(((i*sw+1) @ (h- (value*(h-2)))));
+						};
+					};
+					Pen.stroke;
+
+					/*
 					Pen.moveTo((1@(h-1)));
 					size.do{|i|
 						var value = multiDoubleArray.unmapNoClipAt(i);
@@ -85,9 +102,77 @@ MVC_MultiFloatView : MVC_View {
 					Pen.lineTo(((w-1)@(h-1)));
 					Pen.lineTo((1@(h-1)));
 					Pen.fillStroke;
+					*/
+
 				};
-			}
-		}
+				if (feedbackText.notNil) {
+					Pen.smoothing_(true);
+					Pen.font_(Font("Helvetica",14));
+					Pen.fillColor_(Color(1,1,1));
+					Pen.stringLeftJustIn(feedbackText,Rect(5,3,400,20));
+				};
+			};
+		};
+
+		view=UserView.new(window,rect)
+		.drawFunc={|me|
+			// start scale
+			if (options.notNil) {
+				var controlSpec = multiDoubleArray.controlSpec;
+				var min  = options.minFreq;
+				var max  = options.maxFreq;
+				var hAxis = ( ((1..9)*10)++((1..9)*100)++((1..9)*1000)++((1..2)*10000)).collect{|freq|
+					((w-2) * log(freq/min) / log(max/min) + 1).asInt };
+				var hAxisShaeds = [1]++((2..10)/10)++((2..10)/10)++((2..10)/10)++((2..2)/10);
+				var hAxisT = [10, 100, 1000, 10000].collect{|freq| ((w-2) * log(freq/min) / log(max/min) + 1).asInt };
+				var hText = ["10 Hz", "100 Hz", "1 kHz", "10 kHz"];
+				var vAxis = (1..4).collect{|n|
+					n=n/4;
+					[ (h -((h-2) * n)).asInt - 1, controlSpec.mapNoRound(n).round(0.01) ++ (controlSpec.units) ];
+				};
+
+				sw   = ((w-2)/size).clip(1,inf);
+
+				Pen.fillColor_(Color(1,1,1,0.5));
+
+				if (lowMid.notNil) { Pen.fillOval( Rect.aboutPoint(((sw*lowMid+1)@(h/2+0.5)),3,3) ) };
+				if (midHigh.notNil) { Pen.fillOval( Rect.aboutPoint(((sw*midHigh+1)@(h/2+0.5)),3,3) ) };
+
+				Pen.smoothing_(false);
+				hAxis.do{|x,n|
+					Color(1,1,1,hAxisShaeds[n]/3).set;
+					if (hAxisShaeds[n]==1) {
+						Pen.lineDash_(FloatArray[w,0]);
+					}{
+						Pen.lineDash_(FloatArray[4,2]);
+					};
+					Pen.moveTo(x@0);
+					Pen.lineTo(x@h);
+					Pen.stroke;
+				};
+				Pen.lineDash_(FloatArray[w,0]);
+				Color(1,1,1,0.2).set;
+				vAxis.do{|list|
+					var y = list[0];
+					Pen.moveTo(0@y);
+					Pen.lineTo(w@y);
+					Pen.stroke;
+				};
+				Color(1,1,1).set;
+				Pen.smoothing_(true);
+				Pen.font_(Font("Helvetica",13));
+				hAxisT.do{|x,n|
+					Pen.stringLeftJustIn(hText[n],Rect(x+2,h-15,80,15));
+				};
+				vAxis.do{|list|
+					var y = list[0];
+					var string = list[1];
+					Pen.stringRightJustIn(string,Rect(w-182,y+2,180,15));
+				};
+			};
+			// end scale
+		};
+
 	}
 
 	multiDoubleArray_{|array|
@@ -101,6 +186,7 @@ MVC_MultiFloatView : MVC_View {
 			size = multiDoubleArray.size;
 			lx = ((x-1)/sw).asInt.clip(0,size-1);
 			ly = 1-(((y-1)/(h-2)).clip(0,1));
+			guiFeedbackAction.value(this,lx,ly); // before refresh
 			multiDoubleArray.putMap(lx, ly);
 			multiFloatAction.value(this,multiDoubleArray);
 			this.refresh;
@@ -117,6 +203,7 @@ MVC_MultiFloatView : MVC_View {
 			var xx=x/w, yy=y/h;
 			var nx = ((x-1)/sw).asInt.clip(0,size-1);
 			var ny = 1-(((y-1)/(h-2)).clip(0,1));
+			guiFeedbackAction.value(this,nx,ny); // before refresh
 			if ((nx-lx).abs==0) {
 				multiDoubleArray.putMap(nx, ny);
 			}{
@@ -139,6 +226,41 @@ MVC_MultiFloatView : MVC_View {
 			if (editMode) {
 				this.moveBy(x-startX,y-startY,buttonPressed)
 			}
+		};
+
+		view.mouseUpAction_{
+			feedbackText = nil;
+			this.refresh;
+		};
+
+	}
+
+	refresh{
+		if (view.notClosed) {
+			// drop of if tab is hiddden
+			//if ( (parent.isKindOf(MVC_TabView))and:{parent.isHidden} ) { ^this };
+			parentViews.do{|view| if (view.isVisible.not) { ^this }};
+			// else
+			graphView.refresh;
+		}
+	}
+
+	refreshScale{
+		if (view.notClosed) {
+			view.refresh;
+		}
+	}
+
+	bounds_{|argRect|
+		rect=argRect;
+		l=rect.left;
+		t=rect.top;
+		w=rect.width;
+		h=rect.height;
+		if (view.notClosed) {
+			view.bounds_(rect);
+			graphView.bounds_(rect);
+
 		};
 	}
 
