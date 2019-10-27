@@ -30,6 +30,13 @@ m.plot;
 
 */
 
+/*
+Lets start here thinking about syncing
+
+
+
+*/
+
 Kmodulator{
 
 	// wave = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
@@ -63,7 +70,7 @@ Kmodulator{
 		time = time + (tick * freq);
 		if (oneShot) {
 			if (time>1)   { time =  1.0 };
-			//if (time< -1) { time = -1.0 };
+			//if (time< -1) { time = -1.0 }; // time only ever increases
 		};
 	}
 

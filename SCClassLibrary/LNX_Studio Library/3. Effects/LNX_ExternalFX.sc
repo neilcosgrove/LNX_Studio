@@ -123,7 +123,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			// 12. sendAmp
 			[-inf,\db6,midiControl, 12, "Send amp", (label_:"Send"),
 				{|me,val,latency,send,toggle|
-					this.setSynthArgVP(12,val,\sendAmp,val.dbamp,latency,send);
+					this.setSynthArgVP(12,val,\sendAmp,val,latency,send);
 				}],
 
 			// 13.low pass
@@ -293,7 +293,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 				[out2In[0],out2In[1]],(out2In[0]+out2In[1]).dup, out2In[0].dup, out2In[1].dup]);
 			out2In = SelectX.ar(on.lag,[in,out2In]);					// on/Off (bypass)
 			Out.ar(outputChannels, out2In * (outAmp.dbamp));			// to LNX output bus
-			Out.ar(sendChannels  , out2In * sendAmp.dbamp);				// and LNX sendOut bus
+			Out.ar(sendChannels  , out2In * (sendAmp.dbamp));				// and LNX sendOut bus
 
 		}).send(s);
 
