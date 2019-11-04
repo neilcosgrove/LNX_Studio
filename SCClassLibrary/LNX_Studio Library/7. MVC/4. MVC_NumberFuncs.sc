@@ -7,10 +7,20 @@ MVC_NumberFunc{
 
 	*initClass{
 
+		var kHoleVel =  (
+			[ 1, 2, 4, 6, 8, 12, 16, 18, 24, 32, 48, 64, 96, 128].neg ++ inf ++
+			([ 1, 2, 4, 6, 8, 12, 16, 18, 24, 32, 48, 64, 96, 128].reverse)
+		).collect(_.asString);
+
+		var kHoleFreq = [ 128, 96, 64, 48, 32, 24, 18, 16, 12, 8, 6, 4, 3, 2 ].collect{|i| "1/"++i} ++ [ "2/3", "3/4"] ++ [ 1, 2, 4, 6, 8, 12, 16, 18, 24, 32].collect(_.asString);
+
 		Class.initClassTree(Spec);
 		Class.initClassTree(ControlSpec);
 
 		// any extra specs i want
+
+		Spec.add(\kHoleVel,     ControlSpec(0, kHoleVel.size-1 , 'linear', 1, 14) );
+		Spec.add(\kHoleFreq,    ControlSpec(0, kHoleFreq.size-1, 'linear', 1, 16) );
 
 		Spec.add(\sync,         ControlSpec(-1, 1, 'linear', 0.001, 0, " s") );
 		Spec.add(\syncTime,     ControlSpec(0, \sync.asSpec.minval.abs, 'linear', 0.001, 0, " s") );
@@ -62,6 +72,8 @@ MVC_NumberFunc{
 		// asFormatedString is prob quite slow
 
 		funcs=(
+			'kHoleVel'      : {|n| kHoleVel.at(n.asInt) },
+			'kHoleFreq'     : {|n| kHoleFreq.at(n.asInt) },
 
 			//'nil'			: {|n| n }, // do i need to return nil for some reason?
 			'int'  			: {|n| n.asInt },
@@ -160,6 +172,10 @@ MVC_NumberFunc{
 			'jp9': {|n| #["-ive","+ive"][n]},
 			'jp10': {|n| #["Off","Env-1","Env-2","1+2"][n]},
 			'jp11': {|n| #["Poly","?","Mono","Unison"][n]},
+
+
+
+
 		)
 	}
 

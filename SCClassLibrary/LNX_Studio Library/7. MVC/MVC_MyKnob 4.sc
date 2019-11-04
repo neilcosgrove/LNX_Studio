@@ -172,7 +172,8 @@ MVC_MyKnob4 : MVC_View {
 			controlSpec=spec.asSpec;
 			value=controlSpec.constrain(value);
 			if (view.notClosed) {
-				view.step_(controlSpec.step/(controlSpec.clipHi-(controlSpec.clipLo)));
+				//var step = (controlSpec.step/(controlSpec.clipHi-(controlSpec.clipLo)));
+				//view.step_( (step==0).if(nil,step) );
 				this.refreshValue;
 				this.refresh;
 			};

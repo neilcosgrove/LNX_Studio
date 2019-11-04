@@ -40,7 +40,7 @@ Lets start here thinking about syncing
 Kmodulator{
 
 	// wave = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
-	var  <wave=\sine, <>freq=1, <>phase=0, <>time=0, <>tick=0.01, <value=0, <>oneShot=false;
+	var  <wave=\sine, <>freq=1, <>phase=0, <>time=0, <>tick=0.01, <value=0, <>oneShot=false, <>sync=true;
 
 	// make me a new one
 	*new {|wave=\sine, freq=1, phase=0, oneShot=false, time=0, tick=0.01|
@@ -65,13 +65,31 @@ Kmodulator{
 		if (wave == \tri) { wave = \triangle };
 	}
 
+	// reset the clock + make value
+	reset{
+		time = 0;
+		this.generateValue;
+	}
+
 	// 1 tick of the clock
-	tickClock{
-		time = time + (tick * freq);
+	tickClock{|beat|
+		if (sync) {
+			time = beat * (1/8);
+		}{
+			time = time + (tick * freq);
+		};
 		if (oneShot) {
 			if (time>1)   { time =  1.0 };
 			//if (time< -1) { time = -1.0 }; // time only ever increases
 		};
+	}
+
+	// next tick of clock + make next value
+	nextTick{|argTick, beat|
+		tick = argTick ? tick;
+		this.tickClock(beat);
+		this.generateValue;
+		^value
 	}
 
 	// make the value
@@ -122,20 +140,6 @@ Kmodulator{
 		};
 	}
 
-	// next tick of clock + make next value
-	nextTick{|argTick|
-		tick = argTick ? tick;
-		this.tickClock;
-		this.generateValue;
-		^value
-	}
-
-	// reset the clock + make value
-	reset{
-		time = 0;
-		this.generateValue;
-	}
-
 }
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -144,7 +148,7 @@ Koscillator{
 
 	// wave = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
 	var <wave=\sine, <>freq=1, <>freq2=1, <>phase=0, <size=64, <>time=0, <>tick=0.01, <>controlSpec, <array;
-	var <>oneShot=false, <>mirror=false, <>mul=1, <>add=0, <>mode=\none, <clipboard;
+	var <>oneShot=false, <>mirror=false, <>sync=true, <>velMulFreq=true, <>mul=1, <>add=0, <>mode=\none, <clipboard;
 
 	// make me a new one
 	*new {|wave=\sine, freq=1, freq2=1, phase=0, mul=1, add=0, oneShot=false, mirror=false, size=64, time=0, tick=0.01, controlSpec|
@@ -197,9 +201,36 @@ Koscillator{
 		if (wave == \tri) { wave = \triangle };
 	}
 
+	// reset the clock + make array
+	reset{
+		time = 0;
+		this.generateArray;
+	}
+
+	// next tick of clock + make next array
+	nextTick{|argTick, beat, mod2add|
+		tick = argTick ? tick;
+		this.tickClock(beat, mod2add);
+		this.generateArray;
+		^array
+	}
+
 	// 1 tick of the clock
-	tickClock{
-		time = time + (tick * freq * freq2);
+	tickClock{|beat, mod2add|
+		if (sync) {
+			if (velMulFreq) {
+				time = beat * (mod2add.neg);
+				time = time + (time.wrap(0,1) * freq);
+			}{
+				time = beat * (mod2add.neg);
+			};
+		}{
+			if (velMulFreq) {
+				time = time + (tick * freq * freq2);
+			}{
+				time = time + (tick * freq2);
+			};
+		};
 	}
 
 	// make the array
@@ -341,20 +372,6 @@ Koscillator{
 		if (mirror)      { array = array.reverse }; // you can do this in place more efficiently
 		if (controlSpec.notNil) { size.do{|i| array[i] = controlSpec.map( array[i] ) } };
 
-	}
-
-	// next tick of clock + make next array
-	nextTick{|argTick|
-		tick = argTick ? tick;
-		this.tickClock;
-		this.generateArray;
-		^array
-	}
-
-	// reset the clock + make array
-	reset{
-		time = 0;
-		this.generateArray;
 	}
 
 }

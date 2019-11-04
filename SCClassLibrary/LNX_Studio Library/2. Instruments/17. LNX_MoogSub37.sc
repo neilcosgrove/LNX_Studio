@@ -181,7 +181,7 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 	toMIDIPipeOut{|pipe|
 		if ((pipe.isNote) || (pipe.isBend)) {
 			var note = pipe.note;
-			var spo4midi = note.spo4midi(60,7).postln;
+			var spo4midi = note.spo4midi(60,7);
 			var bend;
 
 			pipe.note_(spo4midi[0]).addToHistory(this).addLatency(syncDelay);
