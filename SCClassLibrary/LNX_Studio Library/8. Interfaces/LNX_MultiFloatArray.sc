@@ -40,7 +40,7 @@ Lets start here thinking about syncing
 Kmodulator{
 
 	// wave = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
-	var  <wave=\sine, <>freq=1, <>phase=0, <>time=0, <>tick=0.01, <value=0, <>oneShot=false, <>sync=true;
+	var  <wave=\sine, <>freq=0.015625, <>phase=0, <>time=0, <>tick=0.01, <value=0, <>oneShot=false, <>sync=true;
 
 	// make me a new one
 	*new {|wave=\sine, freq=1, phase=0, oneShot=false, time=0, tick=0.01|
@@ -74,7 +74,7 @@ Kmodulator{
 	// 1 tick of the clock
 	tickClock{|beat|
 		if (sync) {
-			time = beat * (1/8);
+			time = beat * freq;
 		}{
 			time = time + (tick * freq);
 		};
@@ -105,7 +105,7 @@ Kmodulator{
 		// sawUp wave
 		if (wave==\sawUp) {
 			if (freq==0) {
-				value = 0;
+				value = ( 0 + phase ).wrap(0.0,1.0);
 			}{
 				if ((oneShot) and: {(phase==0) && (time==1)}) {
 					value = 1;
@@ -117,7 +117,7 @@ Kmodulator{
 		// sawDown wave
 		if (wave==\sawDown) {
 			if (freq==0) {
-				value = 1;
+				value = 1 - (( 0 + phase ).wrap(0.0,1.0));
 			}{
 				if ((oneShot) and: {(phase==0) && (time==1)}) {
 					value = 0;
@@ -129,7 +129,7 @@ Kmodulator{
 		// square wave
 		if (wave==\square) {
 			if (freq==0) {
-				value= 1;
+				value = 1 - (( 0 + phase ).wrap(0.0,1.0).round(1));
 			}{
 				if ((oneShot) and: {(phase==0) && (time==1)}) {
 					value = 0;
@@ -148,7 +148,8 @@ Koscillator{
 
 	// wave = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
 	var <wave=\sine, <>freq=1, <>freq2=1, <>phase=0, <size=64, <>time=0, <>tick=0.01, <>controlSpec, <array;
-	var <>oneShot=false, <>mirror=false, <>sync=true, <>velMulFreq=true, <>mul=1, <>add=0, <>mode=\none, <clipboard;
+	var <>oneShot=false, <>mirror=false, <>sync=true, <>velMulFreq=false, <>mul=1, <>add=0, <>mode=\none, <clipboard;
+	var <lastBeat=0, <resetBeat=0, <>phaseMod=0;
 
 	// make me a new one
 	*new {|wave=\sine, freq=1, freq2=1, phase=0, mul=1, add=0, oneShot=false, mirror=false, size=64, time=0, tick=0.01, controlSpec|
@@ -204,6 +205,15 @@ Koscillator{
 	// reset the clock + make array
 	reset{
 		time = 0;
+		resetBeat = lastBeat;
+		this.generateArray;
+	}
+
+	// i might not use this because of if (beat == 0) { resetBeat = 0 }; in tickClock method.
+	resetToZero{
+		time      = 0;
+		lastBeat  = 0;
+		resetBeat = 0;
 		this.generateArray;
 	}
 
@@ -219,11 +229,15 @@ Koscillator{
 	tickClock{|beat, mod2add|
 		if (sync) {
 			if (velMulFreq) {
-				time = beat * (mod2add.neg);
-				time = time + (time.wrap(0,1) * freq);
+				// this mode goes a bit crazy when you mod the frequency, unavoidle by this type of implimentation
+				// think about using correctly timed tick increments
+				// rather than hardwiring the sync to the beat to fix this
+				time = ((beat - resetBeat) * mod2add.neg).wrap(0,1/(mod2add.neg*freq)) * freq;
 			}{
-				time = beat * (mod2add.neg);
+				time = (beat - resetBeat) * (mod2add.neg);
 			};
+			lastBeat = beat;
+			if (beat == 0) { resetBeat = 0 };
 		}{
 			if (velMulFreq) {
 				time = time + (tick * freq * freq2);
@@ -239,11 +253,11 @@ Koscillator{
 		if (wave==\sine) {
 			if (oneShot) {
 				size.do{|i|
-					array[i] = ((time + (phase * freq) + 0.75 * 2pi) + (i * freq / size* 2pi)).clip(2pi*0.75,2pi*1.75).sin + 1 * 0.5
+					array[i] = ((time + (phase + phaseMod * freq) + 0.75 * 2pi) + (i * freq / size* 2pi)).clip(2pi*0.75,2pi*1.75).sin + 1 * 0.5
 				};
 			}{
 				size.do{|i|
-					array[i] = ( (time + (phase * freq) + 0.75 * 2pi) + (i * freq * 2pi / size) ).sin + 1 * 0.5
+					array[i] = ( (time + (phase + phaseMod * freq) + 0.75 * 2pi) + (i * freq * 2pi / size) ).sin + 1 * 0.5
 				};
 			}
 		};
@@ -251,84 +265,84 @@ Koscillator{
 		if (wave==\triangle) {
 			if (oneShot) {
 				size.do{|i|
-					array[i] = ( (time + (phase * freq) + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).clip(2,4).fold(0.0,1.0)
+					array[i] = ( (time + (phase + phaseMod * freq) + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).clip(2,4).fold(0.0,1.0)
 				};
 			}{
 				size.do{|i|
-					array[i] = ( (time + (phase * freq) + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).fold(0.0,1.0)
+					array[i] = ( (time + (phase + phaseMod  * freq) + 0.75) * 2 + 0.5 + (i * freq * 2 / size) ).fold(0.0,1.0)
 				}
 			}
 		};
 		// sawUp wave
 		if (wave==\sawUp) {
 			if (oneShot) {
-				if (freq==0) {
+/*				if (freq==0) {
 					size.do{|i| array[i] = 0 };
-				}{
+				}{*/
 					size.do{|i|
-						array[i] = ( (time + (phase * freq)) + (i * freq / size) ).clip(0,1).wrap(0.0,1.0);
+						array[i] = ( (time + (phase + phaseMod * freq)) + (i * freq / size) ).clip(0,1).wrap(0.0,1.0);
 					};
-				};
+/*				};*/
 			}{
-				if (freq==0) {
+/*				if (freq==0) {
 					size.do{|i| array[i] = 0 };
-				}{
+				}{*/
 					size.do{|i|
-						array[i] = ( (time + (phase * freq)) + (i * freq / size) ).wrap(0.0,1.0);
+						array[i] = ( (time + (phase + phaseMod * freq)) + (i * freq / size) ).wrap(0.0,1.0);
 					};
-				};
+/*				};*/
 			};
 		};
 		// sawDown wave
 		if (wave==\sawDown) {
 			if (oneShot) {
-				if (freq==0) {
+/*				if (freq==0) {
 					size.do{|i| array[i] = 0 };
-				}{
+				}{*/
 					size.do{|i|
-						array[i] = ( 1-((time + (phase * freq)) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0);
+						array[i] = ( 1-((time + (phase + phaseMod * freq)) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0);
 					};
-				};
+/*				};*/
 			}{
-				if (freq==0) {
+/*				if (freq==0) {
 					size.do{|i| array[i] = 0 };
-				}{
+				}{*/
 					size.do{|i|
-						array[i] = 1 - (( (time + (phase * freq)) + (i * freq / size) ).wrap(0.0,1.0));
+						array[i] = 1 - (( (time + (phase + phaseMod * freq)) + (i * freq / size) ).wrap(0.0,1.0));
 					};
-				};
+/*				};*/
 			}
 		};
 		// square wave
 		if (wave==\square) {
 			if (oneShot) {
-				if (freq==0) {
+/*				if (freq==0) {
 					size.do{|i| array[i] = 0 };
-				}{
+				}{*/
 					size.do{|i|
-						array[i] = ( 1-((time + (phase * freq)) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0).round(1);
+						array[i] = ( 1-((time + (phase + phaseMod * freq)) + (i * freq / size)) ).clip(0,1).wrap(0.0,1.0).round(1);
 					};
-				};
+/*				};*/
 			}{
-				if (freq==0) {
+/*				if (freq==0) {
 					size.do{|i| array[i] = 1 };
-				}{
+				}{*/
 					size.do{|i|
-						array[i] = 1 - (( (time + (phase * freq)) + (i * freq / size) ).wrap(0.0,1.0).round(1));
+						array[i] = 1 - (( (time + (phase + phaseMod * freq)) + (i * freq / size) ).wrap(0.0,1.0).round(1));
 					};
-				};
+/*				};*/
 			};
 		};
 		// noise1
 		if (wave==\noise1) {
 			size.do{|i|
-				array[i] = ((time * 4) + ( phase * 1000000 ) + (i / size * freq * 4 )).hashScapeSin;
+				array[i] = ((time * 4) + ( phase + phaseMod * 1000000 ) + (i / size * freq * 4 )).hashScapeSin;
 			};
 		};
 		// noise2
 		if (wave==\noise2) {
 			size.do{|i|
-				array[i] = ((time * 4) + ( phase * 1000000 ) + (i / size * freq * 4 )).hashScape;
+				array[i] = ((time * 4) + ( phase + phaseMod * 1000000 ) + (i / size * freq * 4 )).hashScape;
 			};
 		};
 
@@ -337,23 +351,23 @@ Koscillator{
 			if (clipboard.notNil) {
 				var clipSize  = clipboard.size;
 				if (oneShot) {
-					if (freq==0) {
+/*					if (freq==0) {
 						size.do{|i| array[i] = clipboard[0] };
-					}{
+					}{*/
 						size.do{|i|
-							var index = ( (time + (phase * freq)) + (i * freq / size) ).clip(0,1)*(clipSize);
+							var index = ( (time + (phase + phaseMod * freq)) + (i * freq / size) ).clip(0,1)*(clipSize);
 							array[i] = clipboard.atL(index);
 						};
-					};
+/*					};*/
 				}{
-					if (freq==0) {
+/*					if (freq==0) {
 						size.do{|i| array[i] = clipboard[0] };
-					}{
+					}{*/
 						size.do{|i|
-							var index = ( (time + (phase * freq)) + (i * freq / size) ).wrap(0.0,1.0)*(clipSize);
+							var index = ( (time + (phase + phaseMod * freq)) + (i * freq / size) ).wrap(0.0,1.0)*(clipSize);
 							array[i] = clipboard.atLW(index);
 						};
-					};
+/*					};*/
 				};
 			}{
 				^this

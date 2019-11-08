@@ -12,6 +12,10 @@ MVC_NumberFunc{
 			([ 1, 2, 4, 6, 8, 12, 16, 18, 24, 32, 48, 64, 96, 128].reverse)
 		).collect(_.asString);
 
+		var kHoleVel2 =  (
+			[inf, 128, 96, 64, 48, 32, 24, 18, 16, 12, 8, 6, 4, 2, 1 ]
+		).collect(_.asString);
+
 		var kHoleFreq = [ 128, 96, 64, 48, 32, 24, 18, 16, 12, 8, 6, 4, 3, 2 ].collect{|i| "1/"++i} ++ [ "2/3", "3/4"] ++ [ 1, 2, 4, 6, 8, 12, 16, 18, 24, 32].collect(_.asString);
 
 		Class.initClassTree(Spec);
@@ -20,6 +24,7 @@ MVC_NumberFunc{
 		// any extra specs i want
 
 		Spec.add(\kHoleVel,     ControlSpec(0, kHoleVel.size-1 , 'linear', 1, 14) );
+		Spec.add(\kHoleVel2,    ControlSpec(0, kHoleVel2.size-1 , 'linear', 1, 3) );
 		Spec.add(\kHoleFreq,    ControlSpec(0, kHoleFreq.size-1, 'linear', 1, 16) );
 
 		Spec.add(\sync,         ControlSpec(-1, 1, 'linear', 0.001, 0, " s") );
@@ -73,6 +78,7 @@ MVC_NumberFunc{
 
 		funcs=(
 			'kHoleVel'      : {|n| kHoleVel.at(n.asInt) },
+			'kHoleVel2'     : {|n| kHoleVel2.at(n.asInt) },
 			'kHoleFreq'     : {|n| kHoleFreq.at(n.asInt) },
 
 			//'nil'			: {|n| n }, // do i need to return nil for some reason?

@@ -12,7 +12,7 @@
 // (nc) no copyright. use and abuse. :)
 // refer to a gpl or something similar
 //
-// Over of Features:
+// Features:
 // Instruments, FX's, MIDI Instruments, Save, Load, Instrument Presets
 // MIDI In/Out patching, MIDI control of all GUI, Internal MIDI Ports, Internal/Ext MIDI Clock
 // Networking - Syncing over a network all of the Studio features
@@ -61,15 +61,14 @@
 //
 // enjoy, love neil x (lnx)
 //
-
 // if (LNX_Studio.is_in_a_khole) {};
-// LNX_Studio.is_in_a_khole.if("[k] hole"
+// LNX_Studio.is_in_a_khole.if(1,0);
 
 LNX_Studio {
 
 	//// class ////////////////////////////////////////////////////
 
-	classvar    <is_in_a_khole = false;
+	classvar    <is_in_a_khole = true;
 
 	classvar	<>versionMajor=2,	<>versionMinor=0,	<version,
 				<internetVersion,	<fileLoadVersion=3;
