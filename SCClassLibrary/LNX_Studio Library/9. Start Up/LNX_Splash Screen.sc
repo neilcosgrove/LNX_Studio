@@ -111,7 +111,7 @@ LNX_SplashScreen{
 						this.close;
 					};
 
-				window.front;
+				window.unminimize;//front; // jph 2019-10-27 front replaced by unminimize
 				{gui[\dummyWindow]=Window("",Rect(0,0,1,1)).front;}.defer(0.5);
 				{window.front;}.defer(0.75);
 				// all this to get window to close on click into studio window
