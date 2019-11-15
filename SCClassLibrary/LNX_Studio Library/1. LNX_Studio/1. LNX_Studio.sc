@@ -560,7 +560,10 @@ LNX_Studio {
 	checkSyncDelay{
 		var oldSync = syncDelay;
 		// largest only -ive is turned into a +ive syncDelay so we don't below latency
-		syncDelay = insts.collect{|inst| inst.syncDelay.clip(-inf,0).abs }.asList.sort.last ? 0;
+		// jph 2019-11-06 tempinst to avoid Message '*' not understood caused by collect
+		var tempinsts = insts.asDict;
+		//~ tempinsts.postln;
+		syncDelay = tempinsts.collect{|inst| inst.syncDelay.clip(-inf,0).abs }.asList.sort.last ? 0;
 		if (oldSync!=syncDelay) {insts.do(_.stopAllNotes) };
 	}
 
@@ -852,6 +855,8 @@ LNX_Studio {
 		if ((isLoading.not)and:{server.serverRunning}) {
 
 			id=LNX_ID.nextID; // get the id for me and everyone else
+
+			//insts.value.postln;	// jph 2019 debug
 
 			bus=insts.firstFXBus; // also get the next free fx bus (used in fx's in)
 

@@ -189,33 +189,35 @@
 	// 	});
 	// }
 
-	prepareForRecord { arg path;
-		if (path.isNil) {
-			if(File.exists(thisProcess.platform.recordingsDir).not) {
-				systemCmd("mkdir" + thisProcess.platform.recordingsDir.quote);
-			};
+// jph 2019-11-03 commented to avoid error "ERROR: Variable 'recHeaderFormat' not defined"
 
-			// temporary kludge to fix Date's brokenness on windows
-			if(thisProcess.platform.name == \windows) {
-				path = thisProcess.platform.recordingsDir +/+ "LNX_" ++ Main.elapsedTime.round(0.01) ++ "." ++ recHeaderFormat;
+	//~ prepareForRecord { arg path;
+		//~ if (path.isNil) {
+			//~ if(File.exists(thisProcess.platform.recordingsDir).not) {
+				//~ systemCmd("mkdir" + thisProcess.platform.recordingsDir.quote);
+			//~ };
 
-			} {
-				path = thisProcess.platform.recordingsDir
-				+/+
-				"LNX "
-				++ (Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2)) ++ "." ++ recHeaderFormat;
-			};
-		};
-		recordBuf = Buffer.alloc(this, 65536, recChannels,
-			{arg buf; buf.writeMsg(path, recHeaderFormat, recSampleFormat, 0, 0, true);},
-			this.options.numBuffers + 1); // prevent buffer conflicts by using reserved bufnum
-		SynthDef("server-record", { arg bufnum;
-			DiskOut.ar(bufnum, In.ar(0, recChannels))
-		}).send(this);
-		// cmdPeriod support
-		CmdPeriod.add(this);
-		^path;
-	}
+			//~ // temporary kludge to fix Date's brokenness on windows
+			//~ if(thisProcess.platform.name == \windows) {
+				//~ path = thisProcess.platform.recordingsDir +/+ "LNX_" ++ Main.elapsedTime.round(0.01) ++ "." ++ recHeaderFormat;
+
+			//~ } {
+				//~ path = thisProcess.platform.recordingsDir
+				//~ +/+
+				//~ "LNX "
+				//~ ++ (Date.getDate.format("%Y-%d-%e %R:%S").replace(":",".").drop(2)) ++ "." ++ recHeaderFormat;
+			//~ };
+		//~ };
+		//~ recordBuf = Buffer.alloc(this, 65536, recChannels,
+			//~ {arg buf; buf.writeMsg(path, recHeaderFormat, recSampleFormat, 0, 0, true);},
+			//~ this.options.numBuffers + 1); // prevent buffer conflicts by using reserved bufnum
+		//~ SynthDef("server-record", { arg bufnum;
+			//~ DiskOut.ar(bufnum, In.ar(0, recChannels))
+		//~ }).send(this);
+		//~ // cmdPeriod support
+		//~ CmdPeriod.add(this);
+		//~ ^path;
+	//~ }
 
 }
 
