@@ -184,15 +184,17 @@ LNX_MoogSub37 : LNX_InstrumentTemplate {
 			var spo4midi = note.spo4midi(60,7);
 			var bend;
 
-			pipe.note_(spo4midi[0]).addToHistory(this).addLatency(syncDelay);
+			pipe.addToHistory(this).addLatency(syncDelay);
+
+			//pipe.note_(spo4midi[0]).addToHistory(this).addLatency(syncDelay);
 
 			// bend = LNX_Bend(spo4midi[1].map(-0.5,0.5,0,16384).asInt, pipe.latency, pipe.source); semi tone
-			bend = LNX_Bend(spo4midi[1].map(-2,2,0,16383).asInt, pipe.latency, pipe.source); // tone
+			// bend = LNX_Bend(spo4midi[1].map(-2,2,0,16383).asInt, pipe.latency, pipe.source); // tone
 
-			bend.history_(pipe.history); // i don't think i need to copy the history here
+			// bend.history_(pipe.history); // i don't think i need to copy the history here
 
 			midi.pipeIn(pipe);
-			midi.pipeIn(bend); // note and the bend to spo
+		//	midi.pipeIn(bend); // note and the bend to spo
 
 		}{
 			midi.pipeIn(pipe.addToHistory(this).addLatency(syncDelay)); // add this to its history

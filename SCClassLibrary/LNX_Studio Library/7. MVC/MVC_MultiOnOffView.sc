@@ -3,12 +3,17 @@
 
 MVC_MultiOnOffView : MVC_View {
 
-	var <states, <>darkerWhenPressed=true, down=false;
+	var <states, <>darkerWhenPressed=true, down=false, <>rounded=false;
 
 	// set your defaults
 	initView{
 		colors=colors++(
-			'background'	: Color.black
+			'background'	: Color.black,
+			'on'				: Color.ndcOnOffON,
+			'off'				: Color.ndcOnOffOFF,
+			'onDisabled'		: Color.ndcOnOffONUen,
+			'offDisabled'		: Color.ndcOnOffOFFUen,
+
 		);
 		states=[
 			// 0      1            2           3           4
@@ -27,68 +32,100 @@ MVC_MultiOnOffView : MVC_View {
 				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 				state=states[value];
 				Pen.use{
-					Pen.smoothing_(false);
-					Color.black.set;
-					Pen.fillRect(Rect(0,0,w,h));
-					if (down) {
-						(colors[\background]/1.3).set;
-					}{
-						colors[\background].set;
-					};
-					if (midiLearn) {
-						colors[\midiLearn].set;
-					};
-					Pen.fillRect(Rect(1,1,w-2,h-2));
-
-					if (down) {
-						Color(0,0,0,0.55).set;
-						Pen.fillRect(Rect(1,1,w-3,1));
-						Pen.fillRect(Rect(1,1,1,h-3));
-
-						Color(1,1,1,0.15).set;
-						Pen.fillRect(Rect(w-2,2,1,h-3));
-						Pen.fillRect(Rect(2,h-2,w-3,1));
-
-						Color(0,0,0,0.13).setFill;
-						Pen.moveTo(2@2);
-						Pen.lineTo((w-3)@2);
-						Pen.lineTo(2@(h-3));
-						Pen.lineTo(2@2);
-						Pen.fill;
-
-						if (darkerWhenPressed) {
-							Pen.fillColor_(state[enabled.if(1,3)]/1.5)
+					if (rounded) {
+						var col;
+						if (midiLearn) {
+							col=colors[\midiLearn];
 						}{
-							Pen.fillColor_(state[enabled.if(1,3)])
-						}
+							if (enabled) {
+								col=colors[(value>=0.5).if(\on,\off)];
+							}{
+								col=colors[(value>=0.5).if(\onDisabled,\offDisabled)];
+							};
+						};
+						colors[\background].set;
+						Pen.roundedRect( Rect(1,1,w- 2,h- 2),5 );
+						if (down) {
+							(col*0.66).penFill( Rect(1,1,w- 2,h- 2) );
+						}{
+							col.penFill( Rect(1,1,w- 2,h- 2) );
+						};
+						if (down) {
+							Pen.width_(1.5);
+							Pen.smoothing_(true);
+							Color(0,0,0,0.4).set;
+							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
+							Pen.stroke;
 
+							Color(1,1,1,0.2).set;
+							Pen.roundedRect( Rect(1,1,w-3,h-3),5 );
+							Pen.stroke;
+						}{
+							Pen.width_(1.5);
+							Pen.smoothing_(true);
+							Color(1,1,1,0.4).set;
+							Pen.roundedRect( Rect(2,2,w-3,h-3),5 );
+							Pen.stroke;
+						};
+						Pen.width_(1.5);
+						Pen.smoothing_(true);
+						colors[\background].set;
+						Pen.roundedRect( Rect(1,1,w-2,h-2),5 );
+						Pen.stroke;
 					}{
-						Color(1,1,1,0.2).set;
-						Pen.fillRect(Rect(1,1,w-3,1));
-						Pen.fillRect(Rect(1,1,1,h-3));
-						Color(0,0,0,0.45).set;
-						Pen.fillRect(Rect(w-2,2,1,h-3));
-						Pen.fillRect(Rect(2,h-2,w-3,1));
-
-						Color(1,1,1,0.065).setFill;
-						Pen.moveTo(2@2);
-						Pen.lineTo((w-3)@2);
-						Pen.lineTo(2@(h-3));
-						Pen.lineTo(2@2);
-						Pen.fill;
-
-						Pen.fillColor_(state[enabled.if(1,3)]);
+						Pen.smoothing_(false);
+						Color.black.set;
+						Pen.fillRect(Rect(0,0,w,h));
+						if (down) {
+							(colors[\background]/1.3).set;
+						}{
+							colors[\background].set;
+						};
+						if (midiLearn) {
+							colors[\midiLearn].set;
+						};
+						Pen.fillRect(Rect(1,1,w-2,h-2));
+						if (down) {
+							Color(0,0,0,0.55).set;
+							Pen.fillRect(Rect(1,1,w-3,1));
+							Pen.fillRect(Rect(1,1,1,h-3));
+							Color(1,1,1,0.15).set;
+							Pen.fillRect(Rect(w-2,2,1,h-3));
+							Pen.fillRect(Rect(2,h-2,w-3,1));
+							Color(0,0,0,0.13).setFill;
+							Pen.moveTo(2@2);
+							Pen.lineTo((w-3)@2);
+							Pen.lineTo(2@(h-3));
+							Pen.lineTo(2@2);
+							Pen.fill;
+							if (darkerWhenPressed) {
+								Pen.fillColor_(state[enabled.if(1,3)]/1.5)
+							}{
+								Pen.fillColor_(state[enabled.if(1,3)])
+							}
+						}{
+							Color(1,1,1,0.2).set;
+							Pen.fillRect(Rect(1,1,w-3,1));
+							Pen.fillRect(Rect(1,1,1,h-3));
+							Color(0,0,0,0.45).set;
+							Pen.fillRect(Rect(w-2,2,1,h-3));
+							Pen.fillRect(Rect(2,h-2,w-3,1));
+							Color(1,1,1,0.065).setFill;
+							Pen.moveTo(2@2);
+							Pen.lineTo((w-3)@2);
+							Pen.lineTo(2@(h-3));
+							Pen.lineTo(2@2);
+							Pen.fill;
+							Pen.fillColor_(state[enabled.if(1,3)]);
+						};
 					};
-
-
 					if (state.notNil) {
-
 						Pen.smoothing_(true);
 						Pen.font_(font);
 						Pen.stringCenteredIn(state[0].asString,Rect(0,0,w,h));
-					};
-				}; // end.pen
-			};
+				};
+			}; // end.pen
+		};
 	}
 
 	// add the controls

@@ -30,17 +30,11 @@ m.plot;
 
 */
 
-/*
-Lets start here thinking about syncing
-
-
-
-*/
-
 Kmodulator{
 
 	// wave = \sine (sin), \triangle (tri), \sawUp, \sawDown, \square
 	var  <wave=\sine, <>freq=0.015625, <>phase=0, <>time=0, <>tick=0.01, <value=0, <>oneShot=false, <>sync=true;
+	var <lastBeat=0, <resetBeat=0;
 
 	// make me a new one
 	*new {|wave=\sine, freq=1, phase=0, oneShot=false, time=0, tick=0.01|
@@ -68,13 +62,25 @@ Kmodulator{
 	// reset the clock + make value
 	reset{
 		time = 0;
+		resetBeat = lastBeat;
+		this.generateValue;
+	}
+
+
+	// i might not use this because of if (beat == 0) { resetBeat = 0 }; in tickClock method.
+	resetToZero{
+		time      = 0;
+		lastBeat  = 0;
+		resetBeat = 0;
 		this.generateValue;
 	}
 
 	// 1 tick of the clock
 	tickClock{|beat|
 		if (sync) {
-			time = beat * freq;
+			lastBeat = beat;
+			if (beat == 0) { resetBeat = 0 };
+			time = (beat - resetBeat) * freq;
 		}{
 			time = time + (tick * freq);
 		};
@@ -228,16 +234,17 @@ Koscillator{
 	// 1 tick of the clock
 	tickClock{|beat, mod2add|
 		if (sync) {
+			lastBeat = beat;
+			if (beat == 0) { resetBeat = 0 };
 			if (velMulFreq) {
 				// this mode goes a bit crazy when you mod the frequency, unavoidle by this type of implimentation
 				// think about using correctly timed tick increments
 				// rather than hardwiring the sync to the beat to fix this
-				time = ((beat - resetBeat) * mod2add.neg).wrap(0,1/(mod2add.neg*freq)) * freq;
+				time = ((beat - resetBeat) * mod2add.neg).wrap(0,1/(mod2add.neg*freq)) * freq; // what about rand
+				time = time.filterNaN;
 			}{
 				time = (beat - resetBeat) * (mod2add.neg);
 			};
-			lastBeat = beat;
-			if (beat == 0) { resetBeat = 0 };
 		}{
 			if (velMulFreq) {
 				time = time + (tick * freq * freq2);

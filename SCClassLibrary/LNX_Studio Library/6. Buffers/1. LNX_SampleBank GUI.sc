@@ -489,7 +489,7 @@
 	// adding a download from search in the metaeditor doesn't update when loaded
 	// use select same item when finishing downloads
 
-	openMetadataEditor{|window,i,search=false,webBrowser,argColors,x=0,interface,xx=0|
+	openMetadataEditor{|window,i,search=false,webBrowser,argColors,x=0,interface,xx=0,indexPlayModel,indexPlayFunc|
 
 		var buffer, models, otherModel, size, numChannels,  gui, colors, width, zoom, offset,
 			setVarsFunc, setModelsFunc, selectSampleFunc, lastPlayValue=false,
@@ -1196,9 +1196,15 @@
 				var minIndex = ((x-10).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
 				var maxIndex = ((x+6 ).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
 
-				MVC_LazyRefresh.mouseDown;
+
 
 				if (this.notEmpty) {
+
+				if (indexPlayModel.isTrue) {
+					indexPlayFunc.value(index);
+
+				}{
+					MVC_LazyRefresh.mouseDown;
 
 					// // -1:doNothing, 0:start, 1:end, 2:addMaker, 3:moveMaker 4:deleteMarker
 					editMode    = -1;
@@ -1264,8 +1270,8 @@
 							};
 						};
 					}}).start(AppClock);
-
 				}
+			}
 			}
 			.mouseMoveAction_{|me,x,y|
 				var w 	  = me.bounds.width-4;
@@ -1274,6 +1280,12 @@
 				var index = ((x-2).clip(0,w) + ( o * w / z) * z / w).clip(0,1);
 
 				if (this.notEmpty) {
+
+				if (indexPlayModel.isTrue) {
+					indexPlayFunc.value(index);
+
+				}{
+
 					moveIDX=0;
 					if (x<0) { moveIDX = -1 * ((x).abs/40+0.25) };
 					if (x>w) { moveIDX = 1 * ((x-w).abs/40+0.25) };
@@ -1294,7 +1306,7 @@
 						gui[\sampleView].refresh;
 					};
 
-
+				}
 				}
 			}
 			.mouseUpAction_{|me,x,y|
