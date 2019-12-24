@@ -271,21 +271,17 @@ LNX_MIDIPatch {
 			};
 			MIDIIn.bend    = { arg src, chan, bend;
 				patches.do({|patch|
-					if ( (patch.uidIn==src) and:
-						{(chan==(patch.midiInChannel)) or: {(patch.midiInChannel)==(-1)}} ) {							patch.bendFunc.value(src, chan, bend);
-
-																			if (patch.pipeFunc.notNil) {
-								var pipe = LNX_Bend(bend,nil,\external);
-								pipe[\endPoint] = patch.inPoint;
-								pipe[\source] = src;
-								pipe[\channel] = chan;
-								patch.pipeFunc.value(pipe);
-							};
-
-
+					if ( (patch.uidIn==src) and: {(chan==(patch.midiInChannel)) or: {(patch.midiInChannel)==(-1)}} ) {
+						patch.bendFunc.value(src, chan, bend);
+						if (patch.pipeFunc.notNil) {
+							var pipe = LNX_Bend(bend,nil,\external);
+							pipe[\endPoint] = patch.inPoint;
+							pipe[\source] = src;
+							pipe[\channel] = chan;
+							patch.pipeFunc.value(pipe);
+						};
 						// send with no latency parameter
-
-		LNX_MIDIControl.controlIn(src, chan, -1,  bend/16383*127, nil, true, false); // direct into
+						LNX_MIDIControl.controlIn(src, chan, -1,  bend/16383*127, nil, true, false); // direct into
 
 					}
 				});

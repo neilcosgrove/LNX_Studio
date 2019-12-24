@@ -96,7 +96,7 @@ MVC_Slider : MVC_View {
 	deactivate{
 		midiLearn=false;
 		if (view.notClosed) {
-			view.knobColor_(colors[enabled.if(\knob,\knobDisabled)]);
+			view.background_(colors[midiLearn.if(\midiLearn,\background)]);
 		};
 		labelGUI.do(_.refresh);
 		this.refresh;

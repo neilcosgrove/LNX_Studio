@@ -37,6 +37,10 @@ Colour : Color {}
 
 + Object {
 
+	revealInFinder{
+		this.class.filenameSymbol.asString.revealInFinder
+	}
+
 	// summary for apple click on sc code
 	getClassArgsSummary{
 		var class=this.class;
