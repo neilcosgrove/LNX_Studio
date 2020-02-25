@@ -68,7 +68,7 @@ LNX_Studio {
 
 	//// class ////////////////////////////////////////////////////
 
-	classvar    <is_in_a_khole = true;
+	classvar    <is_in_a_khole = false;
 
 	classvar	<>versionMajor=2,	<>versionMinor=0,	<version,
 				<internetVersion,	<fileLoadVersion=3;

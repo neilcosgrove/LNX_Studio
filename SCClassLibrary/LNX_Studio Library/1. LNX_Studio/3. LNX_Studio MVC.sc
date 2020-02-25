@@ -219,7 +219,7 @@
 		// connect server stats & serverRunning to models
 		SimpleController(server)
 			.put(\counts,{
-			//	mixerGUI[\cpu].string_(server.peakCPU.asInt.clip(0,100).asString++"%");
+				mixerGUI[\cpu].string_(server.peakCPU.asInt.clip(0,100).asString++"%");
 
 			    models[\cpu].string_(server.peakCPU.asInt.clip(0,100).asString++"%");
 

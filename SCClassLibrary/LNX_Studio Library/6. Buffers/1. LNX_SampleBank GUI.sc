@@ -1201,8 +1201,9 @@
 				if (this.notEmpty) {
 
 				if (indexPlayModel.isTrue) {
+					var w 		 = me.bounds.width;
+					var index	 = ( (x-2) + ( o * w / z) * z / w).wrap(0,1);
 					indexPlayFunc.value(index);
-
 				}{
 					MVC_LazyRefresh.mouseDown;
 
@@ -1282,8 +1283,9 @@
 				if (this.notEmpty) {
 
 				if (indexPlayModel.isTrue) {
+					var w 		 = me.bounds.width;
+					var index	 = ( (x-2) + ( o * w / z) * z / w).wrap(0,1);
 					indexPlayFunc.value(index);
-
 				}{
 
 					moveIDX=0;

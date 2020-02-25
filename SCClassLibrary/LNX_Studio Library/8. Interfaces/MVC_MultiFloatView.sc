@@ -247,7 +247,7 @@ MVC_MultiFloatView : MVC_View {
 
 	refreshScale{
 		if (view.notClosed) {
-			view.refresh;
+			{view.refresh}.deferIfNeeded;
 		}
 	}
 

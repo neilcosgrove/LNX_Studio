@@ -128,10 +128,7 @@
 				.color_(\background,Color(0,0,0,0.3))
 				.color_(\up,Color(0,0,0,0.2))
 				.color_(\down,Color(0,0,0,0.4))
-				.action_({
-				[type.class,type].postln;
-					this.guiAddInst(type);
-				});
+				.action_{ this.guiAddInst(type) };
 
 			this.addLibraryWidgets(type);
 

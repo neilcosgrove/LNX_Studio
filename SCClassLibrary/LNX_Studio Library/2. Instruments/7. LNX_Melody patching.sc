@@ -47,18 +47,14 @@ a.a.touch(0);
 				gui[\storeChordsListView].hilite_(n,Color.red);
 				{
 					if (gui[\keyboard].notNil) { gui[\keyboard].setStoreActive(key) };
-
 					gui[\storeChordsLamp].keyIn(n,1);
-
 				}.defer;
 			}
 			.chordOffFunc_{|n,key|
 				gui[\storeChordsListView].hilite_(n,nil);
 				{
 					if (gui[\keyboard].notNil) { gui[\keyboard].removeStoreActive(key) };
-
 					gui[\storeChordsLamp].keyIn(n,nil);
-
 				}.defer;
 			};
 
@@ -71,7 +67,7 @@ a.a.touch(0);
 			.model_(\spo,    models[27])
 			.storeChordsMod_(storeChordsMod);
 
-		// chord quant mod
+		// chord quant mod £
 		chordQuantiserMod = LNX_ChordQuantiser()
 			.midiPipeOutFunc_{|pipe| this.fromChordQuantiserMod(pipe) }
 			.model_(\onOff,     models[14])
@@ -119,6 +115,9 @@ a.a.touch(0);
 			.model_(\velocity, models[20]);
 		midiBuffer5=LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromMIDIBuffer5(pipe) };
 		midiBuffer6=LNX_MIDIBuffer().midiPipeOutFunc_{|pipe| this.fromMIDIBuffer6(pipe) };
+
+
+		midiBufferSeqToQuant = LNX_MIDIBuffer();
 
 		multiPipeOut = LNX_MultiPipeOut(studio,this)
 			.apiID_(id++"_mpo")
@@ -170,6 +169,7 @@ a.a.touch(0);
 		midiBuffer3.releaseAll(studio.actualLatency);
 		midiBuffer4.releaseAll(studio.actualLatency);
 		midiBuffer5.releaseAll(studio.actualLatency);
+		midiBufferSeqToQuant.releaseAll(studio.actualLatency);
 		chordQuantiserMod.releaseAll(studio.actualLatency);
 		gui[\pianoRollLamp].releaseAll(studio.actualLatency);
 	}
@@ -192,7 +192,6 @@ a.a.touch(0);
 		arpegSequencer.clockStop(studio.actualLatency);
 		multiPipeOut.reset;
 		arpeggiatorMod.reset;
-
 	}
 
 	// remove any clock hilites
@@ -203,20 +202,14 @@ a.a.touch(0);
 	}
 
 	// override instTemplate
-	pipeIn{|pipe|	this.fromMIDIIn(pipe)  }
+	pipeIn{|pipe| this.fromMIDIIn(pipe) }
 
 	// MIDI In
-	noteOn{|note, velocity, latency|
-		this.fromMIDIIn(LNX_NoteOn(note,velocity,latency,\MIDIIn))
-	}
-	noteOff{|note, velocity, latency|
-		this.fromMIDIIn(LNX_NoteOff(note,velocity,latency,\MIDIIn))
-	}
-	touch{|pressure, latency|
-		this.fromMIDIIn(LNX_Touch(pressure , latency, \MIDIIn))
-	}
-	control{|num,  val, latency| this.fromMIDIIn(LNX_Control(num,  val , latency, \MIDIIn)) }
-	bend{|bend, latency| this.fromMIDIIn(LNX_Bend(bend , latency, \MIDIIn)) }
+	noteOn {|note, velocity, latency| this.fromMIDIIn(LNX_NoteOn (note, velocity, latency, \MIDIIn)) }
+	noteOff{|note, velocity, latency| this.fromMIDIIn(LNX_NoteOff(note, velocity, latency, \MIDIIn)) }
+	touch  {|pressure,       latency| this.fromMIDIIn(LNX_Touch  (pressure,       latency, \MIDIIn)) }
+	control{|num, val,       latency| this.fromMIDIIn(LNX_Control(num,  val,      latency, \MIDIIn)) }
+	bend   {|bend,           latency| this.fromMIDIIn(LNX_Bend   (bend,           latency, \MIDIIn)) }
 
 	bang{|velocity,latency,beat,beatNo,dur|
 		arpeggiatorMod.bang(velocity,latency,beat,beatNo,absTime,dur)
@@ -277,8 +270,14 @@ a.a.touch(0);
 	}
 
 	fromSequencer{|pipe|
-		this.toMIDIBuffer2(pipe);
-		gui[\pianoRollLamp].pipeIn(pipe);
+		// £
+		if (p[14].isTrue) {
+			midiBufferSeqToQuant.pipeIn(pipe);
+			chordQuantiserMod.seqChord_(midiBufferSeqToQuant.notesOn.values);
+		}{
+			this.toMIDIBuffer2(pipe);
+			gui[\pianoRollLamp].pipeIn(pipe);
+		};
 	}
 
 	fromMIDIBuffer2{|pipe|

@@ -198,10 +198,10 @@ MVC_MyKnob4 : MVC_View {
 	refreshValue{
 		if (view.notClosed) {
 			if (controlSpec.notNil) {
-				if (mouseDown.not) {view.value_(controlSpec.unmap(value))};
+				if (mouseDown.not) { {view.value_(controlSpec.unmap(value))}.deferIfNeeded };
 				MVC_LazyRefresh.incRefresh;
 			}{
-				if (mouseDown.not) {view.value_(value)};
+				if (mouseDown.not) { {view.value_(value)}.deferIfNeeded };
 				MVC_LazyRefresh.incRefresh;
 			};
 		}
@@ -212,7 +212,7 @@ MVC_MyKnob4 : MVC_View {
 	// this is not true, valueAction_ calls this and so value does need updating. Changed!
 	refresh{
 		if ((view.notClosed) and: { (numberGUI.notNil) }) {
-			numberGUI.refresh;
+			{numberGUI.refresh}.deferIfNeeded;
 			this.refreshValue;
 		}
 	}

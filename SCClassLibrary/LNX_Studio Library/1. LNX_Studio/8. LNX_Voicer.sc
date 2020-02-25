@@ -64,6 +64,7 @@ LNX_Voicer {
 		note = note.asInt;
 
 		this.killNote(note,latency); // stop previous of this, if any ?
+
 		this.limitPoly(latency,1);   // and then limit poly
 
 		voicerNode       = LNX_VoicerNode(server,note.asInt,SystemClock.now,latency);

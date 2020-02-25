@@ -1009,9 +1009,9 @@ LNX_StoreChords {
 
 LNX_ChordQuantiser{
 
-	classvar	<musicChords, <musicNames;
+	classvar <musicChords, <musicNames;
 
-	var <>midiPipeOutFunc, <models, <chords, <notesOn, <chordNames;
+	var <>midiPipeOutFunc, <models, <chords, <notesOn, <chordNames, <seqChord;
 
 	*initClass {
 		Class.initClassTree(LNX_Music);
@@ -1026,6 +1026,7 @@ LNX_ChordQuantiser{
 		notesOn = IdentityDictionary[];
 		chords = [];
 		chordNames = [];
+		seqChord = (0..127);
 	}
 
 	model_{|key,model| models[key]=model }
@@ -1034,29 +1035,55 @@ LNX_ChordQuantiser{
 		var note;
 		var spo=models[\spo].value;
 
-		if ((pipe.kind==\noteOn)or:{pipe.kind==\noteOff}) {
-				// note on or off
-
-				if (pipe.kind==\noteOn) { notesOn[pipe.note]=pipe}; // store original
-				if (pipe.kind==\noteOff) { notesOn[pipe.note]=nil};
-
-				if (models[\onOff].value.isTrue) {
-					// change the note
-					var chord = chords[models[\chord].value], newnote;
-					if(chord.notNil) {
-						note=pipe.note;
-						//findNearest with offset
-						newnote = chord.findNearest(note%spo,models[\transpose].value );
-						pipe = pipe.copy
-								.note_((note/spo).asInt*spo+newnote)
-								.source_((\quant++note).asSymbol);// new pipe
-						pipe.tag_(\quant,note != pipe.note); // used for lamp
-					};
+		if (pipe.isNoteOn) {
+			// note on or off
+			note=pipe.note;
+			if (models[\onOff].isTrue) {
+				// change the note
+				var newnote, chord;
+				// £
+				if (models[\retrigger]<2) {
+					chord = chords[models[\chord].value];
+				}{
+					chord = seqChord;
+				};
+				if(chord.notNil) {
+					//findNearest with offset
+					newnote = chord.findNearest(note%spo,models[\transpose].value );
+					pipe = pipe.copy
+					    .note_((note/spo).asInt*spo+newnote)
+					    .source_((\quant++note).asSymbol);// new pipe
+					pipe.tag_(\quant,note != pipe.note); // used for lamp
 				};
 				midiPipeOutFunc.value(pipe);
+				notesOn[note]=pipe;  // store original
 			}{
 				midiPipeOutFunc.value(pipe);
-			};
+				notesOn[note]=pipe;
+			}
+		};
+
+		if (pipe.isNoteOff) {
+			note=pipe.note;
+			midiPipeOutFunc.value(notesOn[note].asNoteOff  );
+			notesOn[note]=nil
+		};
+
+		if (pipe.isNote.not) { midiPipeOutFunc.value(pipe) };
+
+	}
+
+	seqChord_{|pipes|
+		var spo=models[\spo].value;
+		var range  = (120/spo).asInt;
+		if (pipes.isEmpty) {
+			seqChord = (1..spo)
+		}{
+			seqChord = pipes.collect{|pipe| pipe.note };
+		};
+		seqChord = seqChord.asArray.mod(spo).asSet.asArray.sort;
+		seqChord = ((range.neg)..range).collect{|i| (i*spo)+seqChord}.flat.select{|n| (n>=0) && (n<=127)};
+
 	}
 
 	// update the name + quantise list for pipeIn
@@ -1066,16 +1093,11 @@ LNX_ChordQuantiser{
 		if (model==\chords) {
 			chordNames=[];
 			chords=arg1.collect{|c|
-				var chord = c.asArray.mod(spo).asSet.asArray.sort;
-				var range;
-
+				var chord  = c.asArray.mod(spo).asSet.asArray.sort;
+				var range  = (120/spo).asInt;
 				chordNames = chordNames.add(this.getChordName(c));
-
-				range = (120/spo).asInt;
-
-				//[chord.last-12] ++ chord ++ [chord.first+12]; // extend range above & below
-				((range.neg)..range).collect{|i| (i*spo)+chord}.flat; //now later for transpose
-			};
+				((range.neg)..range).collect{|i| (i*spo)+chord}.flat.select{|n| (n>=0) && (n<=127)};
+			}
 		};
 		{
 		models[\chord].controlSpec_([0,(chords.size-1).clip(0,inf),\linear,1])

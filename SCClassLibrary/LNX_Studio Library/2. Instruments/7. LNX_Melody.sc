@@ -5,6 +5,7 @@ LNX_Melody : LNX_InstrumentTemplate {
 
 	var <musicMod, <storeChordsMod, <sequencer, <chordQuantiserMod, <arpeggiatorMod;
 	var <midiBuffer1, <midiBuffer2, <midiBuffer3, <midiBuffer4, <midiBuffer5, <midiBuffer6;
+	var <midiBufferSeqToQuant;
 	var <lastKeyboardNote, <arpegSequencer, <multiPipeOut;
 	*new {arg server=Server.default,studio,instNo,bounds,open=true,id,loadList;
 		^super.new(server,studio,instNo,bounds,open,id,loadList)
@@ -146,8 +147,18 @@ LNX_Melody : LNX_InstrumentTemplate {
 					midiBuffer1.releaseSource(\MIDIIn);
 				}],
 
-			// 16. quant retrigger
-			[1, \switch, (\strings_:"Trig"), midiControl, 16, "Retrigger",
+			// 16. quant retrigger £ - also new sequencer control
+			[1, [0,3,\linear,1],
+				(
+				\states_ : [
+				["Off"   ,Color(1, 1,   1) ,Color.black,Color.grey/3,Color.grey/2],
+				["Trig"   ,Color(1, 0.5, 0)/1.15 ,Color.black,Color.grey/2,Color.grey/3],
+				["Seq"   ,Color(1, 0.5, 0)/1.15 ,Color.black,Color.grey/2,Color.grey/3],
+				["S&T"   ,Color(1, 0.5, 0)/1.15 ,Color.black,Color.grey/2,Color.grey/3]
+				]
+			),
+
+				midiControl, 16, "Retrig / Seq",
 				{|me,val,latency,send,toggle| this.setPVPModel(16,val,latency,send) }],
 
 			// 17. arpeg up
@@ -175,15 +186,16 @@ LNX_Melody : LNX_InstrumentTemplate {
 			[1,[1/8,8,\exp],midiControl, 20, "Velocity",
 				(\label_:"Vel",\numberFunc_:'float2','zeroValue_':1),
 				{|me,val,latency,send,toggle| this.setPVPModel(20,val,latency,send) }],
+
 			// 21. quant transpose
 			[0,[-12,12,\linear,1],midiControl, 21, "Q Trans",
 				(\label_:"Trans",\numberFunc_:'intSign','zeroValue_':0),
 				{|me,val,latency,send,toggle|
 					this.setPVPModel(21,val,latency,send);
 					// test for onOff here
-					if (p[14].isTrue) {
+					if ((p[14].isTrue) && (p[16].asInt.odd)) {
 						midiBuffer3.releaseAll;
-						chordQuantiserMod.guiOnOff;
+						chordQuantiserMod.guiOnOff;  // £
 					};
 				}],
 
@@ -268,7 +280,7 @@ LNX_Melody : LNX_InstrumentTemplate {
 			storeChordsMod.updateChordsAndNames; // this will update ChordQuant as well
 			sequencer.refresh(false,false);
 			[midiBuffer1, midiBuffer2, midiBuffer3, midiBuffer4,
-			 midiBuffer5, midiBuffer6].do(_.releaseAll);
+			 midiBuffer5, midiBuffer6,midiBufferSeqToQuant].do(_.releaseAll);
 			// arpeggiatorMod.sortNotes; // do i need this?
 			//chordQuantiserMod.retrigger;
 		};
@@ -795,8 +807,15 @@ LNX_Melody : LNX_InstrumentTemplate {
 		// 14. Quant on/off
 		MVC_OnOffView(models[14],gui[\rcv5], Rect(2,4,31,18),gui[\onOffTheme1]);
 
-		// 16. Quant retrigger
-		MVC_OnOffView(models[16],gui[\rcv5] ,Rect(38,4,40,18),gui[\onOffTheme2]);
+		// 16. Quant retrigger £
+		MVC_MultiOnOffView(models[16],gui[\rcv5] ,Rect(38,4,40,18),gui[\onOffTheme2]);
+
+	/*
+		// Play none/Markers/notes/presesets
+		MVC_MultiOnOffView(gui[\sequencerScrollView], Rect(12, 18, 70, 23), models[10], gui[\theme4])
+		  //  .color_(\off,Color.white)
+		    .font_(Font("Helvetica",14,true)).rounded_(true);
+*/
 
 		// 13. quant chord select
 		MVC_MyKnob3(models[13], gui[\rcv5], Rect(11,40,28,28),gui[\knobTheme1]);
