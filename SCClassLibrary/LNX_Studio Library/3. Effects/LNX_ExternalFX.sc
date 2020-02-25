@@ -9,7 +9,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 	}
 
 	*studioName {^"External FX"}
-	*sortOrder{^2.9}
+	*sortOrder{^0.9}
 
 	isFX{^true}
 	isInstrument{^false}
@@ -79,12 +79,20 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			}],
 
 			// 6. external out channel
+			[\LNX_out, midiControl, 6, "External Out Channel",
+				(\items_:LNX_AudioDevices.outputOnlyList, \label_:"To device"),
+				{|me,val,latency,send|
+					this.setSynthArgGUIVH(6,val,\xOutputChannels,val*2,6,val,latency,send);
+			}],
+
+/*			// 6. external out channel
 			[\audioOut, midiControl, 6, "External Out Channel",
 				(\items_:LNX_AudioDevices.outputAndFXMenuList, \label_:"To device"),
 				{|me,val,latency,send|
 					var value = (((val>=0).if(val*2,LNX_AudioDevices.firstFXBus-(val*2)-2)));
 					this.setSynthArgGUIVH(6,val,\xOutputChannels,value,6,val,latency,send);
-			}],
+			}],*/
+
 
 			// 7. external in channels
 			[0,[0,LNX_AudioDevices.numInputBusChannels/2,\linear,1],
@@ -148,6 +156,36 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 				{|me,val,latency,send| this.setSynthArgVP(16,val,\delayR,val,latency,send)}
 			],
 
+			// 17. feedback
+			[-inf, \db6, midiControl, 17, "Feedback", (\label_:"Fb",\numberFunc_:\db),
+				{|me,val,latency,send|
+					this.setSynthArgVP(17,val,\feedback,val.dbamp,latency,send)
+			}],
+
+			// 18. feedback
+			[0.5, \delay2, midiControl, 18, "f Delay", (\label_:"Delay",\numberFunc_:\float3),
+				{|me,val,latency,send|
+					this.setSynthArgVP(18,val,\f_delay,val-0.003,latency,send)
+			}],
+
+			// 19.f_low pass
+			[20000, \freq ,midiControl, 19, "Low pass", (label_:"Low Pass", \numberFunc_:\freq),
+				{|me,val,latency,send,toggle|
+					this.setSynthArgVP(19,val,\f_lowFreq,val,latency,send);
+				}],
+
+			// 20.f_high pass
+			[20, \freq, midiControl, 20, "High pass", (label_:"High Pass", \numberFunc_:\freq),
+				{|me,val,latency,send,toggle|
+					this.setSynthArgVP(20,val,\f_highFreq,val,latency,send);
+				}],
+
+			// 21. ping pong switch
+			[0, \switch, midiControl, 21, "Ping Pong", (strings_:"Ping Pong"),
+				{|me,val,latency,send,toggle|
+					this.setSynthArgVP(21,val,\pingPong,val,latency,send);
+				}],
+
 		];
 
 		#models,defaults=template.generateAllModels;
@@ -163,7 +201,7 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 	volumeModel{^models[4] }
 
 	*thisWidth  {^261}
-	*thisHeight {^263}
+	*thisHeight {^370}
 
 	createWindow{|bounds| this.createTemplateWindow(bounds,Color.black) }
 
@@ -172,7 +210,8 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		// themes
 
 		gui[\menuTheme ]=( \font_		: Font("Arial", 10),
-						\colors_      : (\background :Color.white));
+			            \labelShadow_   :false,
+						\colors_        : (\background :Color.white, \label:Color.black));
 
 		gui[\scrollTheme]=( \background	: Color(59/77,59/77,59/77),
 						  \border		: Color(0.25,0.257,0.387));
@@ -195,6 +234,17 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		gui[\onOffTheme]=( \font_		: Font("Helvetica", 12, true),
 		 				\rounded_		: true,
 						\colors_      : (\on : Color.red, \off : Color(0.4,0.4,0.4)));
+
+		gui[\theme4] = (
+			\labelFont_	  : Font("Helvetica",12),
+			\orientation_ :\horizontal,
+			\labelShadow_ : false,
+			\colors_       : (
+				\label         : Color.black,
+				\off: Color.white/2,
+				\on : Color(50/77,61/77,1)
+			)
+		);
 
 		// widgets
 
@@ -263,6 +313,23 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		);
 		this.attachActionsToPresetGUI;
 
+		// 17. feedback
+		MVC_MyKnob3(models[17],gui[\scrollView],Rect(200,242,30,30),gui[\knobTheme]);
+
+		// 18. f_delay
+		MVC_MyKnob3(models[18],gui[\scrollView],Rect(140,242,30,30),gui[\knobTheme]);
+
+		// 19.low pass
+		MVC_MyKnob3(models[19],gui[\scrollView],Rect(20,242,30,30),gui[\knobTheme]);
+
+		// 20.high pass
+		MVC_MyKnob3(models[20],gui[\scrollView],Rect(80,242,30,30),gui[\knobTheme])
+			.zeroValue_(20000); // cause its hi pass
+
+		// 21. ping pong
+		MVC_OnOffRoundedView(gui[\scrollView], Rect(156, 293, 65, 21), models[21], gui[\theme4])
+			.font_(Font("Helvetica",12));
+
 	}
 
 	////////
@@ -273,22 +340,37 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 
 		SynthDef("External FX", {|outputChannels=0, inputChannels=4, pan=0, inAmp=1, outAmp=1,
 			xOutputChannels=0, xInputChannels=0, channelSetup=0, xChannelSetup=0,
-			sendChannels=4, sendAmp=0, on=1, lowFreq=20000, highFreq=20,delayL=0,delayR=0|
-			var in2Out, out2In, silent, mono;
+			sendChannels=4, sendAmp=0, on=1, lowFreq=20000, highFreq=20,
+			delayL=0,delayR=0, feedback=0, f_delay=0.5, f_lowFreq=20000, f_highFreq=20, pingPong=0 |
+			var in2Out, out2In, silent, mono, feedSig;
 
 			var in = In.ar(inputChannels, 2)*(inAmp.dbamp); 			// from LNX input bus
 			silent = Silent.ar;											// silence
 			in2Out = SelectX.ar(on.lag,[silent,in]);					// on/Off (bypass)
 			mono   = in2Out[0]+in2Out[1];
-			in2Out = Select.ar(channelSetup,[
-				[in2Out[0],in2Out[1]],mono.dup, [mono,silent], [silent,mono]]);
+
+			in2Out = Select.ar(channelSetup, [ [in2Out[0],in2Out[1]],mono.dup, [mono,silent], [silent,mono] ] );
 			in2Out = LPF.ar(in2Out,lowFreq.clip(20,20000).lag(0.2));	// the lowpass filter
 			in2Out = HPF.ar(in2Out,highFreq.clip(20,20000).lag(0.2));	// and the high pass
+
 			Out.ar(xOutputChannels,in2Out);								// send to external
+			out2In = In.ar(xInputChannels, 2);							// & return from external
 
-			out2In = In.ar(xInputChannels, 2);							// return from external
+			// feedback //////////////////////////////////////////////////////////
+
+			// though something else 1st?
+			feedSig = out2In * feedback; // this is signal coming from the device (pre or post below?)
+
+			feedSig = Select.ar(pingPong,[feedSig,feedSig.copy.reverse]); // ping pong swaps channels
+			feedSig = LPF.ar(feedSig,f_lowFreq.clip(20,20000).lag(0.2));  // the lowpass filter
+			feedSig = HPF.ar(feedSig,f_highFreq.clip(20,20000).lag(0.2)); // and the high pass
+			feedSig = DelayN.ar(feedSig, 2, f_delay.lag);                 // + a delay
+
+			Out.ar( xOutputChannels, feedSig ); // this is feedback going back out to the device
+
+			////////////////////////////////////////////////////////////////////
+
 			out2In = DelayN.ar(out2In, 0.2, [delayL.lag,delayR.lag]);   // post delay
-
 			out2In = Select.ar(xChannelSetup,[
 				[out2In[0],out2In[1]],(out2In[0]+out2In[1]).dup, out2In[0].dup, out2In[1].dup]);
 			out2In = SelectX.ar(on.lag,[in,out2In]);					// on/Off (bypass)
@@ -315,13 +397,13 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 		var out=(p[3]>=0).if(p[3]*2,LNX_AudioDevices.firstFXBus+(p[3].neg*2-2));
 		var outCh = LNX_AudioDevices.getOutChannelIndex(p[11]);
 		var xin  = LNX_AudioDevices.firstInputBus+(p[7]*2);
-		var xout;
+		var xout = p[6]*2;
 
-		if (p[6]>=0) {
+/*		if (p[6]>=0) {
 			xout = p[6]*2
 		}{
 			xout = LNX_AudioDevices.firstFXBus+(p[6].neg*2-2);
-		};
+		};*/
 
 		server.sendBundle(latency,
 			[\n_set, node, \inAmp     ,p[4]],
@@ -338,7 +420,14 @@ LNX_ExternalFX : LNX_InstrumentTemplate {
 			[\n_set, node, \lowFreq ,p[13]],
 			[\n_set, node, \highFreq,p[14]],
 			[\n_set, node, \delayL ,p[15]],
-			[\n_set, node, \delayR ,p[16]]
+			[\n_set, node, \delayR ,p[16]],
+			[\n_set, node, \feedback,p[17].dbamp],
+			[\n_set, node, \f_delay ,p[18]-0.003],
+			[\n_set, node, \f_lowFreq ,p[19]],
+			[\n_set, node, \f_highFreq,p[20]],
+			[\n_set, node, \pingPong,p[21]],
+
+
 		);
 
 	}

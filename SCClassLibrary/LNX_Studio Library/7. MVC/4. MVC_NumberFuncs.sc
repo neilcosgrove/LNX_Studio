@@ -31,6 +31,8 @@ MVC_NumberFunc{
 		Spec.add(\sync,         ControlSpec(-1, 1, 'linear', 0.001, 0, " s") );
 		Spec.add(\syncTime,     ControlSpec(0, \sync.asSpec.minval.abs, 'linear', 0.001, 0, " s") );
 
+		Spec.add(\delay2,       ControlSpec(0.003, 2, 'lin', 0, 0.3, " s") );
+
 		Spec.add(\delayms,      ControlSpec(0.0001, 1, 'exp', 0, 0.3, " ms") );
 		Spec.add(\duration,     ControlSpec(0.005,  1, 'exp', default:1) );
 		Spec.add(\duration2,    ControlSpec(0.005,  2, 'exp', default:1) );
@@ -50,6 +52,9 @@ MVC_NumberFunc{
 		Spec.add(\pitchAdj48,   ControlSpec(-48, 48, step:1, default: 0) );
 
 		Spec.add(\pitch   ,     ControlSpec(-24, 24, step:0, default: 0) );
+
+		Spec.add(\LNX_out, ControlSpec(0,LNX_AudioDevices.outputChannelList.size -1,step:1));
+
 		Spec.add(\LNX_audiobus, ControlSpec(0,LNX_AudioDevices.outputChannelList.size -1,step:1));
 		Spec.add(\LNX_audiobusM,ControlSpec(0,LNX_AudioDevices.outputChannelList.size,step:1));
 		Spec.add(\db2,          ControlSpec(0.ampdb, 2, \db, units: " dB"));
@@ -163,6 +168,8 @@ MVC_NumberFunc{
 
 			'LNX_audiobus' : {|n| LNX_AudioDevices.outputChannelList.at(n) },
 			'LNX_audiobusM': {|n|( ["Master"]++LNX_AudioDevices.outputChannelList).at(n) },
+
+			'LNX_out' : {|n| LNX_AudioDevices.outputOnlyList.at(n) },
 
 			'fft' 	: {|n|2**n},
 

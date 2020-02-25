@@ -79,6 +79,8 @@ LNX_AudioDevices {
 	*getFXChannelIndex {|i| ^(this.firstFXBus)+(i*2) }
 	*outputChannelList    { ^outputInputAndFXMenuList } // a temp fix to remove
 
+	*outputOnlyList    { ^outputMenuList } // a temp fix to remove
+
 	// return the input & output devices as a list
 	*devices{^[outDevice,inDevice]}
 
