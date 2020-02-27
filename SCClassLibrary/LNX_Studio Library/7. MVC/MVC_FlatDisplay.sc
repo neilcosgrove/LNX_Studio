@@ -76,7 +76,7 @@ MVC_FlatDisplay : MVC_View {
 			.drawFunc={|me|
 				var val, hv;
 				MVC_LazyRefresh.incRefresh;
-				if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
+				//if (verbose) { [this.class.asString, 'drawFunc' , label].postln };
 
 				Pen.use{
 
