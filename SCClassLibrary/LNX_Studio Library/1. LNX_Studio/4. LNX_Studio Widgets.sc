@@ -1465,6 +1465,15 @@ m.action_{|...a| a.postln}
 		}.fork(AppClock);
 	}
 
+	// for when studio isn't running
+	*quit{
+		{
+			0.25.wait;
+			Server.quitAll; // ShutDown
+			0.exit;
+		}.fork(AppClock);
+	}
+
 
 }
 

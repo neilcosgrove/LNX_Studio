@@ -496,6 +496,14 @@ gives min, max, averages and total
 		}
 	}
 
+	deferSystem{|delta=0|
+		if (delta==0) {
+			this.value
+		}{
+			SystemClock.sched(delta ? 0, { this.value; nil })
+		}
+	}
+
 }
 
 

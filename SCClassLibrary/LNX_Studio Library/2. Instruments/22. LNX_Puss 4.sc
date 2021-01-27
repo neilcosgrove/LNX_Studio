@@ -26,6 +26,10 @@ LNX_Puss4Patch.restartAll; // if connection is lost, you can run this again
 LNX_Puss4Patch.addAction(1,{|index, value| ~midi.control(index, value * 127, nil, send:true , ignore:false)});
 )
 
+(
+LNX_Puss4Patch.addAction(1,{|index, value| [index, value].postln });
+)
+
 [0]  // square
 [1]  // X
 [2]  // O
@@ -75,7 +79,7 @@ LNX_Puss4Patch{
 
 	*initClass{
 		Class.initClassTree(HID);
-		//{ 1.wait; this.restartAll }.fork; // everything else needs a chance to start 1st
+		{ 1.wait; this.restartAll }.fork; // everything else needs a chance to start 1st
 		// the above line is commented out during developemnt because it causes a crash on recomplile
 
 		elementNames = ["Square", "Cross","Circle", "Triangle", "L1", "R1", "L2", "R2", "Share", "Options", "L3", "R3",

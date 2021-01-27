@@ -30,7 +30,7 @@ LNX_AppMenus {
 					}{2}{ studio.preferences
 					}{4}{ Platform.case(\osx,{
 "osascript -e 'tell application \"Finder\"' -e 'set visible of process \"LNX_Studio\" to false' -e 'end tell'".unixCmd})
-					}{6}{ studio.quit
+					}{6}{ (studio?LNX_Studio).quit
 					};
 				};
 
@@ -251,7 +251,7 @@ LNX_AppMenus {
 					});
 				}).shortcut_("Ctrl+H"),
 				Action.separator,
-				Action("Quit",        { studio.quit }).shortcut_("Ctrl+Q")
+				Action("Quit",        { (studio?LNX_Studio).quit}).shortcut_("Ctrl+Q")
 			).title_("SuperCollider"),
 
 			// file menu
@@ -357,7 +357,7 @@ LNX_AppMenus {
 					});
 				}).shortcut_("Ctrl+H"),
 				Action.separator,
-				Action("Quit",        { studio.quit }).shortcut_("Ctrl+Q")
+					Action("Quit",        { (studio?LNX_Studio).quit }).shortcut_("Ctrl+Q")
 			).title_("SuperCollider"),
 
 			// file menu

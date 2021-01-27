@@ -13,17 +13,19 @@ LNX_StartUp {
 
 	*initClass{
 		Class.initClassTree(LNX_File);
-		Platform.case(
-			\linux,		{ this.linuxInitClass   },
-		);
-		StartUp.add {
+		if (LNX_Studio.startOnLaunch) {
 			Platform.case(
-				\osx,		{ this.osxStartUp     },
-				\linux,		{ this.linuxStartUp   },
-				\windows,	{ this.windowsStartUp }
+				\linux,		{ this.linuxInitClass   },
 			);
+			StartUp.add {
+				Platform.case(
+					\osx,		{ this.osxStartUp     },
+					\linux,		{ this.linuxStartUp   },
+					\windows,	{ this.windowsStartUp }
+				);
+			};
+			ShutDown.add { studio.onClose };		 // and on shutdown
 		};
-		ShutDown.add { studio.onClose };		 // and on shutdown
 	}
 
 	*linuxInitClass{
