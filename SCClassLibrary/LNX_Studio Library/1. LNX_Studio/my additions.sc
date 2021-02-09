@@ -901,11 +901,41 @@ gives min, max, averages and total
 
 }
 
++ Buffer {
+
+	getWithRef { arg index, action, ref1, ref2;
+		OSCpathResponder(server.addr,['/b_set',bufnum,index],{ arg time, r, msg;
+			action.value(msg.at(3),index, ref1, ref2); r.remove }).add;
+		server.listSendMsg(["/b_get",bufnum,index]);
+
+		}
+
+/*
+"/Users/neilcosgrove/MY_MUSIC/Loops from Rich/amen_brother.aif".play;
+~bufferSynths["/Users/neilcosgrove/MY_MUSIC/Loops from Rich/amen_brother.aif"].release(1);
+*/
+
+}
+
 + String {
 
+	// simple playing of files
 	play{
 		if (this.isSoundFile) {
-			^Buffer.read(path:this, action:{|b| b.play})
+			var buffer;
+			~buffers = ~buffers ?? {Dictionary[]};
+			~bufferSynths = ~bufferSynths ?? {Dictionary[]};
+			if (~buffers[this].isNil) {
+				buffer = Buffer.read(path:this, action:{|b|
+					~bufferSynths[this] = b.play;
+
+				});
+				~buffers[this] = buffer;
+				^buffer;
+			}{
+				~bufferSynths[this].release(0.05);
+				~bufferSynths[this] = ~buffers[this].play;
+			};
 		}
 	}
 
@@ -984,18 +1014,6 @@ gives min, max, averages and total
 	}
 
 }
-
-+ Buffer {
-
-	getWithRef { arg index, action, ref1, ref2;
-		OSCpathResponder(server.addr,['/b_set',bufnum,index],{ arg time, r, msg;
-			action.value(msg.at(3),index, ref1, ref2); r.remove }).add;
-		server.listSendMsg(["/b_get",bufnum,index]);
-
-		}
-
-}
-
 
 + Integer {
 

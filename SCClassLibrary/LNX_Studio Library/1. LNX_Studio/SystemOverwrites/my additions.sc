@@ -209,6 +209,20 @@
 	}
 }
 
++ Buffer {
+
+	play { arg loop = false, mul = 1;
+		^{arg gate=1;
+			var player;
+			player = PlayBuf.ar(numChannels, bufnum, BufRateScale.kr(bufnum),
+				loop: loop.binaryValue) * EnvGen.ar(Env.asr, gate, doneAction:2);
+			if(loop.not, FreeSelfWhenDone.kr(player));
+			player * mul;
+		}.play(server)
+	}
+
+}
+
 + Server {
 
 	// for security
