@@ -94,7 +94,7 @@ LNX_Puss4Patch{
 		exclude		= [6,7,19]; // raw in to exclude
 		reverse		= [15,17];	// reverse the joy's up & down
 		resolution	= 0.01;		// mininum resolution
-		off			= 0.03;		// off threshold
+		off			= 0.05;		// off threshold
 		{
 			var deviceNo=1;
 			if (HID.running) { HID.closeAll; 1.wait }; // this should stop 2 on 1 device when no. devces>1

@@ -933,7 +933,8 @@ gives min, max, averages and total
 				~buffers[this] = buffer;
 				^buffer;
 			}{
-				~bufferSynths[this].release(0.05);
+				var b = ~bufferSynths[this];
+				{ 0.02.wait; b.release(0.05)}.fork;
 				~bufferSynths[this] = ~buffers[this].play;
 			};
 		}
