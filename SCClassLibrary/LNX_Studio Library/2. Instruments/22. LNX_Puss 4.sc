@@ -71,11 +71,11 @@ LNX_Puss4Patch{
 
 	classvar <>verbose = false;
 
-	classvar <allHIDs, <paths, <pathAsStrings, <dependants, <exclude, <reverse, <resolution, <off;
+	classvar <allHIDs, <paths, <pathAsStrings, <dependants, <exclude, <reverse, <drift, <off;
 	classvar <elementNames, <noElements;
 
-	*learnOn { resolution = 0.25 }
-	*learnOff{ resolution = 0.01 }
+	*learnOn { drift = 0.25 }
+	*learnOff{ drift = 0.01 }
 
 	*initClass{
 		Class.initClassTree(HID);
@@ -93,7 +93,7 @@ LNX_Puss4Patch{
 		dependants	= dependants ? IdentityDictionary[]; // make a dict for dependants if it doesn't already exist
 		exclude		= [6,7,19]; // raw in to exclude
 		reverse		= [15,17];	// reverse the joy's up & down
-		resolution	= 0.01;		// mininum resolution
+		drift	    = 0.01;		// mininum drift
 		off			= 0.05;		// off threshold
 		{
 			var deviceNo=1;
@@ -123,13 +123,13 @@ LNX_Puss4Patch{
 									var newIndex;
 									if (((value-0.5).abs < off)and:{(index>=14)&&(index<=17)}) { // Joys are off
 										value=0.5;
-										if ((lastValue[index] - value).abs >= resolution) { pass = true };
+										if ((lastValue[index] - value).abs >= drift) { pass = true };
 									}{
 										if (index==20) { newIndex=6 }; // move L2 from 20 to 6
 										if (index==21) { newIndex=7 }; // move R2 from 21 to 7
-										if (value==0) { pass = true }; // override resolution if value is 0 or 1
+										if (value==0) { pass = true }; // override drift if value is 0 or 1
 										if (value==1) { pass = true };
-										if ((lastValue[index] - value).abs >= resolution) { pass = true }; // resolution
+										if ((lastValue[index] - value).abs >= drift) { pass = true }; // drift
 
 										// important this comes after above line
 										if (index==18) { // dpad
