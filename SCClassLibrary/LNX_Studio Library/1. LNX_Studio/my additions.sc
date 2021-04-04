@@ -116,23 +116,57 @@ gives min, max, averages and total
 		}
 	}
 
-	benchMark{|n=10,print=true|
-		var dt;
+/*
+	a = Point(); p = { {Point(1,1)}.compare({a.replaceXY(1,1)}, 100000) } ! 100; p.add(0).plot;
+*/
+
+	compare{|func,n=10000|
+		var t0,       t1,       t2,       t3;
+		var total1=0, total2=0, total3=0;
+		var func1 = {1};
+		var func2 = this;
+		var func3 = func;
+		n.do{|i|
+			t0 = Main.elapsedTime;
+			func1.value;
+			t1 = Main.elapsedTime;
+			func2.value;
+			t2 = Main.elapsedTime;
+			func3.value;
+			t3 = Main.elapsedTime;
+			total1 = total1 + t1 - t0 ;
+			total2 = total2 + t2 - t1 ;
+			total3 = total3 + t3 - t2 ;
+		};
+		total2 = total2;// - total1;
+		total3 = total3;// - total1;
+		func2.asCompileString.postln;
+		total2.postln;
+		func3.asCompileString.postln;
+		total3.postln;
+		^total2/total3;
+	}
+
+	benchMark{|n=10000,print=true|
+		var dt,dt2;
 		var t0;
 		var total=0;
 		var min=inf, max=0;
-
+		var emptyFunc = {};
 		n.do{|i|
 			t0 = Main.elapsedTime;
+			emptyFunc.value;
+			dt2 = Main.elapsedTime - t0;
+			t0 = Main.elapsedTime;
 			this.value;
-			dt = Main.elapsedTime - t0;
+			dt = Main.elapsedTime - t0 - dt2;
 			total = total + dt;
 			if (dt<min) { min=dt};
 			if (dt>max) { max=dt};
 		};
-
 		if (print) {
 			"".postln;
+			this.asCompileString.postln;
 			"Total: ".post;
 			total.post;
 			" (x".post;
@@ -145,11 +179,8 @@ gives min, max, averages and total
 			"Max: ".post;
 			max.postln;
 		};
-
 		^total
-
 	}
-
 
 }
 

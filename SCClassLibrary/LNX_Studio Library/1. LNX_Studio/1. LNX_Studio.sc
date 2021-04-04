@@ -68,7 +68,7 @@ LNX_Studio {
 
 	//// class ////////////////////////////////////////////////////
 
-	classvar    <startOnLaunch = false,  <is_in_a_khole = false;
+	classvar    <startOnLaunch = false,  <is_in_a_khole = false,  <>hideWindowsOnLaunch=false, <>onLoadFunc;
 
 	classvar	<>versionMajor=2,	<>versionMinor=0,	<version,
 				<internetVersion,	<fileLoadVersion=3;
@@ -155,6 +155,7 @@ LNX_Studio {
 		this.autoSizeGUI;			 // autosize to number of users. (to add widgets & remove)
 		mixerWindow.create;          // now make the window
 		if (LNX_Studio.is_in_a_khole) {mixerWindow.hide};
+		if (hideWindowsOnLaunch) { mixerWindow.hide};
 
 		LNX_SplashScreen.init(this); // start splash screen
 		CmdPeriod.add(this);		 // add this object to CmdPeriod
@@ -467,13 +468,20 @@ LNX_Studio {
 	startResponders {
 
 		OSCFunc({|msg|
-			models[\peakOutL].lazyValueAction_(msg[3]*(models[\volume].value.dbamp),0);
-			models[\peakOutR].lazyValueAction_(msg[5]*(models[\volume].value.dbamp),0);
+			var left  = msg[3]*(models[\volume].value.dbamp);
+			var right = msg[5]*(models[\volume].value.dbamp);
+			World_World.lnxState[\left] = left;
+			World_World.lnxState[\right] = right;
+			models[\peakOutL].lazyValueAction_(left,0);
+			models[\peakOutR].lazyValueAction_(right,0);
 		}, '/peakOut');
 
 		OSCFunc({|msg|
 			var inst = insts[msg[2]];
 			if (inst.notNil) {
+				var instNo = inst.instNoModel.value;
+				World_World.lnxState[instNo*2]   = msg[3];
+				World_World.lnxState[instNo*2+1] = msg[5];
 				inst.peakOutLeft_ (msg[3]);
 				inst.peakOutRight_(msg[5]);
 			};
@@ -1747,6 +1755,7 @@ LNX_Studio {
         					// maybe move this here?
 							// insts.do(_.postSongLoad); // after all insts added.
 							MVC_Automation.updateDurationAndGUI;
+							onLoadFunc.value; // used in games
 						}.defer(1);
 					};
 					// this is where i used to change audio device if needed

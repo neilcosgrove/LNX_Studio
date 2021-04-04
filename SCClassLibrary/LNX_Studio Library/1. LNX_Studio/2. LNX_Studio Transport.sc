@@ -122,6 +122,9 @@
 						};
 					};
 
+					World_World.lnxState[\beat] = beat / 3;
+					World_World.lnxState[\absTime] = absTime * 3;
+
 					beat = beat + 1;
 					instBeat = instBeat + 1;
 					absTime

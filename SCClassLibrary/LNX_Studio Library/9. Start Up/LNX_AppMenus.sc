@@ -468,6 +468,9 @@ LNX_AppMenus {
 				Action("Arrange",			{}),
 				Action("Close Window",		{ MVC_Window.frontWindow.guiClose }),
 				Action("Close All Window",	{ studio.insts.do(_.closeWindow) }),
+				Action.separator,
+				Action("Open Mixer Window",	{ studio.mixerWindow.show } ),
+				Action("Close Mixer Window", { studio.mixerWindow.hide } ),
 			).title_("Windows"),
 
 			//  help menu

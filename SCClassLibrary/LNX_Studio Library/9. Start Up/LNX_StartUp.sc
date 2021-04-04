@@ -28,6 +28,18 @@ LNX_StartUp {
 		};
 	}
 
+	*manualStart{
+		Platform.case(
+			\linux,		{ this.linuxInitClass   },
+		);
+		Platform.case(
+			\osx,		{ this.osxStartUp     },
+			\linux,		{ this.linuxStartUp   },
+			\windows,	{ this.windowsStartUp }
+		);
+		ShutDown.add { studio.onClose };		 // and on shutdown
+	}
+
 	*linuxInitClass{
 		var lrd = Platform.lnxResourceDir;
 		var cwd = File.getcwd;

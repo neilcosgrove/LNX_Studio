@@ -493,9 +493,8 @@ LNX_InstrumentTemplate {
 				studio.hilightInst(id);
 				toFrontAction.value;
 			};
-
 			toFrontAction.value;
-
+			window.hide;
 		}.defer(0.01);
 	}
 
