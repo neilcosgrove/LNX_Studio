@@ -201,6 +201,7 @@
 	midiContinue{|latency| }
 	midiStop{|latency| }
 
+	externalIn{|index,value| } // from world
 
 	stopAllNotes{} 			// used for noteOff when stopping sequencers & midi Devices
 							// also called by onOff & solo buttons

@@ -81,12 +81,13 @@
 
 					// & mainly step sequencers here
 					if ((instBeat%3)==0) {
-						b=(instBeat/3).asInt;
+						b = instBeat.div(3);
 						if (hackOn) {
 							{myHack[\codeFunc].value(
 								this,b,actualLatency, myHack[\netAddr]) }.try;
 						};
 						insts.clockPriority.do(_.clockIn(b,actualLatency));
+						World_World.clockIn(b);
 					};
 
 					if ((beat%6)==0) { this.refreshGuiBeat};

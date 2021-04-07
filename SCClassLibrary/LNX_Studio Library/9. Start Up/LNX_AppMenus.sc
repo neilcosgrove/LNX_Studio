@@ -416,7 +416,7 @@ LNX_AppMenus {
 
 			//  dev menu
 			Menu(
-				Action("Code Window",{TextView().enterInterpretsSelection_(true).front }).shortcut_("Ctrl+1"),
+				Action("Code Window",{TextView().enterInterpretsSelection_(true).front }),
 				Action("Recompile Class Libray",{thisProcess.platform.recompile}).shortcut_("Ctrl+K"),
 				Action.separator,
 				Action("Save interval / Stop",{ studio.saveInterval }),
@@ -467,10 +467,10 @@ LNX_AppMenus {
 				Action("Minimise",			{ MVC_Window.frontWindow.minimize }).shortcut_("Ctrl+M"),
 				Action("Arrange",			{}),
 				Action("Close Window",		{ MVC_Window.frontWindow.guiClose }),
-				Action("Close All Window",	{ studio.insts.do(_.closeWindow) }),
+				Action("Close All Window",	{ studio.insts.do(_.closeWindow) }).shortcut_("Ctrl+3"),
 				Action.separator,
-				Action("Open Mixer Window",	{ studio.mixerWindow.show } ),
-				Action("Close Mixer Window", { studio.mixerWindow.hide } ),
+				Action("Open Mixer Window",	{ studio.mixerWindow.show } ).shortcut_("Ctrl+1"),
+				Action("Close Mixer Window", { studio.mixerWindow.hide } ).shortcut_("Ctrl+2"),
 			).title_("Windows"),
 
 			//  help menu

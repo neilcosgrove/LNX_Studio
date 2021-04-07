@@ -479,9 +479,7 @@ LNX_Studio {
 		OSCFunc({|msg|
 			var inst = insts[msg[2]];
 			if (inst.notNil) {
-				var instNo = inst.instNoModel.value;
-				World_World.lnxState[instNo*2]   = msg[3];
-				World_World.lnxState[instNo*2+1] = msg[5];
+				World_World.lnxState[inst.worldNumber] = msg[3].max(msg[5]);
 				inst.peakOutLeft_ (msg[3]);
 				inst.peakOutRight_(msg[5]);
 			};

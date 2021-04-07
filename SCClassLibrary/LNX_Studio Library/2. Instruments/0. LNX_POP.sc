@@ -97,6 +97,8 @@ LNX_POP {
 		};
 	}
 
+	*externalIn{|prog| if (studioModels.notNil) { studioModels[\toBecome].lazyValueAction_(prog) } }
+
 	// from puss4
 	*nextProg{
 		var value;
@@ -147,6 +149,7 @@ LNX_POP {
 				midi.noteOn(padProg, 48, latency); // 48 green
 				lastProg = padProg;
 				lastNote = nil;
+				World_World.onProgChange(value);
 			}].asModel
 			.isProgramModel_(true);
 

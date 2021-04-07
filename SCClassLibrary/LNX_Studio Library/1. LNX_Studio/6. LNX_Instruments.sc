@@ -12,6 +12,8 @@ LNX_Instruments : IdentityDictionary {
 
 	var <studio, selectedInst, <clockPriority, <visualOrder, <midiClock;
 
+	var <mixerInstruments, <midiModules, <effects;
+
 	*new {|studio,n=1| ^super.new(n).init(studio) } // because an IdentityDictionary
 
 	init {|argStudio|
@@ -19,6 +21,18 @@ LNX_Instruments : IdentityDictionary {
 		clockPriority=[];
 		midiClock=[];
 		visualOrder=[];
+		mixerInstruments = [];
+		midiModules = [];
+		effects = [];
+	}
+
+	updateTypeContainers{
+		mixerInstruments = visualOrder.select(_.isMixerInstrument);
+		midiModules = visualOrder.select(_.isMIDI);
+		effects = visualOrder.select(_.isFX);
+		mixerInstruments.do{|inst,i| inst.worldNumber_(i) };
+		midiModules.do{|inst,i| inst.worldNumber_(i) };
+		effects.do{|inst,i| inst.worldNumber_(i) };
 	}
 
 	// clear contents
@@ -27,6 +41,9 @@ LNX_Instruments : IdentityDictionary {
 		clockPriority=[];
 		midiClock=[];
 		visualOrder=[];
+		mixerInstruments = [];
+		midiModules = [];
+		effects = [];
 		selectedInst=nil;
 		this.changed(\instruments,\clear);
 	}
@@ -36,6 +53,7 @@ LNX_Instruments : IdentityDictionary {
 	addInst{|inst,id|
 		this[id]=inst;
 		visualOrder=visualOrder.add(inst);
+		this.updateTypeContainers;
 		this.updateClockPriority;
 		this.changed(\instruments,\add);
 	}
@@ -47,6 +65,7 @@ LNX_Instruments : IdentityDictionary {
 		if (selectedInst==id) { selectedInst=this.nextID }; // must go 1st
 		this[id]=nil;
 		visualOrder.remove(inst);
+		this.updateTypeContainers;
 		this.updateClockPriority;
 		this.changed(\instruments,\removed);
 		^inst;
@@ -69,6 +88,7 @@ LNX_Instruments : IdentityDictionary {
 			visualOrder.insert(pos,inst);
 			this.orderEffects;
 			visualOrder.do({|inst,index| inst.instNo_(index) }); // change numbers
+			this.updateTypeContainers;
 			this.changed(\instruments,\moved);
 			studio.updateAllPadMixer;          // temp for CARBON ************
 			^true
@@ -130,7 +150,7 @@ LNX_Instruments : IdentityDictionary {
 	visualAt{|index| ^visualOrder[index] }
 
 	// return effects ( list is in order of execution )
-	effects{ ^visualOrder.select(_.isFX) }
+	// effects{ ^visualOrder.select(_.isFX) }
 
 	// return everything that is not an effect ( list is in order of execution )
 	notEffect{ ^visualOrder.reject(_.isFX) }
@@ -166,12 +186,13 @@ LNX_Instruments : IdentityDictionary {
 	canBeSequencedInstNo{ ^this.canBeSequenced.collect{|i| this.getY(i.id) } }
 
 	// return all mixer insts
-	mixerInstruments { ^visualOrder.select(_.isMixerInstrument) }
+	//mixerInstruments { ^visualOrder.select(_.isMixerInstrument) }
 
 	mixerInstY{|id| ^this.mixerInstruments.indexOf(this[id]) }
 
 	// MIDI
-	midi{ ^visualOrder.select(_.isMIDI) }
+	// midi{ ^visualOrder.select(_.isMIDI) }
+	midi{ ^midiModules}
 
 	midiY{|id| ^this.midi.indexOf(this[id]) }
 

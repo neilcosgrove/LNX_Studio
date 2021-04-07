@@ -63,6 +63,8 @@ LNX_InstrumentTemplate {
 
 	var <fadeInModel, <fadeOutModel, <freed = false;
 
+	var <>worldNumber;
+
 	////////////////////////////////////////
 	//                                    //
 	//// init stuff ////////////////////////
@@ -1660,9 +1662,9 @@ LNX_InstrumentTemplate {
 		}
 	}
 
-	fadeIn{|level,beats=64,resolution=1|
+	fadeIn{|level,beats,resolution=1|
 		var startVolume,x;
-		beats = #[ 192, 64, 24 ][studio.models[\fadeSpeed].value];
+		beats = beats ?? {#[ 192, 64, 24 ][studio.models[\fadeSpeed].value]};
 		if (this.volumeModel.notNil) {
 			level=level ? (this.peakLevel) ? 1; // levels ?
 			startVolume = this.volume;
@@ -1679,9 +1681,9 @@ LNX_InstrumentTemplate {
 		}
 	}
 
-	fadeOut{|beats=64,resolution=1|
+	fadeOut{|beats,resolution=1|
 		var startVolume;
-		beats = #[ 192, 64, 24 ][studio.models[\fadeSpeed].value];
+		beats = beats ?? {#[ 192, 64, 24 ][studio.models[\fadeSpeed].value]};
 		if (this.volumeModel.notNil) {
 			startVolume = this.volume; // levels?
 			hack[\fadeTask].stop;

@@ -50,15 +50,19 @@ LNX_Controllers : LNX_InstrumentTemplate {
 			// 10-17. push button controls x8
 			0,0,0,0,0,0,0,0,
 
-			// 18. empty
-			0,
+			// 18. thru
+			[0, \switch, (\strings_:"Thru"), midiControl, 18, "Thru",
+				{|me,val,latency,send| this.setPVH(18,val,latency,send) }],
 
 			// 19.network this
 			[1, \switch, (\strings_:"Net"), midiControl, 19, "Network",
 				{|me,val,latency,send| this.setPVH(19,val,latency,send) }],
 
-			// 20-24. empty
-			0, 0, 0, 0, 0
+			// 20-27.(return to world) learnable knob controls x8
+			0,0,0,0,0,0,0,0,
+
+			// 28-35.(return to world) learnable push button controls x8
+			0,0,0,0,0,0,0,0,
 
 		];
 
@@ -68,6 +72,20 @@ LNX_Controllers : LNX_InstrumentTemplate {
 
 			template[i+10]=[0, \switch, ( strings_:(i+8).asString ),
 				{ this.guiMidiControl(i+8,1) }];
+
+			// return to world
+			template[i+20]=[0, [0,127,\linear,0], midiControl, i+20, ( label_:(i.asString), numberFunc_:\int),
+				{|me,val|
+					p[i+20]=val;
+					World_World.controlFromLNX(i,val/127,worldNumber)
+			}];
+
+			template[i+28]=[0, \switch,  midiControl, i+28,( strings_:(i+8).asString ),
+				{|me,val|
+					p[i+28]=val;
+					World_World.controlFromLNX(i+8,val,worldNumber)
+			}];
+
 		};
 
 		#models,defaults=template.generateAllModels;
@@ -88,7 +106,7 @@ LNX_Controllers : LNX_InstrumentTemplate {
 	}
 
 	*thisWidth  {^320}
-	*thisHeight {^240+30}
+	*thisHeight {^370+50}
 
 	createWindow{|bounds|
 		this.createTemplateWindow(bounds,Color(0,1/103,9/77));
@@ -96,12 +114,27 @@ LNX_Controllers : LNX_InstrumentTemplate {
 
 	createWidgets{
 
+		gui[\labelTheme]=(
+			\font_	    	:  Font("Helvetica", 16,true),
+			\align_		    :  \left,
+			\shadow_		: false,
+			\noShadows_  	: 0,
+			\colors_		: (\string : Color.black));
+
 		// the border and composite view
 		gui[\compositeView] = MVC_RoundedComView(window,
 				Rect(11,11,this.thisWidth-22,this.thisHeight-32-75))
 				.color_(\border,  Color(59/108,65/103,505/692)  )
 				.color_(\border2, Color(0,1/103,9/77))
 				.color_(\background, Color(59/77,43/54,9/11)*1.1 );
+
+
+		// 18 thru
+		MVC_OnOffView(models[18],gui[\compositeView],Rect(60, 10, 40, 18),gui[\soloTheme  ])
+			.rounded_(true)
+			.color_(\on,Color(0.3,0.5,1)+0.3)
+			.color_(\off,Color(0.3,0.5,1)+0.3/3)
+			.font_(Font("Helvetica",11, true));
 
 		// 19 net
 		MVC_OnOffView(models[19],gui[\compositeView],Rect(10, 10, 28, 18),gui[\soloTheme  ])
@@ -137,7 +170,7 @@ LNX_Controllers : LNX_InstrumentTemplate {
 			};
 
 		// the preset interface
-		presetView=MVC_PresetMenuInterface(gui[\compositeView],10@134,187,
+		presetView=MVC_PresetMenuInterface(gui[\compositeView],10@284,187,
 				Color(0.8,0.8,1)/1.6,
 				Color(0.7,0.7,1)/3,
 				Color(0.7,0.7,1)/1.5,
@@ -146,26 +179,43 @@ LNX_Controllers : LNX_InstrumentTemplate {
 			);
 		this.attachActionsToPresetGUI;
 
+		MVC_StaticText(gui[\compositeView], Rect(112, 37, 81, 18),gui[\labelTheme]).string_("To World");
+		MVC_StaticText(gui[\compositeView], Rect(105, 160, 100, 18),gui[\labelTheme]).string_("From World");
 
 		// controllers
 		8.do{|i|
 			// knobs
-			MVC_MyKnob3(models[i+2],gui[\compositeView],Rect(10+(i*35)+((i/4).asInt*5),85,30,30))
+			MVC_MyKnob3(models[i+2],gui[\compositeView],Rect(10+3+(i*35)+((i/4).asInt*5),85+25,30,30))
 				.color_(\on,Color(0.3,0.5,1))
 				.color_(\numberUp,Color.black)
 				.color_(\numberDown,Color(0.3,0.5,1)+0.3)
 				.numberWidth_(-24);
 			// buttons
 			MVC_FlatButton2(models[i+10],gui[\compositeView],
-										Rect(9+(i*35)+((i/4).asInt*5)+5,39,21,21))
+										Rect(9+(i*35)+((i/4).asInt*5)+5,39+25,21,21))
 				.font_(Font("Helvetica",12))
 				.color_(\on,Color(0.3,0.5,1)+1)
 				.color_(\off,Color.black)
 				.color_(\background,Color(0.15,0.2,0.3)*2);
+
+			// knobs
+			MVC_MyKnob3(models[i+20],gui[\compositeView],Rect(10+(i*35)+((i/4).asInt*5),85+100+50,30,30))
+				.color_(\on,Color(0.3,0.5,1))
+				.color_(\numberUp,Color.black)
+				.color_(\numberDown,Color(0.3,0.5,1)+0.3)
+				.numberWidth_(-24);
+			// buttons
+			MVC_FlatButton2(models[i+28],gui[\compositeView],
+										Rect(9+(i*35)+((i/4).asInt*5)+5,39+100+50,21,21))
+				.font_(Font("Helvetica",12))
+				.color_(\on,Color(0.3,0.5,1)+1)
+				.color_(\off,Color.black)
+				.color_(\background,Color(0.15,0.2,0.3)*2);
+
 		};
 
 		// the keyboard, fix bug so we don't need this scrollView
-		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(6+5,148+9+30,305-10,75))
+		gui[\keyboardOuterView]=MVC_CompositeView(window,Rect(6+5,298+9+30,305-10,75))
 			.hasHorizontalScroller_(false)
 			.hasVerticalScroller_(false);
 
@@ -189,10 +239,10 @@ LNX_Controllers : LNX_InstrumentTemplate {
 				};
 				lastKeyboardNote=note;
 			}.miscKeyAction_{|key|
-				if (key==\up   ) { this.guiSetProgram(p[18]-4) };
+/*				if (key==\up   ) { this.guiSetProgram(p[18]-4) };
 				if (key==\down ) { this.guiSetProgram(p[18]+4) };
 				if (key==\left ) { this.guiSetProgram(p[18]-1) };
-				if (key==\right) { this.guiSetProgram(p[18]+1) };
+				if (key==\right) { this.guiSetProgram(p[18]+1) };*/
 			};
 
 	}
@@ -201,34 +251,70 @@ LNX_Controllers : LNX_InstrumentTemplate {
 
 	iInitMIDI{ midi.putLoadList([0, 0]++LNX_MIDIPatch.nextUnusedOut) }
 
-	// midi note on
-	noteOn{|note, vel, latency|
-		midi.noteOn(note,vel,latency);
-		{keyboardView.setColor(note,Color(0.5,0.5,1),0.75);}.defer;
-		if (p[19]==1) {
-			api.send('netNoteOn',note,vel);
+	externalIn{|index,value| models[index+2].lazyValueAction_(value) }
+
+	// a quick way to get working, to be used by all midi in future
+	pipeIn{|pipe|
+		switch (pipe.kind)
+		{\noteOn} { // noteOn
+			var note = pipe.note;
+			var vel  = pipe.velocity;
+			var latency = pipe.latency;
+			midi.noteOn(note,vel,latency);
+			{keyboardView.setColor(note,Color(0.5,0.5,1),0.75);}.defer;
+			if (p[19]==1) { api.send('netNoteOn',note,vel) };
+		}
+		{\noteOff} { // noteOff
+			var note = pipe.note;
+			var vel  = pipe.velocity;
+			var latency = pipe.latency;
+			midi.noteOff(note,vel,latency);
+			{keyboardView.removeColor(note);}.defer;
+			if (p[19]==1) { api.sendGD('netNoteOff',note,vel) };
+		}
+		{\control} { // control
+			midi.control(pipe.num, pipe.val, pipe.latency)
+		}
+		{\touch} { // touch
+			midi.touch(pipe.pressure, pipe.latency)
+		}
+		{\program} {
+			// to do and confirm
+		}
+		{\bend} { // bend
+			midi.bend(pipe.val, pipe.latency)
 		}
 	}
 
+	touch  {|pressure,       latency| World_World.pipeIn( LNX_Touch  (pressure,      latency, \MIDIIn), worldNumber) }
+	control{|num, val,       latency| World_World.pipeIn( LNX_Control(num,  val/127, latency, \MIDIIn), worldNumber) }
+	bend   {|bend,           latency| World_World.pipeIn( LNX_Bend   (bend,          latency, \MIDIIn), worldNumber) }
+
+	// midi note on
+	noteOn{|note, vel, latency|
+		if (p[18]==1) { midi.noteOn(note,vel,latency) };
+		{keyboardView.setColor(note,Color(0.5,0.5,1),0.75);}.defer;
+		if (p[19]==1) { api.send('netNoteOn',note,vel) };
+		World_World.pipeIn( LNX_NoteOn (note, vel, latency, \MIDIIn), worldNumber );
+	}
+
 	netNoteOn{|note, vel|
-		midi.noteOn(note,vel);
+		if (p[18].isTrue) {midi.noteOn(note,vel) };
 		{keyboardView.setColor(note,Color(0.5,0.5,1),0.75);}.defer;
 	}
 
 	// midi note off
 	noteOff{|note, vel, latency|
-		midi.noteOff(note,vel,latency);
+		if (p[18]==1) { midi.noteOff(note,vel,latency) };
 		{keyboardView.removeColor(note);}.defer;
-		if (p[19]==1) {
-			api.sendGD('netNoteOff',note,vel);
-		};
+		if (p[19]==1) { api.sendGD('netNoteOff',note,vel) };
+		World_World.pipeIn( LNX_NoteOff (note, vel, latency, \MIDIIn), worldNumber );
 	}
 
 	netNoteOff{|note, vel|
-		midi.noteOff(note,vel);
+		if (p[18].isTrue) {midi.noteOff(note,vel)};
 		{keyboardView.removeColor(note);}.defer;
 	}
-
 
 	// midiControl or learn the item and send over network (for buttons)
 	guiMidiControl{|item,value|

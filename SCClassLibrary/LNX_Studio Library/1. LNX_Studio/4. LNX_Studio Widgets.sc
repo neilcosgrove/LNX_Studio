@@ -13,10 +13,10 @@
 	peakLevel_{|val| models[\peakLevel].valueAction_(val,0,true,false) }
 
 	// fade in the master volume
-	fadeIn{|level,beats=128,resolution=1|
+	fadeIn{|level,beats,resolution=1|
 		var startVolume,x;
 
-		beats = #[256, 128, 64][models[\fadeSpeed].value];
+		beats = beats ?? { #[256, 128, 64][models[\fadeSpeed].value] };
 
 		level = level ? (this.peakLevel) ? 1;
 		startVolume = this.volume;
@@ -33,10 +33,10 @@
 	}
 
 	// fade out the master volume
-	fadeOut{|beats=128,resolution=1|
+	fadeOut{|beats,resolution=1|
 		var startVolume;
 
-		beats = #[256, 128, 64 ][models[\fadeSpeed].value];
+		beats = beats ?? {#[256, 128, 64 ][models[\fadeSpeed].value]};
 
 		startVolume = this.volume;
 		tasks[\fadeTask].stop;

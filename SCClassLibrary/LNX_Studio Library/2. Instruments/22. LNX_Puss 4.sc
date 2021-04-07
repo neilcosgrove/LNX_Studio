@@ -175,6 +175,8 @@ LNX_Puss4Patch{
 
 	*removeAction{|path,func| dependants[path.asSymbol].remove(func) }
 
+	*externalIn{|index, value|  dependants.do{|device| device.do{|func| func.value(index, value) } } } // for keyboard
+
 }
 
 ////////////////////////////////////
