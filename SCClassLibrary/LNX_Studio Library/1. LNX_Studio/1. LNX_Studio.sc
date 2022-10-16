@@ -336,7 +336,7 @@ LNX_Studio {
 				((LNX_AudioDevices.numFXBusChannels/2).asInt.collect{ Bus.audio(server,2) });
 
 				LNX_BufferArray.serverReboot(server);// make blank buffers
-				LNX_BufferProxy.serverReboot;		// load bufers
+				{LNX_BufferProxy.serverReboot}.defer(0.2);		// load buffers
 				this.initUGens;						// send studio SynthDefs (Limiter Out)
 				instTypes.do(_.initUGens(server));  // init all instrument uGens
 				insts.do(_.initUGens(server));		// used by SC Code FX
